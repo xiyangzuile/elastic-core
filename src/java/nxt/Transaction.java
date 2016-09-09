@@ -41,8 +41,6 @@ public interface Transaction {
 
         Builder appendix(Appendix.PrunableEncryptedMessage prunableEncryptedMessage);
 
-        Builder appendix(Appendix.Phasing phasing);
-
         Builder timestamp(int timestamp);
 
         Builder ecBlockHeight(int height);
@@ -116,8 +114,6 @@ public interface Transaction {
     Appendix.EncryptedMessage getEncryptedMessage();
 
     Appendix.EncryptToSelfMessage getEncryptToSelfMessage();
-
-    Appendix.Phasing getPhasing();
 
     Appendix.PrunablePlainMessage getPrunablePlainMessage();
 

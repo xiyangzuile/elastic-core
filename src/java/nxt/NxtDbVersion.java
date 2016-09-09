@@ -579,7 +579,7 @@ class NxtDbVersion extends DbVersion {
             case 230:
                 apply("CREATE INDEX IF NOT EXISTS trade_height_idx ON trade(height)");
             case 231:
-                BlockDb.deleteBlocksFromHeight(Constants.PHASING_BLOCK);
+                // BlockDb.deleteBlocksFromHeight(Constants.PHASING_BLOCK);
                 apply("DROP TABLE IF EXISTS poll");
             case 232:
                 apply("DROP TABLE IF EXISTS vote");
@@ -1132,7 +1132,7 @@ class NxtDbVersion extends DbVersion {
             case 472:
                 apply("CREATE INDEX IF NOT EXISTS referenced_transaction_referenced_transaction_id_idx ON referenced_transaction (referenced_transaction_id)");
             case 473:
-                BlockDb.deleteBlocksFromHeight(Constants.SHUFFLING_BLOCK);
+                //BlockDb.deleteBlocksFromHeight(Constants.SHUFFLING_BLOCK);
                 BlockchainProcessorImpl.getInstance().scheduleScan(0, false);
                 apply(null);
             case 474:
@@ -1172,10 +1172,10 @@ class NxtDbVersion extends DbVersion {
             case 483:
                 apply("CREATE UNIQUE INDEX IF NOT EXISTS account_fxt_id_idx ON account_fxt (id, height DESC)");
             case 484:
-                BlockchainProcessorImpl.getInstance().scheduleScan(FxtDistribution.DISTRIBUTION_START - 1, false);
+                //BlockchainProcessorImpl.getInstance().scheduleScan(FxtDistribution.DISTRIBUTION_START - 1, false);
                 apply(null);
             case 485:
-                BlockDb.deleteBlocksFromHeight(Constants.FXT_BLOCK);
+                // BlockDb.deleteBlocksFromHeight(Constants.FXT_BLOCK);
                 apply(null);
             case 486:
                 apply("CREATE TABLE IF NOT EXISTS asset_dividend (db_id IDENTITY, id BIGINT NOT NULL, asset_id BIGINT NOT NULL, "

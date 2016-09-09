@@ -43,7 +43,6 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
         if (transactionIdString == null && transactionFullHash == null) {
             return MISSING_TRANSACTION;
         }
-        boolean includePhasingResult = "true".equalsIgnoreCase(req.getParameter("includePhasingResult"));
 
         long transactionId = 0;
         Transaction transaction;
@@ -68,7 +67,7 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
             }
             return JSONData.unconfirmedTransaction(transaction);
         } else {
-            return JSONData.transaction(transaction, includePhasingResult);
+            return JSONData.transaction(transaction);
         }
 
     }

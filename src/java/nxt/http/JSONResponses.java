@@ -27,12 +27,6 @@ import java.util.Arrays;
 
 public final class JSONResponses {
 
-    public static final JSONStreamAware INCORRECT_ALIAS = incorrect("alias");
-    public static final JSONStreamAware INCORRECT_ALIAS_OWNER = incorrect("alias", "(invalid alias owner)");
-    public static final JSONStreamAware INCORRECT_ALIAS_LENGTH = incorrect("alias", "(length must be in [1.." + Constants.MAX_ALIAS_LENGTH + "] range)");
-    public static final JSONStreamAware INCORRECT_ALIAS_NAME = incorrect("alias", "(must contain only digits and latin letters)");
-    public static final JSONStreamAware INCORRECT_ALIAS_NOTFORSALE = incorrect("alias", "(alias is not for sale at the moment)");
-    public static final JSONStreamAware INCORRECT_URI_LENGTH = incorrect("uri", "(length must be not longer than " + Constants.MAX_ALIAS_URI_LENGTH + " characters)");
     public static final JSONStreamAware INCORRECT_PUBLIC_KEY = incorrect("publicKey");
     public static final JSONStreamAware MISSING_ALIAS_NAME = missing("aliasName");
     public static final JSONStreamAware MISSING_ALIAS_OR_ALIAS_NAME = missing("alias", "aliasName");
@@ -50,11 +44,6 @@ public final class JSONResponses {
     public static final JSONStreamAware INCORRECT_ACCOUNT = incorrect("account");
     public static final JSONStreamAware INCORRECT_TIMESTAMP = incorrect("timestamp");
     public static final JSONStreamAware UNKNOWN_ACCOUNT = unknown("account");
-    public static final JSONStreamAware UNKNOWN_ALIAS = unknown("alias");
-    public static final JSONStreamAware UNKNOWN_ASSET = unknown("asset");
-    public static final JSONStreamAware INCORRECT_ASSET = incorrect("asset");
-    public static final JSONStreamAware MISSING_ASSET = missing("asset");
-    public static final JSONStreamAware MISSING_ASSET_ACCOUNT = missing("asset", "account");
     public static final JSONStreamAware UNKNOWN_BLOCK = unknown("block");
     public static final JSONStreamAware INCORRECT_BLOCK = incorrect("block");
     public static final JSONStreamAware UNKNOWN_ENTRY = unknown("entry");
@@ -63,9 +52,6 @@ public final class JSONResponses {
     public static final JSONStreamAware MISSING_TRANSACTION = missing("transaction");
     public static final JSONStreamAware UNKNOWN_TRANSACTION = unknown("transaction");
     public static final JSONStreamAware INCORRECT_TRANSACTION = incorrect("transaction");
-    public static final JSONStreamAware INCORRECT_ASSET_DESCRIPTION = incorrect("description", "(length must not exceed " + Constants.MAX_ASSET_DESCRIPTION_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_ASSET_NAME = incorrect("name", "(must contain only digits and latin letters)");
-    public static final JSONStreamAware INCORRECT_ASSET_NAME_LENGTH = incorrect("name", "(length must be in [" + Constants.MIN_ASSET_NAME_LENGTH + ".." + Constants.MAX_ASSET_NAME_LENGTH + "] range)");
     public static final JSONStreamAware MISSING_NAME = missing("name");
     public static final JSONStreamAware INCORRECT_DECIMALS = incorrect("decimals");
     public static final JSONStreamAware MISSING_HOST = missing("host");
@@ -77,55 +63,21 @@ public final class JSONResponses {
     public static final JSONStreamAware INCORRECT_RECIPIENT = incorrect("recipient");
     public static final JSONStreamAware INCORRECT_ARBITRARY_MESSAGE = incorrect("message");
     public static final JSONStreamAware MISSING_DESCRIPTION = missing("description");
-    public static final JSONStreamAware INCORRECT_POLL_NAME_LENGTH = incorrect("name", "(length must be not longer than " + Constants.MAX_POLL_NAME_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_POLL_DESCRIPTION_LENGTH = incorrect("description", "(length must be not longer than " + Constants.MAX_POLL_DESCRIPTION_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_POLL_OPTION_LENGTH = incorrect("option", "(length must be not longer than " + Constants.MAX_POLL_OPTION_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_ZEROOPTIONS = incorrect("option", "no options given");
-    public static final JSONStreamAware INCORRECT_VOTE = incorrect("vote");
-    public static final JSONStreamAware UNKNOWN_POLL = unknown("poll");
+  
     public static final JSONStreamAware INCORRECT_WHITELIST = incorrect("whitelist");
     public static final JSONStreamAware INCORRECT_ACCOUNT_NAME_LENGTH = incorrect("name", "(length must be less than " + Constants.MAX_ACCOUNT_NAME_LENGTH + " characters)");
     public static final JSONStreamAware INCORRECT_ACCOUNT_DESCRIPTION_LENGTH = incorrect("description", "(length must be less than " + Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH + " characters)");
     public static final JSONStreamAware MISSING_UNSIGNED_BYTES = missing("unsignedTransactionBytes");
     public static final JSONStreamAware MISSING_SIGNATURE_HASH = missing("signatureHash");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_NAME = incorrect("name", "(length must be not longer than " + Constants.MAX_DGS_LISTING_NAME_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_DESCRIPTION = incorrect("description", "(length must be not longer than " + Constants.MAX_DGS_LISTING_DESCRIPTION_LENGTH + " characters)");
-    public static final JSONStreamAware INCORRECT_DGS_LISTING_TAGS = incorrect("tags", "(length must be not longer than " + Constants.MAX_DGS_LISTING_TAGS_LENGTH + " characters)");
-    public static final JSONStreamAware UNKNOWN_GOODS = unknown("goods");
-    public static final JSONStreamAware INCORRECT_DELTA_QUANTITY = incorrect("deltaQuantity");
-    public static final JSONStreamAware MISSING_DELTA_QUANTITY = missing("deltaQuantity");
-    public static final JSONStreamAware MISSING_DELIVERY_DEADLINE_TIMESTAMP = missing("deliveryDeadlineTimestamp");
-    public static final JSONStreamAware INCORRECT_DELIVERY_DEADLINE_TIMESTAMP = incorrect("deliveryDeadlineTimestamp");
-    public static final JSONStreamAware INCORRECT_PURCHASE_QUANTITY = incorrect("quantity", "(quantity exceeds available goods quantity)");
-    public static final JSONStreamAware INCORRECT_PURCHASE_PRICE = incorrect("priceNQT", "(purchase price doesn't match goods price)");
-    public static final JSONStreamAware INCORRECT_PURCHASE = incorrect("purchase");
-    public static final JSONStreamAware INCORRECT_DGS_GOODS = incorrect("goodsToEncrypt");
-    public static final JSONStreamAware INCORRECT_DGS_DISCOUNT = incorrect("discountNQT");
-    public static final JSONStreamAware INCORRECT_DGS_REFUND = incorrect("refundNQT");
+   
     public static final JSONStreamAware INCORRECT_ENCRYPTED_MESSAGE = incorrect("encryptedMessageData");
-    public static final JSONStreamAware INCORRECT_DGS_ENCRYPTED_GOODS = incorrect("goodsData");
     public static final JSONStreamAware INCORRECT_HEIGHT = incorrect("height");
     public static final JSONStreamAware MISSING_HEIGHT = missing("height");
     public static final JSONStreamAware INCORRECT_MESSAGE_TO_ENCRYPT = incorrect("messageToEncrypt");
     public static final JSONStreamAware MISSING_MESSAGE_TO_ENCRYPT = missing("messageToEncrypt");
-    public static final JSONStreamAware INCORRECT_CURRENCY_NAME_LENGTH = incorrect("name", "(length must be in [" + Constants.MIN_CURRENCY_NAME_LENGTH + ".." + Constants.MAX_CURRENCY_NAME_LENGTH + "] range)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_CODE_LENGTH = incorrect("code", "(length must be in [" + Constants.MIN_CURRENCY_CODE_LENGTH + ".." + Constants.MAX_CURRENCY_CODE_LENGTH + "] range)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_NAME = incorrect("name", "(must contain only digits and latin letters)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_CODE = incorrect("code", "(must contain only uppercase latin letters)");
-    public static final JSONStreamAware INCORRECT_CURRENCY_DESCRIPTION_LENGTH = incorrect("description", "(length must not exceed " + Constants.MAX_CURRENCY_DESCRIPTION_LENGTH + " characters)");
-    public static final JSONStreamAware MISSING_CURRENCY = missing("currency");
-    public static final JSONStreamAware MISSING_CURRENCY_ACCOUNT = missing("currency", "account");
-    public static final JSONStreamAware UNKNOWN_CURRENCY = unknown("currency");
-    public static final JSONStreamAware INCORRECT_CURRENCY = incorrect("currency");
-    public static final JSONStreamAware MISSING_OFFER = missing("offer");
-    public static final JSONStreamAware UNKNOWN_OFFER = unknown("offer");
-    public static final JSONStreamAware INCORRECT_OFFER = incorrect("offer");
     public static final JSONStreamAware INCORRECT_ADMIN_PASSWORD = incorrect("adminPassword", "(the specified password does not match nxt.adminPassword)");
     public static final JSONStreamAware LOCKED_ADMIN_PASSWORD = incorrect("adminPassword", "(locked for 1 hour, too many incorrect password attempts)");
     public static final JSONStreamAware OVERFLOW = error("overflow");
-    public static final JSONStreamAware MISSING_SHUFFLING = missing("shuffling");
-    public static final JSONStreamAware UNKNOWN_SHUFFLING = unknown("shuffling");
-    public static final JSONStreamAware INCORRECT_SHUFFLING = incorrect("shuffling");
     public static final JSONStreamAware RESPONSE_STREAM_ERROR = responseError("responseOutputStream");
     public static final JSONStreamAware RESPONSE_WRITE_ERROR = responseError("responseWrite");
     public static final JSONStreamAware MISSING_TRANSACTION_FULL_HASH = missing("transactionFullHash");
@@ -159,30 +111,6 @@ public final class JSONResponses {
         response.put("errorCode", 6);
         response.put("errorDescription", "Not enough funds");
         NOT_ENOUGH_FUNDS = JSON.prepare(response);
-    }
-
-    public static final JSONStreamAware NOT_ENOUGH_ASSETS;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 6);
-        response.put("errorDescription", "Not enough assets");
-        NOT_ENOUGH_ASSETS = JSON.prepare(response);
-    }
-
-    public static final JSONStreamAware ASSET_NOT_ISSUED_YET;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 6);
-        response.put("errorDescription", "Asset not issued yet");
-        ASSET_NOT_ISSUED_YET = JSON.prepare(response);
-    }
-
-    public static final JSONStreamAware NOT_ENOUGH_CURRENCY;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 6);
-        response.put("errorDescription", "Not enough currency");
-        NOT_ENOUGH_CURRENCY = JSON.prepare(response);
     }
 
     public static final JSONStreamAware ERROR_NOT_ALLOWED;
@@ -241,14 +169,7 @@ public final class JSONResponses {
         DECRYPTION_FAILED = JSON.prepare(response);
     }
 
-    public static final JSONStreamAware ALREADY_DELIVERED;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 8);
-        response.put("errorDescription", "Purchase already delivered");
-        ALREADY_DELIVERED = JSON.prepare(response);
-    }
-
+  
     public static final JSONStreamAware DUPLICATE_REFUND;
     static {
         JSONObject response = new JSONObject();
@@ -257,14 +178,7 @@ public final class JSONResponses {
         DUPLICATE_REFUND = JSON.prepare(response);
     }
 
-    public static final JSONStreamAware GOODS_NOT_DELIVERED;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 8);
-        response.put("errorDescription", "Goods have not been delivered yet");
-        GOODS_NOT_DELIVERED = JSON.prepare(response);
-    }
-
+  
     public static final JSONStreamAware NO_MESSAGE;
     static {
         JSONObject response = new JSONObject();
@@ -281,14 +195,7 @@ public final class JSONResponses {
         HEIGHT_NOT_AVAILABLE = JSON.prepare(response);
     }
 
-    public static final JSONStreamAware CANNOT_DELETE_CURRENCY;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 8);
-        response.put("errorDescription", "Currency cannot be deleted");
-        CANNOT_DELETE_CURRENCY = JSON.prepare(response);
-    }
-
+   
     public static final JSONStreamAware NO_PASSWORD_IN_CONFIG;
     static {
         JSONObject response = new JSONObject();
@@ -313,22 +220,7 @@ public final class JSONResponses {
         POLL_FINISHED = JSON.prepare(response);
     }
 
-    public static final JSONStreamAware PHASING_TRANSACTION_FINISHED;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 8);
-        response.put("errorDescription", "Phasing transaction has already finished");
-        PHASING_TRANSACTION_FINISHED = JSON.prepare(response);
-    }
-
-    public static final JSONStreamAware TOO_MANY_PHASING_VOTES;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("errorCode", 10);
-        response.put("errorDescription", "Can vote for at most " + Constants.MAX_PHASING_VOTE_TRANSACTIONS + " phased transactions at once");
-        TOO_MANY_PHASING_VOTES = JSON.prepare(response);
-    }
-
+    
     public static final JSONStreamAware HASHES_MISMATCH;
     static {
         JSONObject response = new JSONObject();
@@ -487,10 +379,6 @@ public final class JSONResponses {
         switch (holdingType) {
             case NXT:
                 return JSONResponses.NOT_ENOUGH_FUNDS;
-            case ASSET:
-                return JSONResponses.NOT_ENOUGH_ASSETS;
-            case CURRENCY:
-                return JSONResponses.NOT_ENOUGH_CURRENCY;
             default:
                 throw new RuntimeException();
         }

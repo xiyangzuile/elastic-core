@@ -16,34 +16,28 @@
 
 package nxt.http;
 
-import nxt.Account;
-import nxt.Alias;
-import nxt.Appendix;
-import nxt.Asset;
-import nxt.Attachment;
-import nxt.Constants;
-import nxt.Currency;
-import nxt.CurrencyBuyOffer;
-import nxt.CurrencySellOffer;
-import nxt.DigitalGoodsStore;
-import nxt.HoldingType;
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.Poll;
-import nxt.Shuffling;
-import nxt.Transaction;
-import nxt.crypto.Crypto;
-import nxt.crypto.EncryptedData;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import nxt.util.Search;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
+import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
+import static nxt.http.JSONResponses.INCORRECT_ARBITRARY_MESSAGE;
+import static nxt.http.JSONResponses.INCORRECT_DATA;
+import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
+import static nxt.http.JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_CHANNEL;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_DESCRIPTION;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_FILE;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_FILENAME;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_NAME;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_TAGS;
+import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_TYPE;
+import static nxt.http.JSONResponses.MISSING_ACCOUNT;
+import static nxt.http.JSONResponses.MISSING_NAME;
+import static nxt.http.JSONResponses.MISSING_RECIPIENT_PUBLIC_KEY;
+import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
+import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES_OR_JSON;
+import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
+import static nxt.http.JSONResponses.either;
+import static nxt.http.JSONResponses.incorrect;
+import static nxt.http.JSONResponses.missing;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +46,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import static nxt.http.JSONResponses.*;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
+
+import nxt.Account;
+import nxt.Appendix;
+import nxt.Attachment;
+import nxt.Constants;
+import nxt.Nxt;
+import nxt.NxtException;
+import nxt.Transaction;
+import nxt.crypto.Crypto;
+import nxt.crypto.EncryptedData;
+import nxt.util.Convert;
+import nxt.util.Logger;
+import nxt.util.Search;
 
 public final class ParameterParser {
 
@@ -215,27 +228,7 @@ public final class ParameterParser {
         return values;
     }
 
-    public static Alias getAlias(HttpServletRequest req) throws ParameterException {
-        long aliasId;
-        try {
-            aliasId = Convert.parseUnsignedLong(Convert.emptyToNull(req.getParameter("alias")));
-        } catch (RuntimeException e) {
-            throw new ParameterException(INCORRECT_ALIAS);
-        }
-        String aliasName = Convert.emptyToNull(req.getParameter("aliasName"));
-        Alias alias;
-        if (aliasId != 0) {
-            alias = Alias.getAlias(aliasId);
-        } else if (aliasName != null) {
-            alias = Alias.getAlias(aliasName);
-        } else {
-            throw new ParameterException(MISSING_ALIAS_OR_ALIAS_NAME);
-        }
-        if (alias == null) {
-            throw new ParameterException(UNKNOWN_ALIAS);
-        }
-        return alias;
-    }
+   
 
     public static long getAmountNQT(HttpServletRequest req) throws ParameterException {
         return getLong(req, "amountNQT", 1L, Constants.MAX_BALANCE_NQT, true);
@@ -249,78 +242,15 @@ public final class ParameterParser {
         return getLong(req, "priceNQT", 1L, Constants.MAX_BALANCE_NQT, true);
     }
 
-    public static Poll getPoll(HttpServletRequest req) throws ParameterException {
-        Poll poll = Poll.getPoll(getUnsignedLong(req, "poll", true));
-        if (poll == null) {
-            throw new ParameterException(UNKNOWN_POLL);
-        }
-        return poll;
-    }
+   
 
-    public static Asset getAsset(HttpServletRequest req) throws ParameterException {
-        Asset asset = Asset.getAsset(getUnsignedLong(req, "asset", true));
-        if (asset == null) {
-            throw new ParameterException(UNKNOWN_ASSET);
-        }
-        return asset;
-    }
 
-    public static Currency getCurrency(HttpServletRequest req) throws ParameterException {
-        return getCurrency(req, true);
-    }
-
-    public static Currency getCurrency(HttpServletRequest req, boolean isMandatory) throws ParameterException {
-        Currency currency = Currency.getCurrency(getUnsignedLong(req, "currency", isMandatory));
-        if (isMandatory && currency == null) {
-            throw new ParameterException(UNKNOWN_CURRENCY);
-        }
-        return currency;
-    }
-
-    public static CurrencyBuyOffer getBuyOffer(HttpServletRequest req) throws ParameterException {
-        CurrencyBuyOffer offer = CurrencyBuyOffer.getOffer(getUnsignedLong(req, "offer", true));
-        if (offer == null) {
-            throw new ParameterException(UNKNOWN_OFFER);
-        }
-        return offer;
-    }
-
-    public static CurrencySellOffer getSellOffer(HttpServletRequest req) throws ParameterException {
-        CurrencySellOffer offer = CurrencySellOffer.getOffer(getUnsignedLong(req, "offer", true));
-        if (offer == null) {
-            throw new ParameterException(UNKNOWN_OFFER);
-        }
-        return offer;
-    }
-
-    public static Shuffling getShuffling(HttpServletRequest req) throws ParameterException {
-        Shuffling shuffling = Shuffling.getShuffling(getUnsignedLong(req, "shuffling", true));
-        if (shuffling == null) {
-            throw new ParameterException(UNKNOWN_SHUFFLING);
-        }
-        return shuffling;
-    }
-
-    public static long getQuantityQNT(HttpServletRequest req) throws ParameterException {
-        return getLong(req, "quantityQNT", 1L, Constants.MAX_ASSET_QUANTITY_QNT, true);
-    }
 
     public static long getAmountNQTPerQNT(HttpServletRequest req) throws ParameterException {
         return getLong(req, "amountNQTPerQNT", 1L, Constants.MAX_BALANCE_NQT, true);
     }
 
-    public static DigitalGoodsStore.Goods getGoods(HttpServletRequest req) throws ParameterException {
-        DigitalGoodsStore.Goods goods = DigitalGoodsStore.Goods.getGoods(getUnsignedLong(req, "goods", true));
-        if (goods == null) {
-            throw new ParameterException(UNKNOWN_GOODS);
-        }
-        return goods;
-    }
-
-    public static int getGoodsQuantity(HttpServletRequest req) throws ParameterException {
-        return getInt(req, "quantity", 0, Constants.MAX_DGS_LISTING_QUANTITY, true);
-    }
-
+   
     public static EncryptedData getEncryptedData(HttpServletRequest req, String messageType) throws ParameterException {
         String dataString = Convert.emptyToNull(req.getParameter(messageType + "Data"));
         String nonceString = Convert.emptyToNull(req.getParameter(messageType + "Nonce"));
@@ -385,14 +315,6 @@ public final class ParameterParser {
         } else {
             return new Appendix.UnencryptedEncryptToSelfMessage(plainMessageBytes, isText, compress);
         }
-    }
-
-    public static DigitalGoodsStore.Purchase getPurchase(HttpServletRequest req) throws ParameterException {
-        DigitalGoodsStore.Purchase purchase = DigitalGoodsStore.Purchase.getPurchase(getUnsignedLong(req, "purchase", true));
-        if (purchase == null) {
-            throw new ParameterException(INCORRECT_PURCHASE);
-        }
-        return purchase;
     }
 
     public static String getSecretPhrase(HttpServletRequest req, boolean isMandatory) throws ParameterException {
@@ -528,25 +450,9 @@ public final class ParameterParser {
         return -1;
     }
 
-    public static HoldingType getHoldingType(HttpServletRequest req) throws ParameterException {
-        return HoldingType.get(ParameterParser.getByte(req, "holdingType", (byte) 0, (byte) 2, false));
-    }
+    
 
-    public static long getHoldingId(HttpServletRequest req, HoldingType holdingType) throws ParameterException {
-        long holdingId = ParameterParser.getUnsignedLong(req, "holding", holdingType != HoldingType.NXT);
-        if (holdingType == HoldingType.NXT && holdingId != 0) {
-            throw new ParameterException(JSONResponses.incorrect("holding", "holding id should not be specified if holdingType is NXT"));
-        }
-        return holdingId;
-    }
-
-    public static String getAccountProperty(HttpServletRequest req, boolean isMandatory) throws ParameterException {
-        String property = Convert.emptyToNull(req.getParameter("property"));
-        if (property == null && isMandatory) {
-            throw new ParameterException(MISSING_PROPERTY);
-        }
-        return property;
-    }
+  
 
     public static String getSearchQuery(HttpServletRequest req) throws ParameterException {
         String query = Convert.nullToEmpty(req.getParameter("query")).trim();

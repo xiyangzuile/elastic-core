@@ -22,7 +22,6 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        PhasingOnlyTest.class
 })
 
 public class AccountControlSuite extends AbstractHttpApiSuite { }

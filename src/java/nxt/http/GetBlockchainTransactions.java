@@ -46,7 +46,6 @@ public final class GetBlockchainTransactions extends APIServlet.APIRequestHandle
         boolean phasedOnly = "true".equalsIgnoreCase(req.getParameter("phasedOnly"));
         boolean nonPhasedOnly = "true".equalsIgnoreCase(req.getParameter("nonPhasedOnly"));
         boolean includeExpiredPrunable = "true".equalsIgnoreCase(req.getParameter("includeExpiredPrunable"));
-        boolean includePhasingResult = "true".equalsIgnoreCase(req.getParameter("includePhasingResult"));
         boolean executedOnly = "true".equalsIgnoreCase(req.getParameter("executedOnly"));
 
         byte type;
@@ -71,7 +70,7 @@ public final class GetBlockchainTransactions extends APIServlet.APIRequestHandle
                 includeExpiredPrunable, executedOnly)) {
             while (iterator.hasNext()) {
                 Transaction transaction = iterator.next();
-                transactions.add(JSONData.transaction(transaction, includePhasingResult));
+                transactions.add(JSONData.transaction(transaction));
             }
         }
 

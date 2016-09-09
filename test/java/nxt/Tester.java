@@ -35,11 +35,7 @@ public class Tester {
     private final long initialBalance;
     private final long initialUnconfirmedBalance;
     private final long initialEffectiveBalance;
-    private final Map<Long, Long> initialAssetQuantity = new HashMap<>();
-    private final Map<Long, Long> initialUnconfirmedAssetQuantity = new HashMap<>();
-    private final Map<Long, Long> initialCurrencyUnits = new HashMap<>();
-    private final Map<Long, Long> initialUnconfirmedCurrencyUnits = new HashMap<>();
-
+   
     public Tester(String secretPhrase) {
         this.secretPhrase = secretPhrase;
         this.privateKey = Crypto.getPrivateKey(secretPhrase);
@@ -53,16 +49,6 @@ public class Tester {
             this.initialBalance = account.getBalanceNQT();
             this.initialUnconfirmedBalance = account.getUnconfirmedBalanceNQT();
             this.initialEffectiveBalance = account.getEffectiveBalanceNXT();
-            DbIterator<Account.AccountAsset> assets = account.getAssets(0, -1);
-            for (Account.AccountAsset accountAsset : assets) {
-                initialAssetQuantity.put(accountAsset.getAssetId(), accountAsset.getQuantityQNT());
-                initialUnconfirmedAssetQuantity.put(accountAsset.getAssetId(), accountAsset.getUnconfirmedQuantityQNT());
-            }
-            DbIterator<Account.AccountCurrency> currencies = account.getCurrencies(0, -1);
-            for (Account.AccountCurrency accountCurrency : currencies) {
-                initialCurrencyUnits.put(accountCurrency.getCurrencyId(), accountCurrency.getUnits());
-                initialUnconfirmedCurrencyUnits.put(accountCurrency.getCurrencyId(), accountCurrency.getUnconfirmedUnits());
-            }
         } else {
             initialBalance = 0;
             initialUnconfirmedBalance = 0;
@@ -118,21 +104,7 @@ public class Tester {
         return getAccount().getBalanceNQT();
     }
 
-    public long getAssetQuantityDiff(long assetId) {
-        return Account.getAccount(id).getAssetBalanceQNT(assetId) - getInitialAssetQuantity(assetId);
-    }
-
-    public long getUnconfirmedAssetQuantityDiff(long assetId) {
-        return Account.getAccount(id).getUnconfirmedAssetBalanceQNT(assetId) - getInitialAssetQuantity(assetId);
-    }
-
-    public long getCurrencyUnitsDiff(long currencyId) {
-        return Account.getAccount(id).getCurrencyUnits(currencyId) - getInitialCurrencyUnits(currencyId);
-    }
-
-    public long getUnconfirmedCurrencyUnitsDiff(long currencyId) {
-        return Account.getAccount(id).getUnconfirmedCurrencyUnits(currencyId) - getInitialUnconfirmedCurrencyUnits(currencyId);
-    }
+   
 
     public long getInitialUnconfirmedBalance() {
         return initialUnconfirmedBalance;
@@ -142,23 +114,4 @@ public class Tester {
         return initialEffectiveBalance;
     }
 
-    public long getInitialAssetQuantity(long assetId) {
-        return Convert.nullToZero(initialAssetQuantity.get(assetId));
-    }
-
-    public long getInitialUnconfirmedAssetQuantity(long assetId) {
-        return Convert.nullToZero(initialUnconfirmedAssetQuantity.get(assetId));
-    }
-
-    public long getInitialCurrencyUnits(long currencyId) {
-        return Convert.nullToZero(initialCurrencyUnits.get(currencyId));
-    }
-
-    public long getCurrencyUnits(long currencyId) {
-        return getAccount().getCurrencyUnits(currencyId);
-    }
-
-    public long getInitialUnconfirmedCurrencyUnits(long currencyId) {
-        return Convert.nullToZero(initialUnconfirmedCurrencyUnits.get(currencyId));
-    }
 }

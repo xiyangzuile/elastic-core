@@ -22,7 +22,6 @@ import nxt.Attachment;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.NxtException;
-import nxt.PhasingParams;
 import nxt.Transaction;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
@@ -85,51 +84,6 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
         return createTransaction(req, senderAccount, recipientId, amountNQT, Attachment.ORDINARY_PAYMENT);
     }
 
-    private Appendix.Phasing parsePhasing(HttpServletRequest req) throws ParameterException {
-        int finishHeight = ParameterParser.getInt(req, "phasingFinishHeight",
-                Nxt.getBlockchain().getHeight() + 1,
-                Nxt.getBlockchain().getHeight() + Constants.MAX_PHASING_DURATION + 1,
-                true);
-        
-        PhasingParams phasingParams = parsePhasingParams(req, "phasing");
-        
-        byte[][] linkedFullHashes = null;
-        String[] linkedFullHashesValues = req.getParameterValues("phasingLinkedFullHash");
-        if (linkedFullHashesValues != null && linkedFullHashesValues.length > 0) {
-            linkedFullHashes = new byte[linkedFullHashesValues.length][];
-            for (int i = 0; i < linkedFullHashes.length; i++) {
-                linkedFullHashes[i] = Convert.parseHexString(linkedFullHashesValues[i]);
-                if (Convert.emptyToNull(linkedFullHashes[i]) == null || linkedFullHashes[i].length != 32) {
-                    throw new ParameterException(INCORRECT_LINKED_FULL_HASH);
-                }
-            }
-        }
-
-        byte[] hashedSecret = Convert.parseHexString(Convert.emptyToNull(req.getParameter("phasingHashedSecret")));
-        byte algorithm = ParameterParser.getByte(req, "phasingHashedSecretAlgorithm", (byte) 0, Byte.MAX_VALUE, false);
-
-        return new Appendix.Phasing(finishHeight, phasingParams, linkedFullHashes, hashedSecret, algorithm);
-    }
-
-    final PhasingParams parsePhasingParams(HttpServletRequest req, String parameterPrefix) throws ParameterException {
-        byte votingModel = ParameterParser.getByte(req, parameterPrefix + "VotingModel", (byte)-1, (byte)5, true);
-        long quorum = ParameterParser.getLong(req, parameterPrefix + "Quorum", 0, Long.MAX_VALUE, false);
-        long minBalance = ParameterParser.getLong(req, parameterPrefix + "MinBalance", 0, Long.MAX_VALUE, false);
-        byte minBalanceModel = ParameterParser.getByte(req, parameterPrefix + "MinBalanceModel", (byte)0, (byte)3, false);
-        long holdingId = ParameterParser.getUnsignedLong(req, parameterPrefix + "Holding", false);
-        long[] whitelist = null;
-        String[] whitelistValues = req.getParameterValues(parameterPrefix + "Whitelisted");
-        if (whitelistValues != null && whitelistValues.length > 0) {
-            whitelist = new long[whitelistValues.length];
-            for (int i = 0; i < whitelistValues.length; i++) {
-                whitelist[i] = Convert.parseAccountId(whitelistValues[i]);
-                if (whitelist[i] == 0) {
-                    throw new ParameterException(INCORRECT_WHITELIST);
-                }
-            }
-        }
-        return new PhasingParams(votingModel, holdingId, quorum, minBalance, minBalanceModel, whitelist);
-    }
 
     final JSONStreamAware createTransaction(HttpServletRequest req, Account senderAccount, long recipientId,
                                             long amountNQT, Attachment attachment) throws NxtException {
@@ -160,12 +114,6 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
         String recipientPublicKey = Convert.emptyToNull(req.getParameter("recipientPublicKey"));
         if (recipientPublicKey != null) {
             publicKeyAnnouncement = new Appendix.PublicKeyAnnouncement(Convert.parseHexString(recipientPublicKey));
-        }
-
-        Appendix.Phasing phasing = null;
-        boolean phased = "true".equalsIgnoreCase(req.getParameter("phased"));
-        if (phased) {
-            phasing = parsePhasing(req);
         }
 
         if (secretPhrase == null && publicKeyValue == null) {
@@ -209,7 +157,6 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
             builder.appendix(message);
             builder.appendix(publicKeyAnnouncement);
             builder.appendix(encryptToSelfMessage);
-            builder.appendix(phasing);
             builder.appendix(prunablePlainMessage);
             builder.appendix(prunableEncryptedMessage);
             if (ecBlockId != 0) {

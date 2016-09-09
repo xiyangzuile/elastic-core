@@ -933,38 +933,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
     }
 
     private final Listener<Block> checksumListener = block -> {
-        if (block.getHeight() == Constants.TRANSPARENT_FORGING_BLOCK
-                && ! verifyChecksum(CHECKSUM_TRANSPARENT_FORGING, 0, Constants.TRANSPARENT_FORGING_BLOCK)) {
-            popOffTo(0);
-        }
-        if (block.getHeight() == Constants.NQT_BLOCK
-                && ! verifyChecksum(CHECKSUM_NQT_BLOCK, Constants.TRANSPARENT_FORGING_BLOCK, Constants.NQT_BLOCK)) {
-            popOffTo(Constants.TRANSPARENT_FORGING_BLOCK);
-        }
-        if (block.getHeight() == Constants.MONETARY_SYSTEM_BLOCK
-                && ! verifyChecksum(CHECKSUM_MONETARY_SYSTEM_BLOCK, Constants.NQT_BLOCK, Constants.MONETARY_SYSTEM_BLOCK)) {
-            popOffTo(Constants.NQT_BLOCK);
-        }
-        if (block.getHeight() == Constants.PHASING_BLOCK
-                && ! verifyChecksum(CHECKSUM_PHASING_BLOCK, Constants.MONETARY_SYSTEM_BLOCK, Constants.PHASING_BLOCK)) {
-            popOffTo(Constants.MONETARY_SYSTEM_BLOCK);
-        }
-        if (block.getHeight() == Constants.CHECKSUM_BLOCK_16
-                && ! verifyChecksum(CHECKSUM_16, Constants.PHASING_BLOCK, Constants.CHECKSUM_BLOCK_16)) {
-            popOffTo(Constants.PHASING_BLOCK);
-        }
-        if (block.getHeight() == Constants.CHECKSUM_BLOCK_17
-                && ! verifyChecksum(CHECKSUM_17, Constants.CHECKSUM_BLOCK_16, Constants.CHECKSUM_BLOCK_17)) {
-            popOffTo(Constants.CHECKSUM_BLOCK_16);
-        }
-        if (block.getHeight() == Constants.CHECKSUM_BLOCK_18
-                && ! verifyChecksum(CHECKSUM_18, Constants.CHECKSUM_BLOCK_17, Constants.CHECKSUM_BLOCK_18)) {
-            popOffTo(Constants.CHECKSUM_BLOCK_17);
-        }
-        if (block.getHeight() == Constants.CHECKSUM_BLOCK_19
-                && ! verifyChecksum(CHECKSUM_19, Constants.CHECKSUM_BLOCK_18, Constants.CHECKSUM_BLOCK_19)) {
-            popOffTo(Constants.CHECKSUM_BLOCK_18);
-        }
+        /* no checksums here yet */
     };
 
     private BlockchainProcessorImpl() {
@@ -1350,7 +1319,6 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                 Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
                 List<TransactionImpl> validPhasedTransactions = new ArrayList<>();
                 List<TransactionImpl> invalidPhasedTransactions = new ArrayList<>();
-                validatePhasedTransactions(previousLastBlock.getHeight(), validPhasedTransactions, invalidPhasedTransactions, duplicates);
                 validateTransactions(block, previousLastBlock, curTime, duplicates, previousLastBlock.getHeight() >= Constants.LAST_CHECKSUM_BLOCK);
 
                 block.setPrevious(previousLastBlock);
@@ -1380,31 +1348,6 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
 
     }
 
-    private void validatePhasedTransactions(int height, List<TransactionImpl> validPhasedTransactions, List<TransactionImpl> invalidPhasedTransactions,
-                                            Map<TransactionType, Map<String, Integer>> duplicates) {
-        if (height >= Constants.PHASING_BLOCK) {
-            try (DbIterator<TransactionImpl> phasedTransactions = PhasingPoll.getFinishingTransactions(height + 1)) {
-                for (TransactionImpl phasedTransaction : phasedTransactions) {
-                    if (height > Constants.SHUFFLING_BLOCK && PhasingPoll.getResult(phasedTransaction.getId()) != null) {
-                        continue;
-                    }
-                    try {
-                        phasedTransaction.validate();
-                        if (!phasedTransaction.attachmentIsDuplicate(duplicates, false)) {
-                            validPhasedTransactions.add(phasedTransaction);
-                        } else {
-                            Logger.logDebugMessage("At height " + height + " phased transaction " + phasedTransaction.getStringId() + " is duplicate, will not apply");
-                            invalidPhasedTransactions.add(phasedTransaction);
-                        }
-                    } catch (NxtException.ValidationException e) {
-                        Logger.logDebugMessage("At height " + height + " phased transaction " + phasedTransaction.getStringId() + " no longer passes validation: "
-                                + e.getMessage() + ", will not apply");
-                        invalidPhasedTransactions.add(phasedTransaction);
-                    }
-                }
-            }
-        }
-    }
 
     private void validate(BlockImpl block, BlockImpl previousLastBlock, int curTime) throws BlockNotAcceptedException {
         if (previousLastBlock.getId() != block.getPreviousBlockId()) {
@@ -1471,10 +1414,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                     throw new TransactionNotAcceptedException("Transaction is already in the blockchain", transaction);
                 }
                 if (transaction.referencedTransactionFullHash() != null) {
-                    if ((previousLastBlock.getHeight() < Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK
-                            && !TransactionDb.hasTransaction(Convert.fullHashToId(transaction.referencedTransactionFullHash()), previousLastBlock.getHeight()))
-                            || (previousLastBlock.getHeight() >= Constants.REFERENCED_TRANSACTION_FULL_HASH_BLOCK
-                            && !hasAllReferencedTransactions(transaction, transaction.getTimestamp(), 0))) {
+                    if (!hasAllReferencedTransactions(transaction, transaction.getTimestamp(), 0)) {
                         throw new TransactionNotAcceptedException("Missing or invalid referenced transaction "
                                 + transaction.getReferencedTransactionFullHash(), transaction);
                     }
@@ -1531,8 +1471,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
             }
             blockListeners.notify(block, Event.BEFORE_BLOCK_APPLY);
             block.apply();
-            validPhasedTransactions.forEach(transaction -> transaction.getPhasing().countVotes(transaction));
-            invalidPhasedTransactions.forEach(transaction -> transaction.getPhasing().reject(transaction));
+           
             int fromTimestamp = Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME;
             for (TransactionImpl transaction : block.getTransactions()) {
                 try {
@@ -1554,50 +1493,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                     throw new BlockchainProcessor.TransactionNotAcceptedException(e, transaction);
                 }
             }
-            if (block.getHeight() > Constants.SHUFFLING_BLOCK) {
-                SortedSet<TransactionImpl> possiblyApprovedTransactions = new TreeSet<>(finishingTransactionsComparator);
-                block.getTransactions().forEach(transaction -> {
-                    PhasingPoll.getLinkedPhasedTransactions(transaction.fullHash()).forEach(phasedTransaction -> {
-                        if (phasedTransaction.getPhasing().getFinishHeight() > block.getHeight()) {
-                            possiblyApprovedTransactions.add((TransactionImpl)phasedTransaction);
-                        }
-                    });
-                    if (transaction.getType() == TransactionType.Messaging.PHASING_VOTE_CASTING && !transaction.attachmentIsPhased()) {
-                        Attachment.MessagingPhasingVoteCasting voteCasting = (Attachment.MessagingPhasingVoteCasting)transaction.getAttachment();
-                        voteCasting.getTransactionFullHashes().forEach(hash -> {
-                            PhasingPoll phasingPoll = PhasingPoll.getPoll(Convert.fullHashToId(hash));
-                            if (phasingPoll.allowEarlyFinish() && phasingPoll.getFinishHeight() > block.getHeight()) {
-                                possiblyApprovedTransactions.add(TransactionDb.findTransaction(phasingPoll.getId()));
-                            }
-                        });
-                    }
-                });
-                validPhasedTransactions.forEach(phasedTransaction -> {
-                    if (phasedTransaction.getType() == TransactionType.Messaging.PHASING_VOTE_CASTING) {
-                        PhasingPoll.PhasingPollResult result = PhasingPoll.getResult(phasedTransaction.getId());
-                        if (result != null && result.isApproved()) {
-                            Attachment.MessagingPhasingVoteCasting phasingVoteCasting = (Attachment.MessagingPhasingVoteCasting) phasedTransaction.getAttachment();
-                            phasingVoteCasting.getTransactionFullHashes().forEach(hash -> {
-                                PhasingPoll phasingPoll = PhasingPoll.getPoll(Convert.fullHashToId(hash));
-                                if (phasingPoll.allowEarlyFinish() && phasingPoll.getFinishHeight() > block.getHeight()) {
-                                    possiblyApprovedTransactions.add(TransactionDb.findTransaction(phasingPoll.getId()));
-                                }
-                            });
-                        }
-                    }
-                });
-                possiblyApprovedTransactions.forEach(transaction -> {
-                    if (PhasingPoll.getResult(transaction.getId()) == null) {
-                        try {
-                            transaction.validate();
-                            transaction.getPhasing().tryCountVotes(transaction, duplicates);
-                        } catch (NxtException.ValidationException e) {
-                            Logger.logDebugMessage("At height " + block.getHeight() + " phased transaction " + transaction.getStringId()
-                                    + " no longer passes validation: " + e.getMessage() + ", cannot finish early");
-                        }
-                    }
-                });
-            }
+            
             blockListeners.notify(block, Event.AFTER_BLOCK_APPLY);
             if (block.getTransactions().size() > 0) {
                 TransactionProcessorImpl.getInstance().notifyListeners(block.getTransactions(), TransactionProcessor.Event.ADDED_CONFIRMED_TRANSACTIONS);
@@ -1692,13 +1588,11 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
     }
 
     private int getBlockVersion(int previousBlockHeight) {
-        return previousBlockHeight < Constants.TRANSPARENT_FORGING_BLOCK ? 1
-                : previousBlockHeight < Constants.NQT_BLOCK ? 2
-                : 3;
+        return 1;
     }
 
     private int getTransactionVersion(int previousBlockHeight) {
-        return previousBlockHeight < Constants.DIGITAL_GOODS_STORE_BLOCK ? 0 : 1;
+        return 0;
     }
 
     private boolean verifyChecksum(byte[] validChecksum, int fromHeight, int toHeight) {
@@ -1781,18 +1675,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
     void generateBlock(String secretPhrase, int blockTimestamp) throws BlockNotAcceptedException {
 
         Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
-        if (blockchain.getHeight() >= Constants.PHASING_BLOCK) {
-            try (DbIterator<TransactionImpl> phasedTransactions = PhasingPoll.getFinishingTransactions(blockchain.getHeight() + 1)) {
-                for (TransactionImpl phasedTransaction : phasedTransactions) {
-                    try {
-                        phasedTransaction.validate();
-                        phasedTransaction.attachmentIsDuplicate(duplicates, false); // pre-populate duplicates map
-                    } catch (NxtException.ValidationException ignore) {
-                    }
-                }
-            }
-        }
-
+        
         BlockImpl previousBlock = blockchain.getLastBlock();
         TransactionProcessorImpl.getInstance().processWaitingTransactions();
         SortedSet<UnconfirmedTransaction> sortedTransactions = selectUnconfirmedTransactions(duplicates, previousBlock, blockTimestamp);
@@ -1969,7 +1852,6 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                                 Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
                                 List<TransactionImpl> validPhasedTransactions = new ArrayList<>();
                                 List<TransactionImpl> invalidPhasedTransactions = new ArrayList<>();
-                                validatePhasedTransactions(blockchain.getHeight(), validPhasedTransactions, invalidPhasedTransactions, duplicates);
                                 if (validate && currentBlockId != Genesis.GENESIS_BLOCK_ID) {
                                     int curTime = Nxt.getEpochTime();
                                     validate(currentBlock, blockchain.getLastBlock(), curTime);
@@ -1981,8 +1863,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
                                     validateTransactions(currentBlock, blockchain.getLastBlock(), curTime, duplicates, true);
                                     for (TransactionImpl transaction : currentBlock.getTransactions()) {
                                         byte[] transactionBytes = transaction.bytes();
-                                        if (currentBlock.getHeight() > Constants.NQT_BLOCK
-                                                && !Arrays.equals(transactionBytes, TransactionImpl.newTransactionBuilder(transactionBytes).build().bytes())) {
+                                        if (!Arrays.equals(transactionBytes, TransactionImpl.newTransactionBuilder(transactionBytes).build().bytes())) {
                                             throw new NxtException.NotValidException("Transaction bytes cannot be parsed back to the same transaction: "
                                                     + transaction.getJSONObject().toJSONString());
                                         }

@@ -225,9 +225,6 @@ final class TransactionDb {
             if (rs.getBoolean("has_encrypttoself_message")) {
                 builder.appendix(new Appendix.EncryptToSelfMessage(buffer, version));
             }
-            if (rs.getBoolean("phased")) {
-                builder.appendix(new Appendix.Phasing(buffer, version));
-            }
             if (rs.getBoolean("has_prunable_message")) {
                 builder.appendix(new Appendix.PrunablePlainMessage(buffer, version));
             }
@@ -313,7 +310,7 @@ final class TransactionDb {
                         + "recipient_id, amount, fee, referenced_transaction_full_hash, height, "
                         + "block_id, signature, timestamp, type, subtype, sender_id, attachment_bytes, "
                         + "block_timestamp, full_hash, version, has_message, has_encrypted_message, has_public_key_announcement, "
-                        + "has_encrypttoself_message, phased, has_prunable_message, has_prunable_encrypted_message, "
+                        + "has_encrypttoself_message, has_prunable_message, has_prunable_encrypted_message, "
                         + "has_prunable_attachment, ec_block_height, ec_block_id, transaction_index) "
                         + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                     int i = 0;
@@ -351,7 +348,6 @@ final class TransactionDb {
                     pstmt.setBoolean(++i, transaction.getEncryptedMessage() != null);
                     pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
                     pstmt.setBoolean(++i, transaction.getEncryptToSelfMessage() != null);
-                    pstmt.setBoolean(++i, transaction.getPhasing() != null);
                     pstmt.setBoolean(++i, transaction.hasPrunablePlainMessage());
                     pstmt.setBoolean(++i, transaction.hasPrunableEncryptedMessage());
                     pstmt.setBoolean(++i, transaction.getAttachment() instanceof Appendix.Prunable);
