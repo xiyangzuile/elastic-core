@@ -139,7 +139,6 @@ var NRS = (function(NRS, $, undefined) {
 				$(".testnet_only, #testnet_login, #testnet_warning").show();
 			}
 
-			NRS.initializePlugins();
             NRS.printEnvInfo();
 		});
 
@@ -171,11 +170,13 @@ var NRS = (function(NRS, $, undefined) {
 		}
 		NRS.getSettings(false);
 
+		
 		NRS.getState(function() {
 			setTimeout(function() {
-				NRS.checkAliasVersions();
+				// TODO: Do we need that here?
 			}, 5000);
 		});
+
 
 		$("body").popover({
 			"selector": ".show_popover",
@@ -601,18 +602,7 @@ NRS.addPagination = function () {
 			}
 		});
 
-		NRS.storageSelect("data", [{
-			"id": "closed_groups"
-		}], function(error, result) {
-			if (result && result.length) {
-				NRS.setClosedGroups(result[0].contents.split("#"));
-			} else {
-				NRS.storageInsert("data", "id", {
-					id: "closed_groups",
-					contents: ""
-				});
-			}
-		});
+		
 		NRS.loadContacts();
 		NRS.getSettings(true);
 		NRS.updateNotifications();
@@ -1128,8 +1118,7 @@ NRS.addPagination = function () {
                         $("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html($.t("status_new_account", {
                                 "account_id": NRS.escapeRespStr(NRS.accountRS),
                                 "public_key": NRS.escapeRespStr(NRS.publicKey)
-                            }) + "<br/><br/>" + NRS.blockchainDownloadingMessage() +
-                            "<br/><br/>" + NRS.getFundAccountLink()).show();
+                            }) + "<br/><br/>" + NRS.blockchainDownloadingMessage()).show();
                     } else {
                         $("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html(NRS.blockchainDownloadingMessage()).show();
                     }
@@ -1152,7 +1141,6 @@ NRS.addPagination = function () {
                         if (NRS.downloadingBlockchain) {
                             message += "<br/><br/>" + NRS.blockchainDownloadingMessage();
                         }
-                        message += "<br/><br/>" + NRS.getFundAccountLink();
                     }
                     $("#dashboard_message").addClass("alert-success").removeClass("alert-danger").html(message).show();
                 }

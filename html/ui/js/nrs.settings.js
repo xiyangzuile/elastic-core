@@ -37,11 +37,6 @@ var NRS = (function(NRS, $) {
 		"items_page": "15",
 		"themeChoice": "default",
         "admin_password": "",
-        "exchange_url": "https://cors.shapeshift.io/",
-        "exchange_api_key": "773ecd081abd54e760a45b3551bbd4d725cf788590619e3f4bdeb81d01994d1dcad8a1d35771f669cfa47742af38e2207e297bc0eeeaea733853c2235548fba3",
-        "exchange_coin0": "BTC",
-        "exchange_coin1": "LTC",
-        "exchange_coin2": "ETH",
 		"max_nxt_decimals": "2"
 	};
 
@@ -52,34 +47,7 @@ var NRS = (function(NRS, $) {
 	};
 
 	NRS.languages = {
-		"de": "Deutsch",                 // german
 		"en": "English",                 // english
-		"es-es": "Español",              // spanish
-		"ca": "Català",                  // catalan
-		"fi": "Suomi (Experimental)",    // finnish
-		"fr": "Français",                // french
-		"gl": "Galego (Experimental)",   // galician
-		"el": "Ελληνικά (Experimental)", // greek
-		"sh": "Hrvatski (Experimental)", // croatian
-		"hi": "हिन्दी (Experimental)",  // hindi
-		"id": "Bahasa Indonesia",        // indonesian
-		"it": "Italiano",                // italian
-		"ja": "日本語",                   // japanese
-		"lt": "Lietuviškai",             // lithuanian
-		"nl": "Nederlands",              // dutch
-		"cs": "Čeština (Beta)",          // czech
-		"sk": "Slovensky (Beta)",        // slovakian
-		"pt-pt": "Português",            // portugese
-		"pt-br": "Português Brasileiro", // portugese, brazilian
-		"sr": "Српски (Experimental)",   // serbian, cyrillic
-		"sr-cs": "Srpski (Experimental)",// serbian, latin
-		"bg": "Български",               // bulgarian
-		"ro": "Român",                   // romanian
-		"tr": "Türk (Experimental)",     // turkish
-		"uk": "Yкраiнска",               // ukrainian
-		"ru": "Русский",                 // russian
-		"zh-cn": "中文 simplified",      // chinese simplified
-		"zh-tw": "中文 traditional"      // chinese traditional
 	};
 
 	var userStyles = {};
@@ -523,7 +491,6 @@ var NRS = (function(NRS, $) {
                 },
                 function(callback) {
                     if (isAccountSpecific) {
-                        NRS.loadPlugins();
 						if(!NRS.getUrlParameter("page") || NRS.getUrlParameter("page") == "dashboard") {
 							NRS.getAccountInfo();
 							NRS.getInitialTransactions();
