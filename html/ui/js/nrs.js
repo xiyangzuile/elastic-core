@@ -213,7 +213,7 @@ var NRS = (function(NRS, $, undefined) {
 		// has to be enabled by activating this code on the specific widget
 		$("[data-toggle='tooltip']").tooltip();
 
-		$("#dgs_search_account_center").mask("NXT-****-****-****-*****");
+		$("#dgs_search_account_center").mask("XEL-****-****-****-*****");
 
 		if (NRS.getUrlParameter("account")){
 			NRS.login(false,NRS.getUrlParameter("account"));

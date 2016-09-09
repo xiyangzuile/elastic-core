@@ -211,7 +211,7 @@ img {
   background-color: #f39c12 !important;
 }
 .bg-aqua {
-  background-color: #00c0ef !important;
+  background-color: #307095 !important;
 }
 .bg-blue {
   background-color: #0073b7 !important;
@@ -1900,13 +1900,7 @@ body > .header .logo .icon {
 */
 /* ADD THIS CLASS TO THE <HTML> TAG */
 .lockscreen {
-  background-color: #002e43;
-  background: url(../img/client_background.png) repeat center center fixed;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-  background-size: cover;
-  min-height:  100% !important;
+  background-color: #2B6586;
 }
 /* Remove the background from the body element */
 .lockscreen > body {

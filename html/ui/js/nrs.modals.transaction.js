@@ -194,29 +194,11 @@ var NRS = (function (NRS, $, undefined) {
                 approveTransactionButton.data("minBalanceFormatted", "");
                 approveTransactionButton.data("votingmodel", transaction.attachment.phasingVotingModel);
             }
-            var extendDataButton = $("#transaction_info_modal_extend_data");
-            if (transaction.type == NRS.subtype.TaggedDataUpload.type && transaction.subtype == NRS.subtype.TaggedDataUpload.subtype) {
-                extendDataButton.removeAttr('disabled');
-                extendDataButton.data("transaction", transaction.transaction);
-            } else {
-                extendDataButton.attr('disabled','disabled');
-            }
+            
 
             $("#transaction_info_actions").show();
             $("#transaction_info_actions_tab").find("button").data("account", accountButton);
 
-            if (transaction.attachment && transaction.attachment.phasingFinishHeight) {
-                var finishHeight = transaction.attachment.phasingFinishHeight;
-                var phasingDetails = {};
-                phasingDetails.finishHeight = finishHeight;
-                phasingDetails.finishIn = ((finishHeight - NRS.lastBlockHeight) > 0) ? (finishHeight - NRS.lastBlockHeight) + " " + $.t("blocks") : $.t("finished");
-                NRS.getPhasingDetails(phasingDetails, transaction.attachment);
-                $("#phasing_info_details_table").find("tbody").empty().append(NRS.createInfoTable(phasingDetails, true));
-                $("#phasing_info_details_link").show();
-            } else {
-                $("#phasing_info_details_link").hide();
-            }
-            // TODO Someday I'd like to replace it with if (NRS.isOfType(transaction, "OrdinaryPayment"))
             var data;
             var message;
             var fieldsToDecrypt = {};

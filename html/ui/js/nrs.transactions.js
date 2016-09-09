@@ -589,8 +589,8 @@ var NRS = (function(NRS, $, undefined) {
         }
         var change = entry.change;
         var balance = entry.balance;
-        var balanceType = "nxt";
-        var balanceEntity = "NXT";
+        var balanceType = "xel";
+        var balanceEntity = "XEL";
         var holdingIcon = "";
         if (change < 0) {
             change = String(change).substring(1);
