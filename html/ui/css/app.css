@@ -448,6 +448,7 @@ body > .header .logo {
 }
 body > .header .logo .icon {
   margin-right: 10px;
+  height: 30px;
 }
 .right-side > .page > .content-header {
   position: relative;
@@ -2008,14 +2009,7 @@ body > .header .logo .icon {
 */
 /* skin-blue navbar */
 .navbar {
-  background: #005f82; /* Old browsers */
-  background: -moz-linear-gradient(top, #005f82 0%, #004a66 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#005f82), color-stop(100%,#004a66)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #005f82 0%,#004a66 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #005f82 0%,#004a66 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #005f82 0%,#004a66 100%); /* IE10+ */
-  background: linear-gradient(to bottom, #005f82 0%,#004a66 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#005f82', endColorstr='#004a66',GradientType=0 ); /* IE6-9 */
+  background: #2B6586; /* Old browsers */
 }
 .navbar .nav a {
   color: #fff;
@@ -2038,20 +2032,14 @@ body > .header .logo .icon {
 /* skin-blue logo */
 .logo {
   color: #f9f9f9;
-  background: #005f82; /* Old browsers */
-  background: -moz-linear-gradient(top, #005f82 0%, #004a66 100%); /* FF3.6+ */
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#005f82), color-stop(100%,#004a66)); /* Chrome,Safari4+ */
-  background: -webkit-linear-gradient(top, #005f82 0%,#004a66 100%); /* Chrome10+,Safari5.1+ */
-  background: -o-linear-gradient(top, #005f82 0%,#004a66 100%); /* Opera 11.10+ */
-  background: -ms-linear-gradient(top, #005f82 0%,#004a66 100%); /* IE10+ */
-  background: linear-gradient(to bottom, #005f82 0%,#004a66 100%); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#005f82', endColorstr='#004a66',GradientType=0 ); /* IE6-9 */
-}
+  background: #2B6586; /* Old browsers */
+  }
 .logo > a {
   color: #f9f9f9;
 }
 .logo:hover {
-  background: #357ca5;
+  background: #307095;
+  color: #f6f6f6;
 }
 /* Skin-blue user panel */
 .user-panel > .image > img {
@@ -3379,7 +3367,7 @@ body > .header .navbar {
   }
 
   body > .header .logo {
-    width: 155px; 
+    height: 30px;
   }
 
   body > .header .navbar {
