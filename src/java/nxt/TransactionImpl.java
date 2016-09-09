@@ -611,11 +611,10 @@ final class TransactionImpl implements Transaction {
 					}
 				}
 				buffer.put(signature != null ? signature : new byte[64]);
-				if (version > 0) {
-					buffer.putInt(getFlags());
-					buffer.putInt(ecBlockHeight);
-					buffer.putLong(ecBlockId);
-				}
+				buffer.putInt(getFlags());
+				buffer.putInt(ecBlockHeight);
+				buffer.putLong(ecBlockId);
+
 				for (Appendix appendage : appendages) {
 					appendage.putBytes(buffer);
 				}
@@ -655,11 +654,10 @@ final class TransactionImpl implements Transaction {
 			int flags = 0;
 			int ecBlockHeight = 0;
 			long ecBlockId = 0;
-			if (version > 0) {
-				flags = buffer.getInt();
-				ecBlockHeight = buffer.getInt();
-				ecBlockId = buffer.getLong();
-			}
+			flags = buffer.getInt();
+			ecBlockHeight = buffer.getInt();
+			ecBlockId = buffer.getLong();
+
 			TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
 			TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT, deadline,
 					transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
@@ -807,10 +805,8 @@ final class TransactionImpl implements Transaction {
 			JSONObject attachmentData = (JSONObject) transactionData.get("attachment");
 			int ecBlockHeight = 0;
 			long ecBlockId = 0;
-			if (version > 0) {
-				ecBlockHeight = ((Long) transactionData.get("ecBlockHeight")).intValue();
-				ecBlockId = Convert.parseUnsignedLong((String) transactionData.get("ecBlockId"));
-			}
+			ecBlockHeight = ((Long) transactionData.get("ecBlockHeight")).intValue();
+			ecBlockId = Convert.parseUnsignedLong((String) transactionData.get("ecBlockId"));
 
 			TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
 			if (transactionType == null) {
@@ -874,7 +870,7 @@ final class TransactionImpl implements Transaction {
 	}
 
 	private int getSize() {
-		return signatureOffset() + 64 + (version > 0 ? 4 + 4 + 8 : 0) + appendagesSize;
+		return signatureOffset() + 64 + 4 + 4 + 8 + appendagesSize;
 	}
 
 	@Override

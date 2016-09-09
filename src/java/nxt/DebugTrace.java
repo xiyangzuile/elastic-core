@@ -294,22 +294,7 @@ public final class DebugTrace {
 
 	private Map<String, String> getValues(long accountId, Transaction transaction, Attachment attachment,
 			boolean isRecipient) {
-		Map<String, String> map = getValues(accountId, false);
-		if (attachment == Attachment.ARBITRARY_MESSAGE) {
-			map = new HashMap<>();
-			map.put("account", Long.toUnsignedString(accountId));
-			map.put("timestamp", String.valueOf(Nxt.getBlockchain().getLastBlock().getTimestamp()));
-			map.put("height", String.valueOf(Nxt.getBlockchain().getHeight()));
-			map.put("event", attachment == Attachment.ARBITRARY_MESSAGE ? "message" : "encrypted message");
-			if (isRecipient) {
-				map.put("sender", Long.toUnsignedString(transaction.getSenderId()));
-			} else {
-				map.put("recipient", Long.toUnsignedString(transaction.getRecipientId()));
-			}
-		}else {
-			return Collections.emptyMap();
-		}
-		return map;
+		return Collections.emptyMap();
 	}
 
 	private void log(Map<String, String> map) {
