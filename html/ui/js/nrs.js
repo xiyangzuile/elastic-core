@@ -264,6 +264,9 @@ var NRS = (function(NRS, $, undefined) {
 		var lastBlock = NRS.state.lastBlock;
 		var height = response.apiProxy ? NRS.lastProxyBlockHeight : NRS.state.numberOfBlocks - 1;
 
+		$("#sidebar_block_link_upper").html(height);
+		$('#block_height_header_item').show();
+
 		NRS.serverConnect = true;
 		NRS.ledgerTrimKeep = response.ledgerTrimKeep;
 		$("#sidebar_block_link").html(NRS.getBlockLink(height));
@@ -901,7 +904,7 @@ NRS.addPagination = function () {
 			NRS.accountInfo = response;
 
 			if (response.errorCode) {
-				$("#account_balance, #account_balance_sidebar, #account_nr_assets, #account_assets_balance, #account_currencies_balance, #account_nr_currencies, #account_purchase_count, #account_pending_sale_count, #account_completed_sale_count, #account_message_count, #account_alias_count").html("0");
+				$("#account_balance, #account_balance_sidebar, #account_message_count").html("0");
 
                 NRS.updateDashboardMessage();
 			} else {
@@ -913,111 +916,11 @@ NRS.addPagination = function () {
 				}
 
                 NRS.updateDashboardMessage();
-
-				// only show if happened within last week and not during account switch
-				var showAssetDifference = !isAccountSwitch &&
-					((!NRS.downloadingBlockchain || (NRS.blocks && NRS.blocks[0] && NRS.state && NRS.state.time - NRS.blocks[0].timestamp < 60 * 60 * 24 * 7)));
-
-                // When switching account this query returns error
-                if (!isAccountSwitch) {
-                    NRS.storageSelect("data", [{
-                        "id": "asset_balances"
-                    }], function (error, asset_balance) {
-                        if (asset_balance && asset_balance.length) {
-                            var previous_balances = asset_balance[0].contents;
-                            if (!NRS.accountInfo.assetBalances) {
-                                NRS.accountInfo.assetBalances = [];
-                            }
-                            var current_balances = JSON.stringify(NRS.accountInfo.assetBalances);
-                            if (previous_balances != current_balances) {
-                                if (previous_balances != "undefined" && typeof previous_balances != "undefined") {
-                                    previous_balances = JSON.parse(previous_balances);
-                                } else {
-                                    previous_balances = [];
-                                }
-                                NRS.storageUpdate("data", {
-                                    contents: current_balances
-                                }, [{
-                                    id: "asset_balances"
-                                }]);
-                                if (showAssetDifference) {
-                                    NRS.checkAssetDifferences(NRS.accountInfo.assetBalances, previous_balances);
-                                }
-                            }
-                        } else {
-                            NRS.storageInsert("data", "id", {
-                                id: "asset_balances",
-                                contents: JSON.stringify(NRS.accountInfo.assetBalances)
-                            });
-                        }
-                    });
-                }
-
+                
 				$("#account_balance, #account_balance_sidebar").html(NRS.formatStyledAmount(response.unconfirmedBalanceNQT));
 				$("#account_forged_balance").html(NRS.formatStyledAmount(response.forgedBalanceNQT));
 
-                var i;
-				if (response.assetBalances) {
-                    var assets = [];
-                    var assetBalances = response.assetBalances;
-                    var assetBalancesMap = {};
-                    for (i = 0; i < assetBalances.length; i++) {
-                        if (assetBalances[i].balanceQNT != "0") {
-                            assets.push(assetBalances[i].asset);
-                            assetBalancesMap[assetBalances[i].asset] = assetBalances[i].balanceQNT;
-                        }
-                    }
-                    NRS.sendRequest("getLastTrades", {
-                        "assets": assets
-                    }, function(response) {
-                        if (response.trades && response.trades.length) {
-                            var assetTotal = 0;
-                            for (i=0; i < response.trades.length; i++) {
-                                var trade = response.trades[i];
-                                assetTotal += assetBalancesMap[trade.asset] * trade.priceNQT / 100000000;
-                            }
-                            $("#account_assets_balance").html(NRS.formatStyledAmount(new Big(assetTotal).toFixed(8)));
-                            $("#account_nr_assets").html(response.trades.length);
-                        } else {
-                            $("#account_assets_balance").html(0);
-                            $("#account_nr_assets").html(0);
-                        }
-                    });
-                } else {
-                    $("#account_assets_balance").html(0);
-                    $("#account_nr_assets").html(0);
-                }
 
-				if (response.accountCurrencies) {
-                    var currencies = [];
-                    var currencyBalances = response.accountCurrencies;
-					var numberOfCurrencies = currencyBalances.length;
-					$("#account_nr_currencies").html(numberOfCurrencies);
-                    var currencyBalancesMap = {};
-                    for (i = 0; i < numberOfCurrencies; i++) {
-                        if (currencyBalances[i].units != "0") {
-                            currencies.push(currencyBalances[i].currency);
-                            currencyBalancesMap[currencyBalances[i].currency] = currencyBalances[i].units;
-                        }
-                    }
-                    NRS.sendRequest("getLastExchanges", {
-                        "currencies": currencies
-                    }, function(response) {
-                        if (response.exchanges && response.exchanges.length) {
-                            var currencyTotal = 0;
-                            for (i=0; i < response.exchanges.length; i++) {
-                                var exchange = response.exchanges[i];
-                                currencyTotal += currencyBalancesMap[exchange.currency] * exchange.rateNQT / 100000000;
-                            }
-                            $("#account_currencies_balance").html(NRS.formatStyledAmount(new Big(currencyTotal).toFixed(8)));
-                        } else {
-                            $("#account_currencies_balance").html(0);
-                        }
-                    });
-                } else {
-                    $("#account_currencies_balance").html(0);
-                    $("#account_nr_currencies").html(0);
-                }
 
 				/* Display message count in top and limit to 100 for now because of possible performance issues*/
 				NRS.sendRequest("getBlockchainTransactions+", {
@@ -1039,40 +942,6 @@ NRS.addPagination = function () {
 
 				/***  ******************   ***/
 
-				NRS.sendRequest("getAliasCount+", {
-					"account":NRS.account
-				}, function(response) {
-					if (response.numberOfAliases != null) {
-						$("#account_alias_count").empty().append(response.numberOfAliases);
-					}
-				});
-
-				NRS.sendRequest("getDGSPurchaseCount+", {
-					"buyer": NRS.account
-				}, function(response) {
-					if (response.numberOfPurchases != null) {
-						$("#account_purchase_count").empty().append(response.numberOfPurchases);
-					}
-				});
-
-				NRS.sendRequest("getDGSPendingPurchases+", {
-					"seller": NRS.account
-				}, function(response) {
-					if (response.purchases && response.purchases.length) {
-						$("#account_pending_sale_count").empty().append(response.purchases.length);
-					} else {
-						$("#account_pending_sale_count").empty().append("0");
-					}
-				});
-
-				NRS.sendRequest("getDGSPurchaseCount+", {
-					"seller": NRS.account,
-					"completed": true
-				}, function(response) {
-					if (response.numberOfPurchases != null) {
-						$("#account_completed_sale_count").empty().append(response.numberOfPurchases);
-					}
-				});
 
                 var leasingChange = false;
 				if (NRS.lastBlockHeight) {
@@ -1101,7 +970,7 @@ NRS.addPagination = function () {
 			}
 
 			if (firstRun) {
-				$("#account_balance, #account_balance_sidebar, #account_assets_balance, #account_nr_assets, #account_currencies_balance, #account_nr_currencies, #account_purchase_count, #account_pending_sale_count, #account_completed_sale_count, #account_message_count, #account_alias_count").removeClass("loading_dots");
+				$("#account_balance, #account_balance_sidebar, #account_message_count").removeClass("loading_dots");
 			}
 
 			if (callback) {

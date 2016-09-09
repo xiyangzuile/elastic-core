@@ -17,7 +17,7 @@
 <header class="header">
     <span id="logo">
         <a href="#" class="logo" data-page="dashboard">
-            <img src="img/nxt_logo_small.png" style="opacity:0.95" />
+            <img src="img/nxt_logo_small.png" style="opacity:0.95; height: 30px;" />
         </a>
     </span>
     <nav class="navbar navbar-static-top" role="navigation">
@@ -31,10 +31,49 @@
             <ul class="nav navbar-nav sends">
                 <li id="header_client_options" class="dropdown"><a id="header_client_options_link" href="#" data-toggle="modal" data-target="#client_status_modal"></a></li>
                 <li id="header_send_money" class="dropdown"><a href="#" data-toggle="modal" data-target="#send_money_modal" data-i18n="send_nxt">Send NXT</a></li>
-                <li id="header_transfer_currency" class="dropdown"><a href="#" data-toggle="modal" data-target="#transfer_currency_modal" data-i18n="send_currency">Send Currency</a></li>
-                <li id="header_send_message" class="dropdown"><a href="#" data-toggle="modal" data-target="#send_message_modal" data-i18n="send_message">Send Message</a></li>
             </ul>
             <ul class="nav navbar-nav">
+
+
+                <li><a href="#" id="connected_indicator_item" class="goto-page" data-toggle="tooltip" data-placement="top" title="CONNECTION" data-i18n="[title]server_connection_status" style="padding-top:13px;padding-bottom:13px;">
+                    <span class="badge nm_outer2" style="background-color: #fff;padding:3px;">
+                        <span class="badge nm_inner_subtype" id="connected_indicator" style="background-color: #fff; color:#337ab7;">
+                            <i class="fa fa-circle" style="font-size:12px;"></i> <span data-18n="connected" style="color:#337ab7;">Connected</span>
+                        </span>
+                    </span>
+                    </a>
+                </li>
+
+
+                <li><a href="#" id="forging_indicator_item" class="goto-page" data-toggle="tooltip" title="" data-placement="bottom" style="padding-top:13px;padding-bottom:13px;">
+                    <span class="badge nm_outer2" style="background-color: #fff;padding:3px;">
+                        <span class="badge nm_inner_subtype" id="forging_indicator" style="background-color: #fff; color:#337ab7;">
+                            <i class="fa fa-circle" style="font-size:12px;"></i> <span data-18n="forging" style="color:#337ab7;">Forging</span>
+                        </span>
+                    </span>
+                    </a>
+                </li>
+
+                <li><a href="#" id="balance_header_item" class="goto-page" data-target="#account_details_modal" data-toggle="modal" style="padding-top:13px;padding-bottom:13px;">
+                    <span class="badge nm_outer2" style="background-color: #fff;padding:3px;">
+                        <span class="badge nm_inner_subtype" style="background-color: #fff;">
+                            <span style="color:#337ab7;">Balance: </span>
+                            <span style="color:#666;" id="account_balance_sidebar">N/A</span>
+                            <span style="color:#337ab7;"> XEL</span>
+                        </span>
+                    </span>
+                    </a>
+                </li>
+                <li><a href="#" id="block_height_header_item" class="goto-page" data-page="blocks"  style="padding-top:13px;padding-bottom:13px;display:none;">
+                    <span class="badge nm_outer2" style="background-color: #fff;padding:3px;">
+                        <span class="badge nm_inner_subtype" style="background-color: #fff;">
+                            <span style="color:#337ab7;">Block Height: </span>
+                            <span style="color:#666;" id="sidebar_block_link_upper">N/A</span>
+                        </span>
+                    </span>
+                    </a>
+                </li>
+
                 <li><a href="#" id="unconfirmed_notification_menu" class="goto-page" data-page="transactions" data-subpage="unconfirmed" style="padding-top:13px;padding-bottom:13px;display:none;">
                     <span class="badge nm_outer2" style="background-color: #fff;padding:3px;">
                         <span class="badge nm_inner_subtype" style="background-color: #fff;">
@@ -60,16 +99,19 @@
                         </span>
                     </a>
                 </li>
+
+                <li id="header_send_message" role="presentation" class="active show_popover" data-toggle="modal" data-delay="250" data-placement="bottom"  data-target="#send_message_modal"  data-i18n="[data-content]send_message">
+                    <a href="#" class="goto-page" data-page="contacts">
+                        <i class="fa fa-envelope"></i>
+                    </a>
+                </li>
+
                 <li id="contacts_menu_li" role="presentation" class="active show_popover" data-toggle="popover" data-delay="250" data-placement="bottom" data-content="CONTACTS" data-container="#header_right" data-i18n="[data-content]contacts">
                     <a href="#" class="goto-page" data-page="contacts">
                         <i class="fa fa-user"></i>
                     </a>
                 </li>
-                <li id="exchange_menu_li" role="presentation" class="active show_popover" data-toggle="popover" data-delay="250" data-placement="bottom" data-content="EXCHANGE" data-container="#header_right" data-i18n="[data-content]exchange">
-                    <a href="#" class="goto-page" data-page="exchange">
-                        <i class="fa fa-exchange"></i>
-                    </a>
-                </li>
+                
                 <li class="dropdown show_popover" role="presentation" data-toggle="popover" data-delay="250" data-placement="bottom" data-content="SETTINGS" data-container="#header_right" data-i18n="[data-content]settings">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <i class="fa fa-cog"></i>

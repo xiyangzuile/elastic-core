@@ -629,9 +629,7 @@ body > .header .logo .icon {
 	padding-left:  5px;
 	padding-right: 0;
 }
-#forging_indicator {
-	font-size: 14px;
-} 
+
 .user-panel > .info > p {
   margin-bottom: 9px;
 }
@@ -1882,6 +1880,9 @@ body > .header .logo .icon {
   background: #fff;
   padding: 10px;
 }
+.bluefix {
+  background: #2B6586 !important;
+}
 /* PAGINATION */
 .pagination > li > a {
   background: #fafafa;
@@ -2013,6 +2014,8 @@ body > .header .logo .icon {
 }
 .navbar .nav a {
   color: #fff;
+  padding-right: 7px;
+  padding-left: 7px;
 }
 .navbar .nav > li > a:hover,
 .navbar .nav > li > a:active,
@@ -3355,6 +3358,8 @@ input.masked {
 
 body > .header .navbar { 
   height: 50px; 
+  padding-right: 10px;
+
 }
 
 @media screen and (max-width: 965px) {
@@ -3372,7 +3377,8 @@ body > .header .navbar {
 
   body > .header .navbar {
     margin-left: 150px; 
-    padding-right: 9px;
+    padding-right: 10px;
+
   }
 
   .navbar .navbar-right > .nav {
@@ -3517,4 +3523,13 @@ body > .header .navbar {
 
 .numeric {
   text-align: right;
+}
+
+/* Added after fork */
+.fullwidth {
+  width: 100%;
+  text-align: center;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  background: #ffffff;
 }

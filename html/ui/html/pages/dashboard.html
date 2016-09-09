@@ -17,7 +17,7 @@
 <div id="dashboard_page" class="page" style="display:block">
     <section class="content-header">
         <span style="float:right; font-size:115%;">
-            <span id="nrs_version_info" data-i18n="nrs_version">NRS Version</span>:
+            <span id="nrs_version_info" data-i18n="nrs_version">Elastic Version</span>:
             <a href="#" class="small-box-footer" data-toggle="modal" data-target="#nrs_modal">
                 <span id="nrs_version" class="loading_dots"><span>.</span><span>.</span><span>.</span></span>
             </a>
@@ -32,92 +32,110 @@
         <div class="alert-danger alert alert-no-icon" id="secondary_dashboard_message" style="display:none;padding:5px;margin-bottom:15px;"></div>
 
         <div class="row">
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-aqua">
-                    <div class="inner">
-                        <h3><span id="account_balance" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p><span data-i18n="account_balance">Account Balance</span> <span class="label" id="account_leasing" style="display:none;background-color:#1990B1"></span></p>
+            <div class="col-lg-3 col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading navbarbglight bluefix">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="fa fa-bank fa-4x"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <h3 style="margin: 5px; font-weight: bold"><span id="account_balance" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
+                                    <div><span data-i18n="account_balance">Account Balance</span><span class="label navbarbglight" id="account_leasing" style="display:none;"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="small-box-footer" data-toggle="modal" data-target="#account_details_modal">
+                            <div class="panel-footer">
+                                <span class="pull-left"><span data-i18n="more_info">More info</span></span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
                     </div>
-                    <div class="icon"><i class="fa fa-briefcase"></i></div>
-                    <a href="#" class="small-box-footer" data-toggle="modal" data-target="#account_details_modal"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
             </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-green">
-                    <div class="inner">
-                        <h3><span id="account_assets_balance" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p style="display:inline-block" data-i18n="assets_value">Assets value</p> <p style="display:inline-block">(<span id="account_nr_assets" class="loading_dots"></span></p> <p style="display:inline-block"><span data-i18n="assets_owned">Assets Owned</span>)</p>
-                    </div>
-                    <div class="icon"><i class="fa fa-signal"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="my_assets"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3><span id="account_currencies_balance" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p style="display:inline-block" data-i18n="currencies_value">Currencies value</p> <p style="display:inline-block">(<span id="account_nr_currencies" class="loading_dots"></span></p> <p style="display:inline-block"><span data-i18n="currencies_owned">Currencies Owned</span>)</p>
-                    </div>
-                    <div class="icon"><i class="fa fa-bank"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="currencies"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3><span id="account_purchase_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p data-i18n="purchased_products">Purchased Products</p>
-                    </div>
-                    <div class="icon"><i class="fa fa-shopping-cart"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="purchased_dgs"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3>
-                            <span id="account_pending_sale_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span>
+
+
+            <div class="col-lg-3 col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading navbarbglight bluefix">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="fa fa-cloud fa-4x"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <h3 style="margin: 5px; font-weight: bold"><span id="open_work_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span>
                             <span> / </span>
-                            <span id="account_completed_sale_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span>
-                        </h3>
-                        <p><span data-i18n="pending">Pending</span><span> / </span><span data-i18n="completed_sales">Completed Sales</span></p>
+                            <span id="closed_work_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
+                                    <div><span data-i18n="openwork">Open Work</span><span> / </span><span data-i18n="closedwork">Done</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="small-box-footer goto-page" data-page="myownwork">
+                            <div class="panel-footer">
+                                <span class="pull-left"><span data-i18n="more_info">More info</span></span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
                     </div>
-                    <div class="icon"><i class="fa fa-shopping-cart"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="pending_orders_dgs"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
             </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3><span id="account_message_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p data-i18n="message_count">Messages</p>
+
+
+
+
+
+            <div class="col-lg-3 col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading navbarbglight bluefix">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="fa fa-envelope fa-4x"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <h3 style="margin: 5px; font-weight: bold"><span id="account_message_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
+                                    <div><span data-i18n="message_count">Messages</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="small-box-footer goto-page" data-page="messages">
+                            <div class="panel-footer">
+                                <span class="pull-left"><span data-i18n="more_info">More info</span></span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
                     </div>
-                    <div class="icon"><i class="fa fa-envelope-o"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="messages"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
             </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-yellow">
-                    <div class="inner">
-                        <h3><span id="account_alias_count" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p data-i18n="aliases">Aliases</p>
+
+
+
+
+
+            <div class="col-lg-3 col-md-6">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading navbarbglight bluefix">
+                            <div class="row">
+                                <div class="col-xs-3">
+                                    <i class="fa fa-code-fork fa-4x"></i>
+                                </div>
+                                <div class="col-xs-9 text-right">
+                                    <h3 style="margin: 5px; font-weight: bold"><span class="nrs_current_block loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
+                                    <div><span id="nrs_block" data-i18n="curr_bl_he">Current Block Height</div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="small-box-footer goto-page" data-page="blocks">
+                            <div class="panel-footer">
+                                <span class="pull-left"><span data-i18n="more_info">More info</span></span>
+                                <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                <div class="clearfix"></div>
+                            </div>
+                        </a>
                     </div>
-                    <div class="icon"><i class="fa fa-bookmark"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="aliases"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
             </div>
-            <div class="col-lg-3 col-xs-6">
-                <div class="small-box bg-red">
-                    <div class="inner">
-                        <h3><span style="font-size:22px" id="nrs_current_block_time" class="loading_dots"><span>.</span><span>.</span><span>.</span></span></h3>
-                        <p><span id="nrs_block" data-i18n="last_updated">Last Updated</span> (<span data-i18n="block">Block</span>: <span class="nrs_current_block loading_dots"><span>.</span><span>.</span><span>.</span></span>)</p>
-                    </div>
-                    <div class="icon"><i class="fa fa-code"></i></div>
-                    <a href="#" class="small-box-footer goto-page" data-page="blocks"><span data-i18n="more_info">More info</span> <i class="fa fa-arrow-circle-right"></i></a>
-                </div>
-            </div>
+
+
         </div>
         <div class="row">
             <div class="col-md-12">
