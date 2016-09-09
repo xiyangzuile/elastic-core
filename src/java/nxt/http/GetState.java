@@ -28,7 +28,6 @@ import nxt.Constants;
 import nxt.Generator;
 import nxt.Nxt;
 import nxt.PrunableMessage;
-import nxt.TaggedData;
 import nxt.peer.Peers;
 import nxt.util.UPnP;
 
@@ -49,8 +48,6 @@ public final class GetState extends APIServlet.APIRequestHandler {
             response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
             response.put("numberOfAccounts", Account.getCount());
             response.put("numberOfPrunableMessages", PrunableMessage.getCount());
-            response.put("numberOfTaggedData", TaggedData.getCount());
-            response.put("numberOfDataTags", TaggedData.Tag.getTagCount());
             response.put("numberOfAccountLeases", Account.getAccountLeaseCount());
             response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
         }

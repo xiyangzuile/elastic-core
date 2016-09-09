@@ -347,7 +347,6 @@ public final class Nxt {
                 AccountLedger.init();
                 Hub.init();
                 PrunableMessage.init();
-                TaggedData.init();
                 Peers.init();
                 APIProxy.init();
                 Generator.init();

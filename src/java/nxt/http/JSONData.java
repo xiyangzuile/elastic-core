@@ -16,8 +16,6 @@
 
 package nxt.http;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
@@ -27,24 +25,15 @@ import nxt.Account;
 import nxt.AccountLedger;
 import nxt.AccountLedger.LedgerEntry;
 import nxt.Appendix;
-
-import nxt.Attachment;
 import nxt.Block;
 import nxt.Constants;
-
 import nxt.Generator;
-import nxt.HoldingType;
 import nxt.Nxt;
-
 import nxt.PrunableMessage;
-
-import nxt.TaggedData;
 import nxt.Token;
 import nxt.Transaction;
-
 import nxt.crypto.Crypto;
 import nxt.crypto.EncryptedData;
-import nxt.db.DbIterator;
 import nxt.peer.Hallmark;
 import nxt.peer.Peer;
 import nxt.util.Convert;
@@ -321,35 +310,6 @@ public final class JSONData {
             json.put("message", Convert.toString(prunableMessage.getMessage(), prunableMessage.messageIsText()));
             json.put("messageIsText", prunableMessage.messageIsText());
         }
-        return json;
-    }
-
-    static JSONObject taggedData(TaggedData taggedData, boolean includeData) {
-        JSONObject json = new JSONObject();
-        json.put("transaction", Long.toUnsignedString(taggedData.getId()));
-        putAccount(json, "account", taggedData.getAccountId());
-        json.put("name", taggedData.getName());
-        json.put("description", taggedData.getDescription());
-        json.put("tags", taggedData.getTags());
-        JSONArray tagsJSON = new JSONArray();
-        Collections.addAll(tagsJSON, taggedData.getParsedTags());
-        json.put("parsedTags", tagsJSON);
-        json.put("type", taggedData.getType());
-        json.put("channel", taggedData.getChannel());
-        json.put("filename", taggedData.getFilename());
-        json.put("isText", taggedData.isText());
-        if (includeData) {
-            json.put("data", taggedData.isText() ? Convert.toString(taggedData.getData()) : Convert.toHexString(taggedData.getData()));
-        }
-        json.put("transactionTimestamp", taggedData.getTransactionTimestamp());
-        json.put("blockTimestamp", taggedData.getBlockTimestamp());
-        return json;
-	}
-
-    static JSONObject dataTag(TaggedData.Tag tag) {
-        JSONObject json = new JSONObject();
-        json.put("tag", tag.getTag());
-        json.put("count", tag.getCount());
         return json;
     }
 

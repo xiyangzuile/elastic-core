@@ -667,8 +667,7 @@ final class TransactionImpl implements Transaction {
 				builder.recipientId(recipientId);
 			}
 			int position = 1;
-			if ((flags & position) != 0
-					|| (version == 0 && transactionType == TransactionType.Messaging.ARBITRARY_MESSAGE)) {
+			if ((flags & position) != 0) {
 				builder.appendix(new Appendix.Message(buffer, version));
 			}
 			position <<= 1;
@@ -706,14 +705,6 @@ final class TransactionImpl implements Transaction {
 			throws NxtException.NotValidException {
 		BuilderImpl builder = newTransactionBuilder(bytes);
 		if (prunableAttachments != null) {
-			Attachment.TaggedDataUpload taggedDataUpload = Attachment.TaggedDataUpload.parse(prunableAttachments);
-			if (taggedDataUpload != null) {
-				builder.appendix(taggedDataUpload);
-			}
-			Attachment.TaggedDataExtend taggedDataExtend = Attachment.TaggedDataExtend.parse(prunableAttachments);
-			if (taggedDataExtend != null) {
-				builder.appendix(taggedDataExtend);
-			}
 			Appendix.PrunablePlainMessage prunablePlainMessage = Appendix.PrunablePlainMessage
 					.parse(prunableAttachments);
 			if (prunablePlainMessage != null) {
