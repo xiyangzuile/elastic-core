@@ -301,33 +301,20 @@ final class BlockImpl implements Block {
 			ByteBuffer buffer = ByteBuffer
 					.allocate(4 + 4 + 8 + 4 + 8 + 8 + 4 + 32 + 32 + 32 + 32 + (blockSignature != null ? 64 : 0));
 			buffer.order(ByteOrder.LITTLE_ENDIAN);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putInt(version);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putInt(timestamp);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putLong(previousBlockId);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putInt(getTransactions().size());
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putLong(totalAmountNQT);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putLong(totalFeeNQT);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.putInt(payloadLength);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.put(payloadHash);
-			System.out.println("buf pos: " + buffer.position());
 			buffer.put(getGeneratorPublicKey());
-			System.out.println("buf pos: " + buffer.position());
 			buffer.put(generationSignature);
-			System.out.println("buf pos: " + buffer.position() + ", about to put previousBlockHash of size " + previousBlockHash.length);
 			buffer.put(previousBlockHash);
-			System.out.println("buf pos: " + buffer.position());
 			if (blockSignature != null) {
 				buffer.put(blockSignature);
 			}
-			System.out.println("buf pos: " + buffer.position());
 			bytes = buffer.array();
 		}
 		return bytes;

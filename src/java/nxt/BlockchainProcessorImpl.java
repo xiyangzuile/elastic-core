@@ -1690,6 +1690,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
         int payloadLength = 0;
         for (UnconfirmedTransaction unconfirmedTransaction : sortedTransactions) {
             TransactionImpl transaction = unconfirmedTransaction.getTransaction();
+            System.out.println("Including unconf tx into block: " + transaction.getId());
             blockTransactions.add(transaction);
             digest.update(transaction.bytes());
             totalAmountNQT += transaction.getAmountNQT();

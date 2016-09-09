@@ -129,7 +129,7 @@ public interface Appendix {
         }
 
         boolean verifyVersion(byte transactionVersion) {
-            return version == 0;
+            return version == 1;
         }
 
         @Override
@@ -535,7 +535,7 @@ public interface Appendix {
 
         @Override
         final boolean verifyVersion(byte transactionVersion) {
-            return getVersion() == 0;
+            return getVersion() == 1;
         }
 
         @Override

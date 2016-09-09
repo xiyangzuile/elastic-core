@@ -259,7 +259,7 @@ public final class Generator implements Comparable<Generator> {
 
     static long getHitTime(BigInteger effectiveBalance, BigInteger hit, Block block) {
         return block.getTimestamp()
-                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance)).longValue();
+                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance).multiply(new BigInteger("10"))).longValue();
     }
 
 
