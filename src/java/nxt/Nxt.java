@@ -79,6 +79,7 @@ public final class Nxt {
         }
     }
 
+    
     private static void redirectSystemStreams(String streamName) {
         String isStandardRedirect = System.getProperty("nxt.redirect.system." + streamName);
         Path path = null;
