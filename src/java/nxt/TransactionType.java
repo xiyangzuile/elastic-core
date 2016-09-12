@@ -36,15 +36,13 @@ public abstract class TransactionType {
 
     private static final byte TYPE_PAYMENT = 0;
     private static final byte TYPE_MESSAGING = 1;
-    private static final byte TYPE_ACCOUNT_CONTROL = 4;
-    private static final byte TYPE_DATA = 6;
+    private static final byte TYPE_ACCOUNT_CONTROL = 2;
     private static final byte SUBTYPE_PAYMENT_ORDINARY_PAYMENT = 0;
     private static final byte SUBTYPE_MESSAGING_ARBITRARY_MESSAGE = 0;
-    private static final byte SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 4;
-    private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 5;
+    private static final byte SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 1;
+    private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 2;
     private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
-    private static final byte SUBTYPE_DATA_TAGGED_DATA_UPLOAD = 0;
-    private static final byte SUBTYPE_DATA_TAGGED_DATA_EXTEND = 1;
+
 
     public static TransactionType findTransactionType(byte type, byte subtype) {
         switch (type) {

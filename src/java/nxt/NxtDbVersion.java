@@ -67,11 +67,13 @@ class NxtDbVersion extends DbVersion {
             case 9:
                 apply("CREATE INDEX IF NOT EXISTS transaction_recipient_id_idx ON transaction (recipient_id)");
             case 10:
-                apply(null);
+            	apply("CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, id BIGINT NOT NULL, work_title VARCHAR NOT NULL, variables_input SMALLINT NOT NULL, version_id SMALLINT NOT NULL, language_id SMALLINT NOT NULL, "
+                        + "deadline INT NOT NULL, original_amount BIGINT NOT NULL, fee BIGINT NOT NULL, referenced_transaction_id BIGINT, FOREIGN KEY (referenced_transaction_id) REFERENCES transaction (id) ON DELETE CASCADE, block_id BIGINT NOT NULL, included_block_height INT NOT NULL, FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE, "
+                        + "sender_account_id BIGINT NOT NULL, code OTHER NOT NULL, payback_transaction_id BIGINT, FOREIGN KEY (payback_transaction_id) REFERENCES transaction (id) ON DELETE CASCADE, last_payment_transaction_id BIGINT, bounties_limit INT, xel_per_pow BIGINT, FOREIGN KEY (last_payment_transaction_id) REFERENCES transaction (id) ON DELETE CASCADE)");
             case 11:
-                apply(null);
+            	apply("CREATE TABLE IF NOT EXISTS proof_of_work (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, FOREIGN KEY (work_id) REFERENCES work (id) ON DELETE CASCADE, referenced_transaction_id BIGINT, FOREIGN KEY (referenced_transaction_id) REFERENCES transaction (id) ON DELETE CASCADE, block_id BIGINT NOT NULL, FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE, sender_account_id BIGINT NOT NULL, payout_amount BIGINT NOT NULL, input OTHER NOT NULL)");
             case 12:
-                apply(null);
+            	apply("CREATE TABLE IF NOT EXISTS bounty_submission (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, FOREIGN KEY (work_id) REFERENCES work (id) ON DELETE CASCADE, referenced_transaction_id BIGINT, FOREIGN KEY (referenced_transaction_id) REFERENCES transaction (id) ON DELETE CASCADE, block_id BIGINT NOT NULL, FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE, sender_account_id BIGINT NOT NULL, input OTHER NOT NULL)");
             case 13:
                 apply(null);
             case 14:
