@@ -50,6 +50,8 @@ public interface Transaction {
         Transaction build() throws NxtException.NotValidException;
 
         Transaction build(String secretPhrase) throws NxtException.NotValidException;
+        
+        void zeroFee();
 
     }
 

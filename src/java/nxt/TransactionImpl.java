@@ -36,7 +36,7 @@ final class TransactionImpl implements Transaction {
 		private final short deadline;
 		private final byte[] senderPublicKey;
 		private final long amountNQT;
-		private final long feeNQT;
+		private long feeNQT;
 		private final TransactionType type;
 		private final byte version;
 		private Attachment.AbstractAttachment attachment;
@@ -207,6 +207,11 @@ final class TransactionImpl implements Transaction {
 			this.index = index;
 			return this;
 		}
+
+		@Override
+        public void zeroFee(){
+        	this.feeNQT = 0;
+        }
 
 	}
 

@@ -49,6 +49,16 @@ public final class Convert {
 
     private Convert() {} //never
 
+    public static long safeAdd(long left, long right)
+            throws ArithmeticException {
+        if (right > 0 ? left > Long.MAX_VALUE - right
+                : left < Long.MIN_VALUE - right) {
+            throw new ArithmeticException("Integer overflow");
+        }
+        return left + right;
+    }
+
+    
     public static byte[] parseHexString(String hex) {
         if (hex == null) {
             return null;

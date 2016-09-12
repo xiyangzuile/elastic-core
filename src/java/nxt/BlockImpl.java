@@ -44,6 +44,8 @@ final class BlockImpl implements Block {
 	private final int payloadLength;
 	private final byte[] generationSignature;
 	private final byte[] payloadHash;
+	private BigInteger lastPowTarget = null;
+	
 	private volatile List<TransactionImpl> blockTransactions;
 
 	private byte[] blockSignature;
@@ -465,5 +467,40 @@ final class BlockImpl implements Block {
 		cumulativeDifficulty = previousBlock.cumulativeDifficulty
 				.add(Convert.two64.divide(BigInteger.valueOf(baseTarget)));
 	}
+	
+	public BlockImpl getPreviousBlock() {
+		return BlockchainImpl.getInstance().getBlock(this.getPreviousBlockId());
+	}
+	
+	public BigInteger getLastPowTarget() {
+		// Genesis special treatment
+		if (this.getHeight() == 0) {
+			return WorkLogicManager.getInstance().least_possible_target;
+		}
 
+		if (this.lastPowTarget == null)
+			this.lastPowTarget = WorkLogicManager.getInstance().getMinPowTarget(previousBlockId);
+
+		return this.lastPowTarget;
+	}
+	
+	public int countNumberPOW() {
+		int cntr = 0;
+		for (TransactionImpl t : getTransactions()) {
+			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK) {
+				cntr++;
+			}
+		}
+		return cntr;
+	}
+
+	public int countNumberCancellation() {
+		int cntr = 0;
+		for (TransactionImpl t : getTransactions()) {
+			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.CANCEL_TASK) {
+				cntr++;
+			}
+		}
+		return cntr;
+	}
 }

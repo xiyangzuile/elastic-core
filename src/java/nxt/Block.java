@@ -64,5 +64,13 @@ public interface Block {
     byte[] getBytes();
 
     JSONObject getJSONObject();
+    
+    BlockImpl getPreviousBlock();
+    
+    BigInteger getLastPowTarget();
+    
+    int countNumberPOW();
+
+	int countNumberCancellation();
 
 }

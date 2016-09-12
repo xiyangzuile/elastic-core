@@ -23,6 +23,7 @@ import org.json.simple.JSONObject;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 
 public interface TransactionProcessor extends Observable<List<? extends Transaction>,TransactionProcessor.Event> {
@@ -60,4 +61,6 @@ public interface TransactionProcessor extends Observable<List<? extends Transact
     SortedSet<? extends Transaction> getCachedUnconfirmedTransactions(List<String> exclude);
 
     List<Transaction> restorePrunableData(JSONArray transactions) throws NxtException.NotValidException;
+    
+    void clearUnconfirmedTransactionsWithIds(Set<Long> set) ;
 }
