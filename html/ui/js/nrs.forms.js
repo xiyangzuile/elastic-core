@@ -37,6 +37,7 @@ var NRS = (function(NRS, $) {
 		try {
 			NRS.submitForm($modal, $btn);
 		} catch(e) {
+			console.log(e.stack);
 			$modal.find(".error_message").html("Form submission error '" + e.message + "' - please report to developers").show();
 			NRS.unlockForm($modal, $btn);
 		}

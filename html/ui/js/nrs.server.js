@@ -17,54 +17,6 @@
 /**
  * @depends {nrs.js}
  */
-function parseFormData(model){
-  var formData = new FormData();
-
-  function parseArray(arrayKey, arrayValue){
-    if ($.type(arrayValue) !== undefined) {
-      if($.type(arrayValue[0]) === 'string'){
-        parseAttribute(arrayKey, arrayValue)
-      } else {
-        $.each(arrayValue, function loopArray(attributeKey, attributeValue) {
-          parseModel(arrayKey+'['+attributeKey+']', attributeValue);
-        });
-      }
-    }
-  }
-
-  function parseObject(objectKey, objectValue){
-    if ($.type(objectValue) !== undefined) {
-      $.each(objectValue, function loopObject(attributeKey, attributeValue) {
-        parseAttribute(objectKey+'['+attributeKey+']', attributeValue);
-      });
-    }
-  }
-
-  function parseAttribute(attributeKey, attributeValue){
-
-    if (attributeValue !== undefined ) {
-      if($.type(attributeValue) === 'array' && $.type(attributeValue[0]) !== 'string'){
-        parseArray(attributeKey, attributeValue)
-      }
-      else if($.isPlainObject(attributeValue) ){
-        parseObject(attributeKey, attributeValue)
-      }
-      else {
-        formData.append(attributeKey, attributeValue);
-      }
-    } 
-  }
-
-  function parseModel(keyString, model){
-    $.each(model, function loopModel(inputKey, inputValue) {
-      parseAttribute(keyString !== '' ? keyString+'['+inputKey+']' : inputKey, inputValue);
-    });
-  }
-
-  parseModel('', model);
-
-  return formData;
-}
 
 var NRS = (function (NRS, $, undefined) {
     var _password;
@@ -449,7 +401,7 @@ var NRS = (function (NRS, $, undefined) {
             currentSubPage: currentSubPage,
             shouldRetry: (type == "GET" ? 2 : undefined),
             traditional: true,
-            data: (formData != null ? (type=="POST" && subtype=="MULTIPART")?parseFormData(formData):formData : (type=="POST" && subtype=="MULTIPART")?parseFormData(data):data),
+            data: (formData != null ? formData : data),
             contentType: contentType,
             processData: processData
         };
@@ -457,6 +409,7 @@ var NRS = (function (NRS, $, undefined) {
             callDict["contentType"]=false;
             callDict["cache"]=false;
         }
+        console.log(callDict);
         $.ajax(callDict).done(function (response) {
             NRS.escapeResponseObjStrings(response);
             if (NRS.console) {
