@@ -1,0 +1,120 @@
+
+<div class="modal fade" id="cancel_work_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title"><span data-i18n="confirm_work_cancellation">Confirm Job Cancellation (<span id="job_id"></span>)</span></h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" autocomplete="off">
+
+                    <p class="show_secret_phrase" data-i18n="stop_work_confirmation_passphrase">If you are sure you want to cancel the selected job, type your passphrase to confirm.</p>
+                    <p class="hide_secret_phrase" style="display:none" data-i18n="stop_work_confirmation">If you are sure you want to cancel the selected job, click the button below to confirm.</p>
+                    <div class="callout callout-danger remote_warning" style="display:none" data-i18n="[html]passphrase_remote_warning"><strong>Warning</strong>: Your passphrase will be sent to the server!</div>
+                    <div class="callout callout-danger error_message" style="display:none"></div>
+                    <div class="form-group secret_phrase">
+                        <label for="stop_job_password" data-i18n="passphrase">PASSPHRASE</label>
+                        <input type="password" name="secretPhrase" id="stop_job_password" class="form-control" placeholder="" tabindex="1">
+                    </div>
+                    <div data-replace-with-modal-template="fee_calculation_modal_template"></div>
+                    <div data-replace-with-modal-template="secret_phrase_modal_template"></div>
+                    <div data-replace-with-modal-template="advanced_deadline_template"></div>
+                    <div data-replace-with-modal-template="advanced_rt_hash_template"></div>
+                    <div data-replace-with-modal-template="advanced_broadcast_template"></div>
+                    <div data-replace-with-modal-template="advanced_note_to_self_template"></div>
+                    <input type="hidden" id="workId" name="workId" value="" />
+                    <input type="hidden" name="request_type" value="cancelWork" />
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:0;">
+                <div class="advanced_info"><a href="#" data-i18n="advanced">advanced</a> <strong data-i18n="est_refund">Estimated Refund</strong>: <span id="refund_calculator"></span> XEL <strong data-i18n="est_refund_lower">(can be lower)</strong></div>
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-i18n="continue_job">Dismiss</button>
+                <button type="button" class="btn btn-primary" id="stop_job_button" data-loading-text="Submitting..." data-i18n="[data-loading-text]submitting"><span data-i18n="stop_job">Cancel Job</span></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="new_work_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog"  style="width: 900px;">
+        <div class="modal-content">
+        <form role="form" autocomplete="off" >
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <!-- todo -->
+                <h4 class="modal-title">Compose a New Job</h4>
+            </div>
+            <div class="modal-body">
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="callout callout-danger error_message" style="display:none"></div>
+                    <div class="form-group">
+                        <label for="work_title" data-i18n="work title">WORK TITLE</label>
+                        <input type="input" name="work_title" id="work_title" class="form-control" placeholder="Give your work a meaningful title" tabindex="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="source_code" data-i18n="source code">SOURCE CODE</label>
+                        <input type="file" name="source_code" id="source_code" class="file" placeholder="Please select the source code file, that you have created with the SDK" tabindex="2">
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-6 col-md-6" data-normal="12" data-advanced="6">
+                            <div class="form-group">
+                                <label for="send_money_amount" data-i18n="amount">AMOUNT</label>
+                                <div class="input-group">
+                                    <input name="amountNXT" id="send_money_amount_creation" step="any" min="0" class="form-control" placeholder="Amount" data-i18n="[placeholder]amount" tabindex="3" type="text">
+                                    <span class="input-group-addon">XEL</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: block;" class="col-xs-6 col-sm-6 col-md-6">
+                            <div class="form-group">
+                                <label for="work_deadline" data-i18n="deadline_blocks">WORK DEADLINE (BLOCKS)</label>
+                                <input name="work_deadline" id="work_deadline" class="form-control" placeholder="Deadline" data-i18n="deadline" min="1" data-default="250" value="250" tabindex="5" type="number">
+                            </div>
+                        </div>
+                    </div>
+                    <div data-replace-with-modal-template="fee_calculation_modal_template"></div>
+                    <div data-replace-with-modal-template="secret_phrase_modal_template"></div>
+                    <div data-replace-with-modal-template="advanced_deadline_template"></div>
+                    <div data-replace-with-modal-template="advanced_rt_hash_template"></div>
+                    <div data-replace-with-modal-template="advanced_broadcast_template"></div>
+                    <div data-replace-with-modal-template="advanced_note_to_self_template"></div>
+                    <input type="hidden" name="request_type" value="createWork" />
+                    <input type="hidden" name="work_language" value="ElasticPL" />
+                    <input type="hidden" name="bountyLimit" value="10" />
+                    <input type="hidden" name="xel_per_pow" value="1000000000" />  
+
+              </div>
+              <div class="col-md-6" style="text-align: center">
+                    <label style="text-transform: uppercase;">Fund Distribution and Refunds</label>
+                    <table style="margin-top: 35px; margin-bottom:35px;"><tr>
+                    <td class="sparkcell"><b>Fund Allocation</b><br><div class="updowngap"><span id="powfund_creation"></span></div><small>Total Amount</small><br><b><span id="bal_creation">--</span></b> XEL</td>
+                    <td class="sparkcell"><b>Distribution</b><br><br>
+                    <span style="font-weight: bold;color: #BCFFB5; font-size:22pt">&bull;</span> <b><span id="fund_pow_cr"></span> XEL</b> <small>(60%)</small><br>allocated to proof-of-work fund<br><br>
+                    <span style="font-weight: bold;color: #FFD6D6; font-size:22pt">&bull;</span> <b><span id="fund_bnt_cr"></span> XEL</b> <small>(40%)</small><br>allocated to bounty fund<br>
+                    </td>
+
+                    </tr></table>
+                    <div class="alert alert-success sparkbeautycell" role="alert">
+                      <span><b>Information Regarding the Proof-Of-Work Fund</b><br><small>The proof-of-work fund is used to periodically pay the workers. In your setup, <b><span id="fund_pow2_cr"></span> XEL</b> are put in the proof-of-work fund. The higher this amount is, the longer your job will stay live. After the proof-of-work fund is empty, the job is closed and-if applicable-the bounty fund is refunded.</small></span>
+                    </div>
+                    <div class="alert alert-danger sparkbeautycell" role="alert">
+                        <span><b>Information Regarding the Bounty Fund</b><br><small>The bounty fund is split among all bounty submissions after the job has been closed. In your current setup, <b><span id="fund_bnt2_cr"></span> XEL</b> are put in the bounty fund. Please note, this amount can only be refunded if no bounties have been submitted. The first bounty submission consumes the entire amount.</small></span>
+                    </div>
+
+              </div>
+            </div>
+
+
+            </div>
+            <div class="modal-footer" style="margin-top:0;">
+                <div class="advanced_info"><a href="#" data-i18n="advanced">advanced</a></div>
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-i18n="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" data-loading-text="Submitting...">Submit Work</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>

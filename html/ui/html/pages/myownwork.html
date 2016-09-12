@@ -1,0 +1,170 @@
+<div id="myownwork_page" class="page">
+    <section class="content-header">
+        <h1 data-i18n="work_author">Work Management</h1>
+        
+       
+    
+    </section>
+    <section class="content content-stretch" style="position:fixed;margin-top:3px;padding:0; width:100%; height:100%; height: calc(100% - 101px); overflow:hidden;">
+        <div class="content-spliter">
+          <div class="content-splitter-inner">
+              <div class="content-splitter-sidebar" id="myownwork_sidebar_outer" style="width:450px;overflow-x:hidden;">
+                  <div class="content-splitter-sidebar-inner">
+                    <div class="list-group unselectable sidebar_context" id="myownwork_sidebar">
+                        <div style="text-align:center;padding-top:10px;"><span data-i18n="loading_please_wait">Loading, please wait</span><span class="loading_dots"><span>.</span><span>.</span><span>.</span></span></div>
+                    </div>
+                     </div>
+                 </div>
+                 <div class="content-splitter-wide-right" id="message_content" >
+                    <div class="content-splitter-right-inner" style="left:450px">
+                        <div id="no_work_selected" style="padding-top: 150px;text-align:center;" data-i18n="select_sidebar_work">Please select a task in the left sidebar, or create a new one.</div>
+                        <div id="no_work_confirmed" style="padding-top: 150px;text-align:center; display: none; " data-i18n="wait_sidebar_work">Please wait until the selected task has at least one confirmation.</div>
+                        
+
+                        <div id="work_details" style="display:none;">
+                        <h2 class="workh2">
+
+                        <button style="float: right; margin-top: 0px;" id="cancel_btn" type="button" class="btn linkfloater misalignedbutton btn-danger" data-i18n="btn_cancel_refund">Cancel and Refund</button>
+
+                        <button style="float: right; margin-top: 0px;" id="work_indicator" type="button" class="btn linkfloater misalignedbutton btn-default"><span id="work_indicator_inner">...</span></button>
+
+                        <span id="work_title_right">Prime Number Example</span></h2>
+                         <div class="row">
+                                       
+                                        <div class="col-lg-6">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    Job Overview
+                                                </div>
+                                                <!-- /.panel-heading -->
+                                                <div class="panel-body">
+                                                    <form lpformnum="1" role="form">
+                                                        <div class="form-group">
+                                                            <label><i class="fa fa-money fa-fw"></i> Originally Available Balance</label>
+                                                            <p class="form-control-static"><b><span id="bal_original">--</span></b> XEL - <span id="bal_work">--</span>% POW / <span id="bal_bounties">--</span>% Bounties [<a href=#>?</a>]</p>
+                                                        </div>
+                                                         <div class="form-group" id="hideable">
+                                                            <label><i class="fa fa-pie-chart fa-fw"></i> <span id="balancelefttitle">Balance Left</span></label>
+                                                            <p class="form-control-static">
+                                                            <!--<b><span id="bal_remained">--</span></b> XEL <span id="detailedlisting"></span>-->
+                                                            <table><tr>
+                                                            <td class="sparkcell" style="vertical-align: top;">POW Fund<br><div class="updowngap"><span id="powfund"></span></div><b><span id="bal_remained_pow">--</span></b> XEL<br><small>(<span id="bal_remained_pow_percent">--</span>% left)</small></td>
+                                                            <td class="sparkcell" style="vertical-align: top;">Bounty Fund<br><div class="updowngap"><span id="bountyfund"></span></div><b><span id="bal_remained_bnt">--</span></b> XEL<br><small>(<span id="bnt_percent_left">--</span>% left)</small></td>
+                                                            <td class="sparkcell" style="vertical-align: top;">Refundable<br><div class="updowngap"><span id="refundfund"></span></div><b><span id="bal_remained">--</span></b> XEL<br><small>(<span id="bal_remained_percent">--</span>% refundable)</small></td>
+                                                            </tr></table>
+                                                            <div class="alert alert-success sparkbeautycell" id="bountyfundthere" role="alert">
+                                                              <span>No bounties have been submitted yet, you can refund the entire bounty fund. As soon as the first bounty submission has been made, the bounty fund is emptied and later-after the work is finished or cancelled-distributed among all bounty submissions.</span>
+                                                            </div>
+                                                            <div class="alert alert-danger sparkbeautycell" id="bountyfundgone" role="alert">
+                                                              <span>Because bounties have been already submitted, you cannot refund the bounty fund. The bounty fund has been emptied and will be later-after the work is finished or cancelled-distributed among all bounty submissions.</span>
+                                                            </div>
+                                                            </p>
+
+                                                        </div>
+                                                         <div class="form-group">
+                                                            <label><i class="fa fa-plane fa-fw"></i> Completion Status</label>
+                                                            <p class="form-control-static">
+                                                            <table><tr><td class="statetable" style="vertical-align: top;">
+                                                                   You have received <b><span id="bnt_connected">--</span></b> bounties or useful solutions so far:<br><br>
+                                                                    <div class="progress">
+                                                                      <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" id="progbar_work" style="width: 60%;">
+                                                                        <span id="percent_done">--</span>% finished
+                                                                      </div>
+                                                                    </div>
+                                                                    <small>Your job is limited to 10 bounties</small>
+                                                            </td><td class="statetable" style="vertical-align: top;">
+                                                                   Your job received<br><b><span id="number_pow">--</span></b> proof of work submissions:<br><br>
+                                                                    <div class="progress">
+                                                                      <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" id="progbar_pow" style="width: 60%;">
+                                                                        <span id="bal_remained_pow_percent_2">--</span>% finished
+                                                                      </div>
+                                                                    </div>
+                                                                    <small><span id="pow_paid_out">--</span> XEL were paid out already.</small>
+                                                            </td>
+                                                            </tr></table>
+                                                            </p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><i class="fa fa-hashtag fa-fw"></i> Programming Language</label>
+                                                            <p class="form-control-static"><span id="programming_language">--</span></p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><i class="fa fa-sign-in fa-fw"></i> Random Input Integers</label>
+                                                            <p class="form-control-static"><b><span id="num_in">--</span></b> Inputs</p>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><i class="fa fa-file fa-fw"></i>Total Size on Blockchain</label>
+                                                            <p class="form-control-static"><b><span id="blockchain_bytes">--</span></b> - fee [<a href=#>?</a>] was <b><span id="fee">--</span></b> XEL</p>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                                        <!-- /.col-lg-6 -->
+                                        <div class="col-lg-6">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    How Efficient Is Your Job?
+                                                     <div class="btn-group pull-right" style="margin-top: -7px">
+                                                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                                            <span class="text" data-i18n="time_dpdwn_5min">5 Minutes</span> <span class="caret"></span>
+                                                        </button>
+                                                        <ul id="dpdwn_type" class="dropdown-menu" role="menu" style="right:0;left:auto;">
+                                                            <li><a href="#" data-type="5" data-i18n="time_dpdwn_5min">5 Minutes</a></li>
+                                                            <li><a href="#" data-type="15" data-i18n="time_dpdwn_15min">15 Minutes</a></li>
+                                                            <li><a href="#" data-type="60" data-i18n="time_dpdwn_60min">60 Minutes</a></li>
+                                                            <li><a href="#" data-type="1" data-i18n="time_dpdwn_1day">1 day</a></li>
+                                                            <li><a href="#" data-type="14" data-i18n="time_dpdwn_14days">14 days</a></li>
+                                                            <li><a href="#" data-type="30" data-i18n="time_dpdwn_30days">30 days</a></li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <!-- /.panel-heading -->
+                                                <div class="panel-body">
+                                                    <div class="flot-chart">
+                                                        <div class="alert_message_flot flot_hidden" id="flot_alert"><div id="fountainG">
+                                                        <div id="fountainG_1" class="fountainG"></div>
+                                                        <div id="fountainG_2" class="fountainG"></div>
+                                                        <div id="fountainG_3" class="fountainG"></div>
+                                                        <div id="fountainG_4" class="fountainG"></div>
+                                                        <div id="fountainG_5" class="fountainG"></div>
+                                                        <div id="fountainG_6" class="fountainG"></div>
+                                                        <div id="fountainG_7" class="fountainG"></div>
+                                                        <div id="fountainG_8" class="fountainG"></div>
+                                                    </div></div>
+                                                        <div class="flot-chart-content" id="flot-line-chart-multi"></div>
+                                                    </div>
+                                                </div>
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                                        <!-- /.col-lg-6 -->
+                                       <div class="col-lg-6">
+                                            <div class="panel panel-default">
+                                                <div class="panel-heading">
+                                                    Target Value Plot (first 64bit)
+                                                </div>
+                                                <!-- /.panel-heading -->
+                                                <div class="panel-body">
+                                                    <div class="flot-chart">
+                                                        <div class="alert_message_flot flot_hidden" id="flot_alert_2"></div>
+                                                        <div class="flot-chart-content" id="flot-line-chart-multi_2"></div>
+                                                    </div>
+                                                </div>
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                        </div>
+
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
