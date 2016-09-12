@@ -451,7 +451,13 @@ public class AccountLedger {
             SHUFFLING_REGISTRATION(51, true),
             SHUFFLING_PROCESSING(52, true),
             SHUFFLING_CANCELLATION(53, true),
-            SHUFFLING_DISTRIBUTION(54, true);
+            SHUFFLING_DISTRIBUTION(54, true),
+            WORK_CREATION(100, true),
+    		WORK_CANCELLATION_REQUEST(101, true),
+    		WORK_CANCELLATION(102, true),
+    		WORK_BOUNTY(103, true),
+    		WORK_BOUNTY_PAYOUT(104, true),
+    		WORK_POW(105, true);
 
 
         /** Event code mapping */

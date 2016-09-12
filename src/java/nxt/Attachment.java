@@ -218,6 +218,417 @@ public interface Attachment extends Appendix {
 
     }
     
+
+    public final static class WorkIdentifierCancellation extends AbstractAttachment {
+
+        public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+
+		WorkIdentifierCancellation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workId = buffer.getLong();
+        }
+
+		WorkIdentifierCancellation(JSONObject attachmentData) {
+            super(attachmentData);
+            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+        }
+
+        public WorkIdentifierCancellation(long workId) {
+            this.workId = workId;
+        }
+
+
+        @Override
+        int getMySize() {
+            return 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putLong(this.workId);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("id", Convert.toUnsignedLong(this.workId));
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+        	return TransactionType.WorkControl.CANCEL_TASK;
+        }
+    }
+    
+    public final static class WorkIdentifierCancellationRequest extends AbstractAttachment {
+
+        public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+
+		WorkIdentifierCancellationRequest(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workId = buffer.getLong();
+        }
+
+		WorkIdentifierCancellationRequest(JSONObject attachmentData) {
+            super(attachmentData);
+            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+        }
+
+        public WorkIdentifierCancellationRequest(long workId) {
+            this.workId = workId;
+        }
+
+        @Override
+        int getMySize() {
+            return 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putLong(this.workId);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("id", Convert.toUnsignedLong(this.workId));
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+        	return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
+        }
+    }
+    
+    public final static class WorkIdentifierBountyPayment extends AbstractAttachment {
+
+        public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+
+		WorkIdentifierBountyPayment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workId = buffer.getLong();
+        }
+
+		WorkIdentifierBountyPayment(JSONObject attachmentData) {
+            super(attachmentData);
+            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+        }
+
+        public WorkIdentifierBountyPayment(long workId) {
+            this.workId = workId;
+        }
+
+        @Override
+        int getMySize() {
+            return 8;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putLong(this.workId);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("id", Convert.toUnsignedLong(this.workId));
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+        	return TransactionType.WorkControl.BOUNTY_PAYOUT;
+        }
+    }
+    
+    public final static class PiggybackedProofOfWork extends AbstractAttachment {
+
+        public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+        private final int[] input;
+		
+
+		public int[] getInput() {
+			return input;
+		}
+
+		PiggybackedProofOfWork(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workId = buffer.getLong();
+            
+            int numInputVars = buffer.get();
+            if (numInputVars > WorkLogicManager.getInstance().getMaxNumberInputInts() || numInputVars < WorkLogicManager.getInstance().getMinNumberInputInts()) {
+                throw new NxtException.NotValidException("Invalid number of state variables: " + numInputVars);
+            }
+            this.input = new int[numInputVars];
+            for (int i = 0; i < numInputVars; i++) {
+            	input[i] = buffer.getInt();
+            }
+        }
+
+		PiggybackedProofOfWork(JSONObject attachmentData) {
+            super(attachmentData);
+            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+
+            JSONArray inputRaw = (JSONArray) attachmentData.get("input");
+            this.input = new int[inputRaw.size()];
+            for (int i = 0; i < inputRaw.size(); i++) {
+            	input[i] = ((Long) inputRaw.get(i)).intValue();
+            }
+        }
+
+        public PiggybackedProofOfWork(long workId, int[] input) {
+            this.workId = workId;
+            this.input = input;
+        }
+
+     
+
+        @Override
+        int getMySize() {
+            return 8 + 1 /*number of inputs*/ + 4*this.input.length;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.putLong(this.workId);
+            buffer.put((byte)(input.length&0xFF));
+            for (int i = 0; i < input.length; i++) {
+            	buffer.putInt(input[i]);
+            }
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("id", Convert.toUnsignedLong(this.workId));
+   
+            JSONArray input2 = new JSONArray();
+            for(int i=0;i<input.length;++i){
+            	input2.add(input[i]);
+            }
+            attachment.put("input", input2);
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+        	return TransactionType.WorkControl.PROOF_OF_WORK;
+        }
+
+		
+    }
+    
+    public final static class PiggybackedProofOfBounty extends AbstractAttachment {
+
+        public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+        private final int[] input;
+		
+
+        public int[] getInput() {
+			return input;
+		}
+
+		PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workId = buffer.getLong();            
+            int numberOfOptions = (int)buffer.get();
+            if (numberOfOptions > WorkLogicManager.getInstance().getMaxNumberInputInts() || numberOfOptions < WorkLogicManager.getInstance().getMinNumberInputInts()) {
+                throw new NxtException.NotValidException("Invalid number of input variables: " + numberOfOptions);
+            }
+            this.input = new int[numberOfOptions];
+            for (int i = 0; i < numberOfOptions; i++) {
+            	input[i] = buffer.getInt();
+            }
+        }
+
+        PiggybackedProofOfBounty(JSONObject attachmentData) {
+            super(attachmentData);
+            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+            JSONArray inputRaw = (JSONArray) attachmentData.get("input");
+            this.input = new int[inputRaw.size()];
+            for (int i = 0; i < inputRaw.size(); i++) {
+            	input[i] = ((Long) inputRaw.get(i)).intValue();
+            }
+        }
+
+        public PiggybackedProofOfBounty(long workId, int[] input) {
+            this.workId = workId;
+            this.input = input;
+        }
+
+        @Override
+        int getMySize() {
+            return 8 + 1 /*number of inputs*/ + 4*this.input.length;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+        	 buffer.putLong(this.workId);
+             buffer.put((byte)(input.length&0xFF));
+             for (int i = 0; i < input.length; i++) {
+             	buffer.putInt(input[i]);
+             }
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("id", Convert.toUnsignedLong(this.workId));
+            
+            JSONArray input2 = new JSONArray();
+            for(int i=0;i<input.length;++i){
+            	input2.add(input[i]);
+            }
+            attachment.put("input", input2);
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+        	return TransactionType.WorkControl.BOUNTY;
+        }
+
+    }
+
+    public final static class WorkCreation extends AbstractAttachment {
+
+        private final String workTitle;
+		private final byte workLanguage;
+        private final byte[] programmCode;
+        private final byte numberInputVars;
+        private final int deadline;
+        private final long xelPerPow;
+        private final int bountyLimit;
+
+        WorkCreation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            super(buffer, transactionVersion);
+            this.workTitle = Convert.readString(buffer, buffer.getShort(), Constants.MAX_TITLE_LENGTH);
+            this.workLanguage = buffer.get();
+            int codeLength = buffer.getInt();
+            if (codeLength > Constants.MAX_WORK_CODE_LENGTH) {
+                throw new NxtException.NotValidException("Invalid source code length: " + codeLength);
+            }
+            this.programmCode = new byte[codeLength];
+            buffer.get(this.programmCode, 0, this.programmCode.length);
+       
+            this.numberInputVars = buffer.get();
+            
+            this.deadline = buffer.getInt();
+            this.bountyLimit = buffer.getInt();
+            this.xelPerPow = buffer.getInt();
+        }
+
+        WorkCreation(JSONObject attachmentData) {
+            super(attachmentData);
+            
+            this.workTitle = ((String) attachmentData.get("title")).trim();
+            this.workLanguage = ((Long) attachmentData.get("language")).byteValue();
+            this.programmCode = Ascii85.decode(((String) attachmentData.get("programCode")).trim());
+            this.numberInputVars = ((Long) attachmentData.get("numInputs")).byteValue();
+            this.deadline = ((Long) attachmentData.get("deadline")).intValue();
+            this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
+            this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
+        }
+
+        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, byte numberInputVars, int deadline, int bountyLimit, long xel_per_pow) {
+        	this.workTitle = workTitle;
+            this.workLanguage = workLanguage;
+            this.programmCode = programmCode;
+            this.numberInputVars = numberInputVars;
+            this.deadline = deadline;
+            this.bountyLimit = bountyLimit;
+            this.xelPerPow = xel_per_pow;
+        }
+
+   
+
+        @Override
+        int getMySize() {
+            int size = 2 + Convert.toBytes(workTitle).length + 1 + 4 + this.programmCode.length + 1 + 4 + 4 + 8;
+            return size;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            byte[] name = Convert.toBytes(this.workTitle);
+            
+            buffer.putShort((short)name.length);
+            buffer.put(name);
+            
+            buffer.put((byte) this.workLanguage);
+            int length = this.programmCode.length;
+            buffer.putInt(length);
+            buffer.put(this.programmCode);
+
+            buffer.put(this.numberInputVars);
+            
+            buffer.putInt(this.deadline);
+            buffer.putInt(this.bountyLimit);
+            buffer.putLong(this.xelPerPow);
+        }
+
+        @Override
+        void putMyJSON(JSONObject attachment) {
+            attachment.put("title", this.workTitle);
+            attachment.put("language", this.workLanguage);
+            attachment.put("programCode", Ascii85.encode(this.programmCode));
+            attachment.put("deadline", this.deadline);
+            attachment.put("numInputs", this.numberInputVars);
+            attachment.put("bountyLimit", this.bountyLimit);
+            attachment.put("xel_per_pow", this.xelPerPow);
+            
+        }
+
+        @Override
+        public TransactionType getTransactionType() {
+            return TransactionType.WorkControl.NEW_TASK;
+        }
+
+        public String getWorkTitle() {
+			return workTitle;
+		}
+
+		public int getBountyLimit() {
+			return bountyLimit;
+		}
+		
+		public long getXelPerPow() {
+			return xelPerPow;
+		}
+
+		public byte getWorkLanguage() {
+			return workLanguage;
+		}
+
+		public byte[] getProgrammCode() {
+			return programmCode;
+		}
+
+		
+
+		public byte getNumberInputVars() {
+			return numberInputVars;
+		}
+
+
+		public int getDeadline() {
+			return deadline;
+		}
+
+    }
+    
     final class MessagingAccountInfo extends AbstractAttachment {
 
         private final String name;
