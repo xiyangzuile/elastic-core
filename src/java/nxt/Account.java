@@ -479,7 +479,7 @@ public final class Account {
 		return key;
 	}
 
-	static Account addOrGetAccount(long id) {
+	public static Account addOrGetAccount(long id) {
 		if (id == 0) {
 			throw new IllegalArgumentException("Invalid accountId 0");
 		}

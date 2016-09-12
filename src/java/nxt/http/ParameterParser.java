@@ -46,10 +46,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
+import org.eclipse.jetty.server.Request;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -68,7 +70,33 @@ import nxt.util.Logger;
 import nxt.util.Search;
 
 public final class ParameterParser {
+	
+	static String convertStreamToString(java.io.InputStream is) {
+	    java.util.Scanner s = new java.util.Scanner(is);
+	    s.useDelimiter("\\A");
+	    String res = s.hasNext() ? s.next() : "";
+	    s.close();
+	    return res;
+	}
+	
+	
 
+	public static String getParameterMultipart(HttpServletRequest req,String arg0) {
+		String result = req.getParameter(arg0);
+		if (result == null && req.getMethod()=="POST" && req.getContentType().toLowerCase().contains("multipart")){
+			try{
+				MultipartConfigElement multipartConfigElement = new MultipartConfigElement((String)null);
+				req.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, multipartConfigElement);
+				result = convertStreamToString(req.getPart(arg0).getInputStream()); 
+			}
+			
+			catch(Exception e){
+				// pass
+			}	
+		}
+		return result;
+	}
+	
     public static byte getByte(HttpServletRequest req, String name, byte min, byte max, boolean isMandatory) throws ParameterException {
         String paramValue = Convert.emptyToNull(req.getParameter(name));
         if (paramValue == null) {
