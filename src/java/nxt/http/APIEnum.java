@@ -110,7 +110,14 @@ public enum APIEnum {
     SET_API_PROXY_PEER("setAPIProxyPeer", SetAPIProxyPeer.instance),
     SEND_TRANSACTION("sendTransaction", SendTransaction.instance),
     BLACKLIST_API_PROXY_PEER("blacklistAPIProxyPeer", BlacklistAPIProxyPeer.instance),
-    GET_NEXT_BLOCK_GENERATORS("getNextBlockGenerators", GetNextBlockGeneratorsTemp.instance);
+    GET_NEXT_BLOCK_GENERATORS("getNextBlockGenerators", GetNextBlockGeneratorsTemp.instance),
+    CREATE_WORK("createWork", CreateWork.instance),
+    CANCEL_WORK("cancelWork", CancelWork.instance),
+    CREATE_POX("createPoX", ProofOfX.instance),
+    GET_ACCOUNT_WORK("getAccountWork", GetAccountWork.instance),
+    GET_ACCOUNT_EFFICIENCY("getAccountWorkEfficiencyPlot", GetAccountWorkEfficiencyPlot.instance),
+    GET_MINEABLE_WORK("getMineableWork", GetMineableWork.instance),
+    GET_POW_BOUNDS("getPowPayoutBounds", GetPowPayoutBounds.instance);
 
     private static final Map<String, APIEnum> apiByName = new HashMap<>();
 

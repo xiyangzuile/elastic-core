@@ -17,8 +17,59 @@
 /**
  * @depends {nrs.js}
  */
+function parseFormData(model){
+  var formData = new FormData();
+
+  function parseArray(arrayKey, arrayValue){
+    if ($.type(arrayValue) !== undefined) {
+      if($.type(arrayValue[0]) === 'string'){
+        parseAttribute(arrayKey, arrayValue)
+      } else {
+        $.each(arrayValue, function loopArray(attributeKey, attributeValue) {
+          parseModel(arrayKey+'['+attributeKey+']', attributeValue);
+        });
+      }
+    }
+  }
+
+  function parseObject(objectKey, objectValue){
+    if ($.type(objectValue) !== undefined) {
+      $.each(objectValue, function loopObject(attributeKey, attributeValue) {
+        parseAttribute(objectKey+'['+attributeKey+']', attributeValue);
+      });
+    }
+  }
+
+  function parseAttribute(attributeKey, attributeValue){
+
+    if (attributeValue !== undefined ) {
+      if($.type(attributeValue) === 'array' && $.type(attributeValue[0]) !== 'string'){
+        parseArray(attributeKey, attributeValue)
+      }
+      else if($.isPlainObject(attributeValue) ){
+        parseObject(attributeKey, attributeValue)
+      }
+      else {
+        formData.append(attributeKey, attributeValue);
+      }
+    } 
+  }
+
+  function parseModel(keyString, model){
+    $.each(model, function loopModel(inputKey, inputValue) {
+      parseAttribute(keyString !== '' ? keyString+'['+inputKey+']' : inputKey, inputValue);
+    });
+  }
+
+  parseModel('', model);
+
+  return formData;
+}
+
 var NRS = (function (NRS, $, undefined) {
     var _password;
+
+
 
     NRS.setServerPassword = function (password) {
         _password = password;
@@ -274,12 +325,14 @@ var NRS = (function (NRS, $, undefined) {
             currentSubPage = NRS.currentSubPage;
         }
 
-        var type = (NRS.isRequirePost(requestType) || "secretPhrase" in data || "doNotSign" in data || "adminPassword" in data ? "POST" : "GET");
+        var type = (NRS.isRequirePost(requestType) || "secretPhrase" in data || "doNotSign" in data || "adminPassword" in data || ("source_code" in data) ? "POST" : "GET");
         var url = NRS.getRequestPath();
         if (noProxy) {
             url = "/nxt";
         }
         url += "?requestType=" + requestType;
+
+        var subtype = ("source_code" in data) ? "MULTIPART" : "";
 
         if (type == "GET") {
             if (typeof data == "string") {
@@ -385,8 +438,7 @@ var NRS = (function (NRS, $, undefined) {
             contentType = "application/x-www-form-urlencoded; charset=UTF-8";
             processData = true;
         }
-
-        $.ajax({
+        var callDict = {
             url: url,
             crossDomain: true,
             dataType: "json",
@@ -397,10 +449,15 @@ var NRS = (function (NRS, $, undefined) {
             currentSubPage: currentSubPage,
             shouldRetry: (type == "GET" ? 2 : undefined),
             traditional: true,
-            data: (formData != null ? formData : data),
+            data: (formData != null ? (type=="POST" && subtype=="MULTIPART")?parseFormData(formData):formData : (type=="POST" && subtype=="MULTIPART")?parseFormData(data):data),
             contentType: contentType,
             processData: processData
-        }).done(function (response) {
+        };
+        if (type=="POST" && subtype=="MULTIPART"){
+            callDict["contentType"]=false;
+            callDict["cache"]=false;
+        }
+        $.ajax(callDict).done(function (response) {
             NRS.escapeResponseObjStrings(response);
             if (NRS.console) {
                 NRS.addToConsole(this.url, this.type, this.data, response);
