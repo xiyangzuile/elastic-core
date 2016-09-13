@@ -143,7 +143,7 @@ var NRS = (function(NRS, $, undefined) {
 									console.log("Calling REPLACEINSIDEBAR");
 									console.log(s);
 									replaceInSidebar(s);
-									updateWork(s.workId, s);
+									updateWork(s.work_id, s);
 
 									// Also update any views that are open
 									updateWorkItemView();
@@ -178,7 +178,7 @@ var NRS = (function(NRS, $, undefined) {
 			if (response.work_packages && response.work_packages.length) {
 				for (var i = 0; i < response.work_packages.length; i++) {
 					replaceInSidebar(response.work_packages[i]);
-					updateWork(response.work_packages[i].workId, response.work_packages[i]);
+					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
 				}
 			}
 		});
@@ -202,7 +202,10 @@ var NRS = (function(NRS, $, undefined) {
 		}, function(response) {
 			if (response.work_packages && response.work_packages.length) {
 				for (var i = 0; i < response.work_packages.length; i++) {
-					updateWork(response.work_packages[i].workId, response.work_packages[i]);
+					
+
+
+					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
 				}
 				displayWorkSidebar(callback);
 			} else {
@@ -236,8 +239,7 @@ var NRS = (function(NRS, $, undefined) {
 	}
 	
 	function timeOut(message){
-		var blocksLeft = parseInt(message.timeout_at_block);
-		blocksLeft -= NRS.lastBlockHeight;
+		var blocksLeft = message.blocksRemaining;
 
 		if (blocksLeft > 500)
 			blocksLeft=">500";
@@ -254,14 +256,12 @@ var NRS = (function(NRS, $, undefined) {
 			return "";
 	}
 	function efficiency(message){
-		return "<b>" + message.bounties_connected + "</b> bounties";
+		return "<b>" + message.received_bounties + "</b> bounties";
 	}
 	function statusspan(message){
-		if(message.cancellation_tx=="0" && message.last_payment_tx=="0")
+		if(message.closed == false)
 			return "<span id='activeLabel' class='label label-success label12px'>Active</span>";
-		else if(message.cancellation_tx!="0" && message.last_payment_tx=="0")
-			return "<span id='activeLabel' class='label label-danger label12px'>Cancelled</span>";
-		else if(message.cancellation_tx=="0" && message.last_payment_tx!="0")
+		else
 			return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
 	}
 	function statusspan_precancel(){
@@ -270,14 +270,14 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function moneyReturned(message){
-		return "<b>" + NRS.formatAmount(message.balance_remained) + " XEL</b> refunded";
+		return "<b>??? XEL</b> refunded";
 	}
 	function moneyPaid(message){
-		return "<b>" + NRS.formatAmount(message.balance_original) + " XEL</b> paid out";
+		return "<b>??? XEL</b> paid out";
 	}
 
 	function balancespan(message){
-		return writeIfTrue("<span class='label label-white label12px'>" + NRS.formatAmount(message.balance_remained) + " XEL</span>", message.cancellation_tx=="0" && message.last_payment_tx=="0");
+		return writeIfTrue("<span class='label label-white label12px'>" + NRS.formatAmount(message.balance_pow_fund + message.balance_bounty_fund) + " XEL</span>", message.closed == false);
 	}
 
 	function flopsFormatter(v, axis) {
@@ -464,13 +464,10 @@ var NRS = (function(NRS, $, undefined) {
 
 
 	function bottom_status_row(message){
-		if(message.cancellation_tx=="0" && message.last_payment_tx=="0"){
+		if(message.closed==false){
 			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-tasks fa-fw'></i> " + status2Text(message) + "</div><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-3'><i class='fa fa-times-circle-o fa-fw'></i> " + timeOut(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
-		else if(message.cancellation_tx!="0" && message.last_payment_tx=="0"){
-			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-6'><i class='fa fa-mail-reply fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
-		}
-		else if(message.cancellation_tx=="0" && message.last_payment_tx!="0"){
+		else{
 			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 	}
@@ -486,7 +483,7 @@ var NRS = (function(NRS, $, undefined) {
 		if(_workToIndex[workId]==null){
 			_work.push(workPackage);
 			for (var i = 0; i < _work.length; i++) {
-					_workToIndex[_work[i].workId] = i;
+					_workToIndex[_work[i].work_id] = i;
 			}
 		}else{
 			_work[_workToIndex[workId]]=workPackage;
@@ -494,12 +491,12 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function replaceInSidebar(message){
-		newElement = "<a href='#' data-workid='" + message.workId + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>" + message.language + "</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.block_height_created) + " (block #" + message.block_height_created + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
-		if($("#myownwork_sidebar").children().filter('[data-workid="' + message.workId + '"]').length>0){
-			var hasActiveClass=$("#myownwork_sidebar").children().filter('[data-workid="' + message.workId + '"]').hasClass("active");
-			$("#myownwork_sidebar").children().filter('[data-workid="' + message.workId + '"]').replaceWith(newElement);
+		newElement = "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>" + message.language + "</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.height) + " (block #" + message.height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
+		if($("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').length>0){
+			var hasActiveClass=$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').hasClass("active");
+			$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').replaceWith(newElement);
 			if(hasActiveClass){
-				$("#myownwork_sidebar").children().filter('[data-workid="' + message.workId + '"]').addClass("active");
+				$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').addClass("active");
 			}
 		}else{
 			console.log("ADDING");
@@ -537,7 +534,7 @@ var NRS = (function(NRS, $, undefined) {
 		rows += newworkrow;
 		for (var i = 0; i < _work.length; i++) {
 			var message = _work[i];
-			rows += "<a href='#' data-workid='" + message.workId + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>" + message.language + "</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.block_height_created) + " (block #" + message.block_height_created + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
+			rows += "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>ElasticPL</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.height) + " (block #" + message.height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
 		}
 
 		$("#myownwork_sidebar").empty().append(rows);
@@ -688,7 +685,7 @@ var NRS = (function(NRS, $, undefined) {
 			$("#work_indicator").removeClass("btn-success").removeClass("btn-warning").removeClass("btn-default").removeClass("btn-info").addClass("btn-success");
 			$("#work_indicator_inner").empty().append("Active");
 			$("#cancel_btn").show();
-			if ($("#myownwork_sidebar").children().filter('[data-workid="' + workItem.workId + '"]').find(".label-warning").length>0){
+			if ($("#myownwork_sidebar").children().filter('[data-workid="' + workItem.work_id + '"]').find(".label-warning").length>0){
 				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
 				$("#work_indicator_inner").empty().append("Cancel Requested");
 				$("#cancel_btn").hide();
@@ -713,8 +710,8 @@ var NRS = (function(NRS, $, undefined) {
 			$("#detailedlisting").empty().append("");
 		}
 
-		$("#job_id").empty().append(workItem.workId);
-			document.getElementById("workId").value = workItem.workId;
+		$("#job_id").empty().append(workItem.work_id);
+			document.getElementById("workId").value = workItem.work_id;
 
 			// Now fill the right side correctly
 			$("#work_title_right").empty().append(workItem.title);
@@ -809,7 +806,7 @@ var NRS = (function(NRS, $, undefined) {
 			
 			// plot with loading indicator
 			doPlot();
-			globalWorkItem = workItem.workId;
+			globalWorkItem = workItem.work_id;
 			// Estimate number of blocks to fetch
 			var lmt = 30;
 			if(globalType == "5"){
@@ -838,7 +835,7 @@ var NRS = (function(NRS, $, undefined) {
 			}
 			// Now load real data
 			NRS.sendRequest("getAccountWorkEfficiencyPlot", {
-			"workId": workItem.workId,
+			"workId": workItem.work_id,
 			"last_num": lmt
 			}, function(response) {
 				if (response.computation_power) {

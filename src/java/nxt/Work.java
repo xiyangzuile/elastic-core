@@ -183,6 +183,7 @@ public final class Work {
     private final int received_bounties;
     private final int received_pows;
     private short blocksRemaining;
+    private int height;
 
     private Work(Transaction transaction, Attachment.WorkCreation attachment) {
         this.id = transaction.getId();
@@ -199,6 +200,7 @@ public final class Work {
         this.received_pows = 0;        
         this.bounty_limit = attachment.getBountyLimit();
         this.sender_account_id = transaction.getSenderId();
+        this.height = 0;
     }
 
     private Work(ResultSet rs, DbKey dbKey) throws SQLException {
@@ -218,6 +220,7 @@ public final class Work {
         this.received_pows = rs.getInt("received_pows");        
         this.bounty_limit = rs.getInt("bounty_limit");
         this.sender_account_id = rs.getLong("sender_account_id");
+        this.height = rs.getInt("height");
     }
 
     private void save(Connection con) throws SQLException {
@@ -369,6 +372,7 @@ public final class Work {
 		response.put("received_pows",this.received_pows);    
 		response.put("bounty_limit",this.bounty_limit);
 		response.put("sender_account_id",this.sender_account_id);
+		response.put("height",this.height);
 		return response;
 	}
 
