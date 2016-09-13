@@ -486,7 +486,7 @@ public interface Appendix {
             this.hash = new byte[32];
             buffer.get(this.hash);
             this.source = null;
-            this.language = buffer.getShort();
+            this.language = 0;
         }
 
         private PrunableSourceCode(JSONObject attachmentData) {
@@ -535,7 +535,7 @@ public interface Appendix {
 
         @Override
         int getMyFullSize() {
-            return getSource() == null ? 0 : getSource().length;
+            return getSource() == null ? 0 : getSource().length + 2 /* short for language id*/;
         }
 
         @Override
