@@ -135,7 +135,7 @@ public final class CreateWork extends CreateTransaction {
 				if (WCET > WorkLogicManager.getInstance().maxWorstCaseExecutionTime()) {
 					return INCORRECT_EXECUTION_TIME;
 				}else{
-					System.out.println("Created work with WCET " + WCET);
+					// all went well
 				}
 
 				rootNode.reset();
