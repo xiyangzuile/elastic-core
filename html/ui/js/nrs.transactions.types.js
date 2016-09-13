@@ -69,6 +69,49 @@ var NRS = (function(NRS, $, undefined) {
                     'receiverPage': "transactions"
                 }
             }
+        },
+        3: {
+            'title': "Work Management",
+            'i18nKeyTitle': 'work_control',
+            'iconHTML': '<i class="fa fa-database"></i>',
+            'subTypes': {
+                0: {
+                    'title': "Work Creation",
+                    'i18nKeyTitle': 'work_creation',
+                    'iconHTML': '<i class="fa fa-plus-circle"></i>',
+                    'receiverPage': "myownwork"
+                },
+                1: {
+                    'title': "Work Cancellation",
+                    'i18nKeyTitle': 'work_cancellation',
+                    'iconHTML': '<i class="fa fa-power-off"></i>',
+                    'receiverPage': "myownwork"
+                },
+                2: {
+                    'title': "Proof Of Work",
+                    'i18nKeyTitle': 'proof_of_work',
+                    'iconHTML': '<i class="fa fa-server"></i>',
+                    'receiverPage': "myownwork"
+                },
+                3: {
+                    'title': "Bounty",
+                    'i18nKeyTitle': 'bounty',
+                    'iconHTML': '<i class="fa fa-star"></i>',
+                    'receiverPage': "myownwork"
+                },
+                4: {
+                    'title': "Bounty Payout",
+                    'i18nKeyTitle': 'bounty_pay',
+                    'iconHTML': '<i class="fa fa-money"></i>',
+                    'receiverPage': "myownwork"
+                },
+                5: {
+                    'title': "Work Cancellation Request",
+                    'i18nKeyTitle': 'work_cancellation_r',
+                    'iconHTML': '<i class="fa fa-spinner"></i>',
+                    'receiverPage': "myownwork"
+                }
+            }
         }
     };
 

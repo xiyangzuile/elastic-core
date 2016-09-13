@@ -714,17 +714,16 @@ class NxtDbVersion extends DbVersion {
                         + "encrypted_message VARBINARY, encrypted_is_text BOOLEAN DEFAULT FALSE, "
                         + "is_encrypted BOOLEAN NOT NULL, timestamp INT NOT NULL, expiration INT NOT NULL, height INT NOT NULL, "
                         + "FOREIGN KEY (height) REFERENCES block (height) ON DELETE CASCADE)");
-                apply("CREATE TABLE IF NOT EXISTS prunable_source_code (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, "
+            case 287:
+            	apply("CREATE TABLE IF NOT EXISTS prunable_source_code (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, "
                         + "source VARBINARY NOT NULL, language SMALLINT NOT NULL, timestamp INT NOT NULL, expiration INT NOT NULL, height INT NOT NULL, "
                         + "FOREIGN KEY (height) REFERENCES block (height) ON DELETE CASCADE)");
-            case 287:
-                apply("CREATE UNIQUE INDEX IF NOT EXISTS prunable_message_id_idx ON prunable_message (id)");
-                apply("CREATE UNIQUE INDEX IF NOT EXISTS prunable_source_code_id_idx ON prunable_source_code (id)");
+                
             case 288:
-                apply(null);
+            	apply("CREATE UNIQUE INDEX IF NOT EXISTS prunable_message_id_idx ON prunable_message (id)");
             case 289:
                 apply("CREATE INDEX IF NOT EXISTS prunable_message_expiration_idx ON prunable_message (expiration DESC)");
-                apply("CREATE INDEX IF NOT EXISTS prunable_source_code_expiration_idx ON prunable_source_code (expiration DESC)");
+               
             case 290:
                 apply("ALTER TABLE transaction ADD COLUMN IF NOT EXISTS has_prunable_message BOOLEAN NOT NULL DEFAULT FALSE");
             case 291:
@@ -740,28 +739,22 @@ class NxtDbVersion extends DbVersion {
             case 296:
                 apply("ALTER TABLE transaction ADD COLUMN IF NOT EXISTS has_prunable_encrypted_message BOOLEAN NOT NULL DEFAULT FALSE");
             case 297:
-                apply(null);
+                apply("CREATE UNIQUE INDEX IF NOT EXISTS prunable_source_code_id_idx ON prunable_source_code (id)");
+
             case 298:
                 apply("ALTER TABLE prunable_message ALTER COLUMN expiration RENAME TO transaction_timestamp");
-                apply("ALTER TABLE prunable_source_code ALTER COLUMN expiration RENAME TO transaction_timestamp");
             case 299:
                 apply("UPDATE prunable_message SET transaction_timestamp = SELECT timestamp FROM transaction WHERE prunable_message.id = transaction.id");
-                apply("UPDATE prunable_source_code SET transaction_timestamp = SELECT timestamp FROM transaction WHERE prunable_source_code.id = transaction.id");
             case 300:
                 apply("ALTER INDEX prunable_message_expiration_idx RENAME TO prunable_message_transaction_timestamp_idx");
-                apply("ALTER INDEX prunable_source_code_expiration_idx RENAME TO prunable_source_code_transaction_timestamp_idx");
             case 301:
                 apply("ALTER TABLE prunable_message ALTER COLUMN timestamp RENAME TO block_timestamp");
-                apply("ALTER TABLE prunable_source_code ALTER COLUMN timestamp RENAME TO block_timestamp");
             case 302:
                 apply("DROP INDEX IF EXISTS prunable_message_timestamp_idx");
-                apply("DROP INDEX IF EXISTS prunable_source_code_idx");
             case 303:
                 apply("CREATE INDEX IF NOT EXISTS prunable_message_block_timestamp_dbid_idx ON prunable_message (block_timestamp DESC, db_id DESC)");
-                apply("CREATE INDEX IF NOT EXISTS prunable_source_code_block_timestamp_dbid_idx ON prunable_source_code (block_timestamp DESC, db_id DESC)");
             case 304:
                 apply("DROP INDEX IF EXISTS prunable_message_height_idx");
-                apply("DROP INDEX IF EXISTS prunable_source_code_height_idx");
             case 305:
                 apply("DROP INDEX IF EXISTS public_key_height_idx");
             case 306:
@@ -778,7 +771,7 @@ class NxtDbVersion extends DbVersion {
             case 310:
                 apply("CREATE INDEX IF NOT EXISTS tagged_data_block_timestamp_height_db_id_idx ON tagged_data (block_timestamp DESC, height DESC, db_id DESC)");
             case 311:
-                apply(null);
+            	apply("CREATE INDEX IF NOT EXISTS prunable_source_code_expiration_idx ON prunable_source_code (expiration DESC)");
             case 312:
                 apply("CREATE TABLE IF NOT EXISTS data_tag (db_id IDENTITY, tag VARCHAR NOT NULL, tag_count INT NOT NULL, "
                         + "height INT NOT NULL, FOREIGN KEY (height) REFERENCES block (height) ON DELETE CASCADE, latest BOOLEAN NOT NULL DEFAULT TRUE)");
@@ -792,13 +785,17 @@ class NxtDbVersion extends DbVersion {
             case 316:
                 apply("CREATE UNIQUE INDEX IF NOT EXISTS tagged_data_timestamp_id_height_idx ON tagged_data_timestamp (id, height DESC)");
             case 317:
-                apply(null);
+                apply("ALTER TABLE prunable_source_code ALTER COLUMN expiration RENAME TO transaction_timestamp");
+
             case 318:
-                apply(null);
+                apply("UPDATE prunable_source_code SET transaction_timestamp = SELECT timestamp FROM transaction WHERE prunable_source_code.id = transaction.id");
+
             case 319:
-                apply(null);
+                apply("ALTER INDEX prunable_source_code_expiration_idx RENAME TO prunable_source_code_transaction_timestamp_idx");
+
             case 320:
-                apply(null);
+                apply("ALTER TABLE prunable_source_code ALTER COLUMN timestamp RENAME TO block_timestamp");
+
             case 321:
                 apply("ALTER TABLE tagged_data ADD COLUMN IF NOT EXISTS channel VARCHAR");
             case 322:
@@ -929,11 +926,13 @@ class NxtDbVersion extends DbVersion {
             case 383:
                 apply("CREATE INDEX IF NOT EXISTS trade_height_db_id_idx ON trade (height DESC, db_id DESC)");
             case 384:
-                apply(null);
+                apply("DROP INDEX IF EXISTS prunable_source_code_idx");
+
             case 385:
                 apply("CREATE INDEX IF NOT EXISTS exchange_height_db_id_idx ON exchange (height DESC, db_id DESC)");
             case 386:
-                apply(null);
+                apply("CREATE INDEX IF NOT EXISTS prunable_source_code_block_timestamp_dbid_idx ON prunable_source_code (block_timestamp DESC, db_id DESC)");
+
             case 387:
                 apply("CREATE TABLE IF NOT EXISTS exchange_request (db_id IDENTITY, id BIGINT NOT NULL, account_id BIGINT NOT NULL, "
                         + "currency_id BIGINT NOT NULL, units BIGINT NOT NULL, rate BIGINT NOT NULL, is_buy BOOLEAN NOT NULL, "
@@ -995,7 +994,7 @@ class NxtDbVersion extends DbVersion {
             case 413:
                 apply("CREATE UNIQUE INDEX IF NOT EXISTS public_key_account_id_height_idx ON public_key (account_id, height DESC)");
             case 414:
-                apply(null);
+                apply("DROP INDEX IF EXISTS prunable_source_code_height_idx");
             case 415:
                 nxt.db.FullTextTrigger.init();
                 apply(null);
