@@ -40,6 +40,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.json.simple.JSONObject;
+
 public final class Work {
 
     public enum Event {
@@ -142,12 +144,35 @@ public final class Work {
         workTable.insert(shuffling);
         listeners.notify(shuffling, Event.WORK_CREATED);
     }
+    
+    public static DbIterator<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
+        Connection con = null;
+        try {
+            con = Db.db.getConnection();
+            PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
+                    + (includeFinished ? "" : "AND work.blocks_remaining IS NOT NULL ")
+                    + (onlyOneId==0 ? "" : "AND work.work_id = ? ")
+                    + "AND work.latest = TRUE ORDER BY blocks_remaining NULLS LAST, height DESC "
+                    + DbUtils.limitsClause(from, to));
+            int i = 0;
+            pstmt.setLong(++i, accountId);
+            if(onlyOneId!=0){
+            	pstmt.setLong(++i, onlyOneId);
+            }
+            DbUtils.setLimits(++i, pstmt, from, to);
+            return workTable.getManyBy(con, pstmt, false);
+        } catch (SQLException e) {
+            DbUtils.close(con);
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
 
     static void init() {}
 
     private final long id;
     private final DbKey dbKey;
     private final long work_id;
+    private final long sender_account_id;
     private final boolean closed;
     private final String title;
     private final long xel_per_pow;
@@ -173,6 +198,7 @@ public final class Work {
         this.received_bounties = 0;
         this.received_pows = 0;        
         this.bounty_limit = attachment.getBountyLimit();
+        this.sender_account_id = transaction.getSenderId();
     }
 
     private Work(ResultSet rs, DbKey dbKey) throws SQLException {
@@ -191,15 +217,17 @@ public final class Work {
         this.received_bounties = rs.getInt("received_bounties");
         this.received_pows = rs.getInt("received_pows");        
         this.bounty_limit = rs.getInt("bounty_limit");
+        this.sender_account_id = rs.getInt("sender_account_id");
     }
 
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, xel_per_pow, title, blocks_remaining, closed, percentage_powfund, balance_pow_fund, balance_bounty_fund, received_bounties, received_pows, bounty_limit, height) "
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, percentage_powfund, balance_pow_fund, balance_bounty_fund, received_bounties, received_pows, bounty_limit, height) "
                 + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
+            pstmt.setLong(++i, this.sender_account_id);
             pstmt.setLong(++i, this.xel_per_pow);
             pstmt.setString(++i, this.title);
             pstmt.setShort(++i, this.blocksRemaining);
@@ -233,6 +261,10 @@ public final class Work {
 
 	public long getXel_per_pow() {
 		return xel_per_pow;
+	}
+
+	public long getSender_account_id() {
+		return sender_account_id;
 	}
 
 	public int getPercentage_powfund() {
@@ -321,5 +353,23 @@ public final class Work {
         Logger.logDebugMessage("Shuffling %s was cancelled, blaming account %s", Long.toUnsignedString(id), Long.toUnsignedString(blamedAccountId));
         */
     }
+
+	public JSONObject toJsonObject() {
+		JSONObject response = new JSONObject();
+		response.put("id",this.id);
+		response.put("work_id",this.work_id);
+		response.put("xel_per_pow",this.xel_per_pow);
+		response.put("title",this.title);
+		response.put("blocksRemaining",this.blocksRemaining);
+		response.put("closed",this.closed);
+		response.put("percentage_powfund",this.percentage_powfund);
+		response.put("balance_pow_fund",this.balance_pow_fund);
+		response.put("balance_bounty_fund",this.balance_bounty_fund);
+		response.put("received_bounties",this.received_bounties);
+		response.put("received_pows",this.received_pows);    
+		response.put("bounty_limit",this.bounty_limit);
+		response.put("sender_account_id",this.sender_account_id);
+		return response;
+	}
 
 }

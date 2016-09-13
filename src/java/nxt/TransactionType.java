@@ -653,11 +653,7 @@ public abstract class TransactionType {
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
 				Attachment.WorkCreation attachment = (Attachment.WorkCreation) transaction.getAttachment();
-				// To calculate the WorkID i just take the TxID and calculate +
-				// 1
-				WorkLogicManager.getInstance().createNewWork(transaction.getId(), transaction.getId(),
-						transaction.getSenderId(), transaction.getBlockId(), transaction.getBlock().getHeight(),
-						transaction.getAmountNQT(), transaction.getFeeNQT(), attachment);
+				Work.addWork(transaction, attachment);
 			}
 
 			@Override

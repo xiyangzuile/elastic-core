@@ -167,7 +167,7 @@ public final class CreateWork extends CreateTransaction {
 		}
 
 		Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte, programCode.getBytes(),
-				numberInputVars, deadlineInt, bountyLimitInt, xelPerPowInt);
+				numberInputVars, deadlineInt, bountyLimitInt, xelPerPowInt, 60);
 		return createTransaction(req, account, 0, amount, attachment);
 
 	}

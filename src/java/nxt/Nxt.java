@@ -348,6 +348,7 @@ public final class Nxt {
                 Hub.init();
                 PrunableMessage.init();
                 PrunableSourceCode.init();
+                Work.init();
                 Peers.init();
                 APIProxy.init();
                 Generator.init();
