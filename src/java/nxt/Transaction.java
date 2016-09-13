@@ -40,6 +40,8 @@ public interface Transaction {
         Builder appendix(Appendix.PrunablePlainMessage prunablePlainMessage);
 
         Builder appendix(Appendix.PrunableEncryptedMessage prunableEncryptedMessage);
+        
+        Builder appendix(Appendix.PrunableSourceCode prunableSourceCode);
 
         Builder timestamp(int timestamp);
 
@@ -120,6 +122,8 @@ public interface Transaction {
     Appendix.PrunablePlainMessage getPrunablePlainMessage();
 
     Appendix.PrunableEncryptedMessage getPrunableEncryptedMessage();
+    
+    Appendix.PrunableSourceCode getPrunableSourceCode();
 
     List<? extends Appendix> getAppendages();
 

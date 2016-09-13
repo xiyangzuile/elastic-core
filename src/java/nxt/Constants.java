@@ -29,6 +29,14 @@ public final class Constants {
     public static final int MAX_TITLE_LENGTH = 255;
     public static final int MAX_WORK_CODE_LENGTH = 1024*1024;
     public static final int MIN_TRANSACTION_SIZE = 176;
+    public static final int MAX_DEADLINE_FOR_WORK = 1440;
+    public static final int MIN_DEADLINE_FOR_WORK = 3;
+    public static final int MAX_INTS_FOR_WORK = 12;
+    public static final int MIN_INTS_FOR_WORK = 3;
+    public static final long MAX_WORK_WCET_TIME = 200000L;
+    public static final long MAX_WORK_POW_REWARD = 10000000000L;
+    public static final long MIN_WORK_POW_REWARD = 0L;
+    public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;
     public static final int MAX_PAYLOAD_LENGTH = MAX_NUMBER_OF_TRANSACTIONS * MIN_TRANSACTION_SIZE;
     public static final long MAX_BALANCE_NXT = 100000000;
     public static final long ONE_NXT = 100000000;

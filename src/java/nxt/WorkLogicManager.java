@@ -258,19 +258,20 @@ public class WorkLogicManager {
 	}
 	
 	public long maxWorstCaseExecutionTime(){
-		return 20000L;
+		return Constants.MAX_WORK_WCET_TIME;
 	}
 
 	private JSONObject workEntryLite(long workId, String workTitle,
-			int num_input, byte[] source, BigInteger estimatedTarget,
-			long xel_per_pow) {
+			byte[] source, BigInteger estimatedTarget,
+			long xel_per_pow, boolean prune_status, String language) {
 		JSONObject response = new JSONObject();
 
 		response.put("workId", dd(workId));
-		response.put("num_input", num_input);
 		response.put("source", Ascii85.encode(source));
+		response.put("language", language);
 		response.put("title", workTitle);
 		response.put("xel_per_pow", xel_per_pow);
+		response.put("pruned", prune_status);
 		if (estimatedTarget != null)
 			response.put("min_pow_target", estimatedTarget.toString(16)); // this is only for
 																// the miner, no
@@ -299,7 +300,7 @@ public class WorkLogicManager {
 			long balance_original, long paid_bounties, long paid_pow,
 			int bounties_connected, int pow_connected, int timeout_at_block,
 			int script_size_bytes, long fee, int block_created_h,
-			int bounty_limit, long xel_per_pow) {
+			int bounty_limit, long xel_per_pow, boolean prune_status) {
 		JSONObject response = new JSONObject();
 		double work_percentage = getPercentWork(workId);
 		double bounty_percentage = getPercentBounty(workId);
@@ -322,6 +323,7 @@ public class WorkLogicManager {
 		response.put("balance_original_pow", dd(this.getOriginalPoWBalanceByOrigBalance(balance_original,work_percentage,bounty_percentage)));
 		response.put("balance_original_bounty", dd(this.getOriginalBountyBalanceByOrigBalance(balance_original,work_percentage,bounty_percentage)));
 		response.put("xel_per_pow", xel_per_pow);
+		response.put("pruned", prune_status);
 
 		// long balance_work =
 		// balance_original*getPercentWork()/100-(pow_connected*getCurrentPowReward());
@@ -379,8 +381,8 @@ public class WorkLogicManager {
 		return 0;
 	}
 
-	public String getLanguageString(byte language) {
-		if (language == (byte) 0x01) {
+	public String getLanguageString(short language) {
+		if (language == 0x01) {
 			return "ElasticPL";
 		}
 		return "?";
@@ -391,7 +393,7 @@ public class WorkLogicManager {
 	}
 
 	public boolean checkDeadline(int deadlineInt) {
-		return (deadlineInt >= 10 && deadlineInt <= 250);
+		return (deadlineInt >= Constants.MIN_DEADLINE_FOR_WORK && deadlineInt <= Constants.MAX_DEADLINE_FOR_WORK);
 	}
 
 	public boolean checkNumberVariables(byte numberInputVarsByte) {
@@ -400,11 +402,11 @@ public class WorkLogicManager {
 	}
 
 	public int getMaxNumberInputInts() {
-		return 12;
+		return Constants.MAX_INTS_FOR_WORK;
 	}
 
 	public int getMinNumberInputInts() {
-		return 3;
+		return Constants.MIN_INTS_FOR_WORK;
 	}
 
 	
@@ -599,15 +601,13 @@ public class WorkLogicManager {
 		try {
 			try (Connection con = Db.db.getConnection();
 					PreparedStatement pstmt = con
-							.prepareStatement("INSERT INTO work (id, work_title, variables_input, version_id, language_id, deadline, original_amount,"
-									+ "fee, referenced_transaction_id, block_id, included_block_height, sender_account_id, code, bounties_limit, xel_per_pow) "
-									+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+							.prepareStatement("INSERT INTO work (id, work_title, version_id, deadline, original_amount,"
+									+ "fee, referenced_transaction_id, block_id, included_block_height, sender_account_id, bounties_limit, xel_per_pow) "
+									+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				int i = 0;
 				pstmt.setLong(++i, workId);
 				pstmt.setString(++i, attachment.getWorkTitle());
-				pstmt.setShort(++i, attachment.getNumberInputVars());
 				pstmt.setShort(++i, attachment.getVersion());
-				pstmt.setShort(++i, attachment.getWorkLanguage());
 				pstmt.setInt(++i, attachment.getDeadline());
 				pstmt.setLong(++i, amountNQT);
 				pstmt.setLong(++i, feeNQT);
@@ -615,7 +615,6 @@ public class WorkLogicManager {
 				pstmt.setLong(++i, blockId);
 				pstmt.setLong(++i, blockHeight);
 				pstmt.setLong(++i, senderId);
-				pstmt.setBytes(++i, attachment.getProgrammCode());
 				pstmt.setInt(++i, attachment.getBountyLimit());
 				pstmt.setLong(++i, attachment.getXelPerPow());
 				pstmt.executeUpdate();
@@ -725,11 +724,7 @@ public class WorkLogicManager {
 		}
 	}
 
-	public boolean checkAmount(long amount, byte workLanguage,
-			String workTitle, byte[] programCode, Byte numberInputVars,
-			int deadline, long WCET) {
-		return true;
-	}
+
 
 	public DbIterator<JSONObject> getWorkList(Account account, int from,
 			int to, long onlyOneId) {
@@ -790,7 +785,7 @@ public class WorkLogicManager {
 							String work_title = rs.getString("work_title");
 							int num_input = rs.getInt("variables_input");
 							byte version = rs.getByte("version_id");
-							byte language = rs.getByte("language_id");
+
 							int deadline = rs.getInt("deadline");
 							long amount = rs.getLong("original_amount");
 							long amount_paid_pow = rs
@@ -800,8 +795,19 @@ public class WorkLogicManager {
 									.getLong("referenced_transaction_id");
 							long block_id = rs.getLong("block_id");
 							long senderId = rs.getLong("sender_account_id");
-							String languageString = getLanguageString(language);
-							byte[] code = rs.getBytes("code");
+							
+							
+							String languageString = "";
+							byte[] code = new byte[]{};
+							boolean prune_status = false;
+							
+							if(nxt.PrunableSourceCode.isPrunedByWorkId(workId)){
+								prune_status = true;
+							}else{
+								nxt.PrunableSourceCode srcode = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(workId);
+								languageString = getLanguageString(srcode.getLanguage());
+								code = srcode.getSource();
+							}
 
 							int num_bounties = rs.getInt("bounties_submitted");
 							int num_pow = rs.getInt("pow_submitted");
@@ -823,8 +829,7 @@ public class WorkLogicManager {
 							if(num_bounties > 0) {
 								amount_paid_bounties = getOriginalBountyBalance(workId);
 							}
-							
-							
+
 							ret = workEntry(version, workId, referencedTx,
 									block_id, last_payment, last_cancel,
 									last_payment, work_title,
@@ -833,7 +838,7 @@ public class WorkLogicManager {
 									amount_paid_bounties, amount_paid_pow,
 									num_bounties, num_pow, h + deadline,
 									code.length, fee, h, bounties_limit,
-									xel_per_pow);
+									xel_per_pow, prune_status);
 
 							return ret;
 						}
@@ -901,12 +906,20 @@ public class WorkLogicManager {
 							JSONObject ret = null;
 
 							long workId = rs.getLong("id");
-							int num_input = rs.getInt("variables_input");
-							byte[] code = rs.getBytes("code");
+							byte[] code = new byte[]{};
+							boolean prune_status = false;
+							String languageString = "";
+							if(nxt.PrunableSourceCode.isPrunedByWorkId(workId)){
+								prune_status = true;
+							}else{
+								nxt.PrunableSourceCode srcode = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(workId);
+								languageString = getLanguageString(srcode.getLanguage());
+								code = srcode.getSource();
+							}
 							long xel_per_pow = rs.getLong("xel_per_pow");
 							String workTitle = rs.getString("work_title");
-							ret = workEntryLite(workId, workTitle, num_input,
-									code, null, xel_per_pow);
+							ret = workEntryLite(workId, workTitle,
+									code, null, xel_per_pow, prune_status, languageString);
 
 							return ret;
 						}
@@ -941,8 +954,16 @@ public class WorkLogicManager {
 							JSONObject ret = null;
 
 							long workId = rs.getLong("id");
-							int num_input = rs.getInt("variables_input");
-							byte[] code = rs.getBytes("code");
+							byte[] code = new byte[]{};
+							boolean prune_status = false;
+							String languageString = "";
+							if(nxt.PrunableSourceCode.isPrunedByWorkId(workId)){
+								prune_status = true;
+							}else{
+								nxt.PrunableSourceCode srcode = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(workId);
+								languageString = getLanguageString(srcode.getLanguage());
+								code = srcode.getSource();
+							}
 							long xel_per_pow = rs.getLong("xel_per_pow");
 							BigInteger estimatedTarget = getMinPowTarget(BlockchainImpl
 									.getInstance().getLastBlock().getId()); // last
@@ -965,9 +986,9 @@ public class WorkLogicManager {
 																			// diff
 																			// calculation
 							String workTitle = rs.getString("work_title");
-							ret = workEntryLite(workId, workTitle, num_input,
+							ret = workEntryLite(workId, workTitle, 
 									code, estimatedTarget,
-									xel_per_pow);
+									xel_per_pow, prune_status, languageString);
 
 							return ret;
 						}
@@ -1444,12 +1465,12 @@ public class WorkLogicManager {
 	}
 
 	public long GetMinPossiblePowPrice() {
-		return 0; // FIXME average*2 or, if no other work online, a fixed
+		return Constants.MIN_WORK_POW_REWARD; // FIXME average*2 or, if no other work online, a fixed
 					// constant
 	}
 
 	public long GetMaxPossiblePowPrice() {
-		return 100000000000L; // FIXME average*2 or, if no other work online, a fixed
+		return Constants.MAX_WORK_POW_REWARD; // FIXME average*2 or, if no other work online, a fixed
 						// constant
 	}
 

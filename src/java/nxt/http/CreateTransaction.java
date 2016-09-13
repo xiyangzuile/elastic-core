@@ -23,6 +23,7 @@ import nxt.Constants;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
+import nxt.TransactionType;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 import org.json.simple.JSONObject;
@@ -110,6 +111,10 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
         } else {
             message = (Appendix.Message) ParameterParser.getPlainMessage(req, false);
         }
+        Appendix.PrunableSourceCode prunableSourceCode = null;
+        if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK) {
+        	prunableSourceCode = (Appendix.PrunableSourceCode) ParameterParser.getSourceCode(req);
+        } 
         Appendix.PublicKeyAnnouncement publicKeyAnnouncement = null;
         String recipientPublicKey = Convert.emptyToNull(req.getParameter("recipientPublicKey"));
         if (recipientPublicKey != null) {
@@ -159,6 +164,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
             builder.appendix(encryptToSelfMessage);
             builder.appendix(prunablePlainMessage);
             builder.appendix(prunableEncryptedMessage);
+            builder.appendix(prunableSourceCode);
             if (ecBlockId != 0) {
                 builder.ecBlockId(ecBlockId);
                 builder.ecBlockHeight(ecBlockHeight);

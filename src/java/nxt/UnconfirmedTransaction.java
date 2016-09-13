@@ -250,6 +250,11 @@ class UnconfirmedTransaction implements Transaction {
     public Appendix.PrunablePlainMessage getPrunablePlainMessage() {
         return transaction.getPrunablePlainMessage();
     }
+    
+    @Override
+    public Appendix.PrunableSourceCode getPrunableSourceCode() {
+        return transaction.getPrunableSourceCode();
+    }
 
     @Override
     public Appendix.EncryptedMessage getEncryptedMessage() {

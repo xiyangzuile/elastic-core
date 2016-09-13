@@ -573,6 +573,18 @@ public final class ParameterParser {
             throw new ParameterException(INCORRECT_ARBITRARY_MESSAGE);
         }
     }
+    
+    public static Appendix getSourceCode(HttpServletRequest req) throws ParameterException {
+        String messageValue = Convert.emptyToNull(getParameterMultipart(req, "source_code"));
+        if (messageValue != null) {
+            try {
+                return new Appendix.PrunablePlainMessage(messageValue);
+            } catch (RuntimeException e) {
+                throw new ParameterException(INCORRECT_ARBITRARY_MESSAGE);
+            }
+        }
+        return null;
+    }
 
     public static Appendix getEncryptedMessage(HttpServletRequest req, Account recipient, boolean prunable) throws ParameterException {
         boolean isText = !"false".equalsIgnoreCase(req.getParameter("messageToEncryptIsText"));

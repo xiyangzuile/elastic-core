@@ -158,10 +158,6 @@ public final class CreateWork extends CreateTransaction {
 		long amount;
 		try {
 			amount = Long.parseLong(amount_spent);
-			if (WorkLogicManager.getInstance().checkAmount(amount, workLanguageByte, workTitle, byteCode,
-					numberInputVars, deadlineInt, WCET) == false) {
-				return INCORRECT_AMOUNT;
-			}
 		} catch (NumberFormatException e) {
 			return INCORRECT_AMOUNT;
 		}

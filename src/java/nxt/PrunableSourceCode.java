@@ -72,14 +72,18 @@ public final class PrunableSourceCode {
     }
 
   
-    public static DbIterator<PrunableSourceCode> getPrunableSourceCodeByWorkId(long work_id) {
+    public static PrunableSourceCode getPrunableSourceCodeByWorkId(long work_id) {
         Connection con = null;
         try {
             con = Db.db.getConnection();
             PreparedStatement pstmt = con.prepareStatement("SELECT * FROM prunable_source_code WHERE work_id = ?");
             int i = 0;
             pstmt.setLong(++i, work_id);
-            return prunableSourceCodeTable.getManyBy(con, pstmt, false);
+            DbIterator<PrunableSourceCode> it =  prunableSourceCodeTable.getManyBy(con, pstmt, false);
+            if(it.hasNext())
+            	return it.next();
+            else
+            	return null;
         } catch (SQLException e) {
             DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
@@ -92,6 +96,7 @@ public final class PrunableSourceCode {
     private final DbKey dbKey;
     private final long work_id;
     private byte[] source;
+    private short language;
     private final int transactionTimestamp;
     private final int blockTimestamp;
     private final int height;
@@ -107,6 +112,7 @@ public final class PrunableSourceCode {
 
     private void setPlain(Appendix.PrunableSourceCode appendix) {
         this.source = appendix.getSource();
+        this.language = appendix.getLanguage();
     }
 
     private PrunableSourceCode(ResultSet rs, DbKey dbKey) throws SQLException {
@@ -117,6 +123,7 @@ public final class PrunableSourceCode {
         this.blockTimestamp = rs.getInt("block_timestamp");
         this.transactionTimestamp = rs.getInt("transaction_timestamp");
         this.height = rs.getInt("height");
+        this.language = rs.getShort("language");
     }
 
     private void save(Connection con) throws SQLException {
@@ -124,9 +131,9 @@ public final class PrunableSourceCode {
             throw new IllegalStateException("Prunable source code not fully initialized");
         }
         try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO prunable_source_code (id, work_id, "
-                + "source, block_timestamp, transaction_timestamp, height) "
+                + "source, block_timestamp, transaction_timestamp, height, language) "
                 + "KEY (id) "
-                + "VALUES (?, ?, ?, ?, ?, ?)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
@@ -134,6 +141,7 @@ public final class PrunableSourceCode {
             pstmt.setInt(++i, this.blockTimestamp);
             pstmt.setInt(++i, this.transactionTimestamp);
             pstmt.setInt(++i, this.height);
+            pstmt.setShort(++i, this.language);
             pstmt.executeUpdate();
         }
     }
@@ -144,6 +152,10 @@ public final class PrunableSourceCode {
 
     public long getId() {
         return id;
+    }
+    
+    public short getLanguage() {
+        return language;
     }
 
     public long getWorkId() {
@@ -192,6 +204,18 @@ public final class PrunableSourceCode {
             pstmt.setLong(1, transactionId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 return !rs.next() || (hasPrunableSourceCode && rs.getBytes("source") == null);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
+    
+    static boolean isPrunedByWorkId(long work_id) {
+        try (Connection con = Db.db.getConnection();
+                PreparedStatement pstmt = con.prepareStatement("SELECT source FROM prunable_source_code WHERE work_id = ?")) {
+            pstmt.setLong(1, work_id);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return !rs.next() || (rs.getBytes("source") == null);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e.toString(), e);

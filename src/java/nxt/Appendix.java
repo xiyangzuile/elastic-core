@@ -24,6 +24,12 @@ import nxt.util.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import ElasticPL.ASTCompilationUnit;
+import ElasticPL.ElasticPLParser;
+import ElasticPL.RuntimeEstimator;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -471,6 +477,8 @@ public interface Appendix {
 
         private final byte[] hash;
         private final byte[] source;
+        private final short language;
+        
         private volatile nxt.PrunableSourceCode prunableSourceCode;
 
         PrunableSourceCode(ByteBuffer buffer, byte transactionVersion) {
@@ -478,30 +486,36 @@ public interface Appendix {
             this.hash = new byte[32];
             buffer.get(this.hash);
             this.source = null;
+            this.language = buffer.getShort();
         }
 
         private PrunableSourceCode(JSONObject attachmentData) {
             super(attachmentData);
             String hashString = Convert.emptyToNull((String) attachmentData.get("messageHash"));
-            String messageString = Convert.emptyToNull((String) attachmentData.get("message"));
+            String messageString = Convert.emptyToNull((String) attachmentData.get("source"));
+            String languageString = Convert.emptyToNull((String) attachmentData.get("language"));
+            
             if (hashString != null && messageString == null) {
                 this.hash = Convert.parseHexString(hashString);
                 this.source = null;
+                this.language = 0;
             } else {
                 this.hash = null;
                 this.source = Convert.toBytes(messageString, true);
+                this.language = Short.parseShort(languageString);
             }
         }
 
 
-        public PrunableSourceCode(String source) {
-            this(Convert.toBytes(source, true));
+        public PrunableSourceCode(String source, short language) {
+            this(Convert.toBytes(source, true), language);
         }
 
 
-        public PrunableSourceCode(byte[] source) {
+        public PrunableSourceCode(byte[] source, short language) {
             this.source = source;
             this.hash = null;
+            this.language = language;
         }
 
         @Override
@@ -532,9 +546,11 @@ public interface Appendix {
         @Override
         void putMyJSON(JSONObject json) {
             if (prunableSourceCode != null) {
-                json.put("message", Convert.toString(prunableSourceCode.getSource(), true));
+                json.put("source", Convert.toString(prunableSourceCode.getSource(), true));
+                json.put("language", Short.toString(prunableSourceCode.getLanguage()));
             } else if (source != null) {
-                json.put("message", Convert.toString(source, true));
+                json.put("source", Convert.toString(source, true));
+                json.put("language", Short.toString(language));
             }
             json.put("messageHash", Convert.toHexString(getHash()));
         }
@@ -551,6 +567,37 @@ public interface Appendix {
             if (src == null && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
                 throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
             }
+            
+            
+            // Here, make sure that the source code has correct syntax and meets all requirements
+			InputStream stream = new ByteArrayInputStream(src);
+			ElasticPLParser parser = new ElasticPLParser(stream);
+
+			Byte numberInputVars = 0;
+			long WCET = 0L;
+			// Here, distinguish by language byte
+			if(language == 0x01){
+				try {
+					parser.CompilationUnit();
+
+					// Check worst case execution time
+					ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
+					WCET = RuntimeEstimator.worstWeight(rootNode);
+					if (WCET > WorkLogicManager.getInstance().maxWorstCaseExecutionTime()) {
+						throw new NxtException.NotValidException("User provided POW Algorithm has too bad WCET");
+					}
+					rootNode.reset();
+					numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
+					if(numberInputVars < Constants.MAX_INTS_FOR_WORK || numberInputVars > Constants.MAX_INTS_FOR_WORK){
+						throw new NxtException.NotValidException("Your required INTS must be in range!");
+					}
+				} catch (Exception e) {
+            		throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
+				}
+			}else{
+				throw new NxtException.NotValidException("Source code language is not supported");
+			}
+			// OTHER LANGUAGES MUST BE APPENDED HERE IF ADDED LATER ON!!!
         }
 
         @Override
@@ -566,6 +613,13 @@ public interface Appendix {
             }
             return source;
         }
+        
+        public short getLanguage() {
+            if (prunableSourceCode != null) {
+                return prunableSourceCode.getLanguage();
+            }
+            return language;
+        }
 
      
         @Override
@@ -575,6 +629,7 @@ public interface Appendix {
             }
             MessageDigest digest = Crypto.sha256();
             digest.update(source);
+            digest.update(Short.toString(language).getBytes());
             return digest.digest();
         }
 

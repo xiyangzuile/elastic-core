@@ -505,9 +505,6 @@ public interface Attachment extends Appendix {
     public final static class WorkCreation extends AbstractAttachment {
 
         private final String workTitle;
-		private final byte workLanguage;
-        private final byte[] programmCode;
-        private final byte numberInputVars;
         private final int deadline;
         private final long xelPerPow;
         private final int bountyLimit;
@@ -515,16 +512,6 @@ public interface Attachment extends Appendix {
         WorkCreation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
             this.workTitle = Convert.readString(buffer, buffer.getShort(), Constants.MAX_TITLE_LENGTH);
-            this.workLanguage = buffer.get();
-            int codeLength = buffer.getInt();
-            if (codeLength > Constants.MAX_WORK_CODE_LENGTH) {
-                throw new NxtException.NotValidException("Invalid source code length: " + codeLength);
-            }
-            this.programmCode = new byte[codeLength];
-            buffer.get(this.programmCode, 0, this.programmCode.length);
-       
-            this.numberInputVars = buffer.get();
-            
             this.deadline = buffer.getInt();
             this.bountyLimit = buffer.getInt();
             this.xelPerPow = buffer.getLong();
@@ -534,9 +521,6 @@ public interface Attachment extends Appendix {
             super(attachmentData);
             
             this.workTitle = ((String) attachmentData.get("title")).trim();
-            this.workLanguage = ((Long) attachmentData.get("language")).byteValue();
-            this.programmCode = Ascii85.decode(((String) attachmentData.get("programCode")).trim());
-            this.numberInputVars = ((Long) attachmentData.get("numInputs")).byteValue();
             this.deadline = ((Long) attachmentData.get("deadline")).intValue();
             this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
             this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
@@ -544,36 +528,22 @@ public interface Attachment extends Appendix {
 
         public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, byte numberInputVars, int deadline, int bountyLimit, long xel_per_pow) {
         	this.workTitle = workTitle;
-            this.workLanguage = workLanguage;
-            this.programmCode = programmCode;
-            this.numberInputVars = numberInputVars;
             this.deadline = deadline;
             this.bountyLimit = bountyLimit;
             this.xelPerPow = xel_per_pow;
         }
 
-   
-
         @Override
         int getMySize() {
-            int size = 2 + Convert.toBytes(workTitle).length + 1 + 4 + this.programmCode.length + 1 + 4 + 4 + 8;
+            int size = 2 + Convert.toBytes(workTitle).length + 4 + 8 + 4;
             return size;
         }
 
         @Override
         void putMyBytes(ByteBuffer buffer) {
             byte[] name = Convert.toBytes(this.workTitle);
-            
             buffer.putShort((short)name.length);
             buffer.put(name);
-            
-            buffer.put((byte) this.workLanguage);
-            int length = this.programmCode.length;
-            buffer.putInt(length);
-            buffer.put(this.programmCode);
-
-            buffer.put(this.numberInputVars);
-            
             buffer.putInt(this.deadline);
             buffer.putInt(this.bountyLimit);
             buffer.putLong(this.xelPerPow);
@@ -582,10 +552,7 @@ public interface Attachment extends Appendix {
         @Override
         void putMyJSON(JSONObject attachment) {
             attachment.put("title", this.workTitle);
-            attachment.put("language", this.workLanguage);
-            attachment.put("programCode", Ascii85.encode(this.programmCode));
             attachment.put("deadline", this.deadline);
-            attachment.put("numInputs", this.numberInputVars);
             attachment.put("bountyLimit", this.bountyLimit);
             attachment.put("xel_per_pow", this.xelPerPow);
             
@@ -607,21 +574,6 @@ public interface Attachment extends Appendix {
 		public long getXelPerPow() {
 			return xelPerPow;
 		}
-
-		public byte getWorkLanguage() {
-			return workLanguage;
-		}
-
-		public byte[] getProgrammCode() {
-			return programmCode;
-		}
-
-		
-
-		public byte getNumberInputVars() {
-			return numberInputVars;
-		}
-
 
 		public int getDeadline() {
 			return deadline;

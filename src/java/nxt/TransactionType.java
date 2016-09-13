@@ -664,15 +664,15 @@ public abstract class TransactionType {
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
 				Attachment.WorkCreation attachment = (Attachment.WorkCreation) transaction.getAttachment();
 				
+				// Immediately fail attachment validation if transaction has no SourceCode Appendix
+				if(transaction.getPrunableSourceCode() == null) {
+					throw new NxtException.NotValidException("Work creation transaction MUST come with a source code appendix");
+				}
+				
 				// Check for correct title length
 				if (attachment.getWorkTitle().length() > Constants.MAX_TITLE_LENGTH || attachment.getWorkTitle().length() < 1) {
 					throw new NxtException.NotValidException("User provided POW Algorithm has incorrect title length");
 		        }
-				
-				// Check for correct language byte
-				if(WorkLogicManager.getInstance().checkWorkLanguage(attachment.getWorkLanguage()) == false){
-					throw new NxtException.NotValidException("User provided POW Algorithm has unknown language byte");
-	        	}
 				
 				// Verify Deadline 
 				if(WorkLogicManager.getInstance().checkDeadline(attachment.getDeadline()) == false){
@@ -688,48 +688,6 @@ public abstract class TransactionType {
 				if(WorkLogicManager.getInstance().isPowPriceCorrect(attachment.getXelPerPow()) == false){
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct xel/pow price");
 	        	}
-
-				// First of all, check if the source code is correct and that
-				// input number is right
-				InputStream stream = new ByteArrayInputStream(attachment.getProgrammCode());
-				ElasticPLParser parser = new ElasticPLParser(stream);
-
-				Byte numberInputVars = 0;
-				long WCET = 0L;
-				// Here, distinguish by language byte
-				if(attachment.getWorkLanguage() == 0x01){
-					try {
-						parser.CompilationUnit();
-	
-						// Check worst case execution time
-						ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
-						WCET = RuntimeEstimator.worstWeight(rootNode);
-						if (WCET > WorkLogicManager.getInstance().maxWorstCaseExecutionTime()) {
-							throw new NxtException.NotValidException("User provided POW Algorithm has too bad WCET");
-						}
-	
-						rootNode.reset();
-						numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
-					} catch (Exception e) {
-	            		throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
-					}
-				}
-				// OTHER LANGUAGES MUST BE APPENDED HERE!!!
-				
-				// Now, we can verify that the amount is correct
-				if(WorkLogicManager.getInstance().checkAmount(transaction.getAmountNQT(),attachment.getWorkLanguage(),attachment.getWorkTitle(),
-						attachment.getProgrammCode(),numberInputVars,attachment.getDeadline(), WCET) == false){
-					throw new NxtException.NotValidException("User provided POW Algorithm has incorrect amount of XEL attached");
-	        	}
-				
-				// Verify that we have the correct number of input vars
-				// Again, distinguish between different languages
-				if(attachment.getWorkLanguage() == 0x01){
-					if(numberInputVars < WorkLogicManager.getInstance().getMinNumberInputInts() || numberInputVars > WorkLogicManager.getInstance().getMaxNumberInputInts() ){
-						throw new NxtException.NotValidException("User provided POW Algorithm has incorrect number of inputs");
-			        }
-				}
-
 			}
 
 			@Override

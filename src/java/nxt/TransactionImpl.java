@@ -50,6 +50,7 @@ final class TransactionImpl implements Transaction {
 		private Appendix.PublicKeyAnnouncement publicKeyAnnouncement;
 		private Appendix.PrunablePlainMessage prunablePlainMessage;
 		private Appendix.PrunableEncryptedMessage prunableEncryptedMessage;
+		private Appendix.PrunableSourceCode prunableSourceCode;
 		private long blockId;
 		private int height = Integer.MAX_VALUE;
 		private long id;
@@ -147,6 +148,12 @@ final class TransactionImpl implements Transaction {
 			this.prunableEncryptedMessage = prunableEncryptedMessage;
 			return this;
 		}
+		
+		@Override
+		public BuilderImpl appendix(Appendix.PrunableSourceCode prunableSourceCode) {
+			this.prunableSourceCode = prunableSourceCode;
+			return this;
+		}
 
 		@Override
 		public BuilderImpl timestamp(int timestamp) {
@@ -233,6 +240,7 @@ final class TransactionImpl implements Transaction {
 	private final Appendix.EncryptToSelfMessage encryptToSelfMessage;
 	private final Appendix.PublicKeyAnnouncement publicKeyAnnouncement;
 	private final Appendix.PrunablePlainMessage prunablePlainMessage;
+	private final Appendix.PrunableSourceCode prunableSourceCode;
 	private final Appendix.PrunableEncryptedMessage prunableEncryptedMessage;
 
 	private final List<Appendix.AbstractAppendix> appendages;
@@ -286,12 +294,14 @@ final class TransactionImpl implements Transaction {
 		if ((this.encryptToSelfMessage = builder.encryptToSelfMessage) != null) {
 			list.add(this.encryptToSelfMessage);
 		}
-
 		if ((this.prunablePlainMessage = builder.prunablePlainMessage) != null) {
 			list.add(this.prunablePlainMessage);
 		}
 		if ((this.prunableEncryptedMessage = builder.prunableEncryptedMessage) != null) {
 			list.add(this.prunableEncryptedMessage);
+		}
+		if ((this.prunableSourceCode = builder.prunableSourceCode) != null) {
+			list.add(this.prunableSourceCode);
 		}
 		this.appendages = Collections.unmodifiableList(list);
 		int appendagesSize = 0;
@@ -566,9 +576,21 @@ final class TransactionImpl implements Transaction {
 		}
 		return prunablePlainMessage;
 	}
+	
+	@Override
+	public Appendix.PrunableSourceCode getPrunableSourceCode() {
+		if (prunableSourceCode != null) {
+			prunableSourceCode.loadPrunable(this);
+		}
+		return prunableSourceCode;
+	}
 
 	boolean hasPrunablePlainMessage() {
 		return prunablePlainMessage != null;
+	}
+	
+	boolean hasPrunableSourceCode() {
+		return prunableSourceCode != null;
 	}
 
 	@Override
@@ -695,6 +717,10 @@ final class TransactionImpl implements Transaction {
 			if ((flags & position) != 0) {
 				builder.appendix(new Appendix.PrunableEncryptedMessage(buffer, version));
 			}
+			position <<= 1;
+			if ((flags & position) != 0) {
+				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
+			}
 			if (buffer.hasRemaining()) {
 				throw new NxtException.NotValidException(
 						"Transaction bytes too long, " + buffer.remaining() + " extra bytes, TX type = " + type + ":" + subtype);
@@ -719,6 +745,11 @@ final class TransactionImpl implements Transaction {
 					.parse(prunableAttachments);
 			if (prunableEncryptedMessage != null) {
 				builder.appendix(prunableEncryptedMessage);
+			}
+			Appendix.PrunableSourceCode prunableSourceCode = Appendix.PrunableSourceCode
+					.parse(prunableAttachments);
+			if (prunableSourceCode != null) {
+				builder.appendix(prunableSourceCode);
 			}
 		}
 		return builder;
@@ -823,6 +854,7 @@ final class TransactionImpl implements Transaction {
 				builder.appendix(Appendix.EncryptToSelfMessage.parse(attachmentData));
 				builder.appendix(Appendix.PrunablePlainMessage.parse(attachmentData));
 				builder.appendix(Appendix.PrunableEncryptedMessage.parse(attachmentData));
+				builder.appendix(Appendix.PrunableSourceCode.parse(attachmentData));
 			}
 			return builder;
 		} catch (NxtException.NotValidException | RuntimeException e) {
@@ -918,6 +950,10 @@ final class TransactionImpl implements Transaction {
 		}
 		position <<= 1;
 		if (prunableEncryptedMessage != null) {
+			flags |= position;
+		}
+		position <<= 1;
+		if (prunableSourceCode != null) {
 			flags |= position;
 		}
 		return flags;
