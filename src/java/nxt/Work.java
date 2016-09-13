@@ -217,13 +217,13 @@ public final class Work {
         this.received_bounties = rs.getInt("received_bounties");
         this.received_pows = rs.getInt("received_pows");        
         this.bounty_limit = rs.getInt("bounty_limit");
-        this.sender_account_id = rs.getInt("sender_account_id");
+        this.sender_account_id = rs.getLong("sender_account_id");
     }
 
     private void save(Connection con) throws SQLException {
         try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, percentage_powfund, balance_pow_fund, balance_bounty_fund, received_bounties, received_pows, bounty_limit, height) "
                 + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
