@@ -450,6 +450,156 @@ public interface Appendix {
             PrunableMessage.add((TransactionImpl)transaction, this, blockTimestamp, height);
         }
     }
+    
+    class PrunableSourceCode extends Appendix.AbstractAppendix implements Prunable {
+
+        private static final String appendixName = "PrunableSourceCode";
+
+        private static final Fee PRUNABLE_SOURCE_FEE = new Fee.SizeBasedFee(Constants.ONE_NXT/10) {
+            @Override
+            public int getSize(TransactionImpl transaction, Appendix appendix) {
+                return appendix.getFullSize();
+            }
+        };
+
+        static PrunableSourceCode parse(JSONObject attachmentData) {
+            if (!hasAppendix(appendixName, attachmentData)) {
+                return null;
+            }
+            return new PrunableSourceCode(attachmentData);
+        }
+
+        private final byte[] hash;
+        private final byte[] source;
+        private volatile nxt.PrunableSourceCode prunableSourceCode;
+
+        PrunableSourceCode(ByteBuffer buffer, byte transactionVersion) {
+            super(buffer, transactionVersion);
+            this.hash = new byte[32];
+            buffer.get(this.hash);
+            this.source = null;
+        }
+
+        private PrunableSourceCode(JSONObject attachmentData) {
+            super(attachmentData);
+            String hashString = Convert.emptyToNull((String) attachmentData.get("messageHash"));
+            String messageString = Convert.emptyToNull((String) attachmentData.get("message"));
+            if (hashString != null && messageString == null) {
+                this.hash = Convert.parseHexString(hashString);
+                this.source = null;
+            } else {
+                this.hash = null;
+                this.source = Convert.toBytes(messageString, true);
+            }
+        }
+
+
+        public PrunableSourceCode(String source) {
+            this(Convert.toBytes(source, true));
+        }
+
+
+        public PrunableSourceCode(byte[] source) {
+            this.source = source;
+            this.hash = null;
+        }
+
+        @Override
+        String getAppendixName() {
+            return appendixName;
+        }
+
+        @Override
+        public Fee getBaselineFee(Transaction transaction) {
+            return PRUNABLE_SOURCE_FEE;
+        }
+
+        @Override
+        int getMySize() {
+            return 32;
+        }
+
+        @Override
+        int getMyFullSize() {
+            return getSource() == null ? 0 : getSource().length;
+        }
+
+        @Override
+        void putMyBytes(ByteBuffer buffer) {
+            buffer.put(getHash());
+        }
+
+        @Override
+        void putMyJSON(JSONObject json) {
+            if (prunableSourceCode != null) {
+                json.put("message", Convert.toString(prunableSourceCode.getSource(), true));
+            } else if (source != null) {
+                json.put("message", Convert.toString(source, true));
+            }
+            json.put("messageHash", Convert.toHexString(getHash()));
+        }
+
+        @Override
+        void validate(Transaction transaction) throws NxtException.ValidationException {
+            if (transaction.getType() != TransactionType.WorkControl.NEW_TASK) {
+                throw new NxtException.NotValidException("Source code can only be attacked to work-creation transactions!");
+            }
+            byte[] src = getSource();
+            if (src != null && src.length > Constants.MAX_WORK_CODE_LENGTH) {
+                throw new NxtException.NotValidException("Invalid source code length: " + src.length);
+            }
+            if (src == null && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
+                throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
+            }
+        }
+
+        @Override
+        void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
+            if (Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MAX_PRUNABLE_LIFETIME) {
+                nxt.PrunableSourceCode.add((TransactionImpl)transaction, this);
+            }
+        }
+
+        public byte[] getSource() {
+            if (prunableSourceCode != null) {
+                return prunableSourceCode.getSource();
+            }
+            return source;
+        }
+
+     
+        @Override
+        public byte[] getHash() {
+            if (hash != null) {
+                return hash;
+            }
+            MessageDigest digest = Crypto.sha256();
+            digest.update(source);
+            return digest.digest();
+        }
+
+        @Override
+        final void loadPrunable(Transaction transaction, boolean includeExpiredPrunable) {
+            if (!hasPrunableData() && shouldLoadPrunable(transaction, includeExpiredPrunable)) {
+            	nxt.PrunableSourceCode prunableSourceCode = nxt.PrunableSourceCode.getPrunableSourceCode(transaction.getId());
+                if (prunableSourceCode != null && prunableSourceCode.getSource() != null) {
+                    this.prunableSourceCode = prunableSourceCode;
+                }
+            }
+        }
+
+       
+
+        @Override
+        public final boolean hasPrunableData() {
+            return (prunableSourceCode != null || source != null);
+        }
+
+        @Override
+        public void restorePrunableData(Transaction transaction, int blockTimestamp, int height) {
+        	nxt.PrunableSourceCode.add((TransactionImpl)transaction, this, blockTimestamp, height);
+        }
+    }
 
     abstract class AbstractEncryptedMessage extends AbstractAppendix {
 

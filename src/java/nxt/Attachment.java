@@ -527,7 +527,7 @@ public interface Attachment extends Appendix {
             
             this.deadline = buffer.getInt();
             this.bountyLimit = buffer.getInt();
-            this.xelPerPow = buffer.getInt();
+            this.xelPerPow = buffer.getLong();
         }
 
         WorkCreation(JSONObject attachmentData) {

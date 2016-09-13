@@ -697,7 +697,7 @@ final class TransactionImpl implements Transaction {
 			}
 			if (buffer.hasRemaining()) {
 				throw new NxtException.NotValidException(
-						"Transaction bytes too long, " + buffer.remaining() + " extra bytes");
+						"Transaction bytes too long, " + buffer.remaining() + " extra bytes, TX type = " + type + ":" + subtype);
 			}
 			return builder;
 		} catch (NxtException.NotValidException | RuntimeException e) {
@@ -943,7 +943,7 @@ final class TransactionImpl implements Transaction {
 		}
 
 		if (!type.canHaveRecipient()) {
-			if (recipientId != 0 || getAmountNQT() != 0) {
+			if (recipientId != 0) {
 				throw new NxtException.NotValidException(
 						"Transactions of this type must have recipient == 0, amount == 0");
 			}
