@@ -141,7 +141,7 @@ public final class CreateWork extends CreateTransaction {
 				rootNode.reset();
 				numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
 			} catch (Exception e) {
-				e.printStackTrace();
+				e.printStackTrace(System.out);
 				return INCORRECT_SYNTAX;
 			}
 		}

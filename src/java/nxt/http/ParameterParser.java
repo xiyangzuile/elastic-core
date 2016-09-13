@@ -578,7 +578,7 @@ public final class ParameterParser {
         String messageValue = Convert.emptyToNull(getParameterMultipart(req, "source_code"));
         if (messageValue != null) {
             try {
-                return new Appendix.PrunablePlainMessage(messageValue);
+                return new Appendix.PrunableSourceCode(messageValue, (short)1);
             } catch (RuntimeException e) {
                 throw new ParameterException(INCORRECT_ARBITRARY_MESSAGE);
             }

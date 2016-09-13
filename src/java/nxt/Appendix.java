@@ -588,10 +588,11 @@ public interface Appendix {
 					}
 					rootNode.reset();
 					numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
-					if(numberInputVars < Constants.MAX_INTS_FOR_WORK || numberInputVars > Constants.MAX_INTS_FOR_WORK){
-						throw new NxtException.NotValidException("Your required INTS must be in range!");
+					if(numberInputVars < Constants.MIN_INTS_FOR_WORK || numberInputVars > Constants.MAX_INTS_FOR_WORK){
+						throw new NxtException.NotValidException("Your required INTS must be in range (you had " + numberInputVars + ")!");
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
             		throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
 				}
 			}else{
