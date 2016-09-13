@@ -42,7 +42,7 @@ import nxt.util.Time;
 
 
 public class WorkLogicManager {
-
+	
 	// This is for unconfirmedLimiting
 	HashMap<Long, HashMap<Long, Long>> unconfirmedSumPOWIDs = new HashMap<Long, HashMap<Long, Long>>();
 	HashMap<Long, HashSet<Long>> unconfirmedCountBountyIDs = new HashMap<Long, HashSet<Long>>();
