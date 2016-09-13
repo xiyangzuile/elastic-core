@@ -3630,3 +3630,63 @@ margin-top: 20px;
     padding-top: 20px;
     margin-left: 90px;
 }
+.fourtwenty{
+  width: 420px;
+}
+.betterh4 {
+  font-family: sans-serif;
+  font-size: 14px;
+
+}
+.agopullright {
+  float: right !important;
+  padding-top: 0px;
+  line-height: 1.1;
+  box-sizing: border-box;
+}
+
+.middletext_list {
+  display: block;
+  color: #999;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  height: 100%;
+  padding-top: 14px;
+}
+
+#sideBalance {
+  display: block;
+  margin-bottom: 5px;
+}
+
+
+.indicator_container {
+    width:100%;
+    border-top: 1px solid #fff;
+    height: 44px;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+.indicator_column {
+    width: 33.33333333%;
+    height: 40px;
+    float: left;
+    text-align: center;
+    font-size: 12px;
+    padding-top: 3px;
+}
+.midcolumn {
+      border-right: 1px solid #fff;
+}
+.on{
+    background: #dff0d8;
+}
+
+.off{
+    background: #ffe6e6;
+
+}
+a.active .middletext_list {
+  color: #ffffff;
+}

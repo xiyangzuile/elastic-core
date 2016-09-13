@@ -234,15 +234,7 @@ var NRS = (function(NRS, $, undefined) {
 	function status2Text(message){
 		return "<b>" + message.percent_done + "%</b> done";
 	}
-	function ETA(message){
-
-		if(message.cancellation_tx=="0" && message.last_payment_tx=="0")
-			return "ETA <b><1.5h</b>";
-		else if(message.cancellation_tx!="0" && message.last_payment_tx=="0")
-			return "Job Closed";
-		else if(message.cancellation_tx=="0" && message.last_payment_tx!="0")
-			return "Job Closed";
-	}
+	
 	function timeOut(message){
 		var blocksLeft = parseInt(message.timeout_at_block);
 		blocksLeft -= NRS.lastBlockHeight;
@@ -473,13 +465,13 @@ var NRS = (function(NRS, $, undefined) {
 
 	function bottom_status_row(message){
 		if(message.cancellation_tx=="0" && message.last_payment_tx=="0"){
-			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-tasks fa-fw'></i> " + status2Text(message) + "</div><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + ETA(message) + "</div><div class='col-md-3'><i class='fa fa-times-circle-o fa-fw'></i> " + timeOut(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-tasks fa-fw'></i> " + status2Text(message) + "</div><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-3'><i class='fa fa-times-circle-o fa-fw'></i> " + timeOut(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 		else if(message.cancellation_tx!="0" && message.last_payment_tx=="0"){
-			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + ETA(message) + "</div><div class='col-md-6'><i class='fa fa-mail-reply fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-6'><i class='fa fa-mail-reply fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 		else if(message.cancellation_tx=="0" && message.last_payment_tx!="0"){
-			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + ETA(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 	}
 
@@ -810,7 +802,6 @@ var NRS = (function(NRS, $, undefined) {
 			$("#blockchain_bytes").empty().append(formatBytes(parseInt(workItem.script_size_bytes)));
 			$("#fee").empty().append(NRS.formatAmount(workItem.fee));
 
-			$("#num_in").empty().append(workItem.num_input);
 			$("#percent_done").empty().append(workItem.percent_done);
 			$("#progbar_work").attr("aria-valuenow",parseInt(workItem.percent_done));
 			$("#progbar_work").css("width",workItem.percent_done + "%");

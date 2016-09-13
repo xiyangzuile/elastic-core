@@ -279,6 +279,7 @@ final class TransactionDb {
         try (PreparedStatement pstmt = con.prepareStatement("SELECT id, type, subtype, "
                 + "has_prunable_attachment AS prunable_attachment, "
                 + "has_prunable_message AS prunable_plain_message, "
+                + "has_prunable_source_code AS prunable_source_code, "
                 + "has_prunable_encrypted_message AS prunable_encrypted_message "
                 + "FROM transaction WHERE (timestamp BETWEEN ? AND ?) AND "
                 + "(has_prunable_attachment = TRUE OR has_prunable_message = TRUE OR has_prunable_encrypted_message = TRUE)")) {
@@ -293,7 +294,7 @@ final class TransactionDb {
                     result.add(new PrunableTransaction(id, transactionType,
                             rs.getBoolean("prunable_attachment"),
                             rs.getBoolean("prunable_plain_message"),
-                            rs.getBoolean("prunable_encrypted_message")));
+                            rs.getBoolean("prunable_encrypted_message"),rs.getBoolean("prunable_source_code")));
                 }
             }
         } catch (SQLException e) {
@@ -310,9 +311,9 @@ final class TransactionDb {
                         + "recipient_id, amount, fee, referenced_transaction_full_hash, height, "
                         + "block_id, signature, timestamp, type, subtype, sender_id, attachment_bytes, "
                         + "block_timestamp, full_hash, version, has_message, has_encrypted_message, has_public_key_announcement, "
-                        + "has_encrypttoself_message, has_prunable_message, has_prunable_encrypted_message, "
+                        + "has_encrypttoself_message, has_prunable_message, has_prunable_source_code, has_prunable_encrypted_message, "
                         + "has_prunable_attachment, ec_block_height, ec_block_id, transaction_index) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                     int i = 0;
                     pstmt.setLong(++i, transaction.getId());
                     pstmt.setShort(++i, transaction.getDeadline());
@@ -349,6 +350,7 @@ final class TransactionDb {
                     pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
                     pstmt.setBoolean(++i, transaction.getEncryptToSelfMessage() != null);
                     pstmt.setBoolean(++i, transaction.hasPrunablePlainMessage());
+                    pstmt.setBoolean(++i, transaction.hasPrunableSourceCode());
                     pstmt.setBoolean(++i, transaction.hasPrunableEncryptedMessage());
                     pstmt.setBoolean(++i, transaction.getAttachment() instanceof Appendix.Prunable);
                     pstmt.setInt(++i, transaction.getECBlockHeight());
@@ -376,14 +378,16 @@ final class TransactionDb {
         private final boolean prunableAttachment;
         private final boolean prunablePlainMessage;
         private final boolean prunableEncryptedMessage;
+        private final boolean prunableSourceCode;
 
         public PrunableTransaction(long id, TransactionType transactionType, boolean prunableAttachment,
-                                   boolean prunablePlainMessage, boolean prunableEncryptedMessage) {
+                                   boolean prunablePlainMessage, boolean prunableEncryptedMessage, boolean prunableSourceCode) {
             this.id = id;
             this.transactionType = transactionType;
             this.prunableAttachment = prunableAttachment;
             this.prunablePlainMessage = prunablePlainMessage;
             this.prunableEncryptedMessage = prunableEncryptedMessage;
+            this.prunableSourceCode = prunableSourceCode;
         }
 
         public long getId() {
@@ -404,6 +408,10 @@ final class TransactionDb {
 
         public boolean hasPrunableEncryptedMessage() {
             return prunableEncryptedMessage;
+        }
+        
+        public boolean hasPrunableSourceCode() {
+            return prunableSourceCode;
         }
     }
 

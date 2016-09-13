@@ -296,7 +296,7 @@ public class WorkLogicManager {
 	private JSONObject workEntry(byte version, long workId, long referenced_tx,
 			long block_created, long block_closed, long cancellation_tx,
 			long last_payment_tx, String title, String account,
-			String language, int num_input, 
+			String language, 
 			long balance_original, long paid_bounties, long paid_pow,
 			int bounties_connected, int pow_connected, int timeout_at_block,
 			int script_size_bytes, long fee, int block_created_h,
@@ -316,7 +316,6 @@ public class WorkLogicManager {
 		response.put("title", title);
 		response.put("account", account);
 		response.put("language", language);
-		response.put("num_input", num_input);
 		response.put("percent_work", work_percentage);
 		response.put("percent_bounties", bounty_percentage);
 		response.put("balance_original", dd(balance_original));
@@ -783,7 +782,6 @@ public class WorkLogicManager {
 
 							long workId = rs.getLong("id");
 							String work_title = rs.getString("work_title");
-							int num_input = rs.getInt("variables_input");
 							byte version = rs.getByte("version_id");
 
 							int deadline = rs.getInt("deadline");
@@ -834,7 +832,7 @@ public class WorkLogicManager {
 									block_id, last_payment, last_cancel,
 									last_payment, work_title,
 									Crypto.rsEncode(senderId), languageString,
-									num_input, amount,
+									amount,
 									amount_paid_bounties, amount_paid_pow,
 									num_bounties, num_pow, h + deadline,
 									code.length, fee, h, bounties_limit,
