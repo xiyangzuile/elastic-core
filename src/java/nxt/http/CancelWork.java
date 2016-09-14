@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import nxt.Account;
 import nxt.Attachment;
 import nxt.NxtException;
-import nxt.WorkLogicManager;
 
 import org.json.simple.JSONStreamAware;
 

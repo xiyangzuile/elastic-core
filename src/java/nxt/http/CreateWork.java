@@ -27,7 +27,6 @@ import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.NxtException;
-import nxt.WorkLogicManager;
 
 import org.json.simple.JSONStreamAware;
 
@@ -75,22 +74,15 @@ public final class CreateWork extends CreateTransaction {
 		}
 
 		// Do some boundary checks
-		byte workLanguageByte;
-		try {
-			workLanguageByte = WorkLogicManager.getInstance().getLanguageByte(workLanguage);
-			if (WorkLogicManager.getInstance().checkWorkLanguage(workLanguageByte) == false) {
-				return INCORRECT_WORK_LANGUAGE;
-			}
-		} catch (NumberFormatException e) {
-			return INCORRECT_WORK_LANGUAGE;
-		}
+		byte workLanguageByte = 0x01;
 
 		int deadlineInt;
 		try {
 			deadlineInt = parseInt(deadline);
-			if (WorkLogicManager.getInstance().checkDeadline(deadlineInt) == false) {
+			if(deadlineInt > Constants.MAX_DEADLINE_FOR_WORK || deadlineInt < Constants.MIN_DEADLINE_FOR_WORK){
 				return INCORRECT_DEADLINE;
-			}
+        	}
+			
 		} catch (NumberFormatException e) {
 			return INCORRECT_DEADLINE;
 		}
@@ -98,7 +90,7 @@ public final class CreateWork extends CreateTransaction {
 		int bountyLimitInt;
 		try {
 			bountyLimitInt = parseInt(bountyLimit);
-			if (WorkLogicManager.getInstance().checkDeadline(deadlineInt) == false) {
+			if (bountyLimitInt > Constants.MAX_WORK_BOUNTY_LIMIT || bountyLimitInt < Constants.MIN_WORK_BOUNTY_LIMIT ) {
 				return MISSING_BOUNTYLIMIT;
 			}
 		} catch (NumberFormatException e) {
@@ -108,7 +100,7 @@ public final class CreateWork extends CreateTransaction {
 		long xelPerPowInt;
 		try {
 			xelPerPowInt = Long.parseLong(xelPerPow);
-			if (WorkLogicManager.getInstance().isPowPriceCorrect(xelPerPowInt) == false) {
+			if (xelPerPowInt < Constants.MIN_XEL_PER_POW) {
 				return INCORRECT_XEL_PER_POW;
 			}
 		} catch (NumberFormatException e) {
@@ -147,8 +139,8 @@ public final class CreateWork extends CreateTransaction {
 
 		// Differentiate between different languages
 		if (workLanguageByte == 0x01) {
-			if (numberInputVars < WorkLogicManager.getInstance().getMinNumberInputInts()
-					|| numberInputVars > WorkLogicManager.getInstance().getMaxNumberInputInts()) {
+			if (numberInputVars < Constants.MIN_INTS_FOR_WORK
+					|| numberInputVars > Constants.MAX_INTS_FOR_WORK) {
 				return INCORRECT_INPUT_NUMBER;
 			}
 		}

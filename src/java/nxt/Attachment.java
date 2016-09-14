@@ -285,7 +285,7 @@ public interface Attachment extends Appendix {
             this.workId = buffer.getLong();
             
             int numInputVars = buffer.get();
-            if (numInputVars > WorkLogicManager.getInstance().getMaxNumberInputInts() || numInputVars < WorkLogicManager.getInstance().getMinNumberInputInts()) {
+            if (numInputVars > Constants.MAX_INTS_FOR_WORK || numInputVars < Constants.MIN_INTS_FOR_WORK) {
                 throw new NxtException.NotValidException("Invalid number of state variables: " + numInputVars);
             }
             this.input = new int[numInputVars];
@@ -363,7 +363,7 @@ public interface Attachment extends Appendix {
             super(buffer, transactionVersion);
             this.workId = buffer.getLong();            
             int numberOfOptions = (int)buffer.get();
-            if (numberOfOptions > WorkLogicManager.getInstance().getMaxNumberInputInts() || numberOfOptions < WorkLogicManager.getInstance().getMinNumberInputInts()) {
+            if (numberOfOptions > Constants.MAX_INTS_FOR_WORK || numberOfOptions < Constants.MIN_INTS_FOR_WORK) {
                 throw new NxtException.NotValidException("Invalid number of input variables: " + numberOfOptions);
             }
             this.input = new int[numberOfOptions];

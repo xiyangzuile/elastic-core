@@ -16,6 +16,7 @@
 
 package nxt;
 
+import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -24,10 +25,12 @@ public final class Constants {
     public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
     public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
     public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
-
+    public static BigInteger least_possible_target = new BigInteger("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",16);
     public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
     public static final int MAX_TITLE_LENGTH = 255;
     public static final int MAX_WORK_CODE_LENGTH = 1024*1024;
+    public static final int POWRETARGET_N_BLOCKS = 12;
+    public static final int POWRETARGET_POW_PER_BLOCK_SCALER = 10;
     public static final int MIN_TRANSACTION_SIZE = 176;
     public static final int MAX_DEADLINE_FOR_WORK = 1440;
     public static final int MIN_DEADLINE_FOR_WORK = 3;
@@ -36,6 +39,9 @@ public final class Constants {
     public static final long MAX_WORK_WCET_TIME = 200000L;
     public static final long MAX_WORK_POW_REWARD = 10000000000L;
     public static final long MIN_WORK_POW_REWARD = 0L;
+    public static final int MIN_WORK_BOUNTY_LIMIT=1;
+    public static final long MIN_XEL_PER_POW=1000;
+    public static final int MAX_WORK_BOUNTY_LIMIT=10;
     public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;
     public static final int MAX_PAYLOAD_LENGTH = MAX_NUMBER_OF_TRANSACTIONS * MIN_TRANSACTION_SIZE;
     public static final long MAX_BALANCE_NXT = 100000000;

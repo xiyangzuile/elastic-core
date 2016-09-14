@@ -24,7 +24,6 @@ import nxt.Account;
 import nxt.Attachment;
 import nxt.Db;
 import nxt.NxtException;
-import nxt.WorkLogicManager;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 import nxt.util.Logger;

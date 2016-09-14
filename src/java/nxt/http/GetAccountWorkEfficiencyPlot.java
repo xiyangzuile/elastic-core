@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import nxt.NxtException;
 import nxt.Quartett;
 import nxt.Triplet;
-import nxt.WorkLogicManager;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -74,7 +73,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 	private JSONArray getComputationPlot(long workId, int last_num) {
 		JSONArray computation_power = new JSONArray();
 		
-		ArrayList<Quartett<Integer,Long,String, Long>> ret_pre = WorkLogicManager.getInstance().getDataForPlot(workId, last_num);
+		/*ArrayList<Quartett<Integer,Long,String, Long>> ret_pre = WorkLogicManager.getInstance().getDataForPlot(workId, last_num);
 		for(Quartett<Integer,Long,String, Long> t : ret_pre){
 			JSONArray inner = new JSONArray();
 			inner.add(t.getA());
@@ -83,7 +82,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 			inner.add(t.getD());
 			computation_power.add(inner);
 		}
-				
+				*/
 		return computation_power;
 	}
 

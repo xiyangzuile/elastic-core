@@ -23,6 +23,7 @@ import nxt.util.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -475,15 +476,87 @@ final class BlockImpl implements Block {
 	public BigInteger getLastPowTarget() {
 		// Genesis special treatment
 		if (this.getHeight() == 0) {
-			return WorkLogicManager.getInstance().least_possible_target;
+			return Constants.least_possible_target;
 		}
 
 		if (this.lastPowTarget == null)
-			this.lastPowTarget = WorkLogicManager.getInstance().getMinPowTarget(previousBlockId);
+			this.lastPowTarget = getMinPowTarget(previousBlockId);
 
 		return this.lastPowTarget;
 	}
 	
+	public BigInteger getMinPowTarget(long lastBlockId) {
+
+		// Genesis specialty
+		if (lastBlockId == 0)
+			return Constants.least_possible_target;
+
+		// try to cycle over the last 12 blocks, or - if height is smaller -
+		// over entire blockchain
+		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS,
+				BlockchainImpl.getInstance().getHeight());
+		int original_back_counter = go_back_counter;
+
+		// ... and count the number of PoW transactions inside those blocks
+		int pow_counter = 0;
+		BlockImpl b = BlockchainImpl.getInstance().getBlock(lastBlockId);
+		BigInteger last_pow_target = b.getLastPowTarget();
+		System.out.println("Summarizing last POW");
+		while (go_back_counter > 0) {
+			pow_counter += b.countNumberPOW();
+			System.out.println("    BID " + b.getId() + " has " + b.countNumberPOW() + " POW submissions our of " + b.getTransactions().size() + " TX (Total sent " + b.getTotalAmountNQT() + ")!");
+			b = b.getPreviousBlock();
+			go_back_counter -= 1;
+		}
+		
+		// scale up if there are not yet 12 blocks there, avoids MADNESS
+		if(original_back_counter<Constants.POWRETARGET_N_BLOCKS){
+			System.out.println("!!!! GOBACK COUNTER SKEWED -> " + original_back_counter + " / should be " + Constants.POWRETARGET_N_BLOCKS);
+			
+			double scaledCounter = (double)pow_counter;
+			
+			scaledCounter = scaledCounter / original_back_counter;
+			scaledCounter = scaledCounter * Constants.POWRETARGET_N_BLOCKS;
+			System.out.println("!!!!SCALED POW NUMBER -> " + pow_counter + " / upscaled to " + scaledCounter);
+
+			pow_counter = (int)scaledCounter;
+		}
+
+		// if no PoW was sent during last n blocks, something is strange, give
+		// back the lowest possible target
+		if (pow_counter == 0)
+			return Constants.least_possible_target;
+
+		// Check the needed adjustment here, but make sure we do not adjust more
+		// than * 2 or /2.
+		// This will prevent huge difficulty jumps, yet it will quickly
+		// (exponentially) approxiamate the desired number
+		// of PoW packages per block.
+		BigDecimal new_pow_target = new BigDecimal(last_pow_target);
+		System.out.println("!!!! RATIO target / real !!!! -> " + Constants.POWRETARGET_POW_PER_BLOCK_SCALER + " / " + pow_counter);
+		double factor = (double)Constants.POWRETARGET_POW_PER_BLOCK_SCALER / (double)pow_counter; // RETARGETING
+
+		// limits
+		if (factor > 2)
+			factor = 2;
+		if (factor < 0.5)
+			factor = (double) 0.5;
+		
+		BigDecimal factorDec = new BigDecimal(factor);
+		System.out.println("!!!! FACTOR FOR NEW POW !!!! -> " + factor);
+
+		// Apply the retarget: Adjust target so that we again - on average -
+		// reach n PoW per block
+		new_pow_target = new_pow_target.multiply(factorDec);
+		BigInteger converted_new_pow = new_pow_target.toBigInteger();
+		
+		if(converted_new_pow.compareTo(Constants.least_possible_target)==1) converted_new_pow = Constants.least_possible_target;
+
+		
+
+		return converted_new_pow;
+	}
+
 	public int countNumberPOW() {
 		int cntr = 0;
 		for (TransactionImpl t : getTransactions()) {

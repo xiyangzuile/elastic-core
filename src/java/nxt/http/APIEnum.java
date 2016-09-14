@@ -116,9 +116,7 @@ public enum APIEnum {
     CREATE_POX("createPoX", ProofOfX.instance),
     GET_ACCOUNT_WORK("getAccountWork", GetAccountWork.instance),
     GET_ACCOUNT_EFFICIENCY("getAccountWorkEfficiencyPlot", GetAccountWorkEfficiencyPlot.instance),
-    GET_MINEABLE_WORK("getMineableWork", GetMineableWork.instance),
-    GET_POW_BOUNDS("getPowPayoutBounds", GetPowPayoutBounds.instance);
-
+    GET_MINEABLE_WORK("getMineableWork", GetMineableWork.instance);
     private static final Map<String, APIEnum> apiByName = new HashMap<>();
 
     static {

@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import nxt.Account;
 import nxt.NxtException;
 import nxt.Work;
-import nxt.WorkLogicManager;
 import nxt.db.DbIterator;
 
 import org.json.simple.JSONArray;

@@ -583,7 +583,7 @@ public interface Appendix {
 					// Check worst case execution time
 					ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
 					WCET = RuntimeEstimator.worstWeight(rootNode);
-					if (WCET > WorkLogicManager.getInstance().maxWorstCaseExecutionTime()) {
+					if (WCET > Constants.MAX_WORK_WCET_TIME) {
 						throw new NxtException.NotValidException("User provided POW Algorithm has too bad WCET");
 					}
 					rootNode.reset();

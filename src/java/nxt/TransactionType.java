@@ -667,17 +667,17 @@ public abstract class TransactionType {
 		        }
 				
 				// Verify Deadline 
-				if(WorkLogicManager.getInstance().checkDeadline(attachment.getDeadline()) == false){
+				if(attachment.getDeadline() > Constants.MAX_DEADLINE_FOR_WORK || attachment.getDeadline() < Constants.MIN_DEADLINE_FOR_WORK){
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct deadline");
 	        	}
 				
 				// Verify Bounty Limit
-				if(WorkLogicManager.getInstance().checkDeadline(attachment.getBountyLimit()) == false){
+				if(attachment.getBountyLimit() > Constants.MAX_WORK_BOUNTY_LIMIT || attachment.getBountyLimit() < Constants.MIN_WORK_BOUNTY_LIMIT){
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct bounty limit");
 	        	}
 				
 				// Verify XEL per Pow
-				if(WorkLogicManager.getInstance().isPowPriceCorrect(attachment.getXelPerPow()) == false){
+				if(attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW){
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct xel/pow price");
 	        	}
 			}
