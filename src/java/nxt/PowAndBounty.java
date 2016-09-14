@@ -48,7 +48,7 @@ public final class PowAndBounty {
 
     private static final Listeners<PowAndBounty, Event> listeners = new Listeners<>();
 
-    private static final DbKey.LongKeyFactory<PowAndBounty> powAndBountyDbKeyFactory = new DbKey.LongKeyFactory<PowAndBounty>("work_id") {
+    private static final DbKey.LongKeyFactory<PowAndBounty> powAndBountyDbKeyFactory = new DbKey.LongKeyFactory<PowAndBounty>("id") {
 
         @Override
         public DbKey newKey(PowAndBounty participant) {
