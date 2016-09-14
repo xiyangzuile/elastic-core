@@ -219,49 +219,7 @@ public interface Attachment extends Appendix {
     }
     
 
-    public final static class WorkIdentifierCancellation extends AbstractAttachment {
-
-        public long getWorkId() {
-			return workId;
-		}
-
-		private final long workId;
-
-		WorkIdentifierCancellation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workId = buffer.getLong();
-        }
-
-		WorkIdentifierCancellation(JSONObject attachmentData) {
-            super(attachmentData);
-            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
-        }
-
-        public WorkIdentifierCancellation(long workId) {
-            this.workId = workId;
-        }
-
-
-        @Override
-        int getMySize() {
-            return 8;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(this.workId);
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("id", Convert.toUnsignedLong(this.workId));
-        }
-
-        @Override
-        public TransactionType getTransactionType() {
-        	return TransactionType.WorkControl.CANCEL_TASK;
-        }
-    }
+   
     
     public final static class WorkIdentifierCancellationRequest extends AbstractAttachment {
 

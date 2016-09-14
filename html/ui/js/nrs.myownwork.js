@@ -261,8 +261,14 @@ var NRS = (function(NRS, $, undefined) {
 	function statusspan(message){
 		if(message.closed == false)
 			return "<span id='activeLabel' class='label label-success label12px'>Active</span>";
-		else
-			return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+		else{
+			if(message.timedout == true)
+				return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+			else if (message.cancelled == true)
+				return "<span id='activeLabel' class='label label-danger label12px'>Cancelled</span>";
+			else
+				return "<span id='activeLabel' class='label label-warning label12px'>Timed-out</span>";
+		}
 	}
 	function statusspan_precancel(){
 		return "<span id='activeLabel' class='label label-warning label12px'>Cancel Requested</span>";
@@ -681,7 +687,7 @@ var NRS = (function(NRS, $, undefined) {
 		
 		// TODO, create labels
 		$("#cancel_btn").hide();
-		if(workItem.cancellation_tx=="0" && workItem.last_payment_tx=="0"){
+		if(workItem.closed==false){
 			$("#work_indicator").removeClass("btn-success").removeClass("btn-warning").removeClass("btn-default").removeClass("btn-info").addClass("btn-success");
 			$("#work_indicator_inner").empty().append("Active");
 			$("#cancel_btn").show();
@@ -695,14 +701,7 @@ var NRS = (function(NRS, $, undefined) {
 			$("#balancelefttitle").empty().append("Balance Left");
 			$("#detailedlisting").empty().append("[<a href=#'>breakdown</a>]");
 		}
-		else if(workItem.cancellation_tx!="0" && workItem.last_payment_tx=="0"){
-			$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-default");
-			$("#work_indicator_inner").empty().append("Cancelled");
-			$("#hideable").show();
-			$("#balancelefttitle").empty().append("Balance Refunded");
-			$("#detailedlisting").empty().append("[<a href=# data-transaction='" + workItem.cancellation_tx + "'>payback TX</a>, <a href=#'>breakdown</a>]");
-		}
-		else if(workItem.cancellation_tx=="0" && workItem.last_payment_tx!="0"){
+		else{
 			$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
 			$("#work_indicator_inner").empty().append("Finished");
 			$("#hideable").hide();
@@ -721,20 +720,20 @@ var NRS = (function(NRS, $, undefined) {
 			$("#bal_bounties").empty().append(workItem.percent_bounties*100);
 
 
-			$("#bal_original").empty().append(NRS.formatAmount(workItem.balance_original));
-			$("#bal_remained").empty().append(NRS.formatAmount(workItem.balance_remained));
-			$("#bnt_connected").empty().append(workItem.bounties_connected);
+			$("#bal_original").empty().append(NRS.formatAmount(workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig));
+			$("#bal_remained").empty().append(NRS.formatAmount(workItem.balance_bounty_fund+workItem.balance_pow_fund));
+			$("#bnt_connected").empty().append(workItem.received_bounties);
 
-			var percentRemained = Math.round(workItem.balance_remained * 100 / workItem.balance_original);
+			var percentRemained = 66;
 			$("#bal_remained_percent").empty().append(percentRemained); // left
 
-			var origBntFund = workItem.balance_original_bounty;
+			var origBntFund = workItem.balance_bounty_fund_orig;
 
 
 
 
 			var bountyGone = false;
-			if(parseInt(workItem.bounties_connected)>0){
+			if(parseInt(workItem.received_bounties)>0){
 				$("#bountyfundthere").hide();
 				$("#bountyfundgone").show();
 				$("#bnt_percent_left").empty().append("0");
@@ -747,17 +746,17 @@ var NRS = (function(NRS, $, undefined) {
 				$("#bal_remained_bnt").empty().append(NRS.formatAmount(origBntFund));
 			}
 
-			$("#refund_calculator").empty().append(NRS.formatAmount(workItem.balance_remained));
+			$("#refund_calculator").empty().append(NRS.formatAmount(workItem.balance_bounty_fund+workItem.balance_pow_fund));
 
 			var bountiesLimit = parseInt(workItem.bounty_limit);
-			var bountiesMissing = bountiesLimit - parseInt(workItem.bounties_connected);
+			var bountiesMissing = bountiesLimit - parseInt(workItem.received_bounties);
 
-			var gotNumberPow = parseInt(workItem.pow_connected);
+			var gotNumberPow = parseInt(workItem.received_pow);
 			$("#number_pow").empty().append(gotNumberPow);
       		console.log("Activated:");
       		console.log(workItem);
-			var bal_original_pow = workItem.balance_original_pow; // fix here
-			var bal_left_pow = bal_original_pow - workItem.paid_pow; // fix here
+			var bal_original_pow = workItem.balance_bounty_fund_orig; // fix here
+			var bal_left_pow = workItem.balance_bounty_fund; // fix here
 			console.log("BAL ORIGINAL POW: " + bal_original_pow);
 			var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
 			$("#pow_paid_out").empty().append(NRS.formatAmount(bal_original_pow-bal_left_pow));

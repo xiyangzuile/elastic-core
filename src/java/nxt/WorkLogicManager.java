@@ -30,7 +30,6 @@ import ElasticPL.ParseException;
 import nxt.Attachment.PiggybackedProofOfBounty;
 import nxt.Attachment.PiggybackedProofOfWork;
 import nxt.Attachment.WorkCreation;
-import nxt.Attachment.WorkIdentifierCancellation;
 import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
@@ -450,37 +449,6 @@ public class WorkLogicManager {
 		}
 	}
 
-	public void cancelWork(Transaction t, WorkIdentifierCancellation attachment) {
-		if (!Db.db.isInTransaction()) {
-			try {
-				Db.db.beginTransaction();
-				cancelWork(t, attachment);
-				this.cleanMempoolDeeply();
-				Db.db.commitTransaction();
-				
-			} catch (Exception e) {
-				Logger.logErrorMessage(e.toString(), e);
-				Db.db.rollbackTransaction();
-				throw e;
-			} finally {
-				Db.db.endTransaction();
-			}
-			return;
-		}
-		try {
-			try (Connection con = Db.db.getConnection();
-					PreparedStatement pstmt = con
-							.prepareStatement("UPDATE work SET payback_transaction_id = ? WHERE id = ?")) {
-				int i = 0;
-				pstmt.setLong(++i, t.getId());
-				pstmt.setLong(++i, attachment.getWorkId());
-				pstmt.executeUpdate();
-			}
-
-		} catch (SQLException e) {
-			throw new RuntimeException(e.toString(), e);
-		}
-	}
 
 	public boolean isStillPending(long workId, long senderId) {
 		// NOTE: here, we do not need to check if balance is left, this will be checked in the block creation routine

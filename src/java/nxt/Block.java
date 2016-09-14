@@ -71,6 +71,5 @@ public interface Block {
     
     int countNumberPOW();
 
-	int countNumberCancellation();
 
 }

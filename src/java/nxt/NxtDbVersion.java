@@ -69,7 +69,7 @@ class NxtDbVersion extends DbVersion {
             	
                 apply("CREATE INDEX IF NOT EXISTS transaction_recipient_id_idx ON transaction (recipient_id)");
             case 10:
-            	apply("CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, xel_per_pow INT NOT NULL, title VARCHAR NOT NULL, blocks_remaining SMALLINT NOT NULL, closed BOOLEAN NOT NULL DEFAULT FALSE, percentage_powfund INT NOT NULL, balance_pow_fund BIGINT NOT NULL, balance_bounty_fund BIGINT NOT NULL,received_bounties INT NOT NULL, received_pows INT NOT NULL, bounty_limit INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
+            	apply("CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, xel_per_pow INT NOT NULL, title VARCHAR NOT NULL, blocks_remaining SMALLINT NOT NULL, closed BOOLEAN NOT NULL DEFAULT FALSE, cancelled BOOLEAN NOT NULL DEFAULT FALSE, timedout BOOLEAN NOT NULL DEFAULT FALSE, percentage_powfund INT NOT NULL, balance_pow_fund BIGINT NOT NULL, balance_bounty_fund BIGINT NOT NULL, balance_pow_fund_orig BIGINT NOT NULL, balance_bounty_fund_orig BIGINT NOT NULL,received_bounties INT NOT NULL, received_pows INT NOT NULL, bounty_limit INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
             case 11:
             	apply("CREATE TABLE IF NOT EXISTS proof_of_work (db_id IDENTITY, id BIGINT NOT NULL, work_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, payout_amount BIGINT NOT NULL, input OTHER NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 12:

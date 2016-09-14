@@ -99,6 +99,18 @@ public abstract class DbClause {
         }
 
     }
+    public static final class NotNullClauseAndNotClosed extends DbClause {
+
+        public NotNullClauseAndNotClosed(String columnName) {
+            super(" " + columnName + " IS NOT NULL AND closed = false");
+        }
+
+        @Override
+        protected int set(PreparedStatement pstmt, int index) throws SQLException {
+            return index;
+        }
+
+    }
 
     public static final class StringClause extends DbClause {
 

@@ -494,13 +494,5 @@ final class BlockImpl implements Block {
 		return cntr;
 	}
 
-	public int countNumberCancellation() {
-		int cntr = 0;
-		for (TransactionImpl t : getTransactions()) {
-			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.CANCEL_TASK) {
-				cntr++;
-			}
-		}
-		return cntr;
-	}
+	
 }

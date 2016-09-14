@@ -3689,4 +3689,16 @@ margin-top: 20px;
 }
 a.active .middletext_list {
   color: #ffffff;
+}.label-white {
+  background-color: #ffffff;
+  border-color: #E0E0E0 !important;
+  border: 1px solid;
+  border-radius: 5px;
+  color: #616161;
+  font-weight: unset !important;
+}
+.laterdiv {
+    font-size: 9pt;
+    padding-top: 30px;
+    color: #636363;
 }

@@ -89,8 +89,6 @@ public abstract class TransactionType {
     			switch (subtype) {
     			case SUBTYPE_WORK_CONTROL_NEW_TASK:
     				return TransactionType.WorkControl.NEW_TASK;
-    			case SUBTYPE_WORK_CONTROL_CANCEL_TASK:
-    				return TransactionType.WorkControl.CANCEL_TASK;
     			case SUBTYPE_WORK_CONTROL_PROOF_OF_WORK:
     				return TransactionType.WorkControl.PROOF_OF_WORK;
     			case SUBTYPE_WORK_CONTROL_BOUNTY:
@@ -714,79 +712,6 @@ public abstract class TransactionType {
 
 		};
 
-		public final static TransactionType CANCEL_TASK = new WorkControl() {
-
-			@Override
-			public final byte getSubtype() {
-				return TransactionType.SUBTYPE_WORK_CONTROL_CANCEL_TASK;
-			}
-
-			@Override
-			Attachment.WorkIdentifierCancellation parseAttachment(ByteBuffer buffer, byte transactionVersion)
-					throws NxtException.NotValidException {
-				return new Attachment.WorkIdentifierCancellation(buffer, transactionVersion);
-			}
-
-			@Override
-			Attachment.WorkIdentifierCancellation parseAttachment(JSONObject attachmentData)
-					throws NxtException.NotValidException {
-				return new Attachment.WorkIdentifierCancellation(attachmentData);
-			}
-
-			@Override
-			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-				Attachment.WorkIdentifierCancellation attachment = (Attachment.WorkIdentifierCancellation) transaction
-						.getAttachment();
-				WorkLogicManager.getInstance().cancelWork(transaction, attachment);
-			}
-
-			@Override
-			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-				Attachment.WorkIdentifierCancellation attachment = (Attachment.WorkIdentifierCancellation) transaction
-						.getAttachment();
-
-				if (WorkLogicManager.getInstance().isStillPending(attachment.getWorkId()) == false) {
-					throw new NxtException.NotValidException("Cannot cancel already cancelled or finished work");
-				}
-				
-				
-				if (WorkLogicManager.getInstance().getTransactionInitiator(attachment.getWorkId()) != transaction
-						.getRecipientId()) {
-					throw new NxtException.NotValidException("The receipient must be the work initiator");
-				}
-			}
-
-			@Override
-			public boolean canHaveRecipient() {
-				return true;
-			}
-
-			@Override
-			public boolean mustHaveRecipient() {
-				return true;
-			}
-
-			@Override
-			public boolean moneyComesFromNowhere() {
-				return true;
-			}
-
-			@Override
-			public boolean zeroFeeTransaction() {
-				return true;
-			}
-
-			@Override
-			public LedgerEvent getLedgerEvent() {
-				return LedgerEvent.WORK_CANCELLATION;
-			}
-
-			@Override
-			public String getName() {
-				return "WorkIdentifierCancellation";
-			}
-		};
-		
 		public final static TransactionType CANCEL_TASK_REQUEST = new WorkControl() {
 
 			@Override
@@ -808,7 +733,9 @@ public abstract class TransactionType {
 
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-		
+				Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
+						.getAttachment();
+				Work.getWork(attachment.getWorkId()).natural_timeout();
 			}
 
 			@Override
@@ -816,18 +743,19 @@ public abstract class TransactionType {
 				Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
 						.getAttachment();
 				
-				if (WorkLogicManager.getInstance().doesWorkExist(attachment.getWorkId()) == false){
+				Work w = Work.getWork(attachment.getWorkId());
+				
+				if(w==null){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
 				}
-
-				if (WorkLogicManager.getInstance().isStillPending(attachment.getWorkId(),
-						transaction.getSenderId()) == false) {
+				
+				if (w.isClosed() == true) {
 					throw new NxtException.NotValidException("Cannot cancel already cancelled or finished work " + attachment.getWorkId() + ", issued in block: " + transaction.getBlockId());
 				}
 				
-				if (WorkLogicManager.getInstance().getTransactionInitiator(attachment.getWorkId()) != transaction
+				if (w.getSender_account_id() != transaction
 						.getSenderId()) {
-					throw new NxtException.NotValidException("The receipient must be the work initiator");
+					throw new NxtException.NotValidException("Only the work creator can cancel this work");
 				}
 			}
 
@@ -848,7 +776,7 @@ public abstract class TransactionType {
 
 			@Override
 			public boolean zeroFeeTransaction() {
-				return true;
+				return false;
 			}
 
 			@Override
