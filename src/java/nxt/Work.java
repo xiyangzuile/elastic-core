@@ -230,6 +230,7 @@ public final class Work {
     private final int received_bounties;
     private final int received_pows;
     private short blocksRemaining;
+    private final int originating_height;
 
     private Work(Transaction transaction, Attachment.WorkCreation attachment) {
         this.id = transaction.getId();
@@ -250,6 +251,7 @@ public final class Work {
         this.sender_account_id = transaction.getSenderId();
         this.cancelled=false;
         this.timedout=false;
+        this.originating_height = transaction.getBlock().getHeight();
     }
 
     private Work(ResultSet rs, DbKey dbKey) throws SQLException {
@@ -273,6 +275,7 @@ public final class Work {
         this.received_pows = rs.getInt("received_pows");        
         this.bounty_limit = rs.getInt("bounty_limit");
         this.sender_account_id = rs.getLong("sender_account_id");
+        this.originating_height = rs.getInt("originating_height");
     }
 
     public static DbIterator<Work> getActiveWorks(int from, int to) {
@@ -280,9 +283,9 @@ public final class Work {
     }
     
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, percentage_powfund, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, height, latest) "
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, percentage_powfund, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
                 + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
@@ -301,6 +304,7 @@ public final class Work {
             pstmt.setInt(++i, this.received_bounties);
             pstmt.setInt(++i, this.received_pows);
             pstmt.setInt(++i, this.bounty_limit);
+            pstmt.setInt(++i, this.originating_height);
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
         }
@@ -431,6 +435,7 @@ public final class Work {
 		response.put("work_id",Convert.toUnsignedLong(this.work_id));
 		response.put("xel_per_pow",this.xel_per_pow);
 		response.put("title",this.title);
+		response.put("originating_height",this.originating_height);
 		response.put("blocksRemaining",this.blocksRemaining);
 		response.put("closed",this.closed);
 		response.put("cancelled",this.cancelled);

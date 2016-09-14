@@ -231,7 +231,13 @@ var NRS = (function(NRS, $, undefined) {
 		return "<b>" + message.balance_remained + "+</b> XEL left, <b>7742</b> blocks left";
 	}
 	function status2Text(message){
-		return "<b>" + message.percent_done + "%</b> done";
+		var bal_original_pow = message.balance_bounty_fund_orig; // fix here
+		var bal_left_pow = message.balance_bounty_fund; // fix here
+		var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
+		var percent_done_pow = 100 - bal_pow_perc_left;
+		var percent_bounty_left = (message.received_bounties * 100 / message.bounty_limit);
+		var maxXC = (percent_done_pow>percent_bounty_left) ? percent_done_pow : percent_bounty_left;
+		return "<b>" + maxXC.toFixed(2) + "%</b> done";
 	}
 	
 	function timeOut(message){
@@ -508,7 +514,7 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function replaceInSidebar(message){
-		newElement = "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>" + message.language + "</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.height) + " (block #" + message.height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
+		newElement = "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>" + message.language + "</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.originating_height) + " (block #" + message.originating_height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
 		if($("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').length>0){
 			var hasActiveClass=$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').hasClass("active");
 			$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').replaceWith(newElement);
@@ -728,16 +734,19 @@ var NRS = (function(NRS, $, undefined) {
 			$("#work_title_right").empty().append(workItem.title);
 
 			// Percentages
-			$("#bal_work").empty().append(workItem.percent_work*100);
-			$("#bal_bounties").empty().append(workItem.percent_bounties*100);
+			$("#bal_work").empty().append(workItem.percentage_powfund);
+			$("#bal_bounties").empty().append(100 - workItem.percentage_powfund);
 
 
 			$("#bal_original").empty().append(NRS.formatAmount(workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig));
 			$("#bal_remained").empty().append(NRS.formatAmount(workItem.balance_bounty_fund+workItem.balance_pow_fund));
 			$("#bnt_connected").empty().append(workItem.received_bounties);
 
-			var percentRemained = 66;
-			$("#bal_remained_percent").empty().append(percentRemained); // left
+			var orig = workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig;
+			var rem = workItem.balance_bounty_fund+workItem.balance_pow_fund;
+			var percentRemained = (rem*100/orig);
+
+			$("#bal_remained_percent").empty().append(percentRemained.toFixed(2)); // left
 
 			var origBntFund = workItem.balance_bounty_fund_orig;
 
@@ -763,15 +772,15 @@ var NRS = (function(NRS, $, undefined) {
 			var bountiesLimit = parseInt(workItem.bounty_limit);
 			var bountiesMissing = bountiesLimit - parseInt(workItem.received_bounties);
 
-			var gotNumberPow = parseInt(workItem.received_pow);
+			var gotNumberPow = parseInt(workItem.received_pows);
 			$("#number_pow").empty().append(gotNumberPow);
 			var bal_original_pow = workItem.balance_bounty_fund_orig; // fix here
 			var bal_left_pow = workItem.balance_bounty_fund; // fix here
 			var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
 			$("#pow_paid_out").empty().append(NRS.formatAmount(bal_original_pow-bal_left_pow));
 			$("#bal_remained_pow").empty().append(NRS.formatAmount(bal_left_pow));
-			$("#bal_remained_pow_percent").empty().append(bal_pow_perc_left); // finished
-			$("#bal_remained_pow_percent_2").empty().append(100-bal_pow_perc_left); // finished
+			$("#bal_remained_pow_percent").empty().append(bal_pow_perc_left.toFixed(2)); // finished
+			$("#bal_remained_pow_percent_2").empty().append((100-bal_pow_perc_left).toFixed(2)); // finished
 
 			$("#progbar_pow").attr("aria-valuenow",parseInt(100-bal_pow_perc_left));
 			$("#progbar_pow").css("width",parseInt(100-bal_pow_perc_left) + "%");
@@ -807,9 +816,15 @@ var NRS = (function(NRS, $, undefined) {
 			$("#blockchain_bytes").empty().append(formatBytes(parseInt(workItem.script_size_bytes)));
 			$("#fee").empty().append(NRS.formatAmount(workItem.fee));
 
-			$("#percent_done").empty().append(workItem.percent_done);
-			$("#progbar_work").attr("aria-valuenow",parseInt(workItem.percent_done));
-			$("#progbar_work").css("width",workItem.percent_done + "%");
+
+			var percent_done_pow = 100 - bal_pow_perc_left;
+			var percent_bounty_left = (workItem.received_bounties * 100 / workItem.bounty_limit);
+			var maxXC = (percent_done_pow>percent_bounty_left) ? percent_done_pow : percent_bounty_left;
+			$("#percent_done").empty().append(maxXC.toFixed(2));
+			$("#progbar_work").attr("aria-valuenow",parseInt(maxXC));
+
+
+			$("#progbar_work").css("width",maxXC.toFixed(2) + "%");
 
 			
 			// plot with loading indicator

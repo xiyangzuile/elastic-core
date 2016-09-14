@@ -3701,4 +3701,12 @@ a.active .middletext_list {
     font-size: 9pt;
     padding-top: 30px;
     color: #636363;
+}.sparkcell {
+  width: 200px; text-align: center;line-height: 16px;
+}
+.sparkbeautycell
+{
+  font-size: small;
+padding: 10px;
+margin-top: 20px;
 }
