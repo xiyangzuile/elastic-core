@@ -410,6 +410,7 @@ public abstract class EntityDbTable<T> extends DerivedDbTable {
         if (cachedT == null) {
             db.getCache(table).put(dbKey, t);
         } else if (t != cachedT) { // not a bug
+        	System.out.println("In cache : " + cachedT.toString() + ", inserting " + t.toString());
             Logger.logDebugMessage("In cache : " + cachedT.toString() + ", inserting " + t.toString());
             throw new IllegalStateException("Different instance found in Db cache, perhaps trying to save an object "
                     + "that was read outside the current transaction");

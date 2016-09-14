@@ -71,6 +71,10 @@ public final class PowAndBounty {
 
     };
 
+    public static PowAndBounty getPowOrBountyById(long id) {
+        return powAndBountyTable.get(powAndBountyDbKeyFactory.newKey(id));
+    }
+
     public static boolean addListener(Listener<PowAndBounty> listener, Event eventType) {
         return listeners.addListener(listener, eventType);
     }
@@ -78,7 +82,7 @@ public final class PowAndBounty {
     public static boolean removeListener(Listener<PowAndBounty> listener, Event eventType) {
         return listeners.removeListener(listener, eventType);
     }
-
+   
     public static DbIterator<PowAndBounty> getPows(long wid) {
         return powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", true)), 0, -1, "");
@@ -101,6 +105,8 @@ public final class PowAndBounty {
     static void addPow(Transaction transaction, Attachment.PiggybackedProofOfWork attachment) {
     	PowAndBounty shuffling = new PowAndBounty(transaction, attachment);
     	powAndBountyTable.insert(shuffling);
+    	
+    	
         listeners.notify(shuffling, Event.POW_SUBMITTED);
     }
     static void addBounty(Transaction transaction, Attachment.PiggybackedProofOfBounty attachment) {
@@ -119,6 +125,7 @@ public final class PowAndBounty {
     static void init() {}
     private final long id;
     private final boolean is_pow;
+    private boolean too_late;
     private final long work_id;
     private final long accountId;
     private final DbKey dbKey;
@@ -128,39 +135,51 @@ public final class PowAndBounty {
     public void applyPowPayment(){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	
-    	// Now create ledger event for "bounty submission"
-        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
-        Account participantAccount = Account.getAccount(this.accountId);
-        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_pow());
+    	if(w.isClosed() == false){
+	    	// Now create ledger event for "bounty submission"
+	        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
+	        Account participantAccount = Account.getAccount(this.accountId);
+	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_pow());
+	        // Reduce work remaining xel
+	        w.reduce_one_pow_submission();
+    	}else{
+    		this.too_late = true;
+    		this.powAndBountyTable.insert(this);
+    	}
+    	
         
-        // Reduce work remaining xel
-        w.reduce_one_pow_submission();
     }
     
     public void applyBounty(){
     	Work w = Work.getWorkByWorkId(this.work_id);
-    
-        // Reduce bounty fund entirely
-        w.kill_bounty_fund();
+    	if(w.isClosed() == false){
+	        // Reduce bounty fund entirely
+	        w.kill_bounty_fund();
+    	}else{
+    		this.too_late = true;
+    		this.powAndBountyTable.insert(this);
+    	}
     }
     
     private PowAndBounty(Transaction transaction, Attachment.PiggybackedProofOfWork attachment) {
     	this.id = transaction.getId();
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
-        this.dbKey = powAndBountyDbKeyFactory.newKey(work_id);
+        this.dbKey = powAndBountyDbKeyFactory.newKey(id);
         this.input = attachment.getInput();
         this.is_pow = true;
         this.hash = new byte[0]; // FIXME TODO
+        this.too_late = false;
     }
     private PowAndBounty(Transaction transaction, Attachment.PiggybackedProofOfBounty attachment) {
     	this.id = transaction.getId();
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
-        this.dbKey = powAndBountyDbKeyFactory.newKey(work_id);
+        this.dbKey = powAndBountyDbKeyFactory.newKey(id);
         this.input = attachment.getInput();
         this.is_pow = false;
         this.hash = new byte[0]; // FIXME TODO
+        this.too_late = false;
     }
     private PowAndBounty(ResultSet rs, DbKey dbKey) throws SQLException {
     	this.id = rs.getLong("id");
@@ -168,20 +187,20 @@ public final class PowAndBounty {
         this.accountId = rs.getLong("account_id");
         this.is_pow = rs.getBoolean("is_pow");
         this.dbKey = dbKey;
-        
         byte[] bt = rs.getBytes("input");
         IntBuffer ib = ByteBuffer.wrap(bt).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
         this.input = new int[ib.capacity()];
-        
+        this.too_late = rs.getBoolean("too_late");
         this.hash = rs.getBytes("hash");
     }
 
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, work_id, hash, account_id, input, is_pow,"
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, input, is_pow,"
                 + " height) " + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
+            pstmt.setBoolean(++i, this.too_late);
             pstmt.setLong(++i, this.work_id);
             DbUtils.setBytes(pstmt, ++i, this.hash);
             pstmt.setLong(++i, this.accountId);

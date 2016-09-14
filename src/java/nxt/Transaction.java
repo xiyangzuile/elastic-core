@@ -53,7 +53,6 @@ public interface Transaction {
 
         Transaction build(String secretPhrase) throws NxtException.NotValidException;
         
-        void zeroFee();
 
     }
 

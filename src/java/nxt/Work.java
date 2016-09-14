@@ -81,21 +81,17 @@ public final class Work {
             try (DbIterator<Work> iterator = getActiveWorks(0, -1)) {
                 for (Work shuffling : iterator) {
                         shufflings.add(shuffling);
-                        System.out.println("CYCLING! " + shuffling.id);
                 }
             }
             shufflings.forEach(shuffling -> {
                 if (--shuffling.blocksRemaining <= 0) {
                 	// Work has timed out natually
-                	System.out.println("TIMING OUR WORK! " + shuffling.id);
                     shuffling.natural_timeout();
                 } else {
-                	System.out.println("NON TIMEOUT OUR WORK! " + shuffling.id + ", STILL " + shuffling.blocksRemaining + " to go!");
                     workTable.insert(shuffling);
                     System.out.println(shuffling.toJsonObject().toJSONString());
                 }
             });
-        	System.out.println("WORK CALLBACK FIRED!");
         }, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
     }
 
@@ -148,8 +144,8 @@ public final class Work {
 
     
 
-    public static Work getWork(long work_id) {
-        return workTable.get(workDbKeyFactory.newKey(work_id));
+    public static Work getWork(long id) {
+        return workTable.get(workDbKeyFactory.newKey(id));
     }
 
     public static Work getWork(byte[] fullHash) {
@@ -177,7 +173,7 @@ public final class Work {
             int i = 0;
             pstmt.setLong(++i, work_id);
             
-            DbIterator<Work> it = workTable.getManyBy(con, pstmt, false);
+            DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
             if(it.hasNext())
             	return it.next();
             else
@@ -203,7 +199,7 @@ public final class Work {
             	pstmt.setLong(++i, onlyOneId);
             }
             DbUtils.setLimits(++i, pstmt, from, to);
-            return workTable.getManyBy(con, pstmt, false);
+            return workTable.getManyBy(con, pstmt, true);
         } catch (SQLException e) {
             DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
@@ -241,9 +237,9 @@ public final class Work {
         this.blocksRemaining = (short) attachment.getDeadline();
         this.closed = false;
         this.percentage_powfund = attachment.getPercentage_pow_fund();
-        this.balance_pow_fund = (long)(transaction.getAmountNQT() * 100.0 / this.percentage_powfund + 0.5);
+        this.balance_pow_fund = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100));
         this.balance_bounty_fund = transaction.getAmountNQT() - balance_pow_fund;
-        this.balance_pow_fund_orig = (long)(transaction.getAmountNQT() * 100.0 / this.percentage_powfund + 0.5);
+        this.balance_pow_fund_orig = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100));
         this.balance_bounty_fund_orig = transaction.getAmountNQT() - balance_pow_fund;
         this.received_bounties = 0;
         this.received_pows = 0;        
@@ -279,7 +275,7 @@ public final class Work {
     }
 
     public static DbIterator<Work> getActiveWorks(int from, int to) {
-        return workTable.getManyBy(new DbClause.BooleanClause("closed",false), from, to, " ORDER BY blocks_remaining, height DESC ");
+        return workTable.getManyBy(new DbClause.BooleanClause("closed",false).and(new DbClause.BooleanClause("latest",true)), from, to, " ORDER BY blocks_remaining, height DESC ");
     }
     
     private void save(Connection con) throws SQLException {
@@ -462,19 +458,31 @@ public final class Work {
 	}
 
 	public void reduce_one_pow_submission() {
-		
-		this.balance_pow_fund -= this.xel_per_pow;
-		this.received_pows++;
-		workTable.insert(this);
+		System.out.println("Work was open, fund left " + this.balance_pow_fund);
+		if(this.isClosed() == false){
+			this.balance_pow_fund -= this.xel_per_pow;
+			this.received_pows++;
+			
+			
+			if(balance_pow_fund<this.xel_per_pow){
+				// all was paid out, close it!
+				this.natural_timeout();
+				System.out.println("I have closed this work");
+			}else{
+				workTable.insert(this);
+			}
+		}
 		
 	}
 	
 public void kill_bounty_fund() {
 		
+	if(this.isClosed() == false){
 		this.balance_bounty_fund = 0;
 		this.received_bounties++;
 		workTable.insert(this);
-		
 	}
+		// TODO FIXME CHECK FOR FULL BNT
+}
 
 }

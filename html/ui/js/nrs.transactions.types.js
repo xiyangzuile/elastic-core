@@ -90,13 +90,13 @@ var NRS = (function(NRS, $, undefined) {
                 2: {
                     'title': "Proof Of Work",
                     'i18nKeyTitle': 'proof_of_work',
-                    'iconHTML': '<i class="fa fa-server"></i>',
+                    'iconHTML': '<i class="fa fa-legal"></i>',
                     'receiverPage': "myownwork"
                 },
                 3: {
                     'title': "Bounty",
                     'i18nKeyTitle': 'bounty',
-                    'iconHTML': '<i class="fa fa-star"></i>',
+                    'iconHTML': '<i class="fa fa-hourglass-start"></i>',
                     'receiverPage': "myownwork"
                 },
                 4: {

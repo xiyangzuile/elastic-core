@@ -1112,6 +1112,7 @@
   "x_lessor": "1 lessor",
   "x_lessor_lease": "1 lessor has leased their effective balance to your account.",
   "yes": "Yes",
+  "work_pow":"Proof-of-Work Submission",
   "you": "You",
   "you_received_assets": "You received 1 __name__ asset.",
   "you_received_message": "You received a message from __name__.",

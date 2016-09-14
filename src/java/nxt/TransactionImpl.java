@@ -215,10 +215,7 @@ final class TransactionImpl implements Transaction {
 			return this;
 		}
 
-		@Override
-        public void zeroFee(){
-        	this.feeNQT = 0;
-        }
+		
 
 	}
 
@@ -303,6 +300,8 @@ final class TransactionImpl implements Transaction {
 		if ((this.prunableSourceCode = builder.prunableSourceCode) != null) {
 			list.add(this.prunableSourceCode);
 		}
+		
+		
 		this.appendages = Collections.unmodifiableList(list);
 		int appendagesSize = 0;
 		for (Appendix appendage : appendages) {
@@ -313,9 +312,13 @@ final class TransactionImpl implements Transaction {
 		}
 		this.appendagesSize = appendagesSize;
 		if (builder.feeNQT <= 0 || (Constants.correctInvalidFees && builder.signature == null)) {
-			int effectiveHeight = (height < Integer.MAX_VALUE ? height : Nxt.getBlockchain().getHeight());
-			long minFee = getMinimumFeeNQT(effectiveHeight);
-			feeNQT = Math.max(minFee, builder.feeNQT);
+			if(type.zeroFeeTransaction()){
+				feeNQT = 0;
+			}else{
+				int effectiveHeight = (height < Integer.MAX_VALUE ? height : Nxt.getBlockchain().getHeight());
+				long minFee = getMinimumFeeNQT(effectiveHeight);
+				feeNQT = Math.max(minFee, builder.feeNQT);
+			}
 		} else {
 			feeNQT = builder.feeNQT;
 		}
@@ -962,7 +965,7 @@ final class TransactionImpl implements Transaction {
 	@Override
 	public void validate() throws NxtException.ValidationException {
 		if (timestamp == 0 ? (deadline != 0 || feeNQT != 0)
-				: (deadline < 1 || feeNQT <= 0) || feeNQT > Constants.MAX_BALANCE_NQT || amountNQT < 0
+				: (deadline < 1 || (type.zeroFeeTransaction()== false && feeNQT <= 0) || (type.zeroFeeTransaction()==true && feeNQT != 0)) || feeNQT > Constants.MAX_BALANCE_NQT || amountNQT < 0
 						|| amountNQT > Constants.MAX_BALANCE_NQT || type == null) {
 			throw new NxtException.NotValidException("Invalid transaction parameters:\n type: " + type + ", timestamp: "
 					+ timestamp + ", deadline: " + deadline + ", fee: " + feeNQT + ", amount: " + amountNQT);
@@ -1008,11 +1011,15 @@ final class TransactionImpl implements Transaction {
 
 		int blockchainHeight = Nxt.getBlockchain().getHeight();
 		long minimumFeeNQT = getMinimumFeeNQT(blockchainHeight);
-		if (feeNQT < minimumFeeNQT) {
+		if (type.zeroFeeTransaction() == false && feeNQT < minimumFeeNQT) {
 			throw new NxtException.NotCurrentlyValidException(
 					String.format("Transaction fee %f NXT less than minimum fee %f NXT at height %d",
 							((double) feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
 							blockchainHeight));
+		}
+		if (type.zeroFeeTransaction() == true && feeNQT != 0) {
+			throw new NxtException.NotValidException(
+					String.format("Transaction fee must be zero for zeroFeeTx!"));
 		}
 		if (ecBlockId != 0) {
 			if (blockchainHeight < ecBlockHeight) {

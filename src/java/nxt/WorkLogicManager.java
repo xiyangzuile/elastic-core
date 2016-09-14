@@ -1465,9 +1465,7 @@ public class WorkLogicManager {
 			if (attachment.getTransactionType().canHaveRecipient()) {
 				builder.recipientId(recipientId);
 			}
-			if (attachment.getTransactionType().zeroFeeTransaction()) {
-				builder.zeroFee();
-			}
+		
 			TransactionImpl transaction = (TransactionImpl) builder.build(secretPhrase);
 			try {
                 if (attachment.getTransactionType().moneyComesFromNowhere()==false && Convert.safeAdd(amountNQT, transaction.getFeeNQT()) > senderAccount.getUnconfirmedBalanceNQT()) {
