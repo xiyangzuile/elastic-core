@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
@@ -113,14 +114,41 @@ public final class Work {
 			this.cancelled = true;
 		}
 		
-		// Now create ledger event for "refund" what is left in the pow and bounty funds
-        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
-        Account participantAccount = Account.getAccount(this.sender_account_id);
-        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);
+		
         // Pay out all bounties here
         
 		workTable.insert(this);
 		
+		long rest = 0;
+		long total_payout = 0;
+		
+		if(this.balance_bounty_fund == 0){
+			Map<Long, Integer> map = PowAndBounty.GetAccountBountyMap(this.work_id);
+			int total_bounties = 0;
+			Set<Long> allKeys = map.keySet();
+			for(Long l : allKeys){
+				total_bounties += map.get(l);
+			}
+			
+			long fraction = (long) (this.balance_bounty_fund_orig / (total_bounties * 1.0));
+			
+			for(Long l : allKeys){
+				AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
+		        Account participantAccount = Account.getAccount(l);
+		        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, fraction * map.get(l));
+		        total_payout += fraction * map.get(l);
+			}
+			rest = this.balance_bounty_fund_orig - total_payout;
+		}
+		
+		
+		
+		// Now create ledger event for "refund" what is left in the pow and bounty funds
+        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+        Account participantAccount = Account.getAccount(this.sender_account_id);
+        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund + rest);
+        
+        
 		// notify
 		listeners.notify(this, Event.WORK_CANCELLED);
 		
@@ -462,9 +490,11 @@ public final class Work {
 	public void reduce_one_pow_submission() {
 		System.out.println("Work was open, fund left " + this.balance_pow_fund);
 		if(this.isClosed() == false){
-			this.balance_pow_fund -= this.xel_per_pow;
-			this.received_pows++;
 			
+			if(balance_pow_fund>=this.xel_per_pow){
+				this.balance_pow_fund -= this.xel_per_pow;
+				this.received_pows++;
+			}
 			
 			if(balance_pow_fund<this.xel_per_pow){
 				// all was paid out, close it!
@@ -482,9 +512,15 @@ public void kill_bounty_fund() {
 	if(this.isClosed() == false){
 		this.balance_bounty_fund = 0;
 		this.received_bounties++;
-		workTable.insert(this);
+		
+		if(this.received_bounties >= this.bounty_limit){
+			// Bounty Limit Reached
+			this.natural_timeout();
+			System.out.println("I have closed this work");
+		}else{
+			workTable.insert(this);
+		}
 	}
-		// TODO FIXME CHECK FOR FULL BNT
 }
 
 }

@@ -1114,6 +1114,7 @@
   "yes": "Yes",
   "work_pow":"Proof-of-Work Submission",
   "you": "You",
+  "work_bounty_payout":"Bounty Pool Payout",
   "you_received_assets": "You received 1 __name__ asset.",
   "you_received_message": "You received a message from __name__.",
   "you_sold_assets": "You sold, transferred or deleted 1 __name__ asset.",

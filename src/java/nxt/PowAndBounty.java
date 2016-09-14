@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import nxt.Work.Event;
 import nxt.db.DbClause;
@@ -85,21 +87,40 @@ public final class PowAndBounty {
    
     public static DbIterator<PowAndBounty> getPows(long wid) {
         return powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-                new DbClause.BooleanClause("is_pow", true)), 0, -1, "");
+                new DbClause.BooleanClause("is_pow", true)).and(
+                        new DbClause.BooleanClause("latest", true)), 0, -1, "");
     }
     public static DbIterator<PowAndBounty> getBounties(long wid) {
         return powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-                new DbClause.BooleanClause("is_pow", false)), 0, -1, "");
+                new DbClause.BooleanClause("is_pow", false)).and(
+                        new DbClause.BooleanClause("latest", true)), 0, -1, "");
     }
     public static DbIterator<PowAndBounty> getPows(long wid, long aid) {
         return powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", true)).and(
-                        new DbClause.LongClause("account_id", aid)), 0, -1, "");
+                        new DbClause.LongClause("account_id", aid)).and(
+                                new DbClause.BooleanClause("latest", true)), 0, -1, "");
     }
     public static DbIterator<PowAndBounty> getBounties(long wid, long aid) {
         return powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", false)).and(
-                        new DbClause.LongClause("account_id", aid)), 0, -1, "");
+                        new DbClause.LongClause("account_id", aid)).and(
+                                new DbClause.BooleanClause("latest", true)), 0, -1, "");
+    }
+    
+    static Map<Long, Integer> GetAccountBountyMap(long wid){
+    	DbIterator<PowAndBounty> it = getBounties(wid);
+    	Map<Long, Integer> map = new HashMap<Long, Integer>();
+    	while(it.hasNext()){
+    		PowAndBounty p = it.next();
+    		if(map.containsKey(p.getAccountId())==false){
+    			map.put(p.getAccountId(), 1);
+    		}else{
+    			int ik = map.get(p.getAccountId());
+    			map.put(p.getAccountId(), ik+1);
+    		}
+    	}
+    	return map;
     }
 
     static void addPow(Transaction transaction, Attachment.PiggybackedProofOfWork attachment) {

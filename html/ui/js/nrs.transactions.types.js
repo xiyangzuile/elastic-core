@@ -81,12 +81,6 @@ var NRS = (function(NRS, $, undefined) {
                     'iconHTML': '<i class="fa fa-plus-circle"></i>',
                     'receiverPage': "myownwork"
                 },
-                1: {
-                    'title': "Work Cancellation",
-                    'i18nKeyTitle': 'work_cancellation',
-                    'iconHTML': '<i class="fa fa-power-off"></i>',
-                    'receiverPage': "myownwork"
-                },
                 2: {
                     'title': "Proof Of Work",
                     'i18nKeyTitle': 'proof_of_work',
@@ -96,13 +90,7 @@ var NRS = (function(NRS, $, undefined) {
                 3: {
                     'title': "Bounty",
                     'i18nKeyTitle': 'bounty',
-                    'iconHTML': '<i class="fa fa-hourglass-start"></i>',
-                    'receiverPage': "myownwork"
-                },
-                4: {
-                    'title': "Bounty Payout",
-                    'i18nKeyTitle': 'bounty_pay',
-                    'iconHTML': '<i class="fa fa-money"></i>',
+                    'iconHTML': '<i class="fa fa-circle-thin"></i>',
                     'receiverPage': "myownwork"
                 },
                 5: {

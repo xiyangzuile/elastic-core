@@ -57,7 +57,6 @@ public final class CreateWork extends CreateTransaction {
 		String workLanguage = ParameterParser.getParameterMultipart(req, "work_language"); 
 		String programCode = ParameterParser.getParameterMultipart(req, "source_code");
 		String deadline = ParameterParser.getParameterMultipart(req, "work_deadline");
-		String amount_spent = ParameterParser.getParameterMultipart(req, "amountNQT");
 		String bountyLimit = ParameterParser.getParameterMultipart(req, "bountyLimit");
 		String xelPerPow = ParameterParser.getParameterMultipart(req, "xel_per_pow");
 
@@ -132,7 +131,7 @@ public final class CreateWork extends CreateTransaction {
 				// Check worst case execution time
 				ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
 				WCET = RuntimeEstimator.worstWeight(rootNode);
-				if (WCET > WorkLogicManager.getInstance().maxWorstCaseExecutionTime()) {
+				if (WCET >  Constants.MAX_WORK_WCET_TIME) {
 					return INCORRECT_EXECUTION_TIME;
 				}else{
 					// all went well
