@@ -25,19 +25,10 @@ public final class CancelWork extends CreateTransaction {
     @Override
     protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
 
-        String workIdString = ParameterParser.getParameterMultipart(req, "workId");
+        long workId = ParameterParser.getUnsignedLong(req, "workId",true);
         Account account = ParameterParser.getSenderAccount(req);
         
-        if (workIdString == null) {
-            return MISSING_WORKID;
-        }
-        
-        long workId = 0;
-        try {
-        	workId = Long.parseUnsignedLong(workIdString);
-        } catch (NumberFormatException e) {
-            return INCORRECT_WORKID;
-        }
+      
                 
         Attachment attachment = new Attachment.WorkIdentifierCancellationRequest(workId);
         return createTransaction(req, account, attachment);

@@ -48,7 +48,7 @@ var NRS = (function(NRS, $, undefined) {
 	$("#new_work_modal").on("show.bs.modal", function(e) {
 		$("#send_money_amount_creation").val("100"); // 100 is the default here
 		$("#send_money_amount_creation").trigger("change");
-		console.log("Work modal opened!");
+
 	});
 
 
@@ -72,7 +72,6 @@ var NRS = (function(NRS, $, undefined) {
 
 	// Look for changes in the value
 	elem.bind("propertychange change click keyup input paste", function(event){
-			console.log("FAKE IT! FAKE IT!");
 
 	// If value has changed...
 	if (elem.data('oldVal') != elem.val()) {
@@ -88,7 +87,6 @@ var NRS = (function(NRS, $, undefined) {
 	    		var pow_amt = Math.abs(total_amt*0.60);
 	    		var bnt_amt = Math.abs(total_amt*0.40);
           var rounding_mistake = total_amt - (pow_amt+bnt_amt);
-          console.log("Total AMT: " + total_amt + ", Second Total: " + (pow_amt+bnt_amt) + " Rounding mistake: " + rounding_mistake);
           pow_amt += rounding_mistake;
 
 	    		NRS.updateWorkCreationPlots(total_amt,pow_amt,bnt_amt);
@@ -139,9 +137,7 @@ var NRS = (function(NRS, $, undefined) {
 							response.work_packages.forEach(function (s, i, o) {
 
 								if (s) {
-									// replace in sidebar
-									console.log("Calling REPLACEINSIDEBAR");
-									console.log(s);
+									
 									replaceInSidebar(s);
 									updateWork(s.work_id, s);
 
@@ -263,11 +259,12 @@ var NRS = (function(NRS, $, undefined) {
 			return "<span id='activeLabel' class='label label-success label12px'>Active</span>";
 		else{
 			if(message.timedout == true)
-				return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+				return "<span id='activeLabel' class='label label-warning label12px'>Timed-out</span>";
 			else if (message.cancelled == true)
 				return "<span id='activeLabel' class='label label-danger label12px'>Cancelled</span>";
 			else
-				return "<span id='activeLabel' class='label label-warning label12px'>Timed-out</span>";
+				return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+				
 		}
 	}
 	function statusspan_precancel(){
@@ -275,11 +272,21 @@ var NRS = (function(NRS, $, undefined) {
 
 	}
 
+	function shortMoney(num){
+		num = num / 100000000;
+		var res = null;
+		if(num >=1000) res = (num/1000).toFixed(2) + 'k';
+		else if(num >=1) res = num.toFixed(2);
+		else if (num != 0) res = "~" + num.toFixed(4);
+		else res = "0";
+		return res;
+	}
+
 	function moneyReturned(message){
-		return "<b>??? XEL</b> refunded";
+		return "<b>" + shortMoney(message.balance_pow_fund+message.balance_bounty_fund) + " XEL</b>";
 	}
 	function moneyPaid(message){
-		return "<b>??? XEL</b> paid out";
+		return "<b>" + shortMoney((message.balance_pow_fund_orig+message.balance_bounty_fund_orig)-(message.balance_pow_fund+message.balance_bounty_fund)) + " XEL</b> paid out";
 	}
 
 	function balancespan(message){
@@ -334,6 +341,7 @@ var NRS = (function(NRS, $, undefined) {
 		return "a long time ago";
 	}
 	function doPlot(){
+		return;
 		try{
 			var lmt = 30;
 			if(globalType == "5"){
@@ -392,7 +400,6 @@ var NRS = (function(NRS, $, undefined) {
 				}
 				lastDate=date;
 
-				console.log(computation_power[x]);
 				// here normalize values by difficulty (TODO FIXME)
 				last = computation_power[x][0];
 				compu_array_normed.push([date, computation_power[x][0]]);
@@ -458,7 +465,6 @@ var NRS = (function(NRS, $, undefined) {
 		            position: 'ne'
 		        }
 		    });
-		    console.log("Plot has been drawn!");
 		    
 		} catch (e) {
 			console.log("plot failed, e = " + e);
@@ -474,7 +480,12 @@ var NRS = (function(NRS, $, undefined) {
 			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-tasks fa-fw'></i> " + status2Text(message) + "</div><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-3'><i class='fa fa-times-circle-o fa-fw'></i> " + timeOut(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 		else{
-			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			if(message.timedout)
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			else if(message.cancelled)
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			else
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + "100% done" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 	}
 
@@ -505,8 +516,6 @@ var NRS = (function(NRS, $, undefined) {
 				$("#myownwork_sidebar").children().filter('[data-workid="' + message.work_id + '"]').addClass("active");
 			}
 		}else{
-			console.log("ADDING");
-			console.log(message);
 			$(".grayadder").after(newElement);
 		}
 	}
@@ -524,7 +533,6 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function displayWorkSidebar(callback) {
-		console.log("mywork callback fired!");
 		var activeAccount = false;
 
 		var $active = $("#myownwork_sidebar a.active");
@@ -569,7 +577,6 @@ var NRS = (function(NRS, $, undefined) {
 	});
 	function doplttype(type,textY,refresh) {
 
-		console.log("Selected Type: " + type);
 		$("#dpdwn_type li a").parents(".btn-group").find(".text").text(textY);
 		$(".popover").remove();
 
@@ -651,7 +658,6 @@ var NRS = (function(NRS, $, undefined) {
 			return;
 		}
 
-		console.log("Updating view for: " + workItem);
 		computation_power=[];
 		solution_rate=[];
 
@@ -662,13 +668,8 @@ var NRS = (function(NRS, $, undefined) {
 			e.preventDefault();
 			$("#myownwork_sidebar a.active").removeClass("active");
 			$(this).addClass("active");
-			
-			
 
-			
 			updateWorkItemView();
-
-
 
 			$("#no_work_selected").hide();
 			$("#no_work_confirmed").hide();
@@ -684,7 +685,6 @@ var NRS = (function(NRS, $, undefined) {
 		if(workItem==null){
 			return;
 		}
-		
 		// TODO, create labels
 		$("#cancel_btn").hide();
 		if(workItem.closed==false){
@@ -702,14 +702,26 @@ var NRS = (function(NRS, $, undefined) {
 			$("#detailedlisting").empty().append("[<a href=#'>breakdown</a>]");
 		}
 		else{
-			$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
-			$("#work_indicator_inner").empty().append("Finished");
+			
+			if(workItem.timedout == true){
+				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
+				$("#work_indicator_inner").empty().append("Timed-out");
+			}
+			else if (workItem.cancelled == true){
+				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-danger");
+				$("#work_indicator_inner").empty().append("Cancelled");
+			}
+			else
+			{
+				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
+				$("#work_indicator_inner").empty().append("Completed");
+			}
 			$("#hideable").hide();
 			$("#balancelefttitle").empty().append("...");
 			$("#detailedlisting").empty().append("");
 		}
-
-		$("#job_id").empty().append(workItem.work_id);
+			
+			$("#job_id").empty().append(workItem.work_id);
 			document.getElementById("workId").value = workItem.work_id;
 
 			// Now fill the right side correctly
@@ -753,11 +765,8 @@ var NRS = (function(NRS, $, undefined) {
 
 			var gotNumberPow = parseInt(workItem.received_pow);
 			$("#number_pow").empty().append(gotNumberPow);
-      		console.log("Activated:");
-      		console.log(workItem);
 			var bal_original_pow = workItem.balance_bounty_fund_orig; // fix here
 			var bal_left_pow = workItem.balance_bounty_fund; // fix here
-			console.log("BAL ORIGINAL POW: " + bal_original_pow);
 			var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
 			$("#pow_paid_out").empty().append(NRS.formatAmount(bal_original_pow-bal_left_pow));
 			$("#bal_remained_pow").empty().append(NRS.formatAmount(bal_left_pow));
@@ -792,7 +801,7 @@ var NRS = (function(NRS, $, undefined) {
 			    height: '48',
 			    sliceColors: ['#BCFFB5','#FFD6D6']});
 
-			if(workItem.language=="ElasticPL")
+			if(workItem.language == null || workItem.language=="ElasticPL")
 				$("#programming_language").empty().append("Elastic Programming Language v1");
 
 			$("#blockchain_bytes").empty().append(formatBytes(parseInt(workItem.script_size_bytes)));
@@ -804,7 +813,7 @@ var NRS = (function(NRS, $, undefined) {
 
 			
 			// plot with loading indicator
-			doPlot();
+			// FIXME doPlot();
 			globalWorkItem = workItem.work_id;
 			// Estimate number of blocks to fetch
 			var lmt = 30;

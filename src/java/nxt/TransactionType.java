@@ -743,7 +743,7 @@ public abstract class TransactionType {
 				Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
 						.getAttachment();
 				
-				Work w = Work.getWork(attachment.getWorkId());
+				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
 				if(w==null){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");

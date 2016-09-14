@@ -169,6 +169,25 @@ public final class Work {
         listeners.notify(shuffling, Event.WORK_CREATED);
     }
     
+    public static Work getWorkByWorkId(long work_id) {
+        Connection con = null;
+        try {
+            con = Db.db.getConnection();
+            PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.work_id = ? AND work.latest = TRUE");
+            int i = 0;
+            pstmt.setLong(++i, work_id);
+            
+            DbIterator<Work> it = workTable.getManyBy(con, pstmt, false);
+            if(it.hasNext())
+            	return it.next();
+            else
+            	return null;
+        } catch (SQLException e) {
+            DbUtils.close(con);
+            throw new RuntimeException(e.toString(), e);
+        }
+    }
+    
     public static DbIterator<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
         Connection con = null;
         try {
@@ -408,8 +427,8 @@ public final class Work {
 
 	public JSONObject toJsonObject() {
 		JSONObject response = new JSONObject();
-		response.put("id",this.id);
-		response.put("work_id",this.work_id);
+		response.put("id",Convert.toUnsignedLong(this.id));
+		response.put("work_id",Convert.toUnsignedLong(this.work_id));
 		response.put("xel_per_pow",this.xel_per_pow);
 		response.put("title",this.title);
 		response.put("blocksRemaining",this.blocksRemaining);
@@ -424,7 +443,7 @@ public final class Work {
 		response.put("received_bounties",this.received_bounties);
 		response.put("received_pows",this.received_pows);    
 		response.put("bounty_limit",this.bounty_limit);
-		response.put("sender_account_id",this.sender_account_id);
+		response.put("sender_account_id",Convert.toUnsignedLong(this.sender_account_id));
 		//response.put("height",this.height);
 		return response;
 	}
