@@ -446,7 +446,7 @@ public interface Attachment extends Appendix {
             this.percentage_pow_fund = ((int) attachmentData.get("percentage_pow_fund"));
         }
 
-        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, byte numberInputVars, int deadline, int bountyLimit, long xel_per_pow, int percentage_pow_fund) {
+        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, int percentage_pow_fund) {
         	this.workTitle = workTitle;
             this.deadline = deadline;
             this.bountyLimit = bountyLimit;

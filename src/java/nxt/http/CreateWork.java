@@ -155,20 +155,15 @@ public final class CreateWork extends CreateTransaction {
 		}
 
 		// More boundary checks
-		long amount;
-		try {
-			amount = Long.parseLong(amount_spent);
-		} catch (NumberFormatException e) {
-			return INCORRECT_AMOUNT;
-		}
+		long amountlong = ParameterParser.getAmountNQT(req);
 
 		if (workTitle.length() > Constants.MAX_TITLE_LENGTH || workTitle.length() < 1) {
 			return INCORRECT_WORK_NAME_LENGTH;
 		}
 
 		Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte, programCode.getBytes(),
-				numberInputVars, deadlineInt, bountyLimitInt, xelPerPowInt, 60);
-		return createTransaction(req, account, 0, amount, attachment);
+				deadlineInt, bountyLimitInt, xelPerPowInt, 60);
+		return createTransaction(req, account, 0, amountlong, attachment);
 
 	}
 
