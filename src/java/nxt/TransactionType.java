@@ -818,7 +818,7 @@ public abstract class TransactionType {
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
+				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
@@ -833,7 +833,7 @@ public abstract class TransactionType {
 
 			@Override
 			public boolean canHaveRecipient() {
-				return true;
+				return false;
 			}
 
 			@Override
@@ -843,7 +843,7 @@ public abstract class TransactionType {
 
 			@Override
 			public boolean mustHaveRecipient() {
-				return true;
+				return false;
 			}
 
 			public boolean moneyComesFromNowhere() {

@@ -19,6 +19,9 @@
  */
 package nxt;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -119,7 +122,7 @@ public final class PowAndBounty {
     private final long work_id;
     private final long accountId;
     private final DbKey dbKey;
-    private final int[][] input;
+    private final int[] input;
     private final byte[] hash;
     
     public void applyPowPayment(){
@@ -146,8 +149,7 @@ public final class PowAndBounty {
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
         this.dbKey = powAndBountyDbKeyFactory.newKey(work_id);
-        this.input = new int[0][];
-        this.input[0] = attachment.getInput();
+        this.input = attachment.getInput();
         this.is_pow = true;
         this.hash = new byte[0]; // FIXME TODO
     }
@@ -156,8 +158,7 @@ public final class PowAndBounty {
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
         this.dbKey = powAndBountyDbKeyFactory.newKey(work_id);
-        this.input = new int[0][];
-        this.input[0] = attachment.getInput();
+        this.input = attachment.getInput();
         this.is_pow = false;
         this.hash = new byte[0]; // FIXME TODO
     }
@@ -167,20 +168,29 @@ public final class PowAndBounty {
         this.accountId = rs.getLong("account_id");
         this.is_pow = rs.getBoolean("is_pow");
         this.dbKey = dbKey;
-        this.input = DbUtils.getArray(rs, "data", int[][].class, Convert.EMPTY_INT_BYTES);
+        
+        byte[] bt = rs.getBytes("input");
+        IntBuffer ib = ByteBuffer.wrap(bt).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+        this.input = new int[ib.capacity()];
+        
         this.hash = rs.getBytes("hash");
     }
 
     private void save(Connection con) throws SQLException {
         try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, work_id, hash, account_id, input, is_pow,"
-                + " height) "
-                + "VALUES (?, ?, ?, ?)")) {
+                + " height) " + "KEY (id, height) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
             DbUtils.setBytes(pstmt, ++i, this.hash);
             pstmt.setLong(++i, this.accountId);
-            DbUtils.setArrayEmptyToNull(pstmt, ++i, this.input);
+            
+            ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4);        
+            IntBuffer intBuffer = byteBuffer.order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+            intBuffer.put(input);
+            byte[] array = byteBuffer.array();
+            pstmt.setBytes(++i, array);
             pstmt.setBoolean(++i, this.is_pow);
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();

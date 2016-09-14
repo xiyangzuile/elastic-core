@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nxt.Account;
 import nxt.NxtException;
+import nxt.Work;
 import nxt.WorkLogicManager;
 import nxt.db.DbIterator;
 
@@ -37,8 +38,8 @@ public final class GetMineableWork extends APIServlet.APIRequestHandler {
 		
 		JSONArray work_packages = new JSONArray();
 
-        try (DbIterator<? extends JSONObject> iterator = WorkLogicManager.getInstance().getNRandomWorks(n)) {
-		  while (iterator.hasNext()) { JSONObject transaction = iterator.next(); work_packages.add(transaction);
+        try (DbIterator<? extends Work> iterator = Work.getActiveWorks(0, -1)) {
+		  while (iterator.hasNext()) { Work transaction = iterator.next(); work_packages.add(transaction.toJsonObject());
 		} }
 		 
 		JSONObject response = new JSONObject();

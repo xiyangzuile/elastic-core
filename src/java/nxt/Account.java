@@ -496,6 +496,25 @@ public final class Account {
 		}
 		return account;
 	}
+	
+	public static Account addOrGetAccount(byte[] pubkey) {
+		long id = getId(pubkey);
+		if (id == 0) {
+			throw new IllegalArgumentException("Invalid accountId 0");
+		}
+		DbKey dbKey = accountDbKeyFactory.newKey(id);
+		Account account = accountTable.get(dbKey);
+		if (account == null) {
+			account = accountTable.newEntity(dbKey);
+			PublicKey publicKey = publicKeyTable.get(dbKey);
+			if (publicKey == null) {
+				publicKey = publicKeyTable.newEntity(dbKey);
+				publicKeyTable.insert(publicKey);
+			}
+			account.publicKey = publicKey;
+		}
+		return account;
+	}
 
 	private static DbIterator<AccountLease> getLeaseChangingAccounts(final int height) {
 		Connection con = null;

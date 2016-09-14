@@ -173,6 +173,22 @@ public final class ParameterParser {
 			throw new ParameterException(incorrect(name, String.format("value %s is not numeric", paramValue)));
 		}
 	}
+	
+	public static boolean getBoolean(HttpServletRequest req, String name, boolean isMandatory) throws ParameterException {
+		String paramValue = Convert.emptyToNull(req.getParameter(name));
+		if (paramValue == null) {
+			if (isMandatory) {
+				throw new ParameterException(missing(name));
+			}
+			return false;
+		}
+		try {
+			boolean value = Boolean.parseBoolean(paramValue);
+			return value;
+		} catch (RuntimeException e) {
+			throw new ParameterException(incorrect(name, String.format("value %s is not boolean", paramValue)));
+		}
+	}
 
 	public static long getUnsignedLong(HttpServletRequest req, String name, boolean isMandatory)
 			throws ParameterException {
@@ -397,6 +413,15 @@ public final class ParameterParser {
 	public static Account getSenderAccount(HttpServletRequest req) throws ParameterException {
 		byte[] publicKey = getPublicKey(req);
 		Account account = Account.getAccount(publicKey);
+		if (account == null) {
+			throw new ParameterException(UNKNOWN_ACCOUNT);
+		}
+		return account;
+	}
+	
+	public static Account getOrCreateSenderAccount(HttpServletRequest req) throws ParameterException {
+		byte[] publicKey = getPublicKey(req);
+		Account account = Account.addOrGetAccount(publicKey);
 		if (account == null) {
 			throw new ParameterException(UNKNOWN_ACCOUNT);
 		}

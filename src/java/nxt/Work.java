@@ -279,7 +279,7 @@ public final class Work {
     }
 
     public static DbIterator<Work> getActiveWorks(int from, int to) {
-        return workTable.getManyBy(new DbClause.NotNullClauseAndNotClosed("blocks_remaining"), from, to, " ORDER BY blocks_remaining, height DESC ");
+        return workTable.getManyBy(new DbClause.BooleanClause("closed",false), from, to, " ORDER BY blocks_remaining, height DESC ");
     }
     
     private void save(Connection con) throws SQLException {
