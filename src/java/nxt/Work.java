@@ -223,12 +223,12 @@ public final class Work {
     private final long xel_per_pow;
     private final int percentage_powfund;
     private final int bounty_limit;
-    private final long balance_pow_fund;
-    private final long balance_bounty_fund;
+    private long balance_pow_fund;
+    private long balance_bounty_fund;
     private final long balance_pow_fund_orig;
     private final long balance_bounty_fund_orig;
-    private final int received_bounties;
-    private final int received_pows;
+    private int received_bounties;
+    private int received_pows;
     private short blocksRemaining;
     private final int originating_height;
 
@@ -459,6 +459,22 @@ public final class Work {
 
 	public boolean isTimedout() {
 		return timedout;
+	}
+
+	public void reduce_one_pow_submission() {
+		
+		this.balance_pow_fund -= this.xel_per_pow;
+		this.received_pows++;
+		workTable.insert(this);
+		
+	}
+	
+public void kill_bounty_fund() {
+		
+		this.balance_bounty_fund = 0;
+		this.received_bounties++;
+		workTable.insert(this);
+		
 	}
 
 }

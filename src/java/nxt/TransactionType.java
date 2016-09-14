@@ -93,8 +93,6 @@ public abstract class TransactionType {
     				return TransactionType.WorkControl.PROOF_OF_WORK;
     			case SUBTYPE_WORK_CONTROL_BOUNTY:
     				return TransactionType.WorkControl.BOUNTY;
-    			case SUBTYPE_WORK_CONTROL_BOUNTY_PAYOUT:
-    				return TransactionType.WorkControl.BOUNTY_PAYOUT;
     			case SUBTYPE_WORK_CONTROL_CANCEL_TASK_REQUEST:
     				return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
     			default:
@@ -811,93 +809,26 @@ public abstract class TransactionType {
 
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-				// TODO FIXME! Dismisses Exception might cause hard forks,
-				// inspect!
+				
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
-				try {
-					WorkLogicManager.getInstance().createNewProofOfWork(attachment.getWorkId(), transaction.getId(),
-							transaction.getSenderId(), transaction.getBlockId(), transaction.getAmountNQT(),
-							attachment);
-					WorkLogicManager.getInstance().removePowToUnconfirmed(attachment.getWorkId(), transaction.getId());
-
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			@Override
-			void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
-				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
-						.getAttachment();
-				WorkLogicManager.getInstance().removePowToUnconfirmed(attachment.getWorkId(), transaction.getId());
+				PowAndBounty.addPow(transaction, attachment);
 			}
 			
-			@Override
-			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount){
-				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
-						.getAttachment();
-				
-				// TODO, check for amount, because oterwise we can DOS here.
-				// Check if the "paid out amount" is okay, should match the "price per XEL" price in the work package
-				long getXelPerPow_mustBe = WorkLogicManager.getInstance().getXelPerPow(attachment.getWorkId());
-				if(transaction.getAmountNQT() != getXelPerPow_mustBe){
-					return false;
-				}
-				
-				HashSet<Long> uniqueSet = new HashSet<Long>();
-				uniqueSet.add(attachment.getWorkId());
-				
-				HashMap<Long, Long> powXelLeft = WorkLogicManager.getInstance().getPOWFundLeft(uniqueSet, true);
-				//System.out.println("POW RECEIVED UNCONFIRMED, work " + attachment.getWorkId() + " has POW FUND left: " + ((Long)powXelLeft.get(attachment.getWorkId())));
-				if(((Long)powXelLeft.get(attachment.getWorkId())) < transaction.getAmountNQT()){
-					System.out.println("Discarded POW Submission for work_id=" + attachment.getWorkId() + ", POW fund exceeded!");
-					return false;
-				}
-				
-				WorkLogicManager.getInstance().addPowToUnconfirmed(attachment.getWorkId(), transaction.getId(), transaction.getAmountNQT());
-				return true;
-			}
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-				// Validate Bounty
-				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
+				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
+				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
-				if (WorkLogicManager.getInstance().doesWorkExist(attachment.getWorkId()) == false){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
+				if(w==null){
+					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
-				
-				// No submissions for cancelled work please!
-				if (WorkLogicManager.getInstance().isStillPending(attachment.getWorkId()) == false) {
-					throw new NxtException.NotValidException("Cannot submit POW " + transaction.getId() + " for an already cancelled or finished work " + attachment.getWorkId());
+				if(w.isClosed())
+				{
+					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
-				
-				// Check if the "paid out amount" is okay, should match the "price per XEL" price in the work package
-				long getXelPerPow_mustBe = WorkLogicManager.getInstance().getXelPerPow(attachment.getWorkId());
-				if(transaction.getAmountNQT() != getXelPerPow_mustBe){
-					throw new NxtException.NotValidException("POW" + transaction.getId() + "Transaction spends wrong amount of XEL");
-				}
-				
-				if(!WorkLogicManager.getInstance().isUniquePOW(transaction.getId(), attachment.getInput())){
-					throw new NxtException.NotValidException("POW" + transaction.getId() + "with those inputs has already been submitted earlier");
-				}
-
-				if (transaction.getBlock() == null) // in this case,
-													// heuristically
-													// pre-validate with current
-													// block as next prev (if
-													// does not validate in
-													// block, then it is gonna
-													// be kicked later
-					WorkLogicManager.getInstance().validatePOW(transaction.getId(), attachment,
-							transaction.getAmountNQT(), BlockchainImpl.getInstance().getLastBlock().getId());
-				else
-					WorkLogicManager.getInstance().validatePOW(transaction.getId(), attachment,
-							transaction.getAmountNQT(), transaction.getBlock().getPreviousBlockId());
-
-				
 			}
 
 			@Override
@@ -951,82 +882,26 @@ public abstract class TransactionType {
 
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-				// TODO FIXME! Dismisses Exception might cause hard forks,
-				// inspect!
+
 				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
-				try {
-					WorkLogicManager.getInstance().createNewBounty(attachment.getWorkId(), transaction.getId(),
-							transaction.getSenderId(), transaction.getBlockId(), transaction.getAmountNQT(),
-							attachment);
-					// Remove this one from the unconfirmed counter! TODO FIXME, check if this woks fine here!
-					WorkLogicManager.getInstance().removeBountyToUnconfirmed(attachment.getWorkId(), transaction.getId());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				PowAndBounty.addBounty(transaction, attachment);
 			}
 			
-			@Override
-			void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
-				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
-						.getAttachment();
-				WorkLogicManager.getInstance().removeBountyToUnconfirmed(attachment.getWorkId(), transaction.getId());
-			}
-			
-			@Override
-			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount){
-				
-				if (transaction.getAmountNQT() != 0) {
-					return false;
-				}
-				
-				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
-						.getAttachment();
-				
-				int confirmedLeft = WorkLogicManager.getInstance().getBountyNumberLeft(attachment.getWorkId());
-				int unconfirmedQueued = WorkLogicManager.getInstance().getBountyUnconfirmed(attachment.getWorkId());
-				Integer bountiesLeft = confirmedLeft - unconfirmedQueued;
-				if(bountiesLeft <= 0){
-					System.out.println("Discarded Bounty Submission for work_id=" + attachment.getWorkId() + ", number exceeded! confirmed left = " + confirmedLeft + ", unconfirmed pending = " + unconfirmedQueued);
-					return false;
-				}
-				
-				WorkLogicManager.getInstance().addBountyToUnconfirmed(attachment.getWorkId(), transaction.getId());
-				return true;
-			}
-
-
+	
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-				
-
 				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
+				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
-				if (WorkLogicManager.getInstance().doesWorkExist(attachment.getWorkId()) == false){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
+				if(w==null){
+					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
-				
-				// No submissions for cancelled work please!
-				if (WorkLogicManager.getInstance().isStillPending(attachment.getWorkId()) == false) {
-					throw new NxtException.NotValidException("Cannot submit POW for an already cancelled or finished work");
+				if(w.isClosed())
+				{
+					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
-				
-				// There are no amounts here, payout will be done in separate
-				// bounty payout transaction when the work was cancelled or
-				// timeouted
-				if (transaction.getAmountNQT() != 0) {
-					throw new NxtException.NotValidException("Bounty submissions must not transfer any amount of XEL");
-				}
-				
-
-				// Check if those inputs are already submitted in the DB
-				if(!WorkLogicManager.getInstance().isUniqueBounty(transaction.getId(), attachment.getInput())){
-					throw new NxtException.NotValidException("Bounty submission has already been submitted earlier");
-				}
-				
-				// Validate Bounty by executing code
-				WorkLogicManager.getInstance().validateBounty(transaction.getId(), attachment);
 			}
 
 			@Override
@@ -1056,66 +931,6 @@ public abstract class TransactionType {
 			@Override
 			public String getName() {
 				return "PiggybackedProofOfBounty";
-			}
-		};
-
-		public final static TransactionType BOUNTY_PAYOUT = new WorkControl() {
-
-			@Override
-			public final byte getSubtype() {
-				return TransactionType.SUBTYPE_WORK_CONTROL_BOUNTY_PAYOUT;
-			}
-
-			@Override
-			Attachment.WorkIdentifierBountyPayment parseAttachment(ByteBuffer buffer, byte transactionVersion)
-					throws NxtException.NotValidException {
-				return new Attachment.WorkIdentifierBountyPayment(buffer, transactionVersion);
-			}
-
-			@Override
-			Attachment.WorkIdentifierBountyPayment parseAttachment(JSONObject attachmentData)
-					throws NxtException.NotValidException {
-				return new Attachment.WorkIdentifierBountyPayment(attachmentData);
-			}
-
-			@Override
-			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-				// here, nothing gets applies
-			}
-
-			@Override
-			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-				// Validation will be done in the block itself
-			}
-
-			@Override
-			public boolean canHaveRecipient() {
-				return true;
-			}
-
-			@Override
-			public boolean zeroFeeTransaction() {
-				return true;
-			}
-
-			@Override
-			public boolean mustHaveRecipient() {
-				return true;
-			}
-
-			public boolean moneyComesFromNowhere() {
-				return true;
-			}
-
-			@Override
-			public LedgerEvent getLedgerEvent() {
-				return LedgerEvent.WORK_BOUNTY_PAYOUT;
-			}
-
-			@Override
-			public String getName() {
-				// TODO Auto-generated method stub
-				return "BountyPayout";
 			}
 		};
 	};

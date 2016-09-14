@@ -264,48 +264,7 @@ public interface Attachment extends Appendix {
         }
     }
     
-    public final static class WorkIdentifierBountyPayment extends AbstractAttachment {
-
-        public long getWorkId() {
-			return workId;
-		}
-
-		private final long workId;
-
-		WorkIdentifierBountyPayment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workId = buffer.getLong();
-        }
-
-		WorkIdentifierBountyPayment(JSONObject attachmentData) {
-            super(attachmentData);
-            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
-        }
-
-        public WorkIdentifierBountyPayment(long workId) {
-            this.workId = workId;
-        }
-
-        @Override
-        int getMySize() {
-            return 8;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(this.workId);
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("id", Convert.toUnsignedLong(this.workId));
-        }
-
-        @Override
-        public TransactionType getTransactionType() {
-        	return TransactionType.WorkControl.BOUNTY_PAYOUT;
-        }
-    }
+   
     
     public final static class PiggybackedProofOfWork extends AbstractAttachment {
 
