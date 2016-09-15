@@ -19,6 +19,7 @@ package nxt;
 import nxt.db.DbIterator;
 import nxt.util.Filter;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -95,5 +96,8 @@ public interface Blockchain {
     DbIterator<? extends Transaction> getReferencingTransactions(long transactionId, int from, int to);
 
 	long getLastBlockId();
+
+	Integer getBlockHeight(long lastBlockId);
+	
 
 }

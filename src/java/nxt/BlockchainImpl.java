@@ -22,6 +22,7 @@ import nxt.util.Convert;
 import nxt.util.Filter;
 import nxt.util.ReadWriteUpdateLock;
 
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -564,4 +565,34 @@ final class BlockchainImpl implements Blockchain {
 		BlockImpl last = lastBlock.get();
         return last == null ? 0 : last.getId();
 	}
+
+	@Override
+	public Integer getBlockHeight(long lastBlockId) {
+		Connection con = null;
+        try {
+            con = Db.db.getConnection();
+            PreparedStatement pstmt = con.prepareStatement("SELECT height FROM block WHERE ID = ?");
+            pstmt.setLong(1, lastBlockId);
+            DbIterator<Integer> it = new DbIterator<Integer>(con, pstmt,
+					new DbIterator.ResultSetReader<Integer>() {
+				@Override
+				public Integer get(Connection con, ResultSet rs)
+						throws NxtException.ValidationException,
+						SQLException {
+
+					int height = rs.getInt("height");
+					return height;
+				}
+			});
+            if(it.hasNext()){
+            	return it.next();
+            }else
+            	return 0;
+        } catch (SQLException e) {
+            DbUtils.close(con);
+            throw new RuntimeException(e.toString(), e);
+        }
+	}
+
+	
 }

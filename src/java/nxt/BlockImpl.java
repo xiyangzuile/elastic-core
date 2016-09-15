@@ -47,7 +47,6 @@ public final class BlockImpl implements Block {
 	private final int payloadLength;
 	private final byte[] generationSignature;
 	private final byte[] payloadHash;
-	private BigInteger lastPowTarget = null;
 	
 	private volatile List<TransactionImpl> blockTransactions;
 	private static LRUCache powDifficultyLRUCache = new LRUCache(50);
@@ -61,19 +60,21 @@ public final class BlockImpl implements Block {
 	private volatile String stringId = null;
 	private volatile long generatorId;
 	private volatile byte[] bytes = null;
+	private BigInteger local_min_pow_target = null;
 
 	BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT,
 			int payloadLength, byte[] payloadHash, byte[] generatorPublicKey, byte[] generationSignature,
-			byte[] previousBlockHash, List<TransactionImpl> transactions, String secretPhrase) {
+			byte[] previousBlockHash, List<TransactionImpl> transactions, String secretPhrase, BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
-				generatorPublicKey, generationSignature, null, previousBlockHash, transactions);
+				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
 		blockSignature = Crypto.sign(bytes(), secretPhrase);
 		bytes = null;
+		
 	}
 
 	BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT,
 			int payloadLength, byte[] payloadHash, byte[] generatorPublicKey, byte[] generationSignature,
-			byte[] blockSignature, byte[] previousBlockHash, List<TransactionImpl> transactions) {
+			byte[] blockSignature, byte[] previousBlockHash, List<TransactionImpl> transactions, BigInteger min_pow_target) {
 		this.version = version;
 		this.timestamp = timestamp;
 		this.previousBlockId = previousBlockId;
@@ -85,21 +86,18 @@ public final class BlockImpl implements Block {
 		this.generationSignature = generationSignature;
 		this.blockSignature = blockSignature;
 		this.previousBlockHash = previousBlockHash;
+		this.local_min_pow_target = min_pow_target;
 		if (transactions != null) {
 			this.blockTransactions = Collections.unmodifiableList(transactions);
-		if(previousBlockId==0)
-			this.lastPowTarget = Constants.least_possible_target;
-		else
-			this.lastPowTarget = this.getMinPowTarget(previousBlockId);
 		}
 	}
 
 	BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT,
 			int payloadLength, byte[] payloadHash, long generatorId, byte[] generationSignature, byte[] blockSignature,
 			byte[] previousBlockHash, BigInteger cumulativeDifficulty, long baseTarget, long nextBlockId, int height,
-			long id, List<TransactionImpl> blockTransactions) {
+			long id, List<TransactionImpl> blockTransactions, BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash, null,
-				generationSignature, blockSignature, previousBlockHash, null);
+				generationSignature, blockSignature, previousBlockHash, null, min_pow_target);
 		this.cumulativeDifficulty = cumulativeDifficulty;
 		this.baseTarget = baseTarget;
 		this.nextBlockId = nextBlockId;
@@ -107,10 +105,7 @@ public final class BlockImpl implements Block {
 		this.id = id;
 		this.generatorId = generatorId;
 		this.blockTransactions = blockTransactions;
-		if(previousBlockId==0)
-			this.lastPowTarget = Constants.least_possible_target;
-		else
-			this.lastPowTarget = this.getMinPowTarget(previousBlockId);
+		
 	}
 
 	@Override
@@ -294,7 +289,7 @@ public final class BlockImpl implements Block {
 			}
 			BlockImpl block = new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT,
 					payloadLength, payloadHash, generatorPublicKey, generationSignature, blockSignature,
-					previousBlockHash, blockTransactions);
+					previousBlockHash, blockTransactions, BlockImpl.calculateNextMinPowTarget(previousBlock));
 			if (!block.checkSignature()) {
 				throw new NxtException.NotValidException("Invalid block signature");
 			}
@@ -484,12 +479,11 @@ public final class BlockImpl implements Block {
 		return BlockchainImpl.getInstance().getBlock(this.getPreviousBlockId());
 	}
 	
-	public BigInteger getLastPowTarget() {
-		return this.lastPowTarget;
-	}
 	
-	public static BigInteger getMinPowTarget(long lastBlockId) {
+	
+	public static BigInteger calculateNextMinPowTarget(long lastBlockId) {
 		
+		System.out.println("entrance");
 		// First check in cache
 		BigInteger cached = powDifficultyLRUCache.get(lastBlockId);
 		if(cached != null)
@@ -503,13 +497,12 @@ public final class BlockImpl implements Block {
 		
 		// try to cycle over the last 12 blocks, or - if height is smaller -
 		// over entire blockchain
-		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS,
-				b.getHeight());
+		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS, b.getHeight());
 		int original_back_counter = go_back_counter;
 
 		// ... and count the number of PoW transactions inside those blocks
 		int pow_counter = 0;
-		BigInteger last_pow_target = b.getLastPowTarget();
+		BigInteger last_pow_target = b.getMinPowTarget();
 		while (go_back_counter > 0) {
 			pow_counter += b.countNumberPOW();
 			b = b.getPreviousBlock();
@@ -521,7 +514,7 @@ public final class BlockImpl implements Block {
 			
 			double scaledCounter = (double)pow_counter;
 			
-			scaledCounter = scaledCounter / original_back_counter;
+			scaledCounter = scaledCounter / (1.0*original_back_counter);
 			scaledCounter = scaledCounter * Constants.POWRETARGET_N_BLOCKS;
 
 			pow_counter = (int)scaledCounter;
@@ -540,8 +533,9 @@ public final class BlockImpl implements Block {
 		// (exponentially) approxiamate the desired number
 		// of PoW packages per block.
 		BigDecimal new_pow_target = new BigDecimal(last_pow_target);
-		double factor = (double)Constants.POWRETARGET_POW_PER_BLOCK_SCALER / (double)pow_counter; // RETARGETING
-
+		double factor = (double)(Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER) / (double)pow_counter; // RETARGETING
+		
+		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
 		// limits
 		if (factor > 2)
 			factor = 2;
@@ -568,6 +562,11 @@ public final class BlockImpl implements Block {
 			}
 		}
 		return cntr;
+	}
+
+	@Override
+	public BigInteger getMinPowTarget() {
+		return this.local_min_pow_target;
 	}
 
 	

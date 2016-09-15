@@ -67,7 +67,7 @@ public interface Block {
     
     BlockImpl getPreviousBlock();
     
-    BigInteger getLastPowTarget();
+    BigInteger getMinPowTarget();
     
     int countNumberPOW();
 

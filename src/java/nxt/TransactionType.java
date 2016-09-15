@@ -837,12 +837,15 @@ public abstract class TransactionType {
 				{
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
-				
-				long rel_id = transaction.getBlockId();
+				long rel_id;
+				if(transaction.getBlock() != null)
+					rel_id = transaction.getBlock().getPreviousBlockId();
+				else
+					rel_id = BlockchainImpl.getInstance().getLastBlockId();
 				boolean valid = false;
 				try {
 					Executioner e = getExecutioner(attachment.getWorkId());
-					valid = e.executeProofOfWork(attachment.getInput(), BlockImpl.getMinPowTarget(rel_id));
+					valid = e.executeProofOfWork(attachment.getInput(), BlockchainImpl.getInstance().getBlock(rel_id).getMinPowTarget());
 				} catch (Exception e1) {
 					e1.printStackTrace();
 					throw new NxtException.NotValidException(
