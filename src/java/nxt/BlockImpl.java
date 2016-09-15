@@ -483,7 +483,6 @@ public final class BlockImpl implements Block {
 	
 	public static BigInteger calculateNextMinPowTarget(long lastBlockId) {
 		
-		System.out.println("entrance");
 		// First check in cache
 		BigInteger cached = powDifficultyLRUCache.get(lastBlockId);
 		if(cached != null)
@@ -497,7 +496,6 @@ public final class BlockImpl implements Block {
 		
 		// try to cycle over the last N blocks, or - if height is smaller -
 		// over entire blockchain
-		System.out.println("gettign go back counter of " + lastBlockId);
 		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS, b.getHeight());
 		int original_back_counter = go_back_counter;
 
@@ -535,7 +533,6 @@ public final class BlockImpl implements Block {
 		BigDecimal new_pow_target = new BigDecimal(last_pow_target);
 		double factor = (double)(Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER) / (double)pow_counter; // RETARGETING
 		
-		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
 		// limits, we do not want to change the target too CRAZY at once
 		if (factor > 1.25)
 			factor = 1.25;
