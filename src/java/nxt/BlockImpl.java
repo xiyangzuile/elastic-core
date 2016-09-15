@@ -289,7 +289,7 @@ public final class BlockImpl implements Block {
 			}
 			BlockImpl block = new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT,
 					payloadLength, payloadHash, generatorPublicKey, generationSignature, blockSignature,
-					previousBlockHash, blockTransactions, BlockImpl.calculateNextMinPowTarget(previousBlock));
+					previousBlockHash, blockTransactions, null);
 			if (!block.checkSignature()) {
 				throw new NxtException.NotValidException("Invalid block signature");
 			}
@@ -497,6 +497,7 @@ public final class BlockImpl implements Block {
 		
 		// try to cycle over the last N blocks, or - if height is smaller -
 		// over entire blockchain
+		System.out.println("gettign go back counter of " + lastBlockId);
 		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS, b.getHeight());
 		int original_back_counter = go_back_counter;
 
@@ -565,7 +566,12 @@ public final class BlockImpl implements Block {
 
 	@Override
 	public BigInteger getMinPowTarget() {
-		return this.local_min_pow_target;
+		if(local_min_pow_target!=null)
+			return this.local_min_pow_target;
+		else{
+			this.local_min_pow_target = calculateNextMinPowTarget(this.previousBlockId);
+			return this.local_min_pow_target;
+		}
 	}
 
 	
