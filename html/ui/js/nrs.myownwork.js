@@ -762,9 +762,10 @@ var NRS = (function(NRS, $, undefined) {
 			var bal_original_pow = workItem.balance_pow_fund_orig; // fix here
 			var bal_left_pow = workItem.balance_pow_fund; // fix here
 			var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
+			console.log("BAL POW ORIGINAL " + bal_original_pow);
+			console.log("BAL POW NOW " + bal_left_pow);
 			$("#pow_paid_out").empty().append(NRS.formatAmount(new BigInteger((bal_original_pow-bal_left_pow).toString())));
 			$("#bal_remained_pow").empty().append(NRS.formatAmount(new BigInteger((bal_left_pow).toString())));
-			$("#bal_remained_pow_percent").empty().append(bal_pow_perc_left.toFixed(2)); // finished
 			$("#bal_remained_pow_percent_2").empty().append((100-bal_pow_perc_left).toFixed(2)); // finished
 
 			$("#progbar_pow").attr("aria-valuenow",parseInt(100-bal_pow_perc_left));
@@ -802,7 +803,9 @@ var NRS = (function(NRS, $, undefined) {
 
 			var percent_done_pow = 100 - bal_pow_perc_left;
 			var percent_bounty_left = (workItem.received_bounties * 100 / workItem.bounty_limit);
-			var maxXC = (percent_done_pow>percent_bounty_left) ? percent_done_pow : percent_bounty_left;
+			$("#bal_remained_pow_percent").empty().append(percent_bounty_left.toFixed(2)); // finished
+
+			var maxXC = percent_bounty_left;
 			$("#percent_done").empty().append(maxXC.toFixed(2));
 			$("#progbar_work").attr("aria-valuenow",parseInt(maxXC));
 

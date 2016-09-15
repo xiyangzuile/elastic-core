@@ -23,6 +23,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -266,7 +267,7 @@ public interface Attachment extends Appendix {
     
    
     
-    public final static class PiggybackedProofOfWork extends AbstractAttachment {
+    public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
         public long getWorkId() {
 			return workId;
@@ -342,10 +343,21 @@ public interface Attachment extends Appendix {
         	return TransactionType.WorkControl.PROOF_OF_WORK;
         }
 
-		
+        @Override
+		public byte[] getHash() {
+			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4);        
+	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+	        intBuffer.put(input);
+	        int aBack = (int)(workId >> 32);
+	        int bBack = (int)workId & 0xffffffff;
+	        intBuffer.put(aBack);
+	        intBuffer.put(bBack);
+	        intBuffer.put(1); // append something to differentiate between pow and bounty (pow and bounty for same inputs are possible)
+			return Crypto.sha256().digest(byteBuffer.array());
+		}
     }
     
-    public final static class PiggybackedProofOfBounty extends AbstractAttachment {
+    public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable{
 
         public long getWorkId() {
 			return workId;
@@ -416,6 +428,19 @@ public interface Attachment extends Appendix {
         public TransactionType getTransactionType() {
         	return TransactionType.WorkControl.BOUNTY;
         }
+
+		@Override
+		public byte[] getHash() {
+			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4);        
+	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+	        intBuffer.put(input);
+	        int aBack = (int)(workId >> 32);
+	        int bBack = (int)workId & 0xffffffff;
+	        intBuffer.put(aBack);
+	        intBuffer.put(bBack);
+	        intBuffer.put(2); // append something to differentiate between pow and bounty (pow and bounty for same inputs are possible)
+			return Crypto.sha256().digest(byteBuffer.array());
+		}
 
     }
 

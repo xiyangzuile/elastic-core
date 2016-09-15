@@ -3733,3 +3733,6 @@ margin-top: 20px;
 .flot_hidden {
   visibility: hidden;
 }
+.progress {
+  background: #d09b9b !important;
+}

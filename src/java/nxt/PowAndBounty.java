@@ -140,6 +140,11 @@ public final class PowAndBounty {
         return powAndBountyTable.getCount(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", true)));
     }
+    
+    static boolean hasHash(byte[] hash) {
+        return powAndBountyTable.getCount(new DbClause.BytesClause("hash", hash))>0;
+    }
+    
     static int getBountyCount(long wid) {
         return powAndBountyTable.getCount(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", false)));
@@ -190,7 +195,7 @@ public final class PowAndBounty {
         this.dbKey = powAndBountyDbKeyFactory.newKey(id);
         this.input = attachment.getInput();
         this.is_pow = true;
-        this.hash = new byte[0]; // FIXME TODO
+        this.hash = attachment.getHash(); // FIXME TODO
         this.too_late = false;
     }
     private PowAndBounty(Transaction transaction, Attachment.PiggybackedProofOfBounty attachment) {
@@ -200,7 +205,7 @@ public final class PowAndBounty {
         this.dbKey = powAndBountyDbKeyFactory.newKey(id);
         this.input = attachment.getInput();
         this.is_pow = false;
-        this.hash = new byte[0]; // FIXME TODO
+        this.hash = attachment.getHash(); // FIXME TODO
         this.too_late = false;
     }
     private PowAndBounty(ResultSet rs, DbKey dbKey) throws SQLException {

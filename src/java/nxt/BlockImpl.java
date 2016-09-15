@@ -495,7 +495,7 @@ public final class BlockImpl implements Block {
 
 		Block b = Nxt.getBlockchain().getBlock(lastBlockId);
 		
-		// try to cycle over the last 12 blocks, or - if height is smaller -
+		// try to cycle over the last N blocks, or - if height is smaller -
 		// over entire blockchain
 		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS, b.getHeight());
 		int original_back_counter = go_back_counter;
@@ -509,7 +509,7 @@ public final class BlockImpl implements Block {
 			go_back_counter -= 1;
 		}
 		
-		// scale up if there are not yet 12 blocks there, avoids MADNESS
+		// scale up if there are not yet N blocks there, avoids MADNESS
 		if(original_back_counter<Constants.POWRETARGET_N_BLOCKS){
 			
 			double scaledCounter = (double)pow_counter;
@@ -535,7 +535,7 @@ public final class BlockImpl implements Block {
 		double factor = (double)(Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER) / (double)pow_counter; // RETARGETING
 		
 		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
-		// limits
+		// limits, we do not want to change the target too CRAZY at once
 		if (factor > 1.25)
 			factor = 1.25;
 		if (factor < 0.75)

@@ -471,8 +471,8 @@ public final class Work {
 		response.put("percentage_powfund",this.percentage_powfund);
 		response.put("balance_pow_fund",this.balance_pow_fund);
 		response.put("balance_bounty_fund",this.balance_bounty_fund);
-		response.put("balance_pow_fund_orig",this.balance_pow_fund);
-		response.put("balance_bounty_fund_orig",this.balance_bounty_fund);
+		response.put("balance_pow_fund_orig",this.balance_pow_fund_orig);
+		response.put("balance_bounty_fund_orig",this.balance_bounty_fund_orig);
 		response.put("received_bounties",this.received_bounties);
 		response.put("received_pows",this.received_pows);    
 		response.put("bounty_limit",this.bounty_limit);
