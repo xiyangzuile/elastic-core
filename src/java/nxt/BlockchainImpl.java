@@ -103,7 +103,7 @@ final class BlockchainImpl implements Blockchain {
     @Override
     public BlockImpl getBlock(long blockId) {
         BlockImpl block = lastBlock.get();
-        if (block.getId() == blockId) {
+        if (block != null && block.getId() == blockId) {
             return block;
         }
         return BlockDb.findBlock(blockId);
@@ -558,4 +558,10 @@ final class BlockchainImpl implements Blockchain {
         }
         return result;
     }
+
+	@Override
+	public long getLastBlockId() {
+		BlockImpl last = lastBlock.get();
+        return last == null ? 0 : last.getId();
+	}
 }

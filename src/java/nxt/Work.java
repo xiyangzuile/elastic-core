@@ -503,7 +503,6 @@ public JSONObject toJsonObjectWithSource() {
 	}
 
 	public void reduce_one_pow_submission() {
-		System.out.println("Work was open, fund left " + this.balance_pow_fund);
 		if(this.isClosed() == false){
 			
 			if(balance_pow_fund>=this.xel_per_pow){
@@ -514,7 +513,6 @@ public JSONObject toJsonObjectWithSource() {
 			if(balance_pow_fund<this.xel_per_pow){
 				// all was paid out, close it!
 				this.natural_timeout();
-				System.out.println("I have closed this work");
 			}else{
 				workTable.insert(this);
 			}
@@ -531,7 +529,6 @@ public void kill_bounty_fund() {
 		if(this.received_bounties >= this.bounty_limit){
 			// Bounty Limit Reached
 			this.natural_timeout();
-			System.out.println("I have closed this work");
 		}else{
 			workTable.insert(this);
 		}

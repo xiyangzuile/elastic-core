@@ -8,6 +8,8 @@ import nxt.Account;
 import nxt.NxtException;
 import nxt.Work;
 import nxt.db.DbIterator;
+import nxt.BlockImpl;
+import nxt.Nxt;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -43,6 +45,9 @@ public final class GetMineableWork extends APIServlet.APIRequestHandler {
 		 
 		JSONObject response = new JSONObject();
 		response.put("work_packages", work_packages);
+		
+		// Also add difficulty
+		response.put("pow_target", BlockImpl.getMinPowTarget(Nxt.getBlockchain().getLastBlockId()).toString(16));
 		return response;
 
 	}

@@ -810,7 +810,7 @@ var NRS = (function(NRS, $, undefined) {
 			$("#progbar_work").attr("aria-valuenow",parseInt(maxXC));
 
 
-			$("#progbar_work").css("width",maxXC.toFixed(2) + "%");
+			$("#progbar_work").css("width",parseInt(maxXC) + "%");
 
 			
 			// plot with loading indicator

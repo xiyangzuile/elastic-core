@@ -816,14 +816,11 @@ public abstract class TransactionType {
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
 				
-				System.out.println(transaction.getId()  +  " Applying BEGIN");
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
-				System.out.println("ABOUT TO ADD " + attachment.getWorkId() + ", id=" + transaction.getId());
 				PowAndBounty.addPow(transaction, attachment);
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
 				obj.applyPowPayment();
-				System.out.println(transaction.getId()  +  " Applying END");
 			}
 			
 

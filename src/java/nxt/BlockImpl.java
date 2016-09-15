@@ -35,7 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-final class BlockImpl implements Block {
+public final class BlockImpl implements Block {
 
 	private final int version;
 	private final int timestamp;
@@ -50,6 +50,7 @@ final class BlockImpl implements Block {
 	private BigInteger lastPowTarget = null;
 	
 	private volatile List<TransactionImpl> blockTransactions;
+	private static LRUCache powDifficultyLRUCache = new LRUCache(50);
 
 	private byte[] blockSignature;
 	private BigInteger cumulativeDifficulty = BigInteger.ZERO;
@@ -86,6 +87,10 @@ final class BlockImpl implements Block {
 		this.previousBlockHash = previousBlockHash;
 		if (transactions != null) {
 			this.blockTransactions = Collections.unmodifiableList(transactions);
+		if(previousBlockId==0)
+			this.lastPowTarget = Constants.least_possible_target;
+		else
+			this.lastPowTarget = this.getMinPowTarget(previousBlockId);
 		}
 	}
 
@@ -102,6 +107,10 @@ final class BlockImpl implements Block {
 		this.id = id;
 		this.generatorId = generatorId;
 		this.blockTransactions = blockTransactions;
+		if(previousBlockId==0)
+			this.lastPowTarget = Constants.least_possible_target;
+		else
+			this.lastPowTarget = this.getMinPowTarget(previousBlockId);
 	}
 
 	@Override
@@ -480,21 +489,26 @@ final class BlockImpl implements Block {
 	}
 	
 	public static BigInteger getMinPowTarget(long lastBlockId) {
+		
+		// First check in cache
+		BigInteger cached = powDifficultyLRUCache.get(lastBlockId);
+		if(cached != null)
+			return cached;
 
 		// Genesis specialty
 		if (lastBlockId == 0)
 			return Constants.least_possible_target;
 
+		Block b = Nxt.getBlockchain().getBlock(lastBlockId);
+		
 		// try to cycle over the last 12 blocks, or - if height is smaller -
 		// over entire blockchain
 		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS,
-				BlockchainImpl.getInstance().getHeight());
+				b.getHeight());
 		int original_back_counter = go_back_counter;
 
 		// ... and count the number of PoW transactions inside those blocks
 		int pow_counter = 0;
-		BlockImpl b = BlockchainImpl.getInstance().getBlock(lastBlockId);
-
 		BigInteger last_pow_target = b.getLastPowTarget();
 		while (go_back_counter > 0) {
 			pow_counter += b.countNumberPOW();
@@ -515,8 +529,10 @@ final class BlockImpl implements Block {
 
 		// if no PoW was sent during last n blocks, something is strange, give
 		// back the lowest possible target
-		if (pow_counter == 0)
+		if (pow_counter == 0){
+			powDifficultyLRUCache.set(lastBlockId, Constants.least_possible_target);
 			return Constants.least_possible_target;
+		}
 
 		// Check the needed adjustment here, but make sure we do not adjust more
 		// than * 2 or /2.
@@ -524,7 +540,6 @@ final class BlockImpl implements Block {
 		// (exponentially) approxiamate the desired number
 		// of PoW packages per block.
 		BigDecimal new_pow_target = new BigDecimal(last_pow_target);
-		System.out.println("!!!! RATIO target / real !!!! -> " + Constants.POWRETARGET_POW_PER_BLOCK_SCALER + " / " + pow_counter);
 		double factor = (double)Constants.POWRETARGET_POW_PER_BLOCK_SCALER / (double)pow_counter; // RETARGETING
 
 		// limits
@@ -541,9 +556,7 @@ final class BlockImpl implements Block {
 		BigInteger converted_new_pow = new_pow_target.toBigInteger();
 		
 		if(converted_new_pow.compareTo(Constants.least_possible_target)==1) converted_new_pow = Constants.least_possible_target;
-
-		
-
+		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
 		return converted_new_pow;
 	}
 
