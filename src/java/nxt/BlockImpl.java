@@ -523,8 +523,7 @@ public final class BlockImpl implements Block {
 		// if no PoW was sent during last n blocks, something is strange, give
 		// back the lowest possible target
 		if (pow_counter == 0){
-			powDifficultyLRUCache.set(lastBlockId, Constants.least_possible_target);
-			return Constants.least_possible_target;
+			pow_counter = 1; // dirty ugly fix
 		}
 
 		// Check the needed adjustment here, but make sure we do not adjust more

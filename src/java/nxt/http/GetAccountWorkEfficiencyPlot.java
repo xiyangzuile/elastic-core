@@ -1,12 +1,20 @@
 package nxt.http;
 
 import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nxt.Constants;
+import nxt.Db;
+import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Quartett;
 import nxt.Triplet;
@@ -69,11 +77,40 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 		return response;
 
 	}
+	
+	public ArrayList<Quartett<Integer,Long,String,Long>> getDataForPlot(long id, int limit_minutes) {
+
+		ArrayList<Quartett<Integer,Long,String,Long>> ret = new ArrayList<Quartett<Integer,Long,String,Long>>();
+
+		try (Connection con = Db.db.getConnection();
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT count(pow_and_bounty.id), block.min_pow_target, transaction.block_timestamp FROM pow_and_bounty INNER JOIN transaction ON transaction.id = pow_and_bounty.id INNER JOIN block ON block.id = transaction.block_id WHERE work_id=? AND transaction.block_timestamp > ? GROUP BY transaction.block_id ORDER BY transaction.block_timestamp DESC")) {
+			int i = 0;
+			pstmt.setLong(++i, id);
+			pstmt.setInt(++i, Nxt.getEpochTime()-limit_minutes*60);
+			ResultSet check = pstmt.executeQuery();
+			System.out.println("Queried Data Plot, StartTime " + (Nxt.getEpochTime()-limit_minutes*60));
+			while (check.next()) {
+				long stime = (long) check.getInt(3);
+				stime = stime + (Constants.EPOCH_BEGINNING/1000);		
+				Quartett<Integer,Long,String,Long> d = new Quartett<Integer,Long,String,Long>((int) check.getInt(1),stime,(String) check.getString(2), 0L); 
+				ret.add(d);
+				System.out.println("  " + d.toString());
+				
+			}
+
+		} catch (SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+
+		Collections.reverse(ret);
+		return ret;
+	}
 
 	private JSONArray getComputationPlot(long workId, int last_num) {
 		JSONArray computation_power = new JSONArray();
 		
-		/*ArrayList<Quartett<Integer,Long,String, Long>> ret_pre = WorkLogicManager.getInstance().getDataForPlot(workId, last_num);
+		ArrayList<Quartett<Integer,Long,String, Long>> ret_pre = getDataForPlot(workId, last_num);
 		for(Quartett<Integer,Long,String, Long> t : ret_pre){
 			JSONArray inner = new JSONArray();
 			inner.add(t.getA());
@@ -82,7 +119,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 			inner.add(t.getD());
 			computation_power.add(inner);
 		}
-				*/
+				
 		return computation_power;
 	}
 

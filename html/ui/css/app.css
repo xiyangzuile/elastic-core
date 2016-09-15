@@ -3710,3 +3710,26 @@ a.active .middletext_list {
 padding: 10px;
 margin-top: 20px;
 }
+.flot-chart-content {
+    height: 300px;
+    width: 100%;
+}
+.flot-chart {
+    display: block;
+    width: 100%;
+}
+.alert_message_flot {
+    position: absolute;
+    width: inherit;
+    text-align: center;
+    padding-top: 100px;
+    font-size: 16px;
+    font-weight: bold;
+    color: darkgray;
+    top: 50%;
+    transform: translateY(-86%);
+}
+
+.flot_hidden {
+  visibility: hidden;
+}

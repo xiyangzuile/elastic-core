@@ -29,7 +29,7 @@ public final class Constants {
     public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
     public static final int MAX_TITLE_LENGTH = 255;
     public static final int MAX_WORK_CODE_LENGTH = 1024*1024;
-    public static final int POWRETARGET_N_BLOCKS = 12;
+    public static final int POWRETARGET_N_BLOCKS = 3;
     public static final int POWRETARGET_POW_PER_BLOCK_SCALER = 10;
     public static final int MIN_TRANSACTION_SIZE = 176;
     public static final int MAX_DEADLINE_FOR_WORK = 1440;

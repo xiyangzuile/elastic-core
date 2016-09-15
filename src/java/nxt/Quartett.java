@@ -7,7 +7,7 @@ public class Quartett<T, U, V, W>
    V c;
    W d;
 
-   Quartett(T a, U b, V c, W d)
+   public Quartett(T a, U b, V c, W d)
    {
     this.a = a;
     this.b = b;

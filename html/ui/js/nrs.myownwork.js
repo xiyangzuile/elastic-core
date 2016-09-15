@@ -342,7 +342,6 @@ var NRS = (function(NRS, $, undefined) {
 		return "a long time ago";
 	}
 	function doPlot(){
-		return;
 		try{
 			var lmt = 30;
 			if(globalType == "5"){
@@ -369,12 +368,8 @@ var NRS = (function(NRS, $, undefined) {
 				// 5 min
 				lmt = 60*24*30*60;
 			}
-			/*if(computation_power.length == 0){
-				$("#flot_alert").removeClass("flot_hidden");
-			}else{
-				$("#flot_alert").addClass("flot_hidden");
-			}*/
-			$("#flot_alert").addClass("flot_hidden");
+			
+
 			var compu_array_normed = [];
 			var compu_array_normed_diff = [];
 			var last = 0;
@@ -410,6 +405,9 @@ var NRS = (function(NRS, $, undefined) {
 				compu_array_normed_diff.push([date,lasttt]);
 
 			}
+
+			console.log(compu_array_normed);
+			console.log("^- compu array normed");
 			if(lastDate == null) return;
 			var date = new Date();
 			var followingLD = new Date(lastDate.getTime() + 1000); // + 1 day in ms
@@ -619,6 +617,8 @@ var NRS = (function(NRS, $, undefined) {
 			"workId": globalWorkItem,
 			"last_num": lmt
 			}, function(response) {
+
+				console.log(response);
 				if (response.computation_power) {
 					computation_power = response.computation_power;
 					doPlot(); // refresh
@@ -626,6 +626,7 @@ var NRS = (function(NRS, $, undefined) {
 					computation_power = [];
 					doPlot(); // refresh
 				}
+				
 			});
 		}
 	}
@@ -812,9 +813,6 @@ var NRS = (function(NRS, $, undefined) {
 
 			$("#progbar_work").css("width",parseInt(maxXC) + "%");
 
-			
-			// plot with loading indicator
-			// FIXME doPlot();
 			globalWorkItem = workItem.work_id;
 			// Estimate number of blocks to fetch
 			var lmt = 30;
@@ -849,8 +847,10 @@ var NRS = (function(NRS, $, undefined) {
 			}, function(response) {
 				if (response.computation_power) {
 					computation_power = response.computation_power;
+					console.log("GOT RESULT, OK!");
 					doPlot(); // refresh
 				}else{
+					console.log("GOT RESULT, ERROR!");
 					computation_power = [];
 					doPlot(); // refresh
 				}
