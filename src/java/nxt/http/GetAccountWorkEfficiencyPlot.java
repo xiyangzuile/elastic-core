@@ -89,13 +89,11 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 			pstmt.setLong(++i, id);
 			pstmt.setInt(++i, Nxt.getEpochTime()-limit_minutes*60);
 			ResultSet check = pstmt.executeQuery();
-			System.out.println("Queried Data Plot, StartTime " + (Nxt.getEpochTime()-limit_minutes*60));
 			while (check.next()) {
 				long stime = (long) check.getInt(3);
 				stime = stime + (Constants.EPOCH_BEGINNING/1000);		
 				Quartett<Integer,Long,String,Long> d = new Quartett<Integer,Long,String,Long>((int) check.getInt(1),stime,(String) check.getString(2), 0L); 
 				ret.add(d);
-				System.out.println("  " + d.toString());
 				
 			}
 

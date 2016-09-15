@@ -536,10 +536,10 @@ public final class BlockImpl implements Block {
 		
 		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
 		// limits
-		if (factor > 2)
-			factor = 2;
-		if (factor < 0.5)
-			factor = (double) 0.5;
+		if (factor > 1.25)
+			factor = 1.25;
+		if (factor < 0.75)
+			factor = (double) 0.75;
 		
 		BigDecimal factorDec = new BigDecimal(factor);
 

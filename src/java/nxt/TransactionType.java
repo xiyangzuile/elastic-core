@@ -826,6 +826,11 @@ public abstract class TransactionType {
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+				
+				if(transaction.getDeadline() != 3){
+					throw new NxtException.NotValidException("POW/Bounties must have a dead line of 3 minutes");
+				}
+				
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());

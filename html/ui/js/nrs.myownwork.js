@@ -90,6 +90,7 @@ var NRS = (function(NRS, $, undefined) {
 	    		$("#fund_pow2_cr").html(NRS.formatAmount(new BigInteger((pow_amt).toString())) );
 	    		$("#fund_bnt2_cr").html(NRS.formatAmount(new BigInteger((bnt_amt).toString())) );
 	    	}catch(err) {
+	    		console.log(err);
 	    		NRS.updateWorkCreationPlots(0,0,0);
 	    		$("#fund_pow_cr").html(0);
 	    		$("#fund_bnt_cr").html(0);
@@ -276,7 +277,7 @@ var NRS = (function(NRS, $, undefined) {
 	function shortMoney(num){
 		num = num / 100000000;
 		var res = null;
-		if(num >=1000) res = (num/1000).toFixed(2) + 'k';
+		if(num >=1000) res = (num/1000).toFixed(0) + 'k';
 		else if(num >=1) res = num.toFixed(2);
 		else if (num != 0) res = "~" + num.toFixed(4);
 		else res = "0";
@@ -284,7 +285,7 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function moneyReturned(message){
-		return "<b>" + shortMoney(message.balance_pow_fund+message.balance_bounty_fund) + " XEL</b>";
+		return "<b>" + shortMoney(message.balance_pow_fund+message.balance_bounty_fund) + "</b>";
 	}
 	function moneyPaid(message){
 		return "<b>" + shortMoney((message.balance_pow_fund_orig+message.balance_bounty_fund_orig)-(message.balance_pow_fund+message.balance_bounty_fund)) + " XEL</b> paid out";
@@ -406,8 +407,6 @@ var NRS = (function(NRS, $, undefined) {
 
 			}
 
-			console.log(compu_array_normed);
-			console.log("^- compu array normed");
 			if(lastDate == null) return;
 			var date = new Date();
 			var followingLD = new Date(lastDate.getTime() + 1000); // + 1 day in ms
@@ -618,7 +617,6 @@ var NRS = (function(NRS, $, undefined) {
 			"last_num": lmt
 			}, function(response) {
 
-				console.log(response);
 				if (response.computation_power) {
 					computation_power = response.computation_power;
 					doPlot(); // refresh
@@ -800,9 +798,7 @@ var NRS = (function(NRS, $, undefined) {
 			if(workItem.language == null || workItem.language=="ElasticPL")
 				$("#programming_language").empty().append("Elastic Programming Language v1");
 
-			$("#blockchain_bytes").empty().append(formatBytes(parseInt(workItem.script_size_bytes)));
-			// TODO FIXME $("#fee").empty().append(NRS.formatAmount(new BigInteger((workItem.fee).toString())) );
-
+			
 
 			var percent_done_pow = 100 - bal_pow_perc_left;
 			var percent_bounty_left = (workItem.received_bounties * 100 / workItem.bounty_limit);
@@ -847,10 +843,8 @@ var NRS = (function(NRS, $, undefined) {
 			}, function(response) {
 				if (response.computation_power) {
 					computation_power = response.computation_power;
-					console.log("GOT RESULT, OK!");
 					doPlot(); // refresh
 				}else{
-					console.log("GOT RESULT, ERROR!");
 					computation_power = [];
 					doPlot(); // refresh
 				}
