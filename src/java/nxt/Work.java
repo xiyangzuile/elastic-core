@@ -202,10 +202,12 @@ public final class Work {
             pstmt.setLong(++i, work_id);
             
             DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
+            Work w = null;
             if(it.hasNext())
-            	return it.next();
-            else
-            	return null;
+            	w = it.next();
+            it.close();
+            return w;
+            
         } catch (SQLException e) {
             DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
@@ -478,6 +480,19 @@ public final class Work {
 		//response.put("height",this.height);
 		return response;
 	}
+	
+
+public JSONObject toJsonObjectWithSource() {
+	JSONObject obj = toJsonObject();
+	
+	PrunableSourceCode p = PrunableSourceCode.getPrunableSourceCodeByWorkId(this.work_id);
+	if(p==null)
+		obj.put("source","");
+	else
+		obj.put("source",Ascii85.encode(p.getSource()));
+	
+	return obj;
+}
 
 	public boolean isCancelled() {
 		return cancelled;
@@ -522,5 +537,6 @@ public void kill_bounty_fund() {
 		}
 	}
 }
+
 
 }

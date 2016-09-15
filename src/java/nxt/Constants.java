@@ -40,6 +40,7 @@ public final class Constants {
     public static final long MAX_WORK_POW_REWARD = 10000000000L;
     public static final long MIN_WORK_POW_REWARD = 0L;
     public static final int MIN_WORK_BOUNTY_LIMIT=1;
+    public static final int PAY_FOR_AT_LEAST_X_POW=20;
     public static final long MIN_XEL_PER_POW=1000;
     public static final int MAX_WORK_BOUNTY_LIMIT=10;
     public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;

@@ -80,10 +80,11 @@ public final class PrunableSourceCode {
             int i = 0;
             pstmt.setLong(++i, work_id);
             DbIterator<PrunableSourceCode> it =  prunableSourceCodeTable.getManyBy(con, pstmt, false);
+            PrunableSourceCode s = null;
             if(it.hasNext())
-            	return it.next();
-            else
-            	return null;
+            	s = it.next();
+            it.close();
+            return s;
         } catch (SQLException e) {
             DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);

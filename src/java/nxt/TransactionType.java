@@ -19,6 +19,7 @@ package nxt;
 import nxt.Account.ControlType;
 import nxt.AccountLedger.LedgerEvent;
 import nxt.Attachment.AbstractAttachment;
+import nxt.NxtException.NotValidException;
 import nxt.NxtException.ValidationException;
 import nxt.util.Convert;
 import org.apache.tika.Tika;
@@ -27,6 +28,7 @@ import org.json.simple.JSONObject;
 
 import ElasticPL.ASTCompilationUnit;
 import ElasticPL.ElasticPLParser;
+import ElasticPL.ParseException;
 import ElasticPL.RuntimeEstimator;
 
 import java.io.ByteArrayInputStream;
@@ -680,6 +682,10 @@ public abstract class TransactionType {
 				if(attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW){
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct xel/pow price");
 	        	}
+				
+				if(transaction.getAmountNQT() < Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow() ){
+					throw new NxtException.NotValidException("You must attach XEL for at least 20 POW submissions, i.e., " + (Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow()) + " XEL");
+				}
 			}
 
 			@Override
@@ -834,6 +840,22 @@ public abstract class TransactionType {
 				{
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
+				
+				long rel_id = transaction.getBlockId();
+				boolean valid = false;
+				try {
+					Executioner e = getExecutioner(attachment.getWorkId());
+					valid = e.executeProofOfWork(attachment.getInput(), BlockImpl.getMinPowTarget(rel_id));
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					throw new NxtException.NotValidException(
+							"Proof of work is invalid: causes ElasticPL function to crash");
+				}
+				if (!valid) {
+					System.err.println("POW was not valid!!");
+					throw new NxtException.NotValidException(
+							"Proof of work  is invalid: does not meet target");
+				}
 			}
 
 			@Override
@@ -909,6 +931,23 @@ public abstract class TransactionType {
 				{
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
+				
+				long rel_id = transaction.getBlockId();
+				boolean valid = false;
+				try {
+					Executioner e = getExecutioner(attachment.getWorkId());
+					valid = e.executeBountyHooks(attachment.getInput());
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					throw new NxtException.NotValidException(
+							"Bounty is invalid: causes ElasticPL function to crash");
+				}
+				if (!valid) {
+					System.err.println("POW was not valid!!");
+					throw new NxtException.NotValidException(
+							"Bounty is invalid: does not meet requirement");
+				}
+				
 			}
 
 			@Override
@@ -940,6 +979,24 @@ public abstract class TransactionType {
 				return "PiggybackedProofOfBounty";
 			}
 		};
+		protected static Executioner getExecutioner(long workId) throws NotValidException {
+			PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(workId);
+			if (code == null){
+				throw new NxtException.NotValidException(
+						"Bounty is invalid: code already pruned");
+			}
+			Executioner e = null;
+			try {
+				e = new Executioner(Convert.toString(code.getSource(), true), workId);
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			}
+			if (e == null){
+				throw new NxtException.NotValidException(
+						"Bounty is invalid: could not invoke executioner! Report to developers!");
+			}	
+			return e;
+		}
 	};
 
 }

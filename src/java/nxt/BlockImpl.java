@@ -23,6 +23,8 @@ import nxt.util.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import jdk.nashorn.internal.ir.BlockStatement;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -474,18 +476,10 @@ final class BlockImpl implements Block {
 	}
 	
 	public BigInteger getLastPowTarget() {
-		// Genesis special treatment
-		if (this.getHeight() == 0) {
-			return Constants.least_possible_target;
-		}
-
-		if (this.lastPowTarget == null)
-			this.lastPowTarget = getMinPowTarget(previousBlockId);
-
 		return this.lastPowTarget;
 	}
 	
-	public BigInteger getMinPowTarget(long lastBlockId) {
+	public static BigInteger getMinPowTarget(long lastBlockId) {
 
 		// Genesis specialty
 		if (lastBlockId == 0)
@@ -500,24 +494,21 @@ final class BlockImpl implements Block {
 		// ... and count the number of PoW transactions inside those blocks
 		int pow_counter = 0;
 		BlockImpl b = BlockchainImpl.getInstance().getBlock(lastBlockId);
+
 		BigInteger last_pow_target = b.getLastPowTarget();
-		System.out.println("Summarizing last POW");
 		while (go_back_counter > 0) {
 			pow_counter += b.countNumberPOW();
-			System.out.println("    BID " + b.getId() + " has " + b.countNumberPOW() + " POW submissions our of " + b.getTransactions().size() + " TX (Total sent " + b.getTotalAmountNQT() + ")!");
 			b = b.getPreviousBlock();
 			go_back_counter -= 1;
 		}
 		
 		// scale up if there are not yet 12 blocks there, avoids MADNESS
 		if(original_back_counter<Constants.POWRETARGET_N_BLOCKS){
-			System.out.println("!!!! GOBACK COUNTER SKEWED -> " + original_back_counter + " / should be " + Constants.POWRETARGET_N_BLOCKS);
 			
 			double scaledCounter = (double)pow_counter;
 			
 			scaledCounter = scaledCounter / original_back_counter;
 			scaledCounter = scaledCounter * Constants.POWRETARGET_N_BLOCKS;
-			System.out.println("!!!!SCALED POW NUMBER -> " + pow_counter + " / upscaled to " + scaledCounter);
 
 			pow_counter = (int)scaledCounter;
 		}
@@ -543,7 +534,6 @@ final class BlockImpl implements Block {
 			factor = (double) 0.5;
 		
 		BigDecimal factorDec = new BigDecimal(factor);
-		System.out.println("!!!! FACTOR FOR NEW POW !!!! -> " + factor);
 
 		// Apply the retarget: Adjust target so that we again - on average -
 		// reach n PoW per block

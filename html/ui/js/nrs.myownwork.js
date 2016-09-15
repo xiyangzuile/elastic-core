@@ -79,21 +79,16 @@ var NRS = (function(NRS, $, undefined) {
 	    elem.data('oldVal', elem.val());
 	    if(isNumeric(elem.val())){
 	    	try{
-          // This is our slick rounding_error_save_XEL_fix
-          var total_amt = parseFloat(elem.val())*100000000;
-          total_amt = total_amt.toFixed(0);
-          if(total_amt<1) total_amt=0;
 
-	    		var pow_amt = Math.abs(total_amt*0.60);
-	    		var bnt_amt = Math.abs(total_amt*0.40);
-          var rounding_mistake = total_amt - (pow_amt+bnt_amt);
-          pow_amt += rounding_mistake;
+	    		var total_amt = workItem.balance_pow_fund + workItem.balance_bounty_fund;
+	    		var pow_amt = workItem.balance_pow_fund;
+	    		var bnt_amt = workItem.balance_bounty_fund;
 
 	    		NRS.updateWorkCreationPlots(total_amt,pow_amt,bnt_amt);
-	    		$("#fund_pow_cr").html(NRS.formatAmount(pow_amt));
-	    		$("#fund_bnt_cr").html(NRS.formatAmount(bnt_amt));
-	    		$("#fund_pow2_cr").html(NRS.formatAmount(pow_amt));
-	    		$("#fund_bnt2_cr").html(NRS.formatAmount(bnt_amt));
+	    		$("#fund_pow_cr").html(NRS.formatAmount(new BigInteger((pow_amt).toString())) );
+	    		$("#fund_bnt_cr").html(NRS.formatAmount(new BigInteger((bnt_amt).toString())) );
+	    		$("#fund_pow2_cr").html(NRS.formatAmount(new BigInteger((pow_amt).toString())) );
+	    		$("#fund_bnt2_cr").html(NRS.formatAmount(new BigInteger((bnt_amt).toString())) );
 	    	}catch(err) {
 	    		NRS.updateWorkCreationPlots(0,0,0);
 	    		$("#fund_pow_cr").html(0);
@@ -113,7 +108,7 @@ var NRS = (function(NRS, $, undefined) {
 
 	NRS.updateWorkCreationPlots = function(totalMoney,powMoney,bountyMoney){
 
-		$("#bal_creation").empty().append(NRS.formatAmount(totalMoney)); // finished
+		$("#bal_creation").empty().append(NRS.formatAmount(new BigInteger((totalMoney).toString())) ); // finished
 
 			$("#powfund_creation").sparkline([powMoney,bountyMoney], {
 			    type: 'pie',
@@ -296,7 +291,7 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function balancespan(message){
-		return writeIfTrue("<span class='label label-white label12px'>" + NRS.formatAmount(message.balance_pow_fund + message.balance_bounty_fund) + " XEL</span>", message.closed == false);
+		return writeIfTrue("<span class='label label-white label12px'>" + NRS.formatAmount(new BigInteger((message.balance_pow_fund + message.balance_bounty_fund).toString())) + " XEL</span>", message.closed == false);
 	}
 
 	function flopsFormatter(v, axis) {
@@ -738,8 +733,8 @@ var NRS = (function(NRS, $, undefined) {
 			$("#bal_bounties").empty().append(100 - workItem.percentage_powfund);
 
 
-			$("#bal_original").empty().append(NRS.formatAmount(workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig));
-			$("#bal_remained").empty().append(NRS.formatAmount(workItem.balance_bounty_fund+workItem.balance_pow_fund));
+			$("#bal_original").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig).toString())));
+			$("#bal_remained").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund+workItem.balance_pow_fund).toString())));
 			$("#bnt_connected").empty().append(workItem.received_bounties);
 
 			var orig = workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig;
@@ -748,37 +743,28 @@ var NRS = (function(NRS, $, undefined) {
 
 			$("#bal_remained_percent").empty().append(percentRemained.toFixed(2)); // left
 
-			var origBntFund = workItem.balance_bounty_fund_orig;
+			var origBntFund = workItem.balance_bounty_fund;
 
 
 
+			$("#bountyfundthere").show();
+			$("#bountyfundgone").hide();
+			$("#bnt_percent_left").empty().append("100.00");
+			$("#bal_remained_bnt").empty().append(NRS.formatAmount(new BigInteger((origBntFund).toString())) );
+			
 
-			var bountyGone = false;
-			if(parseInt(workItem.received_bounties)>0){
-				$("#bountyfundthere").hide();
-				$("#bountyfundgone").show();
-				$("#bnt_percent_left").empty().append("0");
-				$("#bal_remained_bnt").empty().append(NRS.formatAmount(0));
-				bountyGone = true;
-			}else{
-				$("#bountyfundthere").show();
-				$("#bountyfundgone").hide();
-				$("#bnt_percent_left").empty().append("100");
-				$("#bal_remained_bnt").empty().append(NRS.formatAmount(origBntFund));
-			}
-
-			$("#refund_calculator").empty().append(NRS.formatAmount(workItem.balance_bounty_fund+workItem.balance_pow_fund));
+			$("#refund_calculator").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund+workItem.balance_pow_fund).toString())));
 
 			var bountiesLimit = parseInt(workItem.bounty_limit);
 			var bountiesMissing = bountiesLimit - parseInt(workItem.received_bounties);
 
 			var gotNumberPow = parseInt(workItem.received_pows);
 			$("#number_pow").empty().append(gotNumberPow);
-			var bal_original_pow = workItem.balance_bounty_fund_orig; // fix here
-			var bal_left_pow = workItem.balance_bounty_fund; // fix here
+			var bal_original_pow = workItem.balance_pow_fund_orig; // fix here
+			var bal_left_pow = workItem.balance_pow_fund; // fix here
 			var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
-			$("#pow_paid_out").empty().append(NRS.formatAmount(bal_original_pow-bal_left_pow));
-			$("#bal_remained_pow").empty().append(NRS.formatAmount(bal_left_pow));
+			$("#pow_paid_out").empty().append(NRS.formatAmount(new BigInteger((bal_original_pow-bal_left_pow).toString())));
+			$("#bal_remained_pow").empty().append(NRS.formatAmount(new BigInteger((bal_left_pow).toString())));
 			$("#bal_remained_pow_percent").empty().append(bal_pow_perc_left.toFixed(2)); // finished
 			$("#bal_remained_pow_percent_2").empty().append((100-bal_pow_perc_left).toFixed(2)); // finished
 
@@ -791,7 +777,7 @@ var NRS = (function(NRS, $, undefined) {
 			    height: '48',
 			    sliceColors: ['#BCFFB5','#FFD6D6']});
 
-			if(bountyGone)
+			if(origBntFund==0)
 				$("#bountyfund").sparkline([0,100], {
 				    type: 'pie',
 				    width: '48',
@@ -804,7 +790,7 @@ var NRS = (function(NRS, $, undefined) {
 				    height: '48',
 				    sliceColors: ['#BCFFB5','#FFD6D6']});
 
-			$("#refundfund").sparkline([workItem.balance_remained,workItem.balance_original-workItem.balance_remained], {
+			$("#refundfund").sparkline([rem,orig-rem], {
 			    type: 'pie',
 			    width: '48',
 			    height: '48',
@@ -814,7 +800,7 @@ var NRS = (function(NRS, $, undefined) {
 				$("#programming_language").empty().append("Elastic Programming Language v1");
 
 			$("#blockchain_bytes").empty().append(formatBytes(parseInt(workItem.script_size_bytes)));
-			$("#fee").empty().append(NRS.formatAmount(workItem.fee));
+			// TODO FIXME $("#fee").empty().append(NRS.formatAmount(new BigInteger((workItem.fee).toString())) );
 
 
 			var percent_done_pow = 100 - bal_pow_perc_left;

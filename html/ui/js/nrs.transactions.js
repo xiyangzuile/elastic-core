@@ -527,6 +527,8 @@ var NRS = (function(NRS, $, undefined) {
 			feeColor = "color:red;";
 		}
 		var formattedAmount = "";
+		console.log("FORMATTING AMOUNT");
+		console.log(amount);
 		if (amount != "") {
 			formattedAmount = NRS.formatAmount(amount, false, false, decimals.amount);
 		}

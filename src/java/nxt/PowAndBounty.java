@@ -120,6 +120,7 @@ public final class PowAndBounty {
     			map.put(p.getAccountId(), ik+1);
     		}
     	}
+    	it.close();
     	return map;
     }
 

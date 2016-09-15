@@ -1,5 +1,8 @@
 package nxt;
 
+import static nxt.http.JSONResponses.INCORRECT_EXECUTION_TIME;
+import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -11,6 +14,7 @@ import java.security.NoSuchAlgorithmException;
 import ElasticPL.ASTCompilationUnit;
 import ElasticPL.ElasticPLParser;
 import ElasticPL.ParseException;
+import ElasticPL.RuntimeEstimator;
 
 
 
@@ -44,20 +48,16 @@ public class Executioner{
 	}
 
 	
-	public Executioner(String code, int numberOfInputs, long identifier) throws ParseException {
+	public Executioner(String code, long identifier) throws ParseException {
 		// id
 		this.identifier = identifier;
-
-		// remember number of inputs and outputs
-		this.numberOfInputs = numberOfInputs;
 		this.script = code;
 		
-		stream = new ByteArrayInputStream(Ascii85.decode(code));
+		stream = new ByteArrayInputStream(code.getBytes());
 		parser = new ElasticPLParser(stream);
-		
 		// Compile program, should work as syntax and semantic tests went through in TX validation
+		// TODO FIXME, Compilation Unit does not crash properly when code is wrong
 		parser.CompilationUnit();
-
 	}
 	
 
