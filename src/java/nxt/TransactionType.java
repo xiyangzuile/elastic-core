@@ -645,14 +645,23 @@ public abstract class TransactionType {
 
 			@Override
 			Attachment.WorkCreation parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-		
+		try{
 				return new Attachment.WorkCreation(attachmentData);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw e;
+		}
 			}
 
 			@Override
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+				try{
 				Attachment.WorkCreation attachment = (Attachment.WorkCreation) transaction.getAttachment();
 				Work.addWork(transaction, attachment);
+				}catch(Exception e){
+					e.printStackTrace();
+					throw e;
+				}
 			}
 
 			@Override
