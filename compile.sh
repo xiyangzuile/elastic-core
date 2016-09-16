@@ -14,15 +14,6 @@ find src/java/nxt/ -name "*.java" > sources.tmp
 javac -encoding utf8 -sourcepath "${SP}:src/evil/" -classpath "${CP}" -d classes/ @sources.tmp || exit 1
 echo "nxt core class files compiled successfully"
 
-echo "compiling nxt desktop..."
-find src/java/nxtdesktop/ -name "*.java" > sources.tmp
-javac -encoding utf8 -sourcepath "${SP}:src/evil/" -classpath "${CP}" -d classes/ @sources.tmp
-if [ $? -eq 0 ]; then
-    echo "nxt desktop class files compiled successfully"
-else
-    echo "if javafx is not supported, nxt desktop compile errors are safe to ignore, but desktop wallet will not be available"
-fi
-
 rm -f sources.tmp
 
 find addons/src/ -name "*.java" > addons.tmp
