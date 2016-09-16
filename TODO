@@ -1,0 +1,7 @@
+TODOS
+=====
+
+1. Fix retargeting of POW, consider ignoring blocks with no POW so that - after breaks - the target value is not minimal 
+again
+2. Set minimal XEL_PER_POW correctly
+3. Raise the VM memory from 256 to a HIGH value
