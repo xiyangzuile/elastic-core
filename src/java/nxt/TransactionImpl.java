@@ -781,9 +781,11 @@ final class TransactionImpl implements Transaction {
 		json.put("ecBlockHeight", ecBlockHeight);
 		json.put("ecBlockId", Long.toUnsignedString(ecBlockId));
 		json.put("signature", Convert.toHexString(signature));
+		System.out.println("Preparing JSON! TX = " this.id);
 		JSONObject attachmentJSON = new JSONObject();
 		for (Appendix.AbstractAppendix appendage : appendages) {
 			appendage.loadPrunable(this);
+			System.out.println("  loading appendix = " + appendage.getClass().toGenericString());
 			attachmentJSON.putAll(appendage.getJSONObject());
 		}
 		if (!attachmentJSON.isEmpty()) {
