@@ -1,0 +1,31 @@
+
+<div class="modal fade" id="redeem_modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" data-i18n="confirm_redeem_start">Redeem from Genesis Block</h4>
+            </div>
+            <div class="modal-body">            
+                <form role="form" autocomplete="off">
+                    <p class="show_secret_phrase" data-i18n="redeem_passphrase">If you want redeem, type your passphrase to confirm.</p>
+                    <p class="hide_secret_phrase" style="display:none" data-i18n="redeem_passphrase_nopass">If you you want to start forging, click the button below to confirm.</p>
+                    <div class="callout callout-danger remote_warning" style="display:none">
+                        <strong><span data-i18n="warning">Warning</span>:</strong>
+                        <span data-i18n="passphrase_remote_warning">Your passphrase will be sent to the server!</span>
+                    </div>
+                    <div class="callout callout-danger error_message" style="display:none"></div>
+                    <div class="form-group secret_phrase">
+                        <label for="redeem_password" data-i18n="passphrase">PASSPHRASE</label>
+                        <input type="password" name="secretPhrase" id="redeem_password" class="form-control" placeholder="" tabindex="1">
+                    </div>
+                    <input type="hidden" name="request_type" value="redeemFromGenesis" />
+                </form>
+            </div>
+            <div class="modal-footer" style="margin-top:0;">
+                <button type="button" class="btn btn-default" data-dismiss="modal" data-i18n="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="redeem_button" data-loading-text="Submitting..."  data-i18n="redeem_btn;[data-loading-text]submitting">Redeem your XEL</button>
+            </div>
+        </div>
+    </div>
+</div>
