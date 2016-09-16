@@ -231,6 +231,9 @@ final class TransactionDb {
             if (rs.getBoolean("has_prunable_encrypted_message")) {
                 builder.appendix(new Appendix.PrunableEncryptedMessage(buffer, version));
             }
+            if (rs.getBoolean("has_prunable_source_code")) {
+                builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
+            }
 
             return builder.build();
 
@@ -281,6 +284,7 @@ final class TransactionDb {
                 + "has_prunable_message AS prunable_plain_message, "
                 + "has_prunable_source_code AS prunable_source_code, "
                 + "has_prunable_encrypted_message AS prunable_encrypted_message "
+                + "has_prunable_source_code AS prunable_source_code "
                 + "FROM transaction WHERE (timestamp BETWEEN ? AND ?) AND "
                 + "(has_prunable_attachment = TRUE OR has_prunable_message = TRUE OR has_prunable_encrypted_message = TRUE)")) {
             pstmt.setInt(1, minTimestamp);
