@@ -340,7 +340,7 @@ var NRS = (function(NRS, $, undefined) {
 					}
 					NRS.disablePluginsDuringSession = $("#disable_all_plugins").is(":checked");
 					$("#sidebar_account_id").html(String(NRS.accountRS).escapeHTML());
-					$("#sidebar_account_link").html(NRS.getAccountLink(NRS, "account", NRS.accountRS, "details", false, "btn btn-default btn-xs"));
+					$("#sidebar_account_link").html(NRS.getShortenedAccountLink(NRS, "account", NRS.accountRS, "details", false, "btn btn-default btn-xs"));
 
 					var canvas_title = CryptoJS.SHA1(String(NRS.account));
 					var cobj = document.getElementById("canvas_hash");

@@ -20,6 +20,7 @@
   "account": "Account",
   "work_status": "Work Status",
   "work_control": "Work Control",
+  "claim_xel" : "Redeem",
   "work_author": "Work Management",
   "work_worker" : "Mining Overview",
   "work_creation" : "Work Creation",

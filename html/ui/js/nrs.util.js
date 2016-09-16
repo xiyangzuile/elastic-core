@@ -679,6 +679,29 @@ var NRS = (function (NRS, $, undefined) {
             "' class='show_account_modal_action user-info" + clazz + "'>" + accountTitle + "</a>";
     };
 
+    NRS.getShortenedAccountLink = function (object, accountKey, accountRef, title, showAccountRS, clazz) {
+        var accountRS;
+        if (typeof object[accountKey + "RS"] != "undefined") {
+            accountRS = object[accountKey + "RS"];
+        } else if (typeof object[accountKey] != "undefined") {
+            accountRS = NRS.convertNumericToRSAccountFormat(object[accountKey]);
+        } else {
+            return '/';
+        }
+       
+        if (!clazz) {
+            clazz = "";
+        } else {
+            if (clazz.length > 0) {
+                if (String(clazz).indexOf(" ") != 0) {
+                    clazz = " " + clazz;
+                }
+            }
+        }
+        return "<a href='#' data-user='" + String(accountRS).escapeHTML() +
+            "' class='show_account_modal_action user-info" + clazz + "'><i class='fa fa-info'></i></a>";
+    };
+
     NRS.getTransactionLink = function(id, text, isEscapedText) {
         if (!text) {
             text = id;
