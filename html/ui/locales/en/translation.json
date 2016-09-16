@@ -944,6 +944,7 @@
   "send_nxt": "Send XEL",
   "send_nxt_to_sender": "Send XEL to Sender",
   "sender": "Sender",
+  "redeem-type":"How do you want to redeem",
   "server_error_unknown": "An unknown error occurred.",
   "set_account_info": "Set Account Info",
   "settings": "Settings",
