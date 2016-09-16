@@ -468,7 +468,7 @@ public interface Attachment extends Appendix {
             this.deadline = ((Long) attachmentData.get("deadline")).intValue();
             this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
             this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
-            this.percentage_pow_fund = ((int) attachmentData.get("percentage_pow_fund"));
+            this.percentage_pow_fund = ((Long) attachmentData.get("percentage_pow_fund")).intValue();
         }
 
         public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, int percentage_pow_fund) {
