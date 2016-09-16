@@ -465,7 +465,7 @@ public interface Attachment extends Appendix {
             super(attachmentData);
             
             this.workTitle = ((String) attachmentData.get("title")).trim();
-            this.deadline = ((Long) attachmentData.get("deadline")).intValue();
+            this.deadline = ((Integer) attachmentData.get("deadline")).intValue();
             this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
             this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
             this.percentage_pow_fund = ((int) attachmentData.get("percentage_pow_fund"));
