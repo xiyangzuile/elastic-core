@@ -461,6 +461,15 @@ public interface Attachment extends Appendix {
             this.percentage_pow_fund = buffer.getInt();
         }
 
+        
+        void dumpToConsole(){
+        	System.out.println("workTitle\t= " + workTitle);
+        	System.out.println("deadline\t= " + deadline);
+        	System.out.println("bountyLimit\t= " + bountyLimit);
+        	System.out.println("xelPerPow\t= " + xelPerPow);
+        	System.out.println("percentage_pow_fund\t= " + percentage_pow_fund);
+        }
+        
         WorkCreation(JSONObject attachmentData) {
             super(attachmentData);
             
@@ -469,6 +478,8 @@ public interface Attachment extends Appendix {
             this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
             this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
             this.percentage_pow_fund = ((Long) attachmentData.get("percentage_pow_fund")).intValue();
+            
+            
         }
 
         public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, int percentage_pow_fund) {
@@ -481,7 +492,7 @@ public interface Attachment extends Appendix {
 
         @Override
         int getMySize() {
-            int size = 2 + Convert.toBytes(workTitle).length + 4 + 8 + 4 + 4;
+            int size = 2 + Convert.toBytes(workTitle).length + 4 + 4 + 8 + 4;
             return size;
         }
 

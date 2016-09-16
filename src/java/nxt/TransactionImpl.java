@@ -808,10 +808,24 @@ final class TransactionImpl implements Transaction {
 		}
 		return prunableJSON;
 	}
-
+	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	public static String bytesToHex(byte[] bytes) {
+	    char[] hexChars = new char[bytes.length * 2];
+	    for ( int j = 0; j < bytes.length; j++ ) {
+	        int v = bytes[j] & 0xFF;
+	        hexChars[j * 2] = hexArray[v >>> 4];
+	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+	    }
+	    return new String(hexChars);
+	}
 	static TransactionImpl parseTransaction(JSONObject transactionData) throws NxtException.NotValidException {
+		System.out.println(transactionData);
 		TransactionImpl transaction = newTransactionBuilder(transactionData).build();
 		if (transaction.getSignature() != null && !transaction.checkSignature()) {
+			System.out.println("CHECKING TX ID = " + transaction.getId() + " ..., hash = " + transaction.getFullHash() + " " +  transaction.getJSONObject().toJSONString());
+			//Appendix.PrunableSourceCode app = (Appendix.PrunableSourceCode)transaction.getAppendages().get(0);
+			//System.out.println(bytesToHex(app.getSource()));
+			System.out.println("Has SRC CODE: " + transaction.hasPrunableSourceCode());
 			throw new NxtException.NotValidException(
 					"Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
 		}

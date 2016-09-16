@@ -636,11 +636,13 @@ public interface Appendix {
 
         @Override
         final void loadPrunable(Transaction transaction, boolean includeExpiredPrunable) {
+        	System.out.println("Invoked loading prunable SRC");
             if (!hasPrunableData() && shouldLoadPrunable(transaction, includeExpiredPrunable)) {
             	nxt.PrunableSourceCode prunableSourceCode = nxt.PrunableSourceCode.getPrunableSourceCode(transaction.getId());
                 if (prunableSourceCode != null && prunableSourceCode.getSource() != null) {
                     this.prunableSourceCode = prunableSourceCode;
                 }
+                System.out.println("   got obj " + this.prunableSourceCode);
             }
         }
 
