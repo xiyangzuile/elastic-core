@@ -645,6 +645,7 @@ public abstract class TransactionType {
 
 			@Override
 			Attachment.WorkCreation parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+		
 				return new Attachment.WorkCreation(attachmentData);
 			}
 
