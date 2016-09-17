@@ -549,6 +549,10 @@ public final class BlockImpl implements Block {
 		
 		if(converted_new_pow.compareTo(Constants.least_possible_target)==1) converted_new_pow = Constants.least_possible_target;
 		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
+		System.out.println("    old diff was: " + last_pow_target.toString(16));
+		System.out.println("    new diff is : " + converted_new_pow.toString(16));
+
+
 		return converted_new_pow;
 	}
 

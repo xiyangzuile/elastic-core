@@ -819,7 +819,6 @@ final class TransactionImpl implements Transaction {
 	    return new String(hexChars);
 	}
 	static TransactionImpl parseTransaction(JSONObject transactionData) throws NxtException.NotValidException {
-		System.out.println(transactionData);
 		TransactionImpl transaction = newTransactionBuilder(transactionData).build();
 		if (transaction.getSignature() != null && !transaction.checkSignature()) {
 
