@@ -1250,6 +1250,9 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
         } catch (SQLException e) {
             throw new RuntimeException(e.toString(), e);
         }
+        
+        // in any case, trigger the TX-processor cleanup routine. Some tx may have become invalid!
+        TransactionProcessorImpl.getInstance().clearUnconfirmedThatGotInvalidLately();
     }
 
     private boolean addGenesisBlock() {

@@ -848,27 +848,41 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 		return processed;
 	}
 
-	public void clearUnconfirmedTransactionsWithIds(Set<Long> set) {
+	
 
-		// This one will be called from within a transaction! Do no tx in tx!
-		synchronized (BlockchainImpl.getInstance()) {
-			List<Transaction> removed = new ArrayList<>();
-			try {
-				try (DbIterator<UnconfirmedTransaction> unconfirmedTransactions = getAllUnconfirmedTransactions()) {
-					for (UnconfirmedTransaction unconfirmedTransaction : unconfirmedTransactions) {
-						if (set.contains(unconfirmedTransaction.getId())) {
-							unconfirmedTransaction.getTransaction().undoUnconfirmed();
-							removed.add(unconfirmedTransaction.getTransaction());
-						}
-					}
+	@Override
+	public void clearUnconfirmedThatGotInvalidLately() {
+		
+		DbIterator<UnconfirmedTransaction> it = getAllUnconfirmedTransactions();
+		while(it.hasNext()){
+			UnconfirmedTransaction u = it.next();
+			TransactionImpl tImpl = u.getTransaction();
+			
+			// re-validate POW and proof of bounty
+			if(u.getType() == TransactionType.WorkControl.BOUNTY){
+				Attachment.PiggybackedProofOfBounty b = (Attachment.PiggybackedProofOfBounty)u.getAttachment();
+				try{
+					b.validate(tImpl);
+				}catch(Exception e){
+					// this tx became invalid! Purge it from the memory pool immediately
+					this.removeUnconfirmedTransaction(tImpl);
+					System.err.println("[!!] removing TX (bounty) from mem-pool that later became invalid: " + tImpl.getId());
 				}
-				unconfirmedTransactionTable.truncate();
-			} catch (Exception e) {
-				Logger.logErrorMessage(e.toString(), e);
-				throw e;
+				
 			}
-			unconfirmedDuplicates.clear();
-			transactionListeners.notify(removed, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
+			if(u.getType() == TransactionType.WorkControl.PROOF_OF_WORK){
+				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork)u.getAttachment();
+				try{
+					b.validate(tImpl);
+				}catch(Exception e){
+					// this tx became invalid! Purge it from the memory pool immediately
+					this.removeUnconfirmedTransaction(tImpl);
+					System.err.println("[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
+				}
+			}
+			
 		}
+		
 	}
+
 }
