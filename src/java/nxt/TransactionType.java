@@ -866,18 +866,30 @@ public abstract class TransactionType {
 				else
 					rel_id = BlockchainImpl.getInstance().getLastBlockId();
 				boolean valid = false;
-				try {
-					Executioner e = getExecutioner(attachment.getWorkId());
-					valid = e.executeProofOfWork(attachment.getInput(), BlockchainImpl.getInstance().getBlock(rel_id).getMinPowTarget());
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					throw new NxtException.NotValidException(
-							"Proof of work is invalid: causes ElasticPL function to crash");
-				}
-				if (!valid) {
-					System.err.println("POW was not valid!!");
-					throw new NxtException.NotValidException(
-							"Proof of work  is invalid: does not meet target");
+				
+				
+				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
+					// If the tx is already pruned we assume POW is valid!
+					// no need to execute after all! We assume that the pruning is happened long enough ago
+					valid = true;
+				}else{
+				
+					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
+					
+				
+					try {
+						Executioner e = getExecutioner(attachment.getWorkId(), code);
+						valid = e.executeProofOfWork(attachment.getInput(), BlockchainImpl.getInstance().getBlock(rel_id).getMinPowTarget());
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						throw new NxtException.NotValidException(
+								"Proof of work is invalid: causes ElasticPL function to crash");
+					}
+					if (!valid) {
+						System.err.println("POW was not valid!!");
+						throw new NxtException.NotValidException(
+								"Proof of work  is invalid: does not meet target");
+					}
 				}
 			}
 
@@ -964,18 +976,28 @@ public abstract class TransactionType {
 				
 				long rel_id = transaction.getBlockId();
 				boolean valid = false;
-				try {
-					Executioner e = getExecutioner(attachment.getWorkId());
-					valid = e.executeBountyHooks(attachment.getInput());
-				} catch (Exception e1) {
-					e1.printStackTrace();
-					throw new NxtException.NotValidException(
-							"Bounty is invalid: causes ElasticPL function to crash");
-				}
-				if (!valid) {
-					System.err.println("POW was not valid!!");
-					throw new NxtException.NotValidException(
-							"Bounty is invalid: does not meet requirement");
+				
+				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
+					// If the tx is already pruned we assume POW is valid!
+					// no need to execute after all! We assume that the pruning is happened long enough ago
+					valid = true;
+				}else{
+				
+					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
+						
+					try {
+						Executioner e = getExecutioner(attachment.getWorkId(), code);
+						valid = e.executeBountyHooks(attachment.getInput());
+					} catch (Exception e1) {
+						e1.printStackTrace();
+						throw new NxtException.NotValidException(
+								"Bounty is invalid: causes ElasticPL function to crash");
+					}
+					if (!valid) {
+						System.err.println("POW was not valid!!");
+						throw new NxtException.NotValidException(
+								"Bounty is invalid: does not meet requirement");
+					}
 				}
 				
 			}
@@ -1009,8 +1031,7 @@ public abstract class TransactionType {
 				return "PiggybackedProofOfBounty";
 			}
 		};
-		protected static Executioner getExecutioner(long workId) throws NotValidException {
-			PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(workId);
+		protected static Executioner getExecutioner(long workId, PrunableSourceCode code) throws NotValidException {
 			if (code == null){
 				throw new NxtException.NotValidException(
 						"Bounty is invalid: code already pruned");

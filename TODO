@@ -5,3 +5,4 @@ TODOS
 again
 2. Set minimal XEL_PER_POW correctly
 3. Raise the VM memory from 256 to a HIGH value
+4. Make sure pruned source code does not collide with POW, i.e., work deadline must be before pruning starts
