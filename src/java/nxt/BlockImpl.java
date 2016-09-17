@@ -538,7 +538,8 @@ public final class BlockImpl implements Block {
 			factor = 1.25;
 		if (factor < 0.75)
 			factor = (double) 0.75;
-		
+		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
+
 		BigDecimal factorDec = new BigDecimal(factor);
 
 		// Apply the retarget: Adjust target so that we again - on average -

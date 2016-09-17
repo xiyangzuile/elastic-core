@@ -569,8 +569,7 @@ public interface Appendix {
                 throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
             }
             
-            String tst = Convert.toString(src);
-            System.out.println(tst);
+            
             
             // Here, make sure that the source code has correct syntax and meets all requirements
 			InputStream stream = new ByteArrayInputStream(src);
@@ -596,7 +595,6 @@ public interface Appendix {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					System.out.println("ERROR ERROR ERROR: " + e.getMessage());
             		throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
 				}
 			}else{
