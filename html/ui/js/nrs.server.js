@@ -816,6 +816,12 @@ var NRS = (function (NRS, $, undefined) {
                     return false;
                 }
                 break;
+            case "createWork":
+                if (transaction.type !== 3 && transaction.subtype !== 7) {
+                    return false;
+                }
+                return true; // TODO FIXME, make more sophisticated checks
+                break;
             case "deleteAlias":
                 if (transaction.type !== 1 && transaction.subtype !== 8) {
                     return false;
