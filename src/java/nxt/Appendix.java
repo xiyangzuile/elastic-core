@@ -561,6 +561,7 @@ public interface Appendix {
                 throw new NxtException.NotValidException("Source code can only be attacked to work-creation transactions!");
             }
             byte[] src = getSource();
+            
             if (src != null && src.length > Constants.MAX_WORK_CODE_LENGTH) {
                 throw new NxtException.NotValidException("Invalid source code length: " + src.length);
             }
@@ -568,6 +569,8 @@ public interface Appendix {
                 throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
             }
             
+            String tst = Convert.toString(src);
+            System.out.println(tst);
             
             // Here, make sure that the source code has correct syntax and meets all requirements
 			InputStream stream = new ByteArrayInputStream(src);
@@ -593,6 +596,7 @@ public interface Appendix {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					System.out.println("ERROR ERROR ERROR: " + e.getMessage());
             		throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
 				}
 			}else{

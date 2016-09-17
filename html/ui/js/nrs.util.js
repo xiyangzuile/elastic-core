@@ -1667,6 +1667,8 @@ var NRS = (function (NRS, $, undefined) {
      */
     NRS.escapeResponseObjStrings = function (obj) {
         for (var key in obj) {
+            if(key == "source")
+                continue;
             if (obj.hasOwnProperty(key)) {
                 var val = obj[key];
                 if (typeof val === 'string') {
