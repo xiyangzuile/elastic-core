@@ -817,7 +817,13 @@ var NRS = (function (NRS, $, undefined) {
                 }
                 break;
             case "createWork":
-                if (transaction.type !== 3 && transaction.subtype !== 7) {
+                if (transaction.type !== 3 && transaction.subtype !== 0) {
+                    return false;
+                }
+                return true; // TODO FIXME, make more sophisticated checks
+                break;
+            case "cancelWork":
+                if (transaction.type !== 3 && transaction.subtype !== 5) {
                     return false;
                 }
                 return true; // TODO FIXME, make more sophisticated checks
