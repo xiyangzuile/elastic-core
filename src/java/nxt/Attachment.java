@@ -462,13 +462,7 @@ public interface Attachment extends Appendix {
         }
 
         
-        void dumpToConsole(){
-        	System.out.println("workTitle\t= " + workTitle);
-        	System.out.println("deadline\t= " + deadline);
-        	System.out.println("bountyLimit\t= " + bountyLimit);
-        	System.out.println("xelPerPow\t= " + xelPerPow);
-        	System.out.println("percentage_pow_fund\t= " + percentage_pow_fund);
-        }
+  
         
         WorkCreation(JSONObject attachmentData) {
             super(attachmentData);

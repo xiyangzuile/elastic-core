@@ -90,7 +90,6 @@ public final class Work {
                     shuffling.natural_timeout();
                 } else {
                     workTable.insert(shuffling);
-                    System.out.println(shuffling.toJsonObject().toJSONString());
                 }
             });
         }, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);

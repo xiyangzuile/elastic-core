@@ -781,11 +781,9 @@ final class TransactionImpl implements Transaction {
 		json.put("ecBlockHeight", ecBlockHeight);
 		json.put("ecBlockId", Long.toUnsignedString(ecBlockId));
 		json.put("signature", Convert.toHexString(signature));
-		System.out.println("Preparing JSON! TX = " + this.id);
 		JSONObject attachmentJSON = new JSONObject();
 		for (Appendix.AbstractAppendix appendage : appendages) {
 			appendage.loadPrunable(this);
-			System.out.println("  loading appendix = " + appendage.getClass().toGenericString());
 			attachmentJSON.putAll(appendage.getJSONObject());
 		}
 		if (!attachmentJSON.isEmpty()) {
@@ -824,10 +822,7 @@ final class TransactionImpl implements Transaction {
 		System.out.println(transactionData);
 		TransactionImpl transaction = newTransactionBuilder(transactionData).build();
 		if (transaction.getSignature() != null && !transaction.checkSignature()) {
-			System.out.println("CHECKING TX ID = " + transaction.getId() + " ..., hash = " + transaction.getFullHash() + " " +  transaction.getJSONObject().toJSONString());
-			//Appendix.PrunableSourceCode app = (Appendix.PrunableSourceCode)transaction.getAppendages().get(0);
-			//System.out.println(bytesToHex(app.getSource()));
-			System.out.println("Has SRC CODE: " + transaction.hasPrunableSourceCode());
+
 			throw new NxtException.NotValidException(
 					"Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
 		}
