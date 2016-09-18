@@ -635,6 +635,7 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 				addedUnconfirmedTransactions.add(transaction);
 
 			} catch (NxtException.NotCurrentlyValidException ignore) {
+			} catch (NxtException.LostValidityException ignore) {
 			} catch (NxtException.ValidationException | RuntimeException e) {
 				Logger.logDebugMessage(String.format("Invalid transaction from peer: %s",
 						((JSONObject) transactionData).toJSONString()), e);

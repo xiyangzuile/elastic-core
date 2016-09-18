@@ -14,3 +14,12 @@ a) broadcasting invalid pow (that became invalid later) is fixed when the local 
 However it may happen that we broadcast something that is already invalid at other nodes because they found a block which not yet propagated to us!
 To avoid being blacklisted, the other nodes check if the POW was valid in one of the last 5 blocks. If it is the case, we just give back a "NotCurrentlyValid" error which should not cause the peer to be blacklisted.
 Double check if NotCurrentlyValid causes the tx to be cached somewhere ... we dont want that as we know it will never get valid again. Maybe we need a third NotValidException that handles this specific case?
+
+
+Right now, POW with pruned source code are always valid
+if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
+					// If the tx is already pruned we assume POW is valid!
+					// no need to execute after all! We assume that the pruning is happened long enough ago
+					valid = true;
+}
+MAKE SURE to prevent that, i.e., ensure that pruned source code tx must be OLD!

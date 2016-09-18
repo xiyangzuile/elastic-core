@@ -67,6 +67,20 @@ public abstract class NxtException extends Exception {
         }
 
     }
+    
+
+    public static class LostValidityException extends ValidationException {
+
+        public LostValidityException(String message) {
+            super(message);
+        }
+
+        public LostValidityException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+    }
+    
 
     public static final class NotYetEnabledException extends NotCurrentlyValidException {
 

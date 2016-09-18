@@ -34,12 +34,14 @@ import ElasticPL.RuntimeEstimator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 public abstract class TransactionType {
@@ -860,35 +862,57 @@ public abstract class TransactionType {
 				{
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
-				long rel_id;
+				
+				Long rel_id;
+				BigInteger soft_unblock_target = null;
+				
 				if(transaction.getBlock() != null)
 					rel_id = transaction.getBlock().getPreviousBlockId();
 				else
 					rel_id = BlockchainImpl.getInstance().getLastBlockId();
-				boolean valid = false;
+				
+				// TODO, FIXME! Here, her the soft_unblock_target from LRU cache
+				
+				BlockImpl b = BlockchainImpl.getInstance().getBlock(rel_id);
+				BigInteger real_block_target = b.getMinPowTarget();
+				soft_unblock_target = real_block_target;
+				
+				int counter = Constants.POW_VERIFICATION_UNBLOCK_WHEN_VALID_IN_LAST_BLOCKS;
+				while (counter > 0){
+					counter --;
+					b = b.getPreviousBlock();
+					if(b == null)
+						break;
+					BigInteger tempDiff = b.getMinPowTarget();
+					if (tempDiff.compareTo(real_block_target) < 0) {
+						real_block_target = tempDiff;
+					}
+				}
+				
+				Executioner.POW_CHECK_RESULT valid = Executioner.POW_CHECK_RESULT.ERROR;
 				
 				
 				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
 					// If the tx is already pruned we assume POW is valid!
 					// no need to execute after all! We assume that the pruning is happened long enough ago
-					valid = true;
+					valid = Executioner.POW_CHECK_RESULT.OK;
 				}else{
-				
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
-					
-				
 					try {
 						Executioner e = getExecutioner(attachment.getWorkId(), code);
-						valid = e.executeProofOfWork(attachment.getInput(), BlockchainImpl.getInstance().getBlock(rel_id).getMinPowTarget());
+						valid = e.executeProofOfWork(attachment.getInput(), real_block_target, soft_unblock_target);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
 								"Proof of work is invalid: causes ElasticPL function to crash");
 					}
-					if (!valid) {
-						System.err.println("POW was not valid!!");
+					if (valid == Executioner.POW_CHECK_RESULT.ERROR) {
 						throw new NxtException.NotValidException(
-								"Proof of work  is invalid: does not meet target");
+								"Proof of work is invalid: does not meet target");
+					}
+					if (valid == Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED) {
+						throw new NxtException.LostValidityException(
+								"Proof of work became invalid: block target changed recently");
 					}
 				}
 			}

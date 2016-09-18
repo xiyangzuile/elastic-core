@@ -8,6 +8,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
+import nxt.Executioner;
+
 /* Copyright (c) 2006, Sun Microsystems, Inc.
  * All rights reserved.
  *
@@ -178,8 +180,8 @@ public class ASTCompilationUnit extends SimpleNode {
 		return ret;
 	}
 
-	public boolean verifyPOW(BigInteger target) {
-		boolean ret = false;
+	public Executioner.POW_CHECK_RESULT verifyPOW(BigInteger target, BigInteger soft_unblock) {
+		Executioner.POW_CHECK_RESULT ret = Executioner.POW_CHECK_RESULT.ERROR;
 
 		int in[] = getRandomIntArray();
 		int out[] = getOutState();
@@ -189,7 +191,10 @@ public class ASTCompilationUnit extends SimpleNode {
 			BigInteger val = byteHashToLong(bsh);
 	
 			if (val.compareTo(target)==-1)
-				return true;
+				return Executioner.POW_CHECK_RESULT.OK;
+			else if (val.compareTo(soft_unblock)==-1)
+				return Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED;
+			
 		} catch (NoSuchAlgorithmException e) {
 		}
 

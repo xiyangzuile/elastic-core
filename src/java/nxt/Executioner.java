@@ -23,6 +23,14 @@ public class Executioner{
 	private String script;
 	private long identifier;
 	
+	public enum POW_CHECK_RESULT
+	{
+		OK,
+		SOFT_UNBLOCKED,
+		ERROR
+	};
+	
+	
 	InputStream stream = null;
 	ElasticPLParser parser = null;
 
@@ -72,12 +80,12 @@ public class Executioner{
 		return verifyB;
 	}
 
-	public boolean executeProofOfWork(int inputs[], BigInteger target_pow){
+	public POW_CHECK_RESULT executeProofOfWork(int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow){
 		((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
 		((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
 		((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
 		
-		boolean verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(target_pow);
+		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
 		return verifyPow;
 	}
 
