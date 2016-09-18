@@ -859,9 +859,10 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 		DbIterator<UnconfirmedTransaction> it = getAllUnconfirmedTransactions();
 		while(it.hasNext()){
 			UnconfirmedTransaction u = it.next();
+			System.out.print(" ... verifying unconf. TX " + u.getId());
+
 			TransactionImpl tImpl = u.getTransaction();
 			
-			System.out.print(" ... verifying unconf. TX " + tImpl.getId());
 			// re-validate POW and proof of bounty
 			if(u.getType() == TransactionType.WorkControl.BOUNTY){
 				Attachment.PiggybackedProofOfBounty b = (Attachment.PiggybackedProofOfBounty)u.getAttachment();
