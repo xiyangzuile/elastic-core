@@ -7,3 +7,10 @@ again
 3. Raise the VM memory from 256 to a HIGH value
 4. Make sure pruned source code does not collide with POW, i.e., work deadline must be before pruning starts --- also check if I did it correct in validateAttachment in TransactionType.java for POW and Bounty!
 5. ENSURE minimal pruning height by protocol
+
+Today:
+Make sure that on POW / Bounty validation we do the following.
+a) broadcasting invalid pow (that became invalid later) is fixed when the local node created a block and the TX cache was cleaned up.
+However it may happen that we broadcast something that is already invalid at other nodes because they found a block which not yet propagated to us!
+To avoid being blacklisted, the other nodes check if the POW was valid in one of the last 5 blocks. If it is the case, we just give back a "NotCurrentlyValid" error which should not cause the peer to be blacklisted.
+Double check if NotCurrentlyValid causes the tx to be cached somewhere ... we dont want that as we know it will never get valid again. Maybe we need a third NotValidException that handles this specific case?
