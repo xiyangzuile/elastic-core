@@ -808,6 +808,8 @@ public abstract class TransactionType {
 
 		public final static TransactionType PROOF_OF_WORK = new WorkControl() {
 
+			private LRUCache soft_unblock_cache = new LRUCache(50);
+			
 			@Override
 			public final byte getSubtype() {
 				return TransactionType.SUBTYPE_WORK_CONTROL_PROOF_OF_WORK;
@@ -852,7 +854,6 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
-				
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());	
 				
 				if(w==null){
@@ -864,29 +865,31 @@ public abstract class TransactionType {
 				}
 				
 				Long rel_id;
-				BigInteger soft_unblock_target = null;
+				
 				
 				if(transaction.getBlock() != null)
 					rel_id = transaction.getBlock().getPreviousBlockId();
 				else
 					rel_id = BlockchainImpl.getInstance().getLastBlockId();
 				
-				// TODO, FIXME! Here, her the soft_unblock_target from LRU cache
-				
+				BigInteger soft_unblock_target = soft_unblock_cache.get(rel_id);
 				BlockImpl b = BlockchainImpl.getInstance().getBlock(rel_id);
 				BigInteger real_block_target = b.getMinPowTarget();
-				soft_unblock_target = real_block_target;
-				
-				int counter = Constants.POW_VERIFICATION_UNBLOCK_WHEN_VALID_IN_LAST_BLOCKS;
-				while (counter > 0){
-					counter --;
-					b = b.getPreviousBlock();
-					if(b == null)
-						break;
-					BigInteger tempDiff = b.getMinPowTarget();
-					if (tempDiff.compareTo(real_block_target) < 0) {
-						real_block_target = tempDiff;
+
+				if(soft_unblock_target == null){
+					soft_unblock_target = real_block_target;
+					int counter = Constants.POW_VERIFICATION_UNBLOCK_WHEN_VALID_IN_LAST_BLOCKS;
+					while (counter > 0){
+						counter --;
+						b = b.getPreviousBlock();
+						if(b == null)
+							break;
+						BigInteger tempDiff = b.getMinPowTarget();
+						if (tempDiff.compareTo(soft_unblock_target) < 0) {
+							soft_unblock_target = tempDiff;
+						}
 					}
+					soft_unblock_cache.set(rel_id, soft_unblock_target);
 				}
 				
 				Executioner.POW_CHECK_RESULT valid = Executioner.POW_CHECK_RESULT.ERROR;
