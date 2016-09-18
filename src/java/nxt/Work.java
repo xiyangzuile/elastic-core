@@ -267,8 +267,6 @@ public final class Work {
         this.closed = false;
         this.percentage_powfund = attachment.getPercentage_pow_fund();
         this.balance_pow_fund = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100.0));
-        System.out.println("CREATING POW WITH FUND SIZE: " + transaction.getAmountNQT());
-        System.out.println("CREATING POW WITH POW FUND SIZE: " + balance_pow_fund);
         this.balance_bounty_fund = transaction.getAmountNQT() - balance_pow_fund;
         this.balance_pow_fund_orig = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100.0));
         this.balance_bounty_fund_orig = transaction.getAmountNQT() - balance_pow_fund;

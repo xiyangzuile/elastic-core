@@ -885,7 +885,7 @@ public abstract class TransactionType {
 						if(b == null)
 							break;
 						BigInteger tempDiff = b.getMinPowTarget();
-						if (tempDiff.compareTo(soft_unblock_target) < 0) {
+						if (tempDiff.compareTo(soft_unblock_target) > 0) {
 							soft_unblock_target = tempDiff;
 						}
 					}

@@ -36,9 +36,7 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 		try {
 			String readParam = ParameterParser.getParameterMultipart(req, "onlyOneId");
 			BigInteger b = new BigInteger(readParam);
-			System.out.println(b);
 			onlyOneId = b.longValue();
-			System.out.println(onlyOneId);
 		} catch (Exception e) {
 			onlyOneId = 0;
 		}
