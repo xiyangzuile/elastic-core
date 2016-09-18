@@ -885,7 +885,7 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 			}
 			if(u.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST){
-				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork)u.getAttachment();
+				Attachment.WorkIdentifierCancellationRequest b = (Attachment.WorkIdentifierCancellationRequest)u.getAttachment();
 				try{
 					b.validate(tImpl);
 				}catch(Exception e){
