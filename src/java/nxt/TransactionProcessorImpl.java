@@ -861,6 +861,7 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 			UnconfirmedTransaction u = it.next();
 			TransactionImpl tImpl = u.getTransaction();
 			
+			System.out.print(" ... verifying unconf. TX " + tImpl.getId());
 			// re-validate POW and proof of bounty
 			if(u.getType() == TransactionType.WorkControl.BOUNTY){
 				Attachment.PiggybackedProofOfBounty b = (Attachment.PiggybackedProofOfBounty)u.getAttachment();
@@ -874,6 +875,16 @@ final class TransactionProcessorImpl implements TransactionProcessor {
 				
 			}
 			if(u.getType() == TransactionType.WorkControl.PROOF_OF_WORK){
+				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork)u.getAttachment();
+				try{
+					b.validate(tImpl);
+				}catch(Exception e){
+					// this tx became invalid! Purge it from the memory pool immediately
+					this.removeUnconfirmedTransaction(tImpl);
+					System.err.println("[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
+				}
+			}
+			if(u.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST){
 				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork)u.getAttachment();
 				try{
 					b.validate(tImpl);
