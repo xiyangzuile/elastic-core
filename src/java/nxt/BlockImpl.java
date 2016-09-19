@@ -538,7 +538,7 @@ public final class BlockImpl implements Block {
 			factor = 1.25;
 		if (factor < 0.75)
 			factor = (double) 0.75;
-		System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
+		//System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
 
 		BigDecimal factorDec = new BigDecimal(factor);
 
@@ -549,8 +549,8 @@ public final class BlockImpl implements Block {
 		
 		if(converted_new_pow.compareTo(Constants.least_possible_target)==1) converted_new_pow = Constants.least_possible_target;
 		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
-		System.out.println("    old diff was: " + last_pow_target.toString(16));
-		System.out.println("    new diff is : " + converted_new_pow.toString(16));
+		//System.out.println("    old diff was: " + last_pow_target.toString(16));
+		//System.out.println("    new diff is : " + converted_new_pow.toString(16));
 
 
 		return converted_new_pow;
