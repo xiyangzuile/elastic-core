@@ -11,6 +11,7 @@
   "Quantity": "Quantity",
   "Rate": "Rate",
   "redeem_btn":"Redeem your XEL",
+  "json_input":"Input Array (ordered)",
   "Refund Note": "Refund Note",
   "Send Currency": "Send Currency",
   "deadline_blocks":"WORK DEADLINE (BLOCKS)",

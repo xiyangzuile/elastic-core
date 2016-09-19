@@ -839,6 +839,27 @@ var NRS = (function(NRS, $, undefined) {
 				// 5 min
 				lmt = 60*24*30;
 			}
+
+			var infoTable = $("#bounties_table");
+			infoTable.find("tbody").empty();
+
+			NRS.sendRequest("getWorkBounties", {
+			"work_id": globalWorkItem,
+			"last_num": lmt
+			}, function(response) {
+				var infoTable = $("#bounties_table");
+				infoTable.find("tbody").empty();
+				if (response.bounties) {
+					   for (i = 0; i < response.bounties.length; i++) { 
+					   	var x = response.bounties[i];
+					   	var link = '<a class="show_transaction_modal_action" href="#" data-timestamp="' + x.date + '" data-transaction="' + x.id + '">' + NRS.formatTimestamp(x.date) + '</a>';
+					   	  infoTable.find("tbody").append("<tr><td>" + link + "</td><td>" + x.inputs + "</td></tr>");
+					   }
+				}
+				
+			});
+
+
 			// Now load real data
 			NRS.sendRequest("getAccountWorkEfficiencyPlot", {
 			"workId": workItem.work_id,

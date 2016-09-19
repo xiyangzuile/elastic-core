@@ -26,8 +26,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.json.simple.JSONObject;
 
 import nxt.Work.Event;
 import nxt.db.DbClause;
@@ -246,5 +249,14 @@ public final class PowAndBounty {
     public long getAccountId() {
         return accountId;
     }
+
+	public JSONObject toJsonObject() {
+		JSONObject response = new JSONObject();
+		response.put("id",Convert.toUnsignedLong(this.id));
+		Transaction t = TransactionDb.findTransaction(this.id);
+		response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
+		response.put("inputs",Arrays.toString(this.input));
+		return response;
+	}
 
 }
