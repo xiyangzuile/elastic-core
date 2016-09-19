@@ -836,6 +836,11 @@ public abstract class TransactionType {
 				obj.applyPowPayment();
 			}
 			
+			@Override
+            boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
+                return isDuplicate(WorkControl.PROOF_OF_WORK, Convert.toHexString(attachment.getHash()), duplicates, true);
+            }
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
@@ -971,6 +976,12 @@ public abstract class TransactionType {
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
 				obj.applyBounty();
 			}
+			
+			@Override
+            boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction.getAttachment();
+                return isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()), duplicates, true);
+            }
 			
 	
 			@Override
