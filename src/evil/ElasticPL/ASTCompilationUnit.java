@@ -190,7 +190,16 @@ public class ASTCompilationUnit extends SimpleNode {
 		try {
 			byte[] bsh = byteHash(in, out);
 			BigInteger val = byteHashToLong(bsh);
-
+			Logger.logErrorMessage("Checked POW (" + txid + "), hash " + val.toString(16) + ", target was = " + target.toString(16) + ", softtarget was = " + soft_unblock.toString(16));
+			Logger.logErrorMessage("INPUTS:");
+			for(int i=0;i<in.length;i++){
+				Logger.logErrorMessage("  " + in[i]);
+			}
+			Logger.logErrorMessage("OUTPUTS:");
+			for(int i=0;i<out.length;i++){
+				Logger.logErrorMessage("  " + out[i]);
+			}
+			
 			if (val.compareTo(target)==-1){
 				return Executioner.POW_CHECK_RESULT.OK;
 			}
@@ -198,15 +207,7 @@ public class ASTCompilationUnit extends SimpleNode {
 				return Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED;
 			else
 			{
-				Logger.logErrorMessage("Checked POW (" + txid + "), hash " + val.toString(16) + ", target was = " + target.toString(16) + ", softtarget was = " + soft_unblock.toString(16));
-				Logger.logErrorMessage("INPUTS:");
-				for(int i=0;i<in.length;i++){
-					Logger.logErrorMessage("  " + in[i]);
-				}
-				Logger.logErrorMessage("OUTPUTS:");
-				for(int i=0;i<out.length;i++){
-					Logger.logErrorMessage("  " + out[i]);
-				}
+				
 			}
 			
 		} catch (NoSuchAlgorithmException e) {
