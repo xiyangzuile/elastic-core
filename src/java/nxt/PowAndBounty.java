@@ -251,9 +251,7 @@ public final class PowAndBounty {
             IntBuffer intBuffer = byteBuffer.order(ByteOrder.BIG_ENDIAN).asIntBuffer();
             intBuffer.put(input);
             byte[] array = byteBuffer.array();
-            
-            System.out.println("Saving Bounty to DB");
-            System.out.println(this.bytesToHex(array));
+
 
             pstmt.setBytes(++i, array);
             pstmt.setBoolean(++i, this.is_pow);
