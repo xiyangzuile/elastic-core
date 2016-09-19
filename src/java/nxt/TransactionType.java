@@ -894,7 +894,7 @@ public abstract class TransactionType {
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
 						Executioner e = getExecutioner(attachment.getWorkId(), code);
-						valid = e.executeProofOfWork(attachment.getInput(), real_block_target, soft_unblock_target);
+						valid = e.executeProofOfWork(transaction.getId(), attachment.getInput(), real_block_target, soft_unblock_target);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(

@@ -181,7 +181,7 @@ public class ASTCompilationUnit extends SimpleNode {
 		return ret;
 	}
 
-	public Executioner.POW_CHECK_RESULT verifyPOW(BigInteger target, BigInteger soft_unblock) {
+	public Executioner.POW_CHECK_RESULT verifyPOW(long txid, BigInteger target, BigInteger soft_unblock) {
 		Executioner.POW_CHECK_RESULT ret = Executioner.POW_CHECK_RESULT.ERROR;
 
 		int in[] = getRandomIntArray();
@@ -190,7 +190,7 @@ public class ASTCompilationUnit extends SimpleNode {
 		try {
 			byte[] bsh = byteHash(in, out);
 			BigInteger val = byteHashToLong(bsh);
-			Logger.logErrorMessage("Checked POW, hash " + val.toString(16) + ", target was = " + target.toString(16) + ", softtarget was = " + soft_unblock.toString(16));
+			Logger.logErrorMessage("Checked POW (" + txid + "), hash " + val.toString(16) + ", target was = " + target.toString(16) + ", softtarget was = " + soft_unblock.toString(16));
 
 			if (val.compareTo(target)==-1){
 				return Executioner.POW_CHECK_RESULT.OK;

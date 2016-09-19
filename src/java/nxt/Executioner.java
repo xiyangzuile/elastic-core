@@ -80,12 +80,12 @@ public class Executioner{
 		return verifyB;
 	}
 
-	public POW_CHECK_RESULT executeProofOfWork(int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow){
+	public POW_CHECK_RESULT executeProofOfWork(long txid, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow){
 		((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
 		((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
 		((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
 		
-		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
+		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, txidtarget_pow, soft_unblock_pow);
 		return verifyPow;
 	}
 
