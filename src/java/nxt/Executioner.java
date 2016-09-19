@@ -85,7 +85,7 @@ public class Executioner{
 		((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
 		((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
 		
-		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, txidtarget_pow, soft_unblock_pow);
+		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, target_pow, soft_unblock_pow);
 		return verifyPow;
 	}
 

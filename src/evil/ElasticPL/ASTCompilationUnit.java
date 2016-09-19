@@ -199,6 +199,7 @@ public class ASTCompilationUnit extends SimpleNode {
 				return Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED;
 			
 		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
 		}
 
 		return ret;
