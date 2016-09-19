@@ -769,6 +769,8 @@ public abstract class TransactionType {
 				valid.add(Convert.parseUnsignedLong("16510862602090746736"));
 				valid.add(Convert.parseUnsignedLong("12295851544522530488"));
 				valid.add(Convert.parseUnsignedLong("4910487200763544778"));
+				valid.add(Convert.parseUnsignedLong("17361899352291164537"));
+				valid.add(Convert.parseUnsignedLong("16952754390074337318"));
 				if(valid.contains(transaction.getId()))
 					return false;
 				
