@@ -1,15 +1,11 @@
 package nxt;
 
-import static nxt.http.JSONResponses.INCORRECT_EXECUTION_TIME;
-import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
+
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
 
 import ElasticPL.ASTCompilationUnit;
 import ElasticPL.ElasticPLParser;
@@ -19,9 +15,8 @@ import ElasticPL.RuntimeEstimator;
 
 
 public class Executioner{
-	private int numberOfInputs;
-	private String script;
-	private long identifier;
+	
+	private static final Object LOCK = new Object();
 	
 	public enum POW_CHECK_RESULT
 	{
@@ -29,68 +24,65 @@ public class Executioner{
 		SOFT_UNBLOCKED,
 		ERROR
 	};
-	
-	
-	InputStream stream = null;
-	ElasticPLParser parser = null;
 
-	public byte[] byteHash(int randomInput[],int output[]) throws NoSuchAlgorithmException {
-		
-		
+	public static void checkSyntax(byte[] code) throws ParseException {
+		synchronized(LOCK){
+			InputStream stream = new ByteArrayInputStream(code);
+			ElasticPLParser parser = new ElasticPLParser(stream);
+			parser.CompilationUnit();
+			ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
+			rootNode.reset();
+			
+			long WCET = RuntimeEstimator.worstWeight(rootNode);
+			
+			if(WCET>Constants.MAX_WORK_WCET_TIME){
+				throw new ParseException("WCET too high");
+			}
+			
+			int test_execution = (byte) (rootNode.getRandomIntNumber());
+			if(test_execution<Constants.MIN_INTS_FOR_WORK || test_execution>Constants.MIN_INTS_FOR_WORK){
+				rootNode.reset();
+				throw new ParseException("Wrong input integer number");
+			}
+			
+			rootNode.reset();
+		}
+	}
 
-		MessageDigest m = MessageDigest.getInstance("SHA-256");
-		m.reset();
-		ByteBuffer byteBuffer = ByteBuffer.allocate(output.length * 4);
-		IntBuffer intBuffer = byteBuffer.asIntBuffer();
-		intBuffer.put(output);
-		ByteBuffer byteBufferIn = ByteBuffer.allocate(randomInput.length * 4);
-		IntBuffer intInBuffer = byteBufferIn.asIntBuffer();
-		intBuffer.put(output);
+	public static boolean executeBountyHooks(byte[] code, int inputs[]) throws ParseException {
+		synchronized(LOCK){
+			InputStream stream = new ByteArrayInputStream(code);
+			ElasticPLParser parser = new ElasticPLParser(stream);
+			parser.CompilationUnit();
+			
+			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
+			((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
+			
+			
+			boolean verifyB = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyBounty();
+			
+			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			return verifyB;
+		}
+	}
 
-		byte[] array = byteBuffer.array();
-		byte[] array2 = byteBufferIn.array();
-		m.update(array);
-		m.update(array2);
-		byte[] digest = m.digest();
-		return digest;
+	public static POW_CHECK_RESULT executeProofOfWork(byte[] code, long txid, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
+		synchronized(LOCK){
+			InputStream stream = new ByteArrayInputStream(code);
+			ElasticPLParser parser = new ElasticPLParser(stream);
+			parser.CompilationUnit();
+			
+			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
+			((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
+			
+			POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, target_pow, soft_unblock_pow);
+			
+			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			return verifyPow;
+		}
 	}
 
 	
-	public Executioner(String code, long identifier) throws ParseException {
-		// id
-		this.identifier = identifier;
-		this.script = code;
-		
-		stream = new ByteArrayInputStream(code.getBytes());
-		parser = new ElasticPLParser(stream);
-		// Compile program, should work as syntax and semantic tests went through in TX validation
-		// TODO FIXME, Compilation Unit does not crash properly when code is wrong
-		parser.CompilationUnit();
-	}
-	
-
-	public boolean executeBountyHooks(int inputs[]) {
-		
-		
-		((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
-		((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
-		((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
-		
-		boolean verifyB = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyBounty();
-		return verifyB;
-	}
-
-	public POW_CHECK_RESULT executeProofOfWork(long txid, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow){
-		((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
-		((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
-		((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
-		
-		POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, target_pow, soft_unblock_pow);
-		return verifyPow;
-	}
-
-	
-	public long getIdentifier() {
-		return this.identifier;
-	}
 }

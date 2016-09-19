@@ -695,9 +695,12 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("User provided POW Algorithm does not have a correct xel/pow price");
 	        	}
 				
+				// minimal payout check
 				if(transaction.getAmountNQT() < Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow() ){
 					throw new NxtException.NotValidException("You must attach XEL for at least 20 POW submissions, i.e., " + (Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow()) + " XEL");
 				}
+				
+				
 			}
 
 			@Override
@@ -893,8 +896,7 @@ public abstract class TransactionType {
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
-						Executioner e = getExecutioner(attachment.getWorkId(), code);
-						valid = e.executeProofOfWork(transaction.getId(), attachment.getInput(), real_block_target, soft_unblock_target);
+						valid = Executioner.executeProofOfWork(code.getSource(), attachment.getWorkId(), attachment.getInput(), real_block_target, soft_unblock_target);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
@@ -996,12 +998,9 @@ public abstract class TransactionType {
 					// no need to execute after all! We assume that the pruning is happened long enough ago
 					valid = true;
 				}else{
-				
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
-						
 					try {
-						Executioner e = getExecutioner(attachment.getWorkId(), code);
-						valid = e.executeBountyHooks(attachment.getInput());
+						valid = Executioner.executeBountyHooks(code.getSource(), attachment.getInput());
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
@@ -1045,23 +1044,7 @@ public abstract class TransactionType {
 				return "PiggybackedProofOfBounty";
 			}
 		};
-		protected static Executioner getExecutioner(long workId, PrunableSourceCode code) throws NotValidException {
-			if (code == null){
-				throw new NxtException.NotValidException(
-						"Bounty is invalid: code already pruned");
-			}
-			Executioner e = null;
-			try {
-				e = new Executioner(Convert.toString(code.getSource(), true), workId);
-			} catch (ParseException e1) {
-				e1.printStackTrace();
-			}
-			if (e == null){
-				throw new NxtException.NotValidException(
-						"Bounty is invalid: could not invoke executioner! Report to developers!");
-			}	
-			return e;
-		}
+		
 	};
 
 }

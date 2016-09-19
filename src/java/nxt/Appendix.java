@@ -577,34 +577,13 @@ public interface Appendix {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
 
-				// Here, make sure that the source code has correct syntax and
-				// meets all requirements
-				InputStream stream = new ByteArrayInputStream(src);
-				ElasticPLParser parser = new ElasticPLParser(stream);
-
-				Byte numberInputVars = 0;
-				long WCET = 0L;
-				// Here, distinguish by language byte
+				
 				if (language == 0x01) {
 					try {
-						parser.CompilationUnit();
-
-						// Check worst case execution time
-						ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
-						WCET = RuntimeEstimator.worstWeight(rootNode);
-						if (WCET > Constants.MAX_WORK_WCET_TIME) {
-							throw new NxtException.NotValidException("User provided POW Algorithm has too bad WCET");
-						}
-						rootNode.reset();
-						numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
-						if (numberInputVars < Constants.MIN_INTS_FOR_WORK
-								|| numberInputVars > Constants.MAX_INTS_FOR_WORK) {
-							throw new NxtException.NotValidException(
-									"Your required INTS must be in range (you had " + numberInputVars + ")!");
-						}
+						Executioner.checkSyntax(src);
 					} catch (Exception e) {
 						e.printStackTrace();
-						throw new NxtException.NotValidException("User provided POW Algorithm has incorrect syntax");
+						throw new NxtException.NotValidException(e.getMessage());
 					}
 				} else {
 					throw new NxtException.NotValidException("Source code language is not supported");
