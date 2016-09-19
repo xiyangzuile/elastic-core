@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -761,7 +762,14 @@ public abstract class TransactionType {
             boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
 				
 				// Whitelist one specific, broken TX on the testnet (TODO, FIXME, TOREMOVE)
-				if(transaction.getId()==7598634667181063828L)
+				List<Long> valid = new ArrayList<Long>();
+				valid.add(Convert.parseUnsignedLong("7598634667181063828"));
+				valid.add(Convert.parseUnsignedLong("2649304177138953307"));
+				valid.add(Convert.parseUnsignedLong("10947343728076427070"));
+				valid.add(Convert.parseUnsignedLong("16510862602090746736"));
+				valid.add(Convert.parseUnsignedLong("12295851544522530488"));
+				valid.add(Convert.parseUnsignedLong("4910487200763544778"));
+				if(valid.contains(transaction.getId()))
 					return false;
 				
                 Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
