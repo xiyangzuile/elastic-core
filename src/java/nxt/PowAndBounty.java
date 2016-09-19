@@ -179,6 +179,16 @@ public final class PowAndBounty {
     	
         
     }
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
     
     public void applyBounty(){
     	Work w = Work.getWorkByWorkId(this.work_id);
@@ -220,6 +230,8 @@ public final class PowAndBounty {
         byte[] bt = rs.getBytes("input");
         IntBuffer ib = ByteBuffer.wrap(bt).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
         this.input = new int[ib.capacity()];
+        for(int i=0;i<ib.capacity(); ++i)
+        	this.input[i]=ib.get(i);
         this.too_late = rs.getBoolean("too_late");
         this.hash = rs.getBytes("hash");
     }
@@ -239,6 +251,10 @@ public final class PowAndBounty {
             IntBuffer intBuffer = byteBuffer.order(ByteOrder.BIG_ENDIAN).asIntBuffer();
             intBuffer.put(input);
             byte[] array = byteBuffer.array();
+            
+            System.out.println("Saving Bounty to DB");
+            System.out.println(this.bytesToHex(array));
+
             pstmt.setBytes(++i, array);
             pstmt.setBoolean(++i, this.is_pow);
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
