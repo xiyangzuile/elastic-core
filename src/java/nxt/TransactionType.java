@@ -847,13 +847,13 @@ public abstract class TransactionType {
 				// Check if same POW/Bounty has been submitted before
 				byte[] hash = attachment.getHash();
 				if(PowAndBounty.hasHash(hash)){
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());	
 				
 				if(w==null){
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
 				
 				Long rel_id;
@@ -979,13 +979,13 @@ public abstract class TransactionType {
 				// Check if same POW/Bounty has been submitted before
 				byte[] hash = attachment.getHash();
 				if(PowAndBounty.hasHash(hash)){
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
 				if(w==null){
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
 				
 				long rel_id = transaction.getBlockId();
