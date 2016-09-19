@@ -756,6 +756,12 @@ public abstract class TransactionType {
 						.getAttachment();
 				Work.getWork(attachment.getWorkId()).natural_timeout();
 			}
+			
+			@Override
+            boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
+                return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
+            }
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
