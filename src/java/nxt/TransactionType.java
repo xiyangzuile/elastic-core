@@ -765,10 +765,6 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
 				}
 				
-				if (w.isClosed() == true) {
-					throw new NxtException.NotValidException("Cannot cancel already cancelled or finished work " + attachment.getWorkId() + ", issued in block: " + transaction.getBlockId());
-				}
-				
 				if (w.getSender_account_id() != transaction
 						.getSenderId()) {
 					throw new NxtException.NotValidException("Only the work creator can cancel this work");
@@ -859,13 +855,8 @@ public abstract class TransactionType {
 				if(w==null){
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
-				if(w.isClosed())
-				{
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
-				}
 				
 				Long rel_id;
-				
 				
 				if(transaction.getBlock() != null)
 					rel_id = transaction.getBlock().getPreviousBlockId();
@@ -995,10 +986,6 @@ public abstract class TransactionType {
 				
 				if(w==null){
 					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " does not exist");
-				}
-				if(w.isClosed())
-				{
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is finished");
 				}
 				
 				long rel_id = transaction.getBlockId();
