@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import nxt.Executioner;
+import nxt.util.Logger;
 
 /* Copyright (c) 2006, Sun Microsystems, Inc.
  * All rights reserved.
@@ -189,9 +190,11 @@ public class ASTCompilationUnit extends SimpleNode {
 		try {
 			byte[] bsh = byteHash(in, out);
 			BigInteger val = byteHashToLong(bsh);
-	
-			if (val.compareTo(target)==-1)
+			Logger.logErrorMessage("Checked POW, hash " + val.toString(16) + ", target was = " + target.toString(16) + ", softtarget was = " + soft_unblock.toString(16));
+
+			if (val.compareTo(target)==-1){
 				return Executioner.POW_CHECK_RESULT.OK;
+			}
 			else if (val.compareTo(soft_unblock)==-1)
 				return Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED;
 			
