@@ -100,6 +100,11 @@ public final class Work {
     }
 
     public void natural_timeout() {
+    	
+    	if(closed == true){
+    		return;
+    	}
+    	
 		this.closed = true;
 		
 		// Check if cancelled or timedout
@@ -140,13 +145,11 @@ public final class Work {
 			rest = this.balance_bounty_fund_orig - total_payout;
 		}
 		
-		
-		
+
 		// Now create ledger event for "refund" what is left in the pow and bounty funds
         AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
         Account participantAccount = Account.getAccount(this.sender_account_id);
-        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund + rest);
-        
+        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund + rest);  
         
 		// notify
 		listeners.notify(this, Event.WORK_CANCELLED);
