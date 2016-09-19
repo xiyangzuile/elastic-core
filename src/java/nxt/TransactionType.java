@@ -902,7 +902,7 @@ public abstract class TransactionType {
 					}
 					if (valid == Executioner.POW_CHECK_RESULT.ERROR) {
 						throw new NxtException.NotValidException(
-								"Proof of work is invalid: does not meet target");
+								"Proof of work is invalid: does neither meet target " + real_block_target.toString(16) + " nor the soft block target " + soft_unblock_target.toString(16));
 					}
 					if (valid == Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED) {
 						throw new NxtException.LostValidityException(
