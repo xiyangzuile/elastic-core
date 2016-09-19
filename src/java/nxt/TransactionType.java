@@ -759,6 +759,11 @@ public abstract class TransactionType {
 			
 			@Override
             boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+				
+				// Whitelist one specific, broken TX on the testnet (TODO, FIXME, TOREMOVE)
+				if(transaction.getId()==7598634667181063828L)
+					return false;
+				
                 Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
                 return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
             }
