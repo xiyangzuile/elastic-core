@@ -147,12 +147,14 @@ var NRS = (function(NRS, $, undefined) {
 		}, function(response) {
 			if (response.work_packages && response.work_packages.length) {
 				for (var i = 0; i < response.work_packages.length; i++) {
-					
-
-
-					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
+						updateWork(response.work_packages[i].work_id, response.work_packages[i]);
+						if(!clean_start){
+							replaceInSidebar(response.work_packages[i]);
+						}
 				}
-				displayWorkSidebar(callback);
+				if(clean_start){
+					displayWorkSidebar(callback);
+				}
 			} else {
 				$("#no_work_selected").show();
 				$("#work_details").hide();
