@@ -777,6 +777,12 @@ public abstract class TransactionType {
                 Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
                 return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
             }
+			
+			@Override
+            boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
+                return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
+            }
 
 			@Override
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
@@ -859,6 +865,12 @@ public abstract class TransactionType {
 			
 			@Override
             boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
+                return isDuplicate(WorkControl.PROOF_OF_WORK, Convert.toHexString(attachment.getHash()), duplicates, true);
+            }
+			
+			@Override
+            boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
                 Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
                 return isDuplicate(WorkControl.PROOF_OF_WORK, Convert.toHexString(attachment.getHash()), duplicates, true);
             }
@@ -1000,6 +1012,12 @@ public abstract class TransactionType {
 			
 			@Override
             boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction.getAttachment();
+                return isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()), duplicates, true);
+            }
+			
+			@Override
+            boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
                 Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction.getAttachment();
                 return isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()), duplicates, true);
             }
