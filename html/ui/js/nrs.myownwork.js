@@ -231,7 +231,15 @@ var NRS = (function(NRS, $, undefined) {
 	NRS.incoming.workViewNewBlocksHandler = function(transactions) {
 		// On new block we always update everything
 
-		NRS.updateWorkPagination(0, false);
+		NRS.sendRequest("getAccountWork", {
+							"account": NRS.account,
+							"count": "true",
+							"type": 1
+						}, function(response) {
+							elementsTotal = response.total;
+							elementsOpen = response.open;
+							NRS.updateWorkPagination(0, false);
+		});
 
 		// And update the current view
 		updateWorkItemView();
