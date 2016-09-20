@@ -884,13 +884,7 @@ public abstract class TransactionType {
 				
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
-				
-				// Check if same POW/Bounty has been submitted before
-				byte[] hash = attachment.getHash();
-				if(PowAndBounty.hasHash(hash)){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
-				}
-				
+						
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());	
 				
 				if(w==null){
@@ -1028,12 +1022,7 @@ public abstract class TransactionType {
 				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
 				
-				// Check if same POW/Bounty has been submitted before
-				byte[] hash = attachment.getHash();
-				if(PowAndBounty.hasHash(hash)){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
-				}
-				
+						
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
 				if(w==null){
