@@ -33,7 +33,8 @@ public interface TransactionProcessor extends Observable<List<? extends Transact
         ADDED_UNCONFIRMED_TRANSACTIONS,
         ADDED_CONFIRMED_TRANSACTIONS,
         RELEASE_PHASED_TRANSACTION,
-        REJECT_PHASED_TRANSACTION
+        REJECT_PHASED_TRANSACTION,
+        BROADCASTED_OWN_TRANSACTION,
     }
 
     DbIterator<? extends Transaction> getAllUnconfirmedTransactions();

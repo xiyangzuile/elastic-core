@@ -187,6 +187,12 @@ var NRS = (function(NRS, $, undefined) {
 		NRS.showLockscreen();
 		NRS.setStateInterval(30);
 
+		// Register Longpolling here (1s delay to give things time to setup)
+		setTimeout(function() {
+			    console.log("Initializing Longpoll Functionality");
+				NRS.initializeLongPollLoop(null);
+		}, 1000);
+
 		setInterval(NRS.checkAliasVersions, 1000 * 60 * 60);
 
 		NRS.allowLoginViaEnter();
@@ -254,6 +260,42 @@ var NRS = (function(NRS, $, undefined) {
 
 	NRS.getLastBlock = function() {
 		return NRS.state.apiProxy ? NRS.lastProxyBlock : NRS.state.lastBlock;
+	};
+
+	NRS.initializeLongPollLoop = function(randomId){
+		if(randomId == null){
+			randomId = Math.floor((Math.random() * 400000000) + 1); 
+		}
+		NRS.sendRequest("longpoll", {"randomId":randomId}, function(response) {
+			if (response.event) {
+				if(response.event == "timeout"){
+					// nothing new
+				}else{
+					for(var i=0;i<response.event.length;++i){
+						var currEvent = response.event[i];
+						console.log("Longpoll said: " + currEvent);
+						if(currEvent.startsWith("block")){
+							// Update state and account on every block
+							NRS.getState();
+							NRS.getAccountInfo();
+						}
+						if(currEvent.startsWith("generator")){
+							// Update account to fetch time-to-block
+							NRS.getAccountInfo();
+						}
+						if(currEvent.startsWith("broadcast")){
+							// Update state and account after pushing a tx
+							NRS.getState();
+							NRS.getAccountInfo();
+						}
+					}
+				}
+			}
+			// TODO, FIXME: not sure if this avoids long recursion
+			setTimeout(function() {
+				NRS.initializeLongPollLoop(randomId);
+			}, (response.errorCode)?2000:10);
+		});
 	};
 
 	NRS.handleBlockchainStatus = function(response, callback) {

@@ -111,6 +111,7 @@ var NRS = (function(NRS, $) {
 			}
 			NRS.checkBlockHeight(NRS.blocks[0].height);
 			NRS.incoming.updateDashboardBlocks(newBlocks.length);
+			NRS.incoming.workViewNewBlocksHandler(newBlocks);
 			if (!NRS.state.apiProxy) {
 				NRS.updateDashboardLastBlock(NRS.blocks[0]);
 			}

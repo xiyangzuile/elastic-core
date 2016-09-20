@@ -35,7 +35,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-final class BlockchainProcessorImpl implements BlockchainProcessor {
+public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
     private static final byte[] CHECKSUM_TRANSPARENT_FORGING =
             new byte[] {
@@ -115,7 +115,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
 
     private static final BlockchainProcessorImpl instance = new BlockchainProcessorImpl();
 
-    static BlockchainProcessorImpl getInstance() {
+    public static BlockchainProcessorImpl getInstance() {
         return instance;
     }
 
@@ -133,7 +133,7 @@ final class BlockchainProcessorImpl implements BlockchainProcessor {
     private volatile int lastRestoreTime = 0;
     private final Set<Long> prunableTransactions = new HashSet<>();
 
-    private final Listeners<Block, Event> blockListeners = new Listeners<>();
+    public final Listeners<Block, Event> blockListeners = new Listeners<>();
     private volatile Peer lastBlockchainFeeder;
     private volatile int lastBlockchainFeederHeight;
     private volatile boolean getMoreBlocks = true;
