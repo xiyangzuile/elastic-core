@@ -795,6 +795,16 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
 				}
 				
+				// Whitelist one specific, broken TX on the testnet (TODO, FIXME, TOREMOVE)
+				List<Long> valid = new ArrayList<Long>();
+				valid.add(Convert.parseUnsignedLong("15378102222798893417"));
+				valid.add(Convert.parseUnsignedLong("17933960539120946680"));
+				valid.add(Convert.parseUnsignedLong("9543329167509234430"));
+				
+				if(w.isClosed() && !valid.contains(transaction.getId())){
+					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is already closed");
+				}
+				
 				if (w.getSender_account_id() != transaction
 						.getSenderId()) {
 					throw new NxtException.NotValidException("Only the work creator can cancel this work");
