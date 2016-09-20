@@ -702,6 +702,8 @@ var NRS = (function(NRS, $, undefined) {
 		var realIndex = _workToIndex[arrayIndex];
 		if(realIndex!=null){
 		  workItem = _work[realIndex];
+		}else{
+			workItem = null;
 		}
 		// restore plot scale
 		var p01 = localStorage.getItem('plotscale');
