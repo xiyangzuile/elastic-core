@@ -345,7 +345,7 @@ public interface Attachment extends Appendix {
 
         @Override
 		public byte[] getHash() {
-			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4+4+4+4);        
+			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4 + 4 + 4 + 4);        
 	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
 	        intBuffer.put(input);
 	        int aBack = (int)(workId >> 32);
@@ -431,7 +431,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		public byte[] getHash() {
-			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4+4+4+4);        
+			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4 + 4 + 4 + 4);          
 	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
 	        intBuffer.put(input);
 	        int aBack = (int)(workId >> 32);

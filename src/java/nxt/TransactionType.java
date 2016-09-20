@@ -891,6 +891,11 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
 				
+				byte[] hash = attachment.getHash();
+				if(PowAndBounty.hasHash(hash)){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+				}
+				
 				Long rel_id;
 				
 				if(transaction.getBlock() != null)
@@ -1027,6 +1032,11 @@ public abstract class TransactionType {
 				
 				if(w==null){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
+				}
+				
+				byte[] hash = attachment.getHash();
+				if(PowAndBounty.hasHash(hash)){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
 				long rel_id = transaction.getBlockId();
