@@ -135,7 +135,8 @@ var NRS = (function(NRS, $, undefined) {
 		$("#pagi_total").empty().append(elementsTotal);
 
 		if(clean_start){
-			_work = []
+			_work = [];
+			_workToIndex = [];
 		}
 
 		// Refetch paged results
@@ -149,11 +150,16 @@ var NRS = (function(NRS, $, undefined) {
 				for (var i = 0; i < response.work_packages.length; i++) {
 						updateWork(response.work_packages[i].work_id, response.work_packages[i]);
 						if(!clean_start){
+							console.log("REPLACING IN SIDEBAR: " + response.work_packages[i]);
 							replaceInSidebar(response.work_packages[i]);
 						}
 				}
 				if(clean_start){
 					displayWorkSidebar(callback);
+
+					if(workItem != null && $("#myownwork_sidebar").children().filter('[data-workid="' + workItem.work_id + '"]').length>0){
+						$("#myownwork_sidebar").children().filter('[data-workid="' + workItem.work_id + '"]').addClass("active");
+					}
 				}
 			} else {
 				$("#no_work_selected").show();
