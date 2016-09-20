@@ -3736,3 +3736,42 @@ margin-top: 20px;
 .progress {
   background: #d09b9b !important;
 }
+ul.pagination {
+    display: inline-block;
+    padding: 0;
+    margin: 0;
+}
+
+ul.pagination li {display: inline;}
+
+ul.pagination li a {
+    color: black;
+    float: left;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+}
+
+ul.pagination li a.active {
+    background-color: #c1d2dc;
+    color: black;
+    font-weight: bold;
+    border: 1px solid #c1d2dc;
+}
+ul.pagination li a:hover:not(.active) {background-color: #ddd;}
+
+.infofield_pagination {
+    width: 170px;
+    color: black;
+    float: left;
+    font-size: small;
+    padding: 8px 16px;
+    text-decoration: none;
+    transition: background-color .3s;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+.infofield_pagination_wider {
+    width: 170px;
+}

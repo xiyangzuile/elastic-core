@@ -43,18 +43,31 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 		
 		JSONArray work_packages = new JSONArray();
 
+		boolean only_counts = false;
+		try {
+			String readParam = ParameterParser.getParameterMultipart(req, "count");
+			only_counts = Boolean.parseBoolean(readParam);
+		} catch (Exception e) {
+		}
 
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
-		
-        try (DbIterator<? extends Work> iterator = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId)) {
-		  while (iterator.hasNext()) { Work transaction = iterator.next(); work_packages.add(transaction.toJsonObject());
-		} }
-		 
-        
-		JSONObject response = new JSONObject();
-		response.put("work_packages", work_packages);
-		return response;
+		if (only_counts ){
+			JSONObject response = new JSONObject();
+			response.put("open", Work.countAccountWork(account.getId(), true));
+			response.put("total", Work.countAccountWork(account.getId(), false));
+			return response;
+		}else{
+	        int firstIndex = ParameterParser.getFirstIndex(req);
+	        int lastIndex = ParameterParser.getLastIndex(req);
+			
+	        try (DbIterator<? extends Work> iterator = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId)) {
+			  while (iterator.hasNext()) { Work transaction = iterator.next(); work_packages.add(transaction.toJsonObject());
+			} }
+			 
+	        
+			JSONObject response = new JSONObject();
+			response.put("work_packages", work_packages);
+			return response;
+		}
 
 	}
 

@@ -223,7 +223,7 @@ public final class Work {
             PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
                     + (includeFinished ? "" : "AND work.blocks_remaining IS NOT NULL ")
                     + (onlyOneId==0 ? "" : "AND work.work_id = ? ")
-                    + "AND work.latest = TRUE ORDER BY blocks_remaining NULLS LAST, height DESC "
+                    + "AND work.latest = TRUE ORDER BY closed, originating_height DESC "
                     + DbUtils.limitsClause(from, to));
             int i = 0;
             pstmt.setLong(++i, accountId);
@@ -532,6 +532,14 @@ public void kill_bounty_fund() {
 		}else{
 			workTable.insert(this);
 		}
+	}
+}
+
+public static int countAccountWork(long accountId, boolean onlyOpen) {
+	if(onlyOpen){
+		return workTable.getCount(new DbClause.BooleanClause("closed",false).and(new DbClause.LongClause("sender_account_id",accountId)));
+	}else{
+		return workTable.getCount(new DbClause.LongClause("sender_account_id",accountId));
 	}
 }
 

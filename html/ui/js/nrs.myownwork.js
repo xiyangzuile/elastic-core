@@ -64,6 +64,13 @@ var NRS = (function(NRS, $, undefined) {
 	var globalType = "30";
 	var workItem = null;
 
+	var paginationStart = 1;
+	var paginationCount = 6;
+	var elementsTotal = 120;
+	var elementsOpen = 1;
+
+
+
 	// deploy listener for amount text field
 	var elem = $("#send_money_amount_creation");
 
@@ -106,6 +113,68 @@ var NRS = (function(NRS, $, undefined) {
     	}
 	}
 	});
+
+	NRS.updateWorkPagination = function(offset, callback, clean_start = true){
+		
+		if(paginationStart+offset < 1){
+		}else{
+			paginationStart = paginationStart + offset;
+		}
+
+		var max_pages = 1;
+		if(Math.ceil((1.0*elementsTotal) / (1.0*paginationCount)) > max_pages){
+			max_pages = Math.ceil((1.0*elementsTotal) / (1.0*paginationCount));
+		}
+		if(paginationStart+offset > max_pages){
+			paginationStart = max_pages;
+		}
+
+		$("#pagi_pages").empty().append(max_pages);
+		$("#pagi_page").empty().append(paginationStart);
+		$("#pagi_open").empty().append(elementsOpen);
+		$("#pagi_total").empty().append(elementsTotal);
+
+		if(clean_start){
+			_work = []
+		}
+
+		// Refetch paged results
+		NRS.sendRequest("getAccountWork", {
+			"account": NRS.account,
+			"type": 1,
+			"firstIndex":(paginationStart-1)*paginationCount,
+			"lastIndex":(paginationStart-1)*paginationCount+(paginationCount - 1)
+		}, function(response) {
+			if (response.work_packages && response.work_packages.length) {
+				for (var i = 0; i < response.work_packages.length; i++) {
+					
+
+
+					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
+				}
+				displayWorkSidebar(callback);
+			} else {
+				$("#no_work_selected").show();
+				$("#work_details").hide();
+				$("#myownwork_sidebar").empty().append(newworkrow);
+
+			}
+
+			// Also handle unconfirmed TX
+			NRS.sendRequest("getUnconfirmedTransactions", {
+				"account": NRS.account,
+			}, function(response) {
+				if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
+					updateIncoming(response.unconfirmedTransactions);
+				}
+
+				// finally do the callback
+				NRS.pageLoaded(callback);
+
+			});
+		});
+
+	}
 
 	NRS.updateWorkCreationPlots = function(totalMoney,powMoney,bountyMoney){
 
@@ -182,44 +251,24 @@ var NRS = (function(NRS, $, undefined) {
 	NRS.pages.myownwork = function(callback) {
 		_work = [];
 		_workToIndex = {};
+		paginationStart = 1;
+
 		$("#no_work_selected").show();
 		$("#no_work_confirmed").hide();
 		$("#work_details").hide();
 		$(".content.content-stretch:visible").width($(".page:visible").width());
 
-
 		NRS.sendRequest("getAccountWork", {
-			"account": NRS.account,
-			"type": 1
-		}, function(response) {
-			if (response.work_packages && response.work_packages.length) {
-				for (var i = 0; i < response.work_packages.length; i++) {
-					
-
-
-					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
-				}
-				displayWorkSidebar(callback);
-			} else {
-				$("#no_work_selected").show();
-				$("#work_details").hide();
-				$("#myownwork_sidebar").empty().append(newworkrow);;
-
-			}
-
-			// Also handle unconfirmed TX
-			NRS.sendRequest("getUnconfirmedTransactions", {
-				"account": NRS.account,
-			}, function(response) {
-				if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-					updateIncoming(response.unconfirmedTransactions);
-				}
-
-				// finally do the callback
-				NRS.pageLoaded(callback);
-
-			});
+							"account": NRS.account,
+							"count": "true",
+							"type": 1
+						}, function(response) {
+							elementsTotal = response.total;
+							elementsOpen = response.open;
+							NRS.updateWorkPagination(0, callback);
 		});
+
+		
 
 
 	}
@@ -572,6 +621,15 @@ var NRS = (function(NRS, $, undefined) {
 		} else{
 			$("#cancel_work_modal").modal("show");
 		}
+	});
+
+	$("#pagi_prev").click(function(e) {
+		e.preventDefault();
+		NRS.updateWorkPagination(-1, null);
+	});
+
+	$("#pagi_next").click(function(e) {
+		NRS.updateWorkPagination(+1, null);
 	});
 	function doplttype(type,textY,refresh) {
 
