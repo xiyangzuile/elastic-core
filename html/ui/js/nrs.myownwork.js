@@ -231,18 +231,7 @@ var NRS = (function(NRS, $, undefined) {
 	NRS.incoming.workViewNewBlocksHandler = function(transactions) {
 		// On new block we always update everything
 
-		// Refetch the list in the sidebar to update the view
-		NRS.sendRequest("getAccountWork", {
-			"account": NRS.account,
-			"type": 1
-		}, function(response) {
-			if (response.work_packages && response.work_packages.length) {
-				for (var i = 0; i < response.work_packages.length; i++) {
-					replaceInSidebar(response.work_packages[i]);
-					updateWork(response.work_packages[i].work_id, response.work_packages[i]);
-				}
-			}
-		});
+		NRS.updateWorkPagination(0, false);
 
 		// And update the current view
 		updateWorkItemView();
