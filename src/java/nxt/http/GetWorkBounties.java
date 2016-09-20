@@ -46,7 +46,6 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 
         int firstIndex = ParameterParser.getFirstIndex(req);
         int lastIndex = ParameterParser.getLastIndex(req);
-		System.out.println("Getting WID bounties for " + wid);
         try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
 		  while (iterator.hasNext()) { PowAndBounty b = iterator.next(); bounties.add(b.toJsonObject());
 		} }
