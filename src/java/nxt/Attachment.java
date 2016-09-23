@@ -413,10 +413,15 @@ public interface Attachment extends Appendix {
         	byte[] digest = dig.digest();
         	return digest;
 		}
+		public byte[] getMultiplicator() {
+			return multiplicator;
+		}
     }
     
     public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable {
-
+    	public byte[] getMultiplicator() {
+			return multiplicator;
+		}
         public long getWorkId() {
 			return workId;
 		}

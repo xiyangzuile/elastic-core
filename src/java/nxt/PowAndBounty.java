@@ -159,7 +159,7 @@ public final class PowAndBounty {
     private final long work_id;
     private final long accountId;
     private final DbKey dbKey;
-    private final int[] input;
+    private final byte[] multiplicator;
     private final byte[] hash;
     
     public void applyPowPayment(){
@@ -206,7 +206,7 @@ public final class PowAndBounty {
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
         this.dbKey = powAndBountyDbKeyFactory.newKey(id);
-        this.input = attachment.getInput();
+        this.multiplicator = attachment.getMultiplicator();
         this.is_pow = true;
         this.hash = attachment.getHash(); // FIXME TODO
         this.too_late = false;
@@ -216,7 +216,7 @@ public final class PowAndBounty {
         this.work_id = attachment.getWorkId();
         this.accountId = transaction.getSenderId();
         this.dbKey = powAndBountyDbKeyFactory.newKey(id);
-        this.input = attachment.getInput();
+        this.multiplicator = attachment.getMultiplicator();
         this.is_pow = false;
         this.hash = attachment.getHash(); // FIXME TODO
         this.too_late = false;
@@ -227,17 +227,17 @@ public final class PowAndBounty {
         this.accountId = rs.getLong("account_id");
         this.is_pow = rs.getBoolean("is_pow");
         this.dbKey = dbKey;
-        byte[] bt = rs.getBytes("input");
-        IntBuffer ib = ByteBuffer.wrap(bt).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
-        this.input = new int[ib.capacity()];
-        for(int i=0;i<ib.capacity(); ++i)
-        	this.input[i]=ib.get(i);
+        this.multiplicator = rs.getBytes("multiplicator");
         this.too_late = rs.getBoolean("too_late");
         this.hash = rs.getBytes("hash");
     }
 
-    private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, input, is_pow,"
+    public byte[] getMultiplicator() {
+		return multiplicator;
+	}
+
+	private void save(Connection con) throws SQLException {
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow,"
                 + " height) " + "KEY (id, height) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
             int i = 0;
@@ -246,14 +246,7 @@ public final class PowAndBounty {
             pstmt.setLong(++i, this.work_id);
             DbUtils.setBytes(pstmt, ++i, this.hash);
             pstmt.setLong(++i, this.accountId);
-            
-            ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4);        
-            IntBuffer intBuffer = byteBuffer.order(ByteOrder.BIG_ENDIAN).asIntBuffer();
-            intBuffer.put(input);
-            byte[] array = byteBuffer.array();
-
-
-            pstmt.setBytes(++i, array);
+            pstmt.setBytes(++i, multiplicator);
             pstmt.setBoolean(++i, this.is_pow);
             pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
             pstmt.executeUpdate();
@@ -269,7 +262,7 @@ public final class PowAndBounty {
 		response.put("id",Convert.toUnsignedLong(this.id));
 		Transaction t = TransactionDb.findTransaction(this.id);
 		response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
-		response.put("inputs",Arrays.toString(this.input));
+		response.put("multiplicator",Arrays.toString(this.multiplicator));
 		return response;
 	}
 

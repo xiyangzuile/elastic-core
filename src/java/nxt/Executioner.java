@@ -38,13 +38,7 @@ public class Executioner{
 			if(WCET>Constants.MAX_WORK_WCET_TIME){
 				throw new ParseException("WCET too high");
 			}
-			
-			int test_execution = (byte) (rootNode.getRandomIntNumber());
-			if(test_execution<Constants.MIN_INTS_FOR_WORK || test_execution>Constants.MIN_INTS_FOR_WORK){
-				rootNode.reset();
-				throw new ParseException("Wrong input integer number");
-			}
-			
+						
 			rootNode.reset();
 		}
 	}

@@ -137,13 +137,7 @@ public final class CreateWork extends CreateTransaction {
 			}
 		}
 
-		// Differentiate between different languages
-		if (workLanguageByte == 0x01) {
-			if (numberInputVars < Constants.MIN_INTS_FOR_WORK
-					|| numberInputVars > Constants.MAX_INTS_FOR_WORK) {
-				return INCORRECT_INPUT_NUMBER;
-			}
-		}
+		
 
 		// More boundary checks
 		long amountlong = ParameterParser.getAmountNQT(req);

@@ -13,6 +13,7 @@ import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.MISSING_WORKID;
 import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import nxt.Account;
 import nxt.Attachment;
+import nxt.Constants;
 import nxt.Db;
 import nxt.NxtException;
 import nxt.crypto.Crypto;
@@ -71,35 +73,31 @@ public final class ProofOfX extends CreateTransaction {
 	    
 	    boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
-		String inputs = ParameterParser.getParameterMultipart(req, "inputs");
-
-		List<Integer> inputRaw = new ArrayList<Integer>();
-		try {
-			if (inputs.contains(",")) {
-				List<String> elephantList = Arrays.asList(inputs.split(","));
-				for (String s : elephantList) {
-					inputRaw.add(Integer.parseInt(s));
-				}
-			} else {
-				inputRaw.add(Integer.parseInt(inputs));
-			}
-
-		} catch (NumberFormatException e) {
-			return INCORRECT_INPUTS;
-		}
-		int[] inputUltraRaw = new int[inputRaw.size()];
-		for (int i = 0; i < inputUltraRaw.length; i++) {
-			inputUltraRaw[i] = inputRaw.get(i);
-		}
+		String multiplicator_multipart = ParameterParser.getParameterMultipart(req, "multiplicator");
+        byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+        // null it first (just to be safe)
+        for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
+        	multiplicator[i] = 0;
+        }
+        if(multiplicator_multipart != null){
+	            BigInteger multiplicator_bigint = new BigInteger(multiplicator_multipart, 16);
+	            // restore fixed sized multiplicator array
+	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
+	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
+	            	back_position--;
+	            }
+         }
 		
 
 		if (is_pow) {
 			Attachment.PiggybackedProofOfWork attachment = new Attachment.PiggybackedProofOfWork(
-					workId, inputUltraRaw);
+					workId, multiplicator);
 			return createTransaction(req, account, attachment);
 		} else {
 			Attachment.PiggybackedProofOfBounty attachment = new Attachment.PiggybackedProofOfBounty(
-					workId, inputUltraRaw);
+					workId, multiplicator);
 			return createTransaction(req, account, attachment);
 		}
 
