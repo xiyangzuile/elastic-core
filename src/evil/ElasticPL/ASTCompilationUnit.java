@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Random;
 
+import nxt.Constants;
 import nxt.Executioner;
 import nxt.util.Logger;
 
@@ -129,28 +130,10 @@ public class ASTCompilationUnit extends SimpleNode {
 	}
 
 	public int getRandomIntNumber() {
-		int ret = 3; // fallback value is 3, but this should never happen to
-						// fallback
-
-		// The verify statement MUST be the first one
-		jjtGetChild(0).interpret();
-		try {
-			Integer symtab_result = (Integer) symtab.get("inputs");
-			ret = symtab_result.intValue();
-		} catch (Exception e) {
-		}
-
-		return ret;
+		return Constants.INTEGERS_FOR_WORK;
 	}
 
-	public void fillRandomIntNumber() {
-		inputInts = new int[getRandomIntNumber()];
-		for (int i = 0; i < getRandomIntNumber(); ++i) {
-			Integer val = new Integer(rn.nextInt());
-			symtab.put("m[" + String.valueOf(i) + "]", val);
-			inputInts[i] = val.intValue();
-		}
-	}
+	
 	
 	public void fillGivenIntNumber(int[] inputIntsOuter) {
 		inputInts = new int[inputIntsOuter.length];
