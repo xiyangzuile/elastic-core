@@ -19,9 +19,14 @@ package nxt;
 import nxt.crypto.Crypto;
 import nxt.crypto.EncryptedData;
 import nxt.util.Convert;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.security.MessageDigest;
@@ -31,7 +36,6 @@ import java.util.Collections;
 import java.util.List;
 
 public interface Attachment extends Appendix {
-
     TransactionType getTransactionType();
 
     abstract class AbstractAttachment extends Appendix.AbstractAppendix implements Attachment {
@@ -272,26 +276,54 @@ public interface Attachment extends Appendix {
         public long getWorkId() {
 			return workId;
 		}
-
+        public int toInt(byte[] bytes, int offset) {
+        	  int ret = 0;
+        	  for (int i=0; i<4 && i+offset<bytes.length; i++) {
+        	    ret <<= 8;
+        	    ret |= (int)bytes[i] & 0xFF;
+        	  }
+        	  return ret;
+        }
+        
 		private final long workId;
-        private final int[] input;
+        private final byte[] multiplicator;
 		
-
-		public int[] getInput() {
-			return input;
-		}
+        public int[] personalizedIntStream(byte[] publicKey){
+        	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
+        	MessageDigest dig = Crypto.sha256();
+        	
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	DataOutputStream dos = new DataOutputStream(baos);
+        	try{
+	        	dos.write(publicKey);
+	        	dos.writeLong(this.workId);
+	        	dos.write(this.multiplicator);
+	        	dos.close();
+        	}catch(IOException e){
+        		
+        	}
+        	byte[] longBytes = baos.toByteArray();
+        	if(longBytes == null)
+        		longBytes = new byte[0];
+        	dig.update(longBytes);
+        	byte[] digest = dig.digest();
+        	for(int i=0;i<12;++i){
+        		int got = toInt(digest,0) ;
+        		stream[i] = got;
+        		dig.update(digest);
+        		digest = dig.digest();
+        	}
+        	return stream;        	
+        }
 
 		PiggybackedProofOfWork(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
             this.workId = buffer.getLong();
             
-            int numInputVars = buffer.get();
-            if (numInputVars > Constants.MAX_INTS_FOR_WORK || numInputVars < Constants.MIN_INTS_FOR_WORK) {
-                throw new NxtException.NotValidException("Invalid number of state variables: " + numInputVars);
-            }
-            this.input = new int[numInputVars];
-            for (int i = 0; i < numInputVars; i++) {
-            	input[i] = buffer.getInt();
+           
+            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+            	multiplicator[i] = buffer.get();
             }
         }
 
@@ -299,43 +331,60 @@ public interface Attachment extends Appendix {
             super(attachmentData);
             this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
 
-            JSONArray inputRaw = (JSONArray) attachmentData.get("input");
-            this.input = new int[inputRaw.size()];
-            for (int i = 0; i < inputRaw.size(); i++) {
-            	input[i] = ((Long) inputRaw.get(i)).intValue();
+            String inputRaw = (String) attachmentData.get("multiplicator");
+            if(inputRaw != null && inputRaw.length() != Constants.WORK_MULTIPLICATOR_BYTES*2 /* HEX */){
+            	inputRaw=null;
+            }
+            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            // null it first (just to be safe)
+            for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
+            	this.multiplicator[i] = 0;
+            }
+            if(inputRaw != null){
+	            BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
+	            // restore fixed sized multiplicator array
+	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
+	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
+	            	back_position--;
+	            }
             }
         }
 
-        public PiggybackedProofOfWork(long workId, int[] input) {
+        public PiggybackedProofOfWork(long workId, byte[] multiplicator) {
             this.workId = workId;
-            this.input = input;
+            if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
+            	this.multiplicator = multiplicator;
+            else
+            	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            	for(int i=0;i<32;++i){
+            		this.multiplicator[i] = 0;
+            	}
         }
-
-     
 
         @Override
         int getMySize() {
-            return 8 + 1 /*number of inputs*/ + 4*this.input.length;
+            return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
         }
 
         @Override
         void putMyBytes(ByteBuffer buffer) {
             buffer.putLong(this.workId);
-            buffer.put((byte)(input.length&0xFF));
-            for (int i = 0; i < input.length; i++) {
-            	buffer.putInt(input[i]);
+            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+            	buffer.put(this.multiplicator[i]);
             }
         }
 
         @Override
         void putMyJSON(JSONObject attachment) {
             attachment.put("id", Convert.toUnsignedLong(this.workId));
-   
-            JSONArray input2 = new JSONArray();
-            for(int i=0;i<input.length;++i){
-            	input2.add(input[i]);
+            BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
+            String hex_string = multiplicator_bigint.toString(16);
+            while(hex_string.length() != Constants.WORK_MULTIPLICATOR_BYTES*2){
+            	hex_string = "0" + hex_string;
             }
-            attachment.put("input", input2);
+            attachment.put("multiplicator", hex_string);
         }
 
         @Override
@@ -345,83 +394,141 @@ public interface Attachment extends Appendix {
 
         @Override
 		public byte[] getHash() {
-			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4 + 4 + 4 + 4);        
-	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
-	        intBuffer.put(input);
-	        int aBack = (int)(workId >> 32);
-	        int bBack = (int)workId & 0xffffffff;
-	        intBuffer.put(aBack);
-	        intBuffer.put(bBack);
-	        intBuffer.put(1); // append something to differentiate between pow and bounty (pow and bounty for same inputs are possible)
-			return Crypto.sha256().digest(byteBuffer.array());
+        	MessageDigest dig = Crypto.sha256();
+        	
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	DataOutputStream dos = new DataOutputStream(baos);
+        	try{
+	        	dos.writeLong(this.workId);
+	        	dos.write(this.multiplicator);
+	        	dos.writeBoolean(false); // distinguish between pow and bounty
+	        	dos.close();
+        	}catch(IOException e){
+        		
+        	}
+        	byte[] longBytes = baos.toByteArray();
+        	if(longBytes == null)
+        		longBytes = new byte[0];
+        	dig.update(longBytes);
+        	byte[] digest = dig.digest();
+        	return digest;
 		}
     }
     
-    public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable{
+    public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable {
 
         public long getWorkId() {
 			return workId;
 		}
-
+        public int toInt(byte[] bytes, int offset) {
+        	  int ret = 0;
+        	  for (int i=0; i<4 && i+offset<bytes.length; i++) {
+        	    ret <<= 8;
+        	    ret |= (int)bytes[i] & 0xFF;
+        	  }
+        	  return ret;
+        }
+        
 		private final long workId;
-        private final int[] input;
+        private final byte[] multiplicator;
 		
+        public int[] personalizedIntStream(byte[] publicKey){
+        	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
+        	MessageDigest dig = Crypto.sha256();
+        	
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	DataOutputStream dos = new DataOutputStream(baos);
+        	try{
+	        	dos.write(publicKey);
+	        	dos.writeLong(this.workId);
+	        	dos.write(this.multiplicator);
+	        	dos.close();
+        	}catch(IOException e){
+        		
+        	}
+        	byte[] longBytes = baos.toByteArray();
+        	if(longBytes == null)
+        		longBytes = new byte[0];
+        	dig.update(longBytes);
+        	byte[] digest = dig.digest();
+        	for(int i=0;i<12;++i){
+        		int got = toInt(digest,0) ;
+        		stream[i] = got;
+        		dig.update(digest);
+        		digest = dig.digest();
+        	}
+        	return stream;        	
+        }
 
-        public int[] getInput() {
-			return input;
-		}
-
-		PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+        PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
-            this.workId = buffer.getLong();            
-            int numberOfOptions = (int)buffer.get();
-            if (numberOfOptions > Constants.MAX_INTS_FOR_WORK || numberOfOptions < Constants.MIN_INTS_FOR_WORK) {
-                throw new NxtException.NotValidException("Invalid number of input variables: " + numberOfOptions);
-            }
-            this.input = new int[numberOfOptions];
-            for (int i = 0; i < numberOfOptions; i++) {
-            	input[i] = buffer.getInt();
+            this.workId = buffer.getLong();
+            
+           
+            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+            	multiplicator[i] = buffer.get();
             }
         }
 
         PiggybackedProofOfBounty(JSONObject attachmentData) {
             super(attachmentData);
             this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
-            JSONArray inputRaw = (JSONArray) attachmentData.get("input");
-            this.input = new int[inputRaw.size()];
-            for (int i = 0; i < inputRaw.size(); i++) {
-            	input[i] = ((Long) inputRaw.get(i)).intValue();
+
+            String inputRaw = (String) attachmentData.get("multiplicator");
+            if(inputRaw != null && inputRaw.length() != Constants.WORK_MULTIPLICATOR_BYTES*2 /* HEX */){
+            	inputRaw=null;
+            }
+            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            // null it first (just to be safe)
+            for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
+            	this.multiplicator[i] = 0;
+            }
+            if(inputRaw != null){
+	            BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
+	            // restore fixed sized multiplicator array
+	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
+	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
+	            	back_position--;
+	            }
             }
         }
 
-        public PiggybackedProofOfBounty(long workId, int[] input) {
+        public PiggybackedProofOfBounty(long workId, byte[] multiplicator) {
             this.workId = workId;
-            this.input = input;
+            if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
+            	this.multiplicator = multiplicator;
+            else
+            	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+            	for(int i=0;i<32;++i){
+            		this.multiplicator[i] = 0;
+            	}
         }
 
         @Override
         int getMySize() {
-            return 8 + 1 /*number of inputs*/ + 4*this.input.length;
+            return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
         }
 
         @Override
         void putMyBytes(ByteBuffer buffer) {
-        	 buffer.putLong(this.workId);
-             buffer.put((byte)(input.length&0xFF));
-             for (int i = 0; i < input.length; i++) {
-             	buffer.putInt(input[i]);
-             }
+            buffer.putLong(this.workId);
+            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+            	buffer.put(this.multiplicator[i]);
+            }
         }
 
         @Override
         void putMyJSON(JSONObject attachment) {
             attachment.put("id", Convert.toUnsignedLong(this.workId));
-            
-            JSONArray input2 = new JSONArray();
-            for(int i=0;i<input.length;++i){
-            	input2.add(input[i]);
+            BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
+            String hex_string = multiplicator_bigint.toString(16);
+            while(hex_string.length() != Constants.WORK_MULTIPLICATOR_BYTES*2){
+            	hex_string = "0" + hex_string;
             }
-            attachment.put("input", input2);
+            attachment.put("multiplicator", hex_string);
         }
 
         @Override
@@ -429,19 +536,27 @@ public interface Attachment extends Appendix {
         	return TransactionType.WorkControl.BOUNTY;
         }
 
-		@Override
+        @Override
 		public byte[] getHash() {
-			ByteBuffer byteBuffer = ByteBuffer.allocate(input.length * 4 + 4 + 4 + 4);          
-	        IntBuffer intBuffer = byteBuffer.asIntBuffer();
-	        intBuffer.put(input);
-	        int aBack = (int)(workId >> 32);
-	        int bBack = (int)workId & 0xffffffff;
-	        intBuffer.put(aBack);
-	        intBuffer.put(bBack);
-	        intBuffer.put(2); // append something to differentiate between pow and bounty (pow and bounty for same inputs are possible)
-			return Crypto.sha256().digest(byteBuffer.array());
+        	MessageDigest dig = Crypto.sha256();
+        	
+        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        	DataOutputStream dos = new DataOutputStream(baos);
+        	try{
+	        	dos.writeLong(this.workId);
+	        	dos.write(this.multiplicator);
+	        	dos.writeBoolean(true); // distinguish between pow and bounty
+	        	dos.close();
+        	}catch(IOException e){
+        		
+        	}
+        	byte[] longBytes = baos.toByteArray();
+        	if(longBytes == null)
+        		longBytes = new byte[0];
+        	dig.update(longBytes);
+        	byte[] digest = dig.digest();
+        	return digest;
 		}
-
     }
 
     public final static class WorkCreation extends AbstractAttachment {
