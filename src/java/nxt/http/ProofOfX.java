@@ -4,6 +4,7 @@ import static nxt.http.JSONResponses.INCORRECT_BOOLEAN;
 import static nxt.http.JSONResponses.INCORRECT_INPUTS;
 import static nxt.http.JSONResponses.INCORRECT_WORKID;
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
+import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 
 import static nxt.http.JSONResponses.MISSING_INPUTS;
 import static nxt.http.JSONResponses.MISSING_PASSPHRASE;
@@ -73,7 +74,10 @@ public final class ProofOfX extends CreateTransaction {
 	    
 	    boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
-		String multiplicator_multipart = ParameterParser.getParameterMultipart(req, "multiplicator");
+		String multiplicator_multipart = ParameterParser.getMultiplicator(req, true);
+		if(multiplicator_multipart.length()>64){
+			return INCORRECT_MULTIPLICATOR;
+		}
         byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
         // null it first (just to be safe)
         for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){

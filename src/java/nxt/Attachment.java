@@ -287,7 +287,16 @@ public interface Attachment extends Appendix {
         
 		private final long workId;
         private final byte[] multiplicator;
-		
+        final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    	public static String bytesToHex(byte[] bytes) {
+    	    char[] hexChars = new char[bytes.length * 2];
+    	    for ( int j = 0; j < bytes.length; j++ ) {
+    	        int v = bytes[j] & 0xFF;
+    	        hexChars[j * 2] = hexArray[v >>> 4];
+    	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+    	    }
+    	    return new String(hexChars);
+    	}
         public int[] personalizedIntStream(byte[] publicKey){
         	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
         	MessageDigest dig = Crypto.sha256();
@@ -356,11 +365,12 @@ public interface Attachment extends Appendix {
             this.workId = workId;
             if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
             	this.multiplicator = multiplicator;
-            else
+            else{
             	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
             	for(int i=0;i<32;++i){
             		this.multiplicator[i] = 0;
             	}
+            }
         }
 
         @Override
@@ -504,12 +514,13 @@ public interface Attachment extends Appendix {
         public PiggybackedProofOfBounty(long workId, byte[] multiplicator) {
             this.workId = workId;
             if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
-            	this.multiplicator = multiplicator;
-            else
-            	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            	for(int i=0;i<32;++i){
-            		this.multiplicator[i] = 0;
-            	}
+                	this.multiplicator = multiplicator;
+            else{
+                	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+                	for(int i=0;i<32;++i){
+                		this.multiplicator[i] = 0;
+                	}
+            }
         }
 
         @Override

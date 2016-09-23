@@ -33,6 +33,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware MISSING_NUMBER_OUTPUTVARS = missing("number of output variables");
 	public static final JSONStreamAware MISSING_BOUNTYLIMIT = missing("bounty limit");
 	public static final JSONStreamAware INCORRECT_WORK_NAME_LENGTH = incorrect("work title");
+	public static final JSONStreamAware INCORRECT_MULTIPLICATOR = incorrect("multiplicator");
+
 	public static final JSONStreamAware INCORRECT_VARIABLES_NUM = incorrect("number of input or output variables");
 	public static final JSONStreamAware INCORRECT_WORK_LANGUAGE = incorrect("work language");
 	public static final JSONStreamAware INCORRECT_INPUT_NUMBER = incorrect("number of inputs");

@@ -20,6 +20,8 @@ import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
 import static nxt.http.JSONResponses.INCORRECT_ARBITRARY_MESSAGE;
 import static nxt.http.JSONResponses.INCORRECT_DATA;
 import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
+import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
+
 import static nxt.http.JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
 import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_CHANNEL;
 import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_DESCRIPTION;
@@ -380,6 +382,14 @@ public final class ParameterParser {
 		String secretPhrase = Convert.emptyToNull(req.getParameter("secretPhrase"));
 		if (secretPhrase == null && isMandatory) {
 			throw new ParameterException(MISSING_SECRET_PHRASE);
+		}
+		return secretPhrase;
+	}
+	
+	public static String getMultiplicator(HttpServletRequest req, boolean isMandatory) throws ParameterException {
+		String secretPhrase = Convert.emptyToNull(req.getParameter("multiplicator"));
+		if (secretPhrase == null && isMandatory) {
+			throw new ParameterException(INCORRECT_MULTIPLICATOR);
 		}
 		return secretPhrase;
 	}
