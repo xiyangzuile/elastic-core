@@ -341,9 +341,7 @@ public interface Attachment extends Appendix {
             this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
 
             String inputRaw = (String) attachmentData.get("multiplicator");
-            if(inputRaw != null && inputRaw.length() != Constants.WORK_MULTIPLICATOR_BYTES*2 /* HEX */){
-            	inputRaw=null;
-            }
+            
             this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
             // null it first (just to be safe)
             for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
@@ -391,9 +389,6 @@ public interface Attachment extends Appendix {
             attachment.put("id", Convert.toUnsignedLong(this.workId));
             BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
             String hex_string = multiplicator_bigint.toString(16);
-            while(hex_string.length() != Constants.WORK_MULTIPLICATOR_BYTES*2){
-            	hex_string = "0" + hex_string;
-            }
             attachment.put("multiplicator", hex_string);
         }
 
@@ -491,9 +486,7 @@ public interface Attachment extends Appendix {
             this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
 
             String inputRaw = (String) attachmentData.get("multiplicator");
-            if(inputRaw != null && inputRaw.length() != Constants.WORK_MULTIPLICATOR_BYTES*2 /* HEX */){
-            	inputRaw=null;
-            }
+            
             this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
             // null it first (just to be safe)
             for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
@@ -504,7 +497,7 @@ public interface Attachment extends Appendix {
 	            // restore fixed sized multiplicator array
 	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
 	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
 	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
 	            	back_position--;
 	            }
@@ -541,9 +534,7 @@ public interface Attachment extends Appendix {
             attachment.put("id", Convert.toUnsignedLong(this.workId));
             BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
             String hex_string = multiplicator_bigint.toString(16);
-            while(hex_string.length() != Constants.WORK_MULTIPLICATOR_BYTES*2){
-            	hex_string = "0" + hex_string;
-            }
+            
             attachment.put("multiplicator", hex_string);
         }
 

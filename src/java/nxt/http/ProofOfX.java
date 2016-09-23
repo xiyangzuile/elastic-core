@@ -75,7 +75,7 @@ public final class ProofOfX extends CreateTransaction {
 	    boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
 		String multiplicator_multipart = ParameterParser.getMultiplicator(req, true);
-		if(multiplicator_multipart.length()>64){
+		if(multiplicator_multipart.length()>65){
 			return INCORRECT_MULTIPLICATOR;
 		}
         byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
@@ -88,7 +88,7 @@ public final class ProofOfX extends CreateTransaction {
 	            // restore fixed sized multiplicator array
 	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
 	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
 	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
 	            	back_position--;
 	            }
