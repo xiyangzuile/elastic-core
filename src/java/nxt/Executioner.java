@@ -61,7 +61,7 @@ public class Executioner{
 		}
 	}
 
-	public static POW_CHECK_RESULT executeProofOfWork(byte[] code, long txid, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
+	public static POW_CHECK_RESULT executeProofOfWork(byte[] code, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
 		synchronized(LOCK){
 			InputStream stream = new ByteArrayInputStream(code);
 			ElasticPLParser parser = new ElasticPLParser(stream);
@@ -71,7 +71,7 @@ public class Executioner{
 			((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
 			((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
 			
-			POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(txid, target_pow, soft_unblock_pow);
+			POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
 			
 			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
 			return verifyPow;

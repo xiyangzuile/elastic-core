@@ -164,7 +164,7 @@ public class ASTCompilationUnit extends SimpleNode {
 		return ret;
 	}
 
-	public Executioner.POW_CHECK_RESULT verifyPOW(long txid, BigInteger target, BigInteger soft_unblock) {
+	public Executioner.POW_CHECK_RESULT verifyPOW(BigInteger target, BigInteger soft_unblock) {
 		Executioner.POW_CHECK_RESULT ret = Executioner.POW_CHECK_RESULT.ERROR;
 
 		int in[] = getRandomIntArray();

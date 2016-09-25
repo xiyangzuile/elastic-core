@@ -243,6 +243,7 @@ public final class Work {
     private final long id;
     private final DbKey dbKey;
     private final long work_id;
+    private final long block_id;
     private final long sender_account_id;
     private boolean closed;
     private boolean cancelled;
@@ -263,6 +264,7 @@ public final class Work {
     private Work(Transaction transaction, Attachment.WorkCreation attachment) {
         this.id = transaction.getId();
         this.work_id = this.id;
+        this.block_id = transaction.getBlockId();
         this.dbKey = workDbKeyFactory.newKey(this.id);
         this.xel_per_pow = attachment.getXelPerPow();
         this.title = attachment.getWorkTitle();
@@ -287,6 +289,7 @@ public final class Work {
         
         this.id = rs.getLong("id");
         this.work_id = rs.getLong("work_id");
+        this.block_id = rs.getLong("block_id");
         this.dbKey = dbKey;
         this.xel_per_pow = rs.getLong("xel_per_pow");
         this.title = rs.getString("title");
@@ -311,12 +314,13 @@ public final class Work {
     }
     
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, percentage_powfund, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, percentage_powfund, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
                 + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setLong(++i, this.work_id);
+            pstmt.setLong(++i, this.block_id);
             pstmt.setLong(++i, this.sender_account_id);
             pstmt.setLong(++i, this.xel_per_pow);
             pstmt.setString(++i, this.title);
@@ -344,6 +348,10 @@ public final class Work {
 
 	public long getWork_id() {
 		return work_id;
+	}
+
+	public long getBlock_id() {
+		return block_id;
 	}
 
 	public boolean isClosed() {
@@ -461,6 +469,7 @@ public final class Work {
 		JSONObject response = new JSONObject();
 		response.put("id",Convert.toUnsignedLong(this.id));
 		response.put("work_id",Convert.toUnsignedLong(this.work_id));
+		response.put("block_id",Convert.toUnsignedLong(this.block_id));
 		response.put("xel_per_pow",this.xel_per_pow);
 		response.put("title",this.title);
 		response.put("originating_height",this.originating_height);

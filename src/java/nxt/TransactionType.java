@@ -943,7 +943,7 @@ public abstract class TransactionType {
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
-						valid = Executioner.executeProofOfWork(code.getSource(), attachment.getWorkId(), attachment.personalizedIntStream(transaction.getSenderPublicKey()), real_block_target, soft_unblock_target);
+						valid = Executioner.executeProofOfWork(code.getSource(),attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()), real_block_target, soft_unblock_target);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
@@ -1059,7 +1059,7 @@ public abstract class TransactionType {
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
-						valid = Executioner.executeBountyHooks(code.getSource(), attachment.personalizedIntStream(transaction.getSenderPublicKey()));
+						valid = Executioner.executeBountyHooks(code.getSource(), attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()));
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(

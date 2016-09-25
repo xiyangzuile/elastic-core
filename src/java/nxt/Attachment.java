@@ -297,7 +297,7 @@ public interface Attachment extends Appendix {
     	    }
     	    return new String(hexChars);
     	}
-        public int[] personalizedIntStream(byte[] publicKey){
+        public int[] personalizedIntStream(byte[] publicKey, long blockId){
         	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
         	MessageDigest dig = Crypto.sha256();
         	
@@ -306,6 +306,7 @@ public interface Attachment extends Appendix {
         	try{
 	        	dos.write(publicKey);
 	        	dos.writeLong(this.workId);
+	        	dos.writeLong(blockId);
 	        	dos.write(this.multiplicator);
 	        	dos.close();
         	}catch(IOException e){
@@ -352,7 +353,7 @@ public interface Attachment extends Appendix {
 	            // restore fixed sized multiplicator array
 	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
 	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-	            for (int i = multiplicator_byte_representation.length; i > 0; --i) {
+	            for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
 	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
 	            	back_position--;
 	            }
@@ -442,7 +443,7 @@ public interface Attachment extends Appendix {
 		private final long workId;
         private final byte[] multiplicator;
 		
-        public int[] personalizedIntStream(byte[] publicKey){
+        public int[] personalizedIntStream(byte[] publicKey, long blockId){
         	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
         	MessageDigest dig = Crypto.sha256();
         	
@@ -451,6 +452,7 @@ public interface Attachment extends Appendix {
         	try{
 	        	dos.write(publicKey);
 	        	dos.writeLong(this.workId);
+	        	dos.writeLong(blockId);
 	        	dos.write(this.multiplicator);
 	        	dos.close();
         	}catch(IOException e){
