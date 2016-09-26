@@ -40,6 +40,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_WORK_LANGUAGE = incorrect("work language");
 	public static final JSONStreamAware INCORRECT_INPUT_NUMBER = incorrect("number of inputs");
 	public static final JSONStreamAware INCORRECT_AMOUNT = incorrect("attached amount");
+	public static final JSONStreamAware INCORRECT_AST_RECURSION = incorrect("ast tree depth");
+
 	public static final JSONStreamAware INCORRECT_SYNTAX = incorrect("syntax");
 	public static final JSONStreamAware INCORRECT_PROGRAM = incorrect("program code");
 	public static final JSONStreamAware INCORRECT_BOUNTYHOOK = incorrect("bounty hook");

@@ -11,6 +11,7 @@ import static nxt.http.JSONResponses.MISSING_DEADLINE;
 import static nxt.http.JSONResponses.MISSING_LANGUAGE;
 import static nxt.http.JSONResponses.MISSING_NAME;
 import static nxt.http.JSONResponses.MISSING_PROGAMCODE;
+import static nxt.http.JSONResponses.INCORRECT_AST_RECURSION;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -109,7 +110,7 @@ public final class CreateWork extends CreateTransaction {
 		InputStream stream = new ByteArrayInputStream(byteCode);
 		ElasticPLParser parser = new ElasticPLParser(stream);
 		long WCET = 0L;
-
+		boolean stackExceeded = false;
 		// Differentiate between different languages
 		if (workLanguageByte == 0x01) {
 			try {
@@ -118,8 +119,14 @@ public final class CreateWork extends CreateTransaction {
 				// Check worst case execution time
 				ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
 				WCET = RuntimeEstimator.worstWeight(rootNode);
+				stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
 				if (WCET >  Constants.MAX_WORK_WCET_TIME) {
 					return INCORRECT_EXECUTION_TIME;
+				}else{
+					// all went well
+				}
+				if (stackExceeded) {
+					return INCORRECT_AST_RECURSION;
 				}else{
 					// all went well
 				}

@@ -28,11 +28,13 @@ public class Executioner{
 			rootNode.reset();
 			
 			long WCET = RuntimeEstimator.worstWeight(rootNode);
-			
+			boolean stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
 			if(WCET>Constants.MAX_WORK_WCET_TIME){
 				throw new ParseException("WCET too high");
 			}
-						
+			if(stackExceeded){
+				throw new ParseException("AST tree secursion too high");
+			}			
 			rootNode.reset();
 		}
 	}
