@@ -7,10 +7,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 
 
-import ElasticPL.ASTCompilationUnit;
-import ElasticPL.ElasticPLParser;
-import ElasticPL.ParseException;
-import ElasticPL.RuntimeEstimator;
+import elastic.pl.interpreter.*;
 
 
 
@@ -18,19 +15,14 @@ public class Executioner{
 	
 	private static final Object LOCK = new Object();
 	
-	public enum POW_CHECK_RESULT
-	{
-		OK,
-		SOFT_UNBLOCKED,
-		ERROR
-	};
+
 
 	public static void checkSyntax(byte[] code) throws ParseException {
 		synchronized(LOCK){
 			InputStream stream = new ByteArrayInputStream(code);
 			ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
-			ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
+			ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
 			rootNode.reset();
 			
 			long WCET = RuntimeEstimator.worstWeight(rootNode);
@@ -49,31 +41,31 @@ public class Executioner{
 			ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
 			
-			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
-			((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
-			((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
+			((ASTCompilationUnit) parser.rootNode()).reset();
+			((ASTCompilationUnit) parser.rootNode()).fillGivenIntNumber(inputs);
+			((ASTCompilationUnit) parser.rootNode()).interpret();
 			
 			
-			boolean verifyB = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyBounty();
+			boolean verifyB = ((ASTCompilationUnit) parser.rootNode()).verifyBounty();
 			
-			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			((ASTCompilationUnit) parser.rootNode()).reset();
 			return verifyB;
 		}
 	}
 
-	public static POW_CHECK_RESULT executeProofOfWork(byte[] code, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
+	public static ASTCompilationUnit.POW_CHECK_RESULT executeProofOfWork(byte[] code, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
 		synchronized(LOCK){
 			InputStream stream = new ByteArrayInputStream(code);
 			ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
 			
-			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
-			((ASTCompilationUnit) parser.jjtree.rootNode()).fillGivenIntNumber(inputs);
-			((ASTCompilationUnit) parser.jjtree.rootNode()).interpret();
+			((ASTCompilationUnit) parser.rootNode()).reset();
+			((ASTCompilationUnit) parser.rootNode()).fillGivenIntNumber(inputs);
+			((ASTCompilationUnit) parser.rootNode()).interpret();
 			
-			POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.jjtree.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
+			ASTCompilationUnit.POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
 			
-			((ASTCompilationUnit) parser.jjtree.rootNode()).reset();
+			((ASTCompilationUnit) parser.rootNode()).reset();
 			return verifyPow;
 		}
 	}

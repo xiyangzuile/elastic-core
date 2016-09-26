@@ -28,11 +28,12 @@ import nxt.Attachment;
 import nxt.Constants;
 import nxt.NxtException;
 
+
 import org.json.simple.JSONStreamAware;
 
-import ElasticPL.ASTCompilationUnit;
-import ElasticPL.ElasticPLParser;
-import ElasticPL.RuntimeEstimator;
+import elastic.pl.interpreter.*;
+
+
 
 
 public final class CreateWork extends CreateTransaction {
@@ -113,7 +114,6 @@ public final class CreateWork extends CreateTransaction {
 		InputStream stream = new ByteArrayInputStream(byteCode);
 		ElasticPLParser parser = new ElasticPLParser(stream);
 		long WCET = 0L;
-		Byte numberInputVars = 0;
 
 		// Differentiate between different languages
 		if (workLanguageByte == 0x01) {
@@ -121,7 +121,7 @@ public final class CreateWork extends CreateTransaction {
 				parser.CompilationUnit();
 
 				// Check worst case execution time
-				ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.jjtree.rootNode());
+				ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
 				WCET = RuntimeEstimator.worstWeight(rootNode);
 				if (WCET >  Constants.MAX_WORK_WCET_TIME) {
 					return INCORRECT_EXECUTION_TIME;
@@ -130,7 +130,6 @@ public final class CreateWork extends CreateTransaction {
 				}
 
 				rootNode.reset();
-				numberInputVars = (byte) ((ASTCompilationUnit) parser.jjtree.rootNode()).getRandomIntNumber();
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
 				return INCORRECT_SYNTAX;

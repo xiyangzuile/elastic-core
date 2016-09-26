@@ -26,10 +26,8 @@ import org.apache.tika.Tika;
 import org.apache.tika.mime.MediaType;
 import org.json.simple.JSONObject;
 
-import ElasticPL.ASTCompilationUnit;
-import ElasticPL.ElasticPLParser;
-import ElasticPL.ParseException;
-import ElasticPL.RuntimeEstimator;
+import elastic.pl.interpreter.*;
+import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -933,13 +931,13 @@ public abstract class TransactionType {
 					soft_unblock_cache.set(rel_id, soft_unblock_target);
 				}
 				
-				Executioner.POW_CHECK_RESULT valid = Executioner.POW_CHECK_RESULT.ERROR;
+				POW_CHECK_RESULT valid = POW_CHECK_RESULT.ERROR;
 				
 				
 				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
 					// If the tx is already pruned we assume POW is valid!
 					// no need to execute after all! We assume that the pruning is happened long enough ago
-					valid = Executioner.POW_CHECK_RESULT.OK;
+					valid = POW_CHECK_RESULT.OK;
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
@@ -949,11 +947,11 @@ public abstract class TransactionType {
 						throw new NxtException.NotValidException(
 								"Proof of work is invalid: causes ElasticPL function to crash");
 					}
-					if (valid == Executioner.POW_CHECK_RESULT.ERROR) {
+					if (valid == POW_CHECK_RESULT.ERROR) {
 						throw new NxtException.NotValidException(
 								"Proof of work is invalid: does neither meet target " + real_block_target.toString(16) + " nor the soft block target " + soft_unblock_target.toString(16));
 					}
-					if (valid == Executioner.POW_CHECK_RESULT.SOFT_UNBLOCKED) {
+					if (valid == POW_CHECK_RESULT.SOFT_UNBLOCKED) {
 						throw new NxtException.LostValidityException(
 								"Proof of work became invalid: block target changed recently");
 					}

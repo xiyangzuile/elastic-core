@@ -24,9 +24,6 @@ import nxt.util.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import ElasticPL.ASTCompilationUnit;
-import ElasticPL.ElasticPLParser;
-import ElasticPL.RuntimeEstimator;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -37,6 +34,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import elastic.pl.interpreter.*;
 
 public interface Appendix {
 
