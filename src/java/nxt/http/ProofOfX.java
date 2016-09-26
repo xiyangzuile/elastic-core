@@ -1,37 +1,20 @@
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_BOOLEAN;
-import static nxt.http.JSONResponses.INCORRECT_INPUTS;
-import static nxt.http.JSONResponses.INCORRECT_WORKID;
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
 import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 
-import static nxt.http.JSONResponses.MISSING_INPUTS;
-import static nxt.http.JSONResponses.MISSING_PASSPHRASE;
-import static nxt.http.JSONResponses.INCORRECT_PUBLIC_KEY;
-import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
-
-import static nxt.http.JSONResponses.MISSING_WORKID;
-import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
-
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONStreamAware;
 
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.Db;
 import nxt.NxtException;
-import nxt.crypto.Crypto;
-import nxt.util.Convert;
 import nxt.util.Logger;
-
-import org.json.simple.JSONStreamAware;
 
 public final class ProofOfX extends CreateTransaction {
 	

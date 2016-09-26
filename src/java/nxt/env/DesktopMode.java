@@ -16,11 +16,12 @@
 
 package nxt.env;
 
-import nxt.util.Logger;
-
-import javax.swing.*;
 import java.io.File;
 import java.net.URI;
+
+import javax.swing.SwingUtilities;
+
+import nxt.util.Logger;
 
 public class DesktopMode implements RuntimeMode {
 

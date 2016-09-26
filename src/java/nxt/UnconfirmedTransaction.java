@@ -16,17 +16,18 @@
 
 package nxt;
 
-import nxt.db.DbKey;
-import nxt.util.Filter;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import nxt.db.DbKey;
+import nxt.util.Filter;
 
 class UnconfirmedTransaction implements Transaction {
 

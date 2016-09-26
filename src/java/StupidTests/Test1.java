@@ -3,11 +3,9 @@ package StupidTests;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import nxt.crypto.Crypto;
 import nxt.util.Logger;
 
 public class Test1 { 

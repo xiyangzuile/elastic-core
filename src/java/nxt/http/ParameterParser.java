@@ -18,20 +18,10 @@ package nxt.http;
 
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
 import static nxt.http.JSONResponses.INCORRECT_ARBITRARY_MESSAGE;
-import static nxt.http.JSONResponses.INCORRECT_DATA;
 import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
-import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
-
 import static nxt.http.JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_CHANNEL;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_DESCRIPTION;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_FILE;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_FILENAME;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_NAME;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_TAGS;
-import static nxt.http.JSONResponses.INCORRECT_TAGGED_DATA_TYPE;
+import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 import static nxt.http.JSONResponses.MISSING_ACCOUNT;
-import static nxt.http.JSONResponses.MISSING_NAME;
 import static nxt.http.JSONResponses.MISSING_RECIPIENT_PUBLIC_KEY;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES_OR_JSON;
@@ -60,7 +50,6 @@ import org.json.simple.parser.ParseException;
 
 import nxt.Account;
 import nxt.Appendix;
-import nxt.Attachment;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.NxtException;

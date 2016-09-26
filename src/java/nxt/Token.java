@@ -16,10 +16,10 @@
 
 package nxt;
 
+import java.util.Arrays;
+
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
-
-import java.util.Arrays;
 
 public final class Token {
 

@@ -16,19 +16,21 @@
 
 package nxt.http;
 
+import static nxt.http.JSONResponses.PRUNED_TRANSACTION;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.simple.JSONStreamAware;
+
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.PrunableMessage;
 import nxt.util.Convert;
 import nxt.util.Logger;
-import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.OutputStream;
-
-import static nxt.http.JSONResponses.PRUNED_TRANSACTION;
 
 public final class DownloadPrunableMessage extends APIServlet.APIRequestHandler {
 

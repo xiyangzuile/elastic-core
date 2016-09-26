@@ -16,9 +16,9 @@
 
 package nxt;
 
-import org.junit.Test;
-
 import java.util.Properties;
+
+import org.junit.Test;
 
 public class FastForgingTest extends AbstractForgingTest {
 

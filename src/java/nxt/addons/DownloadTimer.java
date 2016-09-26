@@ -16,17 +16,17 @@
 
 package nxt.addons;
 
-import nxt.Block;
-import nxt.BlockchainProcessor;
-import nxt.Nxt;
-import nxt.util.Listener;
-import nxt.util.Logger;
-
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+
+import nxt.Block;
+import nxt.BlockchainProcessor;
+import nxt.Nxt;
+import nxt.util.Listener;
+import nxt.util.Logger;
 
 public final class DownloadTimer implements AddOn {
 

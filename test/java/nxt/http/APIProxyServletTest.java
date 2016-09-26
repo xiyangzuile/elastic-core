@@ -1,9 +1,9 @@
 package nxt.http;
 
+import java.nio.ByteBuffer;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
 
 public class APIProxyServletTest {
 

@@ -7,21 +7,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
 
 import nxt.Constants;
 import nxt.Db;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Quartett;
-import nxt.Triplet;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
 
 
 

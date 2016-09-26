@@ -16,22 +16,6 @@
 
 package nxt;
 
-import nxt.addons.AddOns;
-import nxt.crypto.Crypto;
-import nxt.env.DirProvider;
-import nxt.env.RuntimeEnvironment;
-import nxt.env.RuntimeMode;
-import nxt.env.ServerStatus;
-import nxt.http.API;
-import nxt.http.APIProxy;
-import nxt.peer.Peers;
-import nxt.user.Users;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-import nxt.util.Time;
-import org.json.simple.JSONObject;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -48,6 +32,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import org.json.simple.JSONObject;
+
+import nxt.addons.AddOns;
+import nxt.crypto.Crypto;
+import nxt.env.DirProvider;
+import nxt.env.RuntimeEnvironment;
+import nxt.env.RuntimeMode;
+import nxt.env.ServerStatus;
+import nxt.http.API;
+import nxt.http.APIProxy;
+import nxt.peer.Peers;
+import nxt.user.Users;
+import nxt.util.Convert;
+import nxt.util.Logger;
+import nxt.util.ThreadPool;
+import nxt.util.Time;
 
 public final class Nxt {
 

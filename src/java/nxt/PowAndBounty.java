@@ -19,9 +19,6 @@
  */
 package nxt;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.IntBuffer;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +29,6 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 
-import nxt.Work.Event;
 import nxt.db.DbClause;
 import nxt.db.DbIterator;
 import nxt.db.DbKey;

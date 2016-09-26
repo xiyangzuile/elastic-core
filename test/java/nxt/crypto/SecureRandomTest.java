@@ -16,11 +16,11 @@
 
 package nxt.crypto;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class SecureRandomTest {
 

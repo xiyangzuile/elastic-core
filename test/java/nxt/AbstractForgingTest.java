@@ -16,9 +16,9 @@
 
 package nxt;
 
-import org.junit.Assert;
-
 import java.util.Properties;
+
+import org.junit.Assert;
 
 public abstract class AbstractForgingTest extends AbstractBlockchainTest {
 

@@ -17,10 +17,6 @@
 package nxt;
 
 
-import nxt.util.Listener;
-import nxt.util.Logger;
-import org.h2.tools.Shell;
-
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
@@ -29,6 +25,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.h2.tools.Shell;
+
+import nxt.util.Listener;
+import nxt.util.Logger;
 
 public class Helper {
 

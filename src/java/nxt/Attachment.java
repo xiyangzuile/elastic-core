@@ -16,24 +16,19 @@
 
 package nxt;
 
-import nxt.crypto.Crypto;
-import nxt.crypto.EncryptedData;
-import nxt.util.Convert;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import nxt.crypto.Crypto;
+import nxt.util.Convert;
 
 public interface Attachment extends Appendix {
     TransactionType getTransactionType();

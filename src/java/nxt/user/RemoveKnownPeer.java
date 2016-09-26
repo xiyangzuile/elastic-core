@@ -16,14 +16,16 @@
 
 package nxt.user;
 
-import nxt.peer.Peer;
-import org.json.simple.JSONStreamAware;
+import static nxt.user.JSONResponses.LOCAL_USERS_ONLY;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.InetAddress;
 
-import static nxt.user.JSONResponses.LOCAL_USERS_ONLY;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONStreamAware;
+
+import nxt.peer.Peer;
 
 public final class RemoveKnownPeer extends UserServlet.UserRequestHandler {
 

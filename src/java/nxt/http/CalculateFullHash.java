@@ -16,17 +16,19 @@
 
 package nxt.http;
 
+import static nxt.http.JSONResponses.MISSING_SIGNATURE_HASH;
+
+import java.security.MessageDigest;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
 import nxt.NxtException;
 import nxt.Transaction;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
-import java.security.MessageDigest;
-
-import static nxt.http.JSONResponses.MISSING_SIGNATURE_HASH;
 
 public final class CalculateFullHash extends APIServlet.APIRequestHandler {
 

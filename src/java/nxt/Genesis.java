@@ -16,15 +16,6 @@
 
 package nxt;
 
-import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import nxt.crypto.Crypto;
-import nxt.util.Logger;
-
 public final class Genesis {
 
     public static final long GENESIS_BLOCK_ID = 445516706271790606L;

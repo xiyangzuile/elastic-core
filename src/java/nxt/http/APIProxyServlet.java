@@ -16,24 +16,8 @@
 
 package nxt.http;
 
-import nxt.peer.Peer;
-import nxt.util.Convert;
-import nxt.util.JSON;
-import nxt.util.Logger;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.proxy.AsyncMiddleManServlet;
-import org.eclipse.jetty.util.MultiMap;
-import org.eclipse.jetty.util.UrlEncoded;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.json.simple.JSONStreamAware;
+import static nxt.http.JSONResponses.ERROR_NOT_ALLOWED;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
@@ -44,7 +28,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static nxt.http.JSONResponses.ERROR_NOT_ALLOWED;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.proxy.AsyncMiddleManServlet;
+import org.eclipse.jetty.util.MultiMap;
+import org.eclipse.jetty.util.UrlEncoded;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.json.simple.JSONStreamAware;
+
+import nxt.peer.Peer;
+import nxt.util.Convert;
+import nxt.util.JSON;
+import nxt.util.Logger;
 
 public final class APIProxyServlet extends AsyncMiddleManServlet {
     private static final Set<String> NOT_FORWARDED_REQUESTS;

@@ -16,13 +16,14 @@
 
 package nxt.http;
 
-import nxt.peer.Hallmark;
-import org.json.simple.JSONStreamAware;
+import static nxt.http.JSONResponses.INCORRECT_HALLMARK;
+import static nxt.http.JSONResponses.MISSING_HALLMARK;
 
 import javax.servlet.http.HttpServletRequest;
 
-import static nxt.http.JSONResponses.INCORRECT_HALLMARK;
-import static nxt.http.JSONResponses.MISSING_HALLMARK;
+import org.json.simple.JSONStreamAware;
+
+import nxt.peer.Hallmark;
 
 public final class DecodeHallmark extends APIServlet.APIRequestHandler {
 

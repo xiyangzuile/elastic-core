@@ -16,9 +16,11 @@
 
 package nxt.crypto;
 
-import nxt.Nxt;
-import nxt.util.Convert;
-import nxt.util.Logger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Arrays;
+
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -30,10 +32,9 @@ import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.jcajce.provider.digest.RIPEMD160;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.Arrays;
+import nxt.Nxt;
+import nxt.util.Convert;
+import nxt.util.Logger;
 
 public final class Crypto {
 

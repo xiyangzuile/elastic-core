@@ -16,8 +16,6 @@
 
 package nxt.db;
 
-import nxt.util.Logger;
-
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -25,6 +23,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Arrays;
+
+import nxt.util.Logger;
 
 public final class DbUtils {
 

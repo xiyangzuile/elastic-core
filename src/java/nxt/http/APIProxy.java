@@ -16,19 +16,19 @@
 
 package nxt.http;
 
-import nxt.Constants;
-import nxt.Nxt;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+
+import nxt.Constants;
+import nxt.Nxt;
+import nxt.peer.Peer;
+import nxt.peer.Peers;
+import nxt.util.Logger;
+import nxt.util.ThreadPool;
 
 public class APIProxy {
     private static final APIProxy instance = new APIProxy();

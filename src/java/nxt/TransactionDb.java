@@ -16,9 +16,6 @@
 
 package nxt;
 
-import nxt.db.DbUtils;
-import nxt.util.Convert;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.sql.Connection;
@@ -29,6 +26,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import nxt.db.DbUtils;
+import nxt.util.Convert;
 
 final class TransactionDb {
 

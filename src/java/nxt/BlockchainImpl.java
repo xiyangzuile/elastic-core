@@ -16,19 +16,23 @@
 
 package nxt;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+
 import nxt.db.DbIterator;
 import nxt.db.DbUtils;
 import nxt.util.Convert;
 import nxt.util.Filter;
 import nxt.util.ReadWriteUpdateLock;
-
-import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 final class BlockchainImpl implements Blockchain {
 

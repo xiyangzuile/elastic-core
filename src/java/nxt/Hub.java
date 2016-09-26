@@ -16,10 +16,6 @@
 
 package nxt;
 
-import nxt.db.DbIterator;
-import nxt.db.DbKey;
-import nxt.db.VersionedEntityDbTable;
-
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -29,6 +25,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import nxt.db.DbIterator;
+import nxt.db.DbKey;
+import nxt.db.VersionedEntityDbTable;
 
 public class Hub {
 

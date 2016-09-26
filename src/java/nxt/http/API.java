@@ -16,12 +16,37 @@
 
 package nxt.http;
 
-import nxt.Constants;
-import nxt.Nxt;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-import nxt.util.UPnP;
+import static nxt.http.JSONResponses.INCORRECT_ADMIN_PASSWORD;
+import static nxt.http.JSONResponses.LOCKED_ADMIN_PASSWORD;
+import static nxt.http.JSONResponses.NO_PASSWORD_IN_CONFIG;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.UnknownHostException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -41,35 +66,12 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.UnknownHostException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static nxt.http.JSONResponses.INCORRECT_ADMIN_PASSWORD;
-import static nxt.http.JSONResponses.NO_PASSWORD_IN_CONFIG;
-import static nxt.http.JSONResponses.LOCKED_ADMIN_PASSWORD;
+import nxt.Constants;
+import nxt.Nxt;
+import nxt.util.Convert;
+import nxt.util.Logger;
+import nxt.util.ThreadPool;
+import nxt.util.UPnP;
 
 public final class API {
 

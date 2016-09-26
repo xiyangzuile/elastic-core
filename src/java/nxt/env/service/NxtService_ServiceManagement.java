@@ -16,10 +16,10 @@
 
 package nxt.env.service;
 
+import javax.swing.JOptionPane;
+
 import nxt.Nxt;
 import nxt.env.LookAndFeel;
-
-import javax.swing.*;
 
 @SuppressWarnings("UnusedDeclaration")
 public class NxtService_ServiceManagement {

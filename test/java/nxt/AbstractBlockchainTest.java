@@ -16,12 +16,13 @@
 
 package nxt;
 
+import java.util.Properties;
+
+import org.junit.Assert;
+
 import nxt.crypto.Crypto;
 import nxt.util.Listener;
 import nxt.util.Logger;
-import org.junit.Assert;
-
-import java.util.Properties;
 
 public abstract class AbstractBlockchainTest {
 

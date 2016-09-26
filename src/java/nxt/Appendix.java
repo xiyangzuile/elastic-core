@@ -16,26 +16,17 @@
 
 package nxt;
 
-import nxt.AccountLedger.LedgerEvent;
-import nxt.crypto.Crypto;
-import nxt.crypto.EncryptedData;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import static nxt.Appendix.hasAppendix;
 
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
-import elastic.pl.interpreter.*;
+import org.json.simple.JSONObject;
+
+import nxt.crypto.Crypto;
+import nxt.crypto.EncryptedData;
+import nxt.util.Convert;
 
 public interface Appendix {
 

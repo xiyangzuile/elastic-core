@@ -16,14 +16,15 @@
 
 package nxt;
 
-import nxt.util.Logger;
-import nxt.util.Time;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 
-import java.util.Properties;
+import nxt.util.Logger;
+import nxt.util.Time;
 
 public abstract class BlockchainTest extends AbstractBlockchainTest {
 

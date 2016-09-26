@@ -17,14 +17,14 @@
 package nxt.db;
 
 
-import nxt.Nxt;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import nxt.Nxt;
 
 public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 

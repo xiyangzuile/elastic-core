@@ -16,12 +16,13 @@
 
 package nxt.user;
 
-import org.json.simple.JSONStreamAware;
+import static nxt.user.JSONResponses.LOCK_ACCOUNT;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-import static nxt.user.JSONResponses.LOCK_ACCOUNT;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONStreamAware;
 
 public final class LockAccount extends UserServlet.UserRequestHandler {
 

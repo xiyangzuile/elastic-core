@@ -16,15 +16,15 @@
 
 package nxt.addons;
 
-import nxt.Nxt;
-import nxt.http.APIServlet;
-import nxt.http.APITag;
-import nxt.util.Logger;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import nxt.Nxt;
+import nxt.http.APIServlet;
+import nxt.http.APITag;
+import nxt.util.Logger;
 
 public final class AddOns {
 

@@ -16,19 +16,20 @@
 
 package nxt;
 
-import nxt.db.DbIterator;
-import nxt.util.Logger;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import nxt.db.DbIterator;
+import nxt.util.Logger;
 
 public class BlockchainProcessorTest extends AbstractBlockchainTest {
 

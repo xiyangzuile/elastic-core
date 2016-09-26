@@ -1,10 +1,11 @@
 package nxt.util;
 
-import nxt.http.APIEnum;
+import java.util.EnumSet;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.EnumSet;
+import nxt.http.APIEnum;
 
 public class APISetTest {
     @Test

@@ -16,24 +16,26 @@
 
 package nxt.user;
 
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.util.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
+import static nxt.user.JSONResponses.DENY_ACCESS;
+import static nxt.user.JSONResponses.INCORRECT_REQUEST;
+import static nxt.user.JSONResponses.POST_REQUIRED;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nxt.user.JSONResponses.DENY_ACCESS;
-import static nxt.user.JSONResponses.INCORRECT_REQUEST;
-import static nxt.user.JSONResponses.POST_REQUIRED;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
+import nxt.Nxt;
+import nxt.NxtException;
+import nxt.util.Logger;
 
 public final class UserServlet extends HttpServlet  {
 

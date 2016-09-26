@@ -16,15 +16,16 @@
 
 package nxt.addons;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
 import nxt.BlockchainProcessor;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.http.APIServlet;
 import nxt.http.APITag;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
 
 public final class PopOffCounter implements AddOn {
 

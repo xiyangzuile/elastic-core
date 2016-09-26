@@ -16,11 +16,6 @@
 
 package nxt.util;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,6 +24,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class JsonMessageTest {
 

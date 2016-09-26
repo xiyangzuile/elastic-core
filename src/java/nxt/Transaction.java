@@ -16,10 +16,11 @@
 
 package nxt;
 
-import nxt.util.Filter;
+import java.util.List;
+
 import org.json.simple.JSONObject;
 
-import java.util.List;
+import nxt.util.Filter;
 
 public interface Transaction {
 

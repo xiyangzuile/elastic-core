@@ -16,13 +16,13 @@
 
 package nxt.db;
 
-import nxt.Db;
-import nxt.Nxt;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import nxt.Db;
+import nxt.Nxt;
 
 public abstract class DerivedDbTable {
 

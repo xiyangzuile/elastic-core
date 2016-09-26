@@ -16,19 +16,17 @@
 
 package nxt.user;
 
-import nxt.Account;
-import nxt.Block;
-import nxt.BlockchainProcessor;
-import nxt.Constants;
-import nxt.Generator;
-import nxt.Nxt;
-import nxt.Transaction;
-import nxt.TransactionProcessor;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -49,16 +47,19 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import nxt.Account;
+import nxt.Block;
+import nxt.BlockchainProcessor;
+import nxt.Constants;
+import nxt.Generator;
+import nxt.Nxt;
+import nxt.Transaction;
+import nxt.TransactionProcessor;
+import nxt.peer.Peer;
+import nxt.peer.Peers;
+import nxt.util.Convert;
+import nxt.util.Logger;
+import nxt.util.ThreadPool;
 
 public final class Users {
 

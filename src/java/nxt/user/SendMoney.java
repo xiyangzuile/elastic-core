@@ -16,6 +16,15 @@
 
 package nxt.user;
 
+import static nxt.user.JSONResponses.NOTIFY_OF_ACCEPTED_TRANSACTION;
+
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
@@ -23,13 +32,6 @@ import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
 import nxt.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-
-import static nxt.user.JSONResponses.NOTIFY_OF_ACCEPTED_TRANSACTION;
 
 public final class SendMoney extends UserServlet.UserRequestHandler {
 

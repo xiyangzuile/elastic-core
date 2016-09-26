@@ -16,10 +16,11 @@
 
 package nxt.user;
 
-import org.json.simple.JSONStreamAware;
+import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
+
+import org.json.simple.JSONStreamAware;
 
 public final class GetNewData extends UserServlet.UserRequestHandler {
 

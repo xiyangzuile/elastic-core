@@ -1,19 +1,15 @@
 package nxt.http;
 
-import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
-
-import nxt.Account;
-import nxt.NxtException;
-import nxt.Work;
-import nxt.db.DbIterator;
-import nxt.BlockImpl;
-import nxt.Nxt;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
+
+import nxt.Nxt;
+import nxt.NxtException;
+import nxt.Work;
+import nxt.db.DbIterator;
 
 
 

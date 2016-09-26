@@ -16,16 +16,17 @@
 
 package nxt.http;
 
-import nxt.Block;
-import nxt.Constants;
-import nxt.Hub;
-import nxt.Nxt;
+import java.util.Iterator;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Iterator;
+import nxt.Block;
+import nxt.Hub;
+import nxt.Nxt;
 
 public final class GetNextBlockGenerators extends APIServlet.APIRequestHandler {
 

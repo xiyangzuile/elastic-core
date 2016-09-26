@@ -1,16 +1,12 @@
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_WORKID;
-import static nxt.http.JSONResponses.MISSING_WORKID;
-
-
 import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONStreamAware;
 
 import nxt.Account;
 import nxt.Attachment;
 import nxt.NxtException;
-
-import org.json.simple.JSONStreamAware;
 
 
 public final class CancelWork extends CreateTransaction {

@@ -16,12 +16,13 @@
 
 package nxt;
 
-import nxt.crypto.Crypto;
-import nxt.util.Time;
+import java.util.Properties;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Properties;
+import nxt.crypto.Crypto;
+import nxt.util.Time;
 
 public class ManualForgingTest extends AbstractForgingTest {
 

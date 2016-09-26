@@ -16,12 +16,12 @@
 
 package nxt.crypto;
 
-import nxt.NxtException;
-import nxt.util.Convert;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
+
+import nxt.NxtException;
+import nxt.util.Convert;
 
 public final class AnonymouslyEncryptedData {
 

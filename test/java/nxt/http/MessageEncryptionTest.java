@@ -16,13 +16,14 @@
 
 package nxt.http;
 
+import org.json.simple.JSONStreamAware;
+import org.junit.Assert;
+import org.junit.Test;
+
 import nxt.Account;
 import nxt.BlockchainTest;
 import nxt.crypto.EncryptedData;
 import nxt.util.Convert;
-import org.json.simple.JSONStreamAware;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class MessageEncryptionTest extends BlockchainTest {
 

@@ -16,9 +16,6 @@
 
 package nxt;
 
-import nxt.db.DbUtils;
-import nxt.util.Logger;
-
 import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -32,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import nxt.db.DbUtils;
+import nxt.util.Logger;
 
 final class BlockDb {
 

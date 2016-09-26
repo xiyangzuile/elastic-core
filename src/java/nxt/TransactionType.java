@@ -16,31 +16,19 @@
 
 package nxt;
 
-import nxt.Account.ControlType;
-import nxt.AccountLedger.LedgerEvent;
-import nxt.Attachment.AbstractAttachment;
-import nxt.NxtException.NotValidException;
-import nxt.NxtException.ValidationException;
-import nxt.util.Convert;
-import org.apache.tika.Tika;
-import org.apache.tika.mime.MediaType;
-import org.json.simple.JSONObject;
-
-import elastic.pl.interpreter.*;
-import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import org.json.simple.JSONObject;
+
+import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
+import nxt.AccountLedger.LedgerEvent;
+import nxt.util.Convert;
 
 
 public abstract class TransactionType {

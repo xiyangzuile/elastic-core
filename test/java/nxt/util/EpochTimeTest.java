@@ -16,13 +16,13 @@
 
 package nxt.util;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class EpochTimeTest {
 

@@ -16,14 +16,15 @@
 
 package nxt.http;
 
-import nxt.Token;
-import org.json.simple.JSONStreamAware;
-
-import javax.servlet.http.HttpServletRequest;
-
 import static nxt.http.JSONResponses.INCORRECT_WEBSITE;
 import static nxt.http.JSONResponses.MISSING_TOKEN;
 import static nxt.http.JSONResponses.MISSING_WEBSITE;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONStreamAware;
+
+import nxt.Token;
 
 public final class DecodeToken extends APIServlet.APIRequestHandler {
 

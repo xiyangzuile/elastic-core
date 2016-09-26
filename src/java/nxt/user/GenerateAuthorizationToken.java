@@ -16,14 +16,16 @@
 
 package nxt.user;
 
-import nxt.Token;
+import static nxt.user.JSONResponses.INVALID_SECRET_PHRASE;
+
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-
-import static nxt.user.JSONResponses.INVALID_SECRET_PHRASE;
+import nxt.Token;
 
 public final class GenerateAuthorizationToken extends UserServlet.UserRequestHandler {
 

@@ -16,9 +16,10 @@
 
 package nxt.http.accountControl;
 
-import nxt.http.AbstractHttpApiSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
+
+import nxt.http.AbstractHttpApiSuite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({

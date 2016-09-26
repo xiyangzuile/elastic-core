@@ -16,21 +16,23 @@
 
 package nxt.http;
 
-import nxt.Db;
-import nxt.util.Convert;
-import nxt.util.JSON;
-import org.h2.tools.Shell;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URLEncoder;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.net.URLEncoder;
-import java.sql.SQLException;
+
+import org.h2.tools.Shell;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import nxt.Db;
+import nxt.util.Convert;
+import nxt.util.JSON;
 
 public final class DbShellServlet extends HttpServlet {
 

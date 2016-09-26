@@ -2,19 +2,14 @@ package nxt.http;
 
 import static java.lang.Integer.parseInt;
 import static nxt.http.JSONResponses.INCORRECT_DEADLINE;
-import static nxt.http.JSONResponses.INCORRECT_WORK_LANGUAGE;
-import static nxt.http.JSONResponses.INCORRECT_WORK_NAME_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_AMOUNT;
-import static nxt.http.JSONResponses.INCORRECT_INPUT_NUMBER;
-import static nxt.http.JSONResponses.INCORRECT_XEL_PER_POW;
-import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
 import static nxt.http.JSONResponses.INCORRECT_EXECUTION_TIME;
+import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
+import static nxt.http.JSONResponses.INCORRECT_WORK_NAME_LENGTH;
+import static nxt.http.JSONResponses.INCORRECT_XEL_PER_POW;
+import static nxt.http.JSONResponses.MISSING_BOUNTYLIMIT;
 import static nxt.http.JSONResponses.MISSING_DEADLINE;
 import static nxt.http.JSONResponses.MISSING_LANGUAGE;
 import static nxt.http.JSONResponses.MISSING_NAME;
-import static nxt.http.JSONResponses.MISSING_BOUNTYLIMIT;
-import static nxt.http.JSONResponses.MISSING_NUMBER_INPUTVARS;
-import static nxt.http.JSONResponses.MISSING_NUMBER_OUTPUTVARS;
 import static nxt.http.JSONResponses.MISSING_PROGAMCODE;
 
 import java.io.ByteArrayInputStream;
@@ -23,15 +18,15 @@ import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.simple.JSONStreamAware;
+
+import elastic.pl.interpreter.ASTCompilationUnit;
+import elastic.pl.interpreter.ElasticPLParser;
+import elastic.pl.interpreter.RuntimeEstimator;
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
 import nxt.NxtException;
-
-
-import org.json.simple.JSONStreamAware;
-
-import elastic.pl.interpreter.*;
 
 
 

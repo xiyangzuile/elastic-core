@@ -16,13 +16,6 @@
 
 package nxt;
 
-import nxt.db.DbUtils;
-import nxt.db.DerivedDbTable;
-import nxt.util.Convert;
-import nxt.util.Listener;
-import nxt.util.Listeners;
-import nxt.util.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,6 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import nxt.db.DbUtils;
+import nxt.db.DerivedDbTable;
+import nxt.util.Convert;
+import nxt.util.Listener;
+import nxt.util.Listeners;
+import nxt.util.Logger;
 
 /**
  * Maintain a ledger of changes to selected accounts

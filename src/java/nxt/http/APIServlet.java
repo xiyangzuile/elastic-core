@@ -16,20 +16,14 @@
 
 package nxt.http;
 
-import nxt.Constants;
-import nxt.Db;
-import nxt.Nxt;
-import nxt.NxtException;
-import nxt.addons.AddOns;
-import nxt.util.JSON;
-import nxt.util.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
+import static nxt.http.JSONResponses.ERROR_DISABLED;
+import static nxt.http.JSONResponses.ERROR_INCORRECT_REQUEST;
+import static nxt.http.JSONResponses.ERROR_NOT_ALLOWED;
+import static nxt.http.JSONResponses.LIGHT_CLIENT_DISABLED_API;
+import static nxt.http.JSONResponses.POST_REQUIRED;
+import static nxt.http.JSONResponses.REQUIRED_BLOCK_NOT_FOUND;
+import static nxt.http.JSONResponses.REQUIRED_LAST_BLOCK_NOT_FOUND;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -42,13 +36,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static nxt.http.JSONResponses.ERROR_DISABLED;
-import static nxt.http.JSONResponses.ERROR_INCORRECT_REQUEST;
-import static nxt.http.JSONResponses.ERROR_NOT_ALLOWED;
-import static nxt.http.JSONResponses.LIGHT_CLIENT_DISABLED_API;
-import static nxt.http.JSONResponses.POST_REQUIRED;
-import static nxt.http.JSONResponses.REQUIRED_BLOCK_NOT_FOUND;
-import static nxt.http.JSONResponses.REQUIRED_LAST_BLOCK_NOT_FOUND;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
+import nxt.Constants;
+import nxt.Db;
+import nxt.Nxt;
+import nxt.NxtException;
+import nxt.addons.AddOns;
+import nxt.util.JSON;
+import nxt.util.Logger;
 
 public final class APIServlet extends HttpServlet {
 

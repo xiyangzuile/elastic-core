@@ -16,15 +16,6 @@
 
 package nxt;
 
-import nxt.AccountLedger.LedgerEvent;
-import nxt.crypto.Crypto;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import jdk.nashorn.internal.ir.BlockStatement;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -34,6 +25,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import nxt.AccountLedger.LedgerEvent;
+import nxt.crypto.Crypto;
+import nxt.util.Convert;
+import nxt.util.Logger;
 
 public final class BlockImpl implements Block {
 

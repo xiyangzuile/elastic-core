@@ -12,19 +12,16 @@ import java.util.TimerTask;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
 import nxt.Block;
 import nxt.BlockchainProcessorImpl;
-import nxt.Db;
 import nxt.Generator;
 import nxt.NxtException;
 import nxt.TransactionProcessorImpl;
 import nxt.util.Listener;
-import nxt.util.Logger;
-
-import org.h2.mvstore.db.TransactionStore.Transaction;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
 
 // TODO, FIXME fix to forbid a memory overload DOS attack. Maybe hard-limit number of longpolls per IP?
 // Otherwise user can create INT_MAX number of objects of type ExpiringListPointer in memory

@@ -16,16 +16,8 @@
 
 package nxt.user;
 
-import nxt.Account;
-import nxt.Block;
-import nxt.Nxt;
-import nxt.Transaction;
-import nxt.db.DbIterator;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONStreamAware;
+import static nxt.user.JSONResponses.LOCK_ACCOUNT;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,7 +25,17 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import static nxt.user.JSONResponses.LOCK_ACCOUNT;
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
+import nxt.Account;
+import nxt.Block;
+import nxt.Nxt;
+import nxt.Transaction;
+import nxt.db.DbIterator;
 
 public final class UnlockAccount extends UserServlet.UserRequestHandler {
 
