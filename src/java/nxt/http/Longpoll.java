@@ -123,7 +123,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
             @Override
             public void notify(Block block) {
             	String event = "block " + block.getHeight();
-            	ArrayList list = new ArrayList();
+            	ArrayList<String> list = new ArrayList<String>();
             	list.add(event);
         		Longpoll.instance.addEvents(list);
             }
@@ -133,7 +133,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
             @Override
             public void notify(Block block) {
             	String event = "block " + block.getHeight();
-            	ArrayList list = new ArrayList();
+            	ArrayList<String> list = new ArrayList<String>();
             	list.add(event);
         		Longpoll.instance.addEvents(list);
             }
@@ -143,7 +143,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
             @Override
 			public void notify(Generator t) {
 				String event = "generator updated";
-            	ArrayList list = new ArrayList();
+				ArrayList<String> list = new ArrayList<String>();
             	list.add(event);
         		Longpoll.instance.addEvents(list);
 			}
@@ -153,7 +153,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 			@Override
 			public void notify(List<? extends nxt.Transaction> t) {
 				String event = "broadcast transaction";
-            	ArrayList list = new ArrayList();
+				ArrayList<String> list = new ArrayList<String>();
             	list.add(event);
         		Longpoll.instance.addEvents(list);
 			}
@@ -162,7 +162,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 
 	public void addEvents(List<String> l) {
 		for (String x : l) {
-			this.eventQueue.add(x);
+			Longpoll.eventQueue.add(x);
 			//System.out.println("Adding: " + x);
 		}
 
@@ -194,7 +194,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 			p = setListings.get(randomId);
 		} else {
 			//System.out.println("Creating new Listener: " + randomId);
-			p = new ExpiringListPointer(this.eventQueue.size(), expireTime);
+			p = new ExpiringListPointer(Longpoll.eventQueue.size(), expireTime);
 			setListings.put(randomId, p);
 		}
 
@@ -212,22 +212,22 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 
 		synchronized (this) {
 			try {
-				if (p.lastPosition == this.eventQueue.size()) {
+				if (ExpiringListPointer.lastPosition == Longpoll.eventQueue.size()) {
 					wait(waitTimeValue);
 				}
 				
 				JSONArray arr = new JSONArray();
-				if (p.lastPosition >= this.eventQueue.size()) {
+				if (ExpiringListPointer.lastPosition >= Longpoll.eventQueue.size()) {
 					// Timeout, nothing new, no notification
 					response.put("event", "timeout");
 					return response;
 				}
-				for (int i = p.lastPosition; i < this.eventQueue.size(); ++i) {
-					arr.add(this.eventQueue.get(i));
+				for (int i = ExpiringListPointer.lastPosition; i < Longpoll.eventQueue.size(); ++i) {
+					arr.add(Longpoll.eventQueue.get(i));
 				}
 				//System.out.println(p.lastPosition);
 
-				p.reuse(this.eventQueue.size());
+				p.reuse(Longpoll.eventQueue.size());
 
 				response.put("event", arr);
 				return response;
