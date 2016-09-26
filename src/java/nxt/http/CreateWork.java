@@ -118,18 +118,20 @@ public final class CreateWork extends CreateTransaction {
 
 				// Check worst case execution time
 				ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
-				WCET = RuntimeEstimator.worstWeight(rootNode);
 				stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
-				if (WCET >  Constants.MAX_WORK_WCET_TIME) {
-					return INCORRECT_EXECUTION_TIME;
-				}else{
-					// all went well
-				}
+				
+				WCET = RuntimeEstimator.worstWeight(rootNode);
 				if (stackExceeded) {
 					return INCORRECT_AST_RECURSION;
 				}else{
 					// all went well
 				}
+				if (WCET >  Constants.MAX_WORK_WCET_TIME) {
+					return INCORRECT_EXECUTION_TIME;
+				}else{
+					// all went well
+				}
+				
 
 				rootNode.reset();
 			} catch (Exception e) {
