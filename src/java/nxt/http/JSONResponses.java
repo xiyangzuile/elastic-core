@@ -48,6 +48,9 @@ public final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_WORKID = incorrect("workId");
 	public static final JSONStreamAware INCORRECT_BOOLEAN = incorrect("boolean");
 	public static final JSONStreamAware INCORRECT_XEL_PER_POW = incorrect("pow price in XEL");
+	public static final JSONStreamAware INCORRECT_XEL_PER_BOUNTY = incorrect("bounty price in XEL");
+	public static final JSONStreamAware MISSING_XEL_PER_POW = missing("pow price in XEL");
+	public static final JSONStreamAware MISSING_XEL_PER_BOUNTY = missing("bounty price in XEL");
 	public static final JSONStreamAware INCORRECT_EXECUTION_TIME = incorrect("worst case execution time");
 	public static final JSONStreamAware INCORRECT_PUBLIC_KEY = incorrect("publicKey");
 	public static final JSONStreamAware MISSING_ALIAS_NAME = missing("aliasName");

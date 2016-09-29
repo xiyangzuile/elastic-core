@@ -245,7 +245,7 @@ public final class Work {
     private boolean timedout;
     private final String title;
     private final long xel_per_pow;
-    private final int percentage_powfund;
+    private final long xel_per_bounty;
     private final int bounty_limit;
     private long balance_pow_fund;
     private long balance_bounty_fund;
@@ -265,11 +265,11 @@ public final class Work {
         this.title = attachment.getWorkTitle();
         this.blocksRemaining = (short) attachment.getDeadline();
         this.closed = false;
-        this.percentage_powfund = attachment.getPercentage_pow_fund();
-        this.balance_pow_fund = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100.0));
-        this.balance_bounty_fund = transaction.getAmountNQT() - balance_pow_fund;
-        this.balance_pow_fund_orig = (long)(transaction.getAmountNQT() * (this.percentage_powfund/100.0));
-        this.balance_bounty_fund_orig = transaction.getAmountNQT() - balance_pow_fund;
+        this.xel_per_bounty = attachment.getXelPerBounty();
+        this.balance_pow_fund = (long)(transaction.getAmountNQT() - (attachment.getBountyLimit()*attachment.getXelPerBounty()));
+        this.balance_bounty_fund = (attachment.getBountyLimit()*attachment.getXelPerBounty());
+        this.balance_pow_fund_orig = balance_pow_fund;
+        this.balance_bounty_fund_orig = balance_bounty_fund;
         this.received_bounties = 0;
         this.received_pows = 0;        
         this.bounty_limit = attachment.getBountyLimit();
@@ -292,7 +292,7 @@ public final class Work {
         this.closed = rs.getBoolean("closed");
         this.cancelled = rs.getBoolean("cancelled");
         this.timedout = rs.getBoolean("timedout");
-        this.percentage_powfund = rs.getInt("percentage_powfund");
+        this.xel_per_bounty = rs.getLong("xel_per_bounty");
         this.balance_pow_fund = rs.getLong("balance_pow_fund");
         this.balance_bounty_fund = rs.getLong("balance_bounty_fund");
         this.balance_pow_fund_orig = rs.getLong("balance_pow_fund_orig");
@@ -309,7 +309,7 @@ public final class Work {
     }
     
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, percentage_powfund, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
                 + "KEY (id, height) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
@@ -323,7 +323,7 @@ public final class Work {
             pstmt.setBoolean(++i, this.closed);
             pstmt.setBoolean(++i, this.cancelled);
             pstmt.setBoolean(++i, this.timedout);
-            pstmt.setInt(++i, this.percentage_powfund);
+            pstmt.setLong(++i, this.xel_per_bounty);
             pstmt.setLong(++i, this.balance_pow_fund);
             pstmt.setLong(++i, this.balance_bounty_fund);
             pstmt.setLong(++i, this.balance_pow_fund_orig);
@@ -365,8 +365,8 @@ public final class Work {
 		return sender_account_id;
 	}
 
-	public int getPercentage_powfund() {
-		return percentage_powfund;
+	public long getXel_per_bounty() {
+		return xel_per_bounty;
 	}
 
 	public int getBounty_limit() {
@@ -472,7 +472,7 @@ public final class Work {
 		response.put("closed",this.closed);
 		response.put("cancelled",this.cancelled);
 		response.put("timedout",this.timedout);
-		response.put("percentage_powfund",this.percentage_powfund);
+		response.put("xel_per_bounty",this.getXel_per_bounty());
 		response.put("balance_pow_fund",this.balance_pow_fund);
 		response.put("balance_bounty_fund",this.balance_bounty_fund);
 		response.put("balance_pow_fund_orig",this.balance_pow_fund_orig);

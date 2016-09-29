@@ -6,6 +6,9 @@ import static nxt.http.JSONResponses.INCORRECT_EXECUTION_TIME;
 import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
 import static nxt.http.JSONResponses.INCORRECT_WORK_NAME_LENGTH;
 import static nxt.http.JSONResponses.INCORRECT_XEL_PER_POW;
+import static nxt.http.JSONResponses.INCORRECT_XEL_PER_BOUNTY;
+import static nxt.http.JSONResponses.MISSING_XEL_PER_POW;
+import static nxt.http.JSONResponses.MISSING_XEL_PER_BOUNTY;
 import static nxt.http.JSONResponses.MISSING_BOUNTYLIMIT;
 import static nxt.http.JSONResponses.MISSING_DEADLINE;
 import static nxt.http.JSONResponses.MISSING_LANGUAGE;
@@ -53,9 +56,10 @@ public final class CreateWork extends CreateTransaction {
 		String workLanguage = ParameterParser.getParameterMultipart(req, "work_language"); 
 		String programCode = ParameterParser.getParameterMultipart(req, "source_code");
 		String deadline = ParameterParser.getParameterMultipart(req, "work_deadline");
-		String bountyLimit = ParameterParser.getParameterMultipart(req, "bountyLimit");
+		String xelPerBounty = ParameterParser.getParameterMultipart(req, "xel_per_bounty");
 		String xelPerPow = ParameterParser.getParameterMultipart(req, "xel_per_pow");
-
+		String bountyLimit = ParameterParser.getParameterMultipart(req, "bounty_limit");
+		
 		Account account = ParameterParser.getSenderAccount(req);
 
 		if (workTitle == null) {
@@ -66,8 +70,12 @@ public final class CreateWork extends CreateTransaction {
 			return MISSING_PROGAMCODE;
 		} else if (deadline == null) {
 			return MISSING_DEADLINE;
+		} else if (xelPerBounty == null) {
+			return MISSING_XEL_PER_BOUNTY;
+		} else if (xelPerPow == null) {
+			return MISSING_XEL_PER_POW;
 		} else if (bountyLimit == null) {
-			return MISSING_BOUNTYLIMIT;
+				return MISSING_BOUNTYLIMIT;
 		}
 
 		// Do some boundary checks
@@ -103,6 +111,16 @@ public final class CreateWork extends CreateTransaction {
 		} catch (NumberFormatException e) {
 			return INCORRECT_XEL_PER_POW;
 		}
+		
+		long xelPerBountyInt;
+		try {
+			xelPerBountyInt = Long.parseLong(xelPerBounty);
+			if (xelPerBountyInt < Constants.MIN_XEL_PER_BOUNTY) {
+				return INCORRECT_XEL_PER_BOUNTY;
+			}
+		} catch (NumberFormatException e) {
+			return INCORRECT_XEL_PER_BOUNTY;
+		}
 
 		// Now we parse the given sourcecode once and check for syntax errors
 		// and for the number of input vars
@@ -131,8 +149,6 @@ public final class CreateWork extends CreateTransaction {
 				}else{
 					// all went well
 				}
-				
-
 				rootNode.reset();
 			} catch (Exception e) {
 				e.printStackTrace(System.out);
@@ -150,7 +166,7 @@ public final class CreateWork extends CreateTransaction {
 		}
 
 		Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte, programCode.getBytes(),
-				deadlineInt, bountyLimitInt, xelPerPowInt, 60);
+				deadlineInt, bountyLimitInt, xelPerPowInt, xelPerBountyInt);
 		return createTransaction(req, account, 0, amountlong, attachment);
 
 	}

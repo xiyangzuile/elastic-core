@@ -569,7 +569,7 @@ public interface Attachment extends Appendix {
         private final int deadline;
         private final long xelPerPow;
         private final int bountyLimit;
-        private final int percentage_pow_fund;
+        private final long xelPerBounty;
 
         WorkCreation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
             super(buffer, transactionVersion);
@@ -577,7 +577,7 @@ public interface Attachment extends Appendix {
             this.deadline = buffer.getInt();
             this.bountyLimit = buffer.getInt();
             this.xelPerPow = buffer.getLong();
-            this.percentage_pow_fund = buffer.getInt();
+            this.xelPerBounty = buffer.getLong();
         }
 
         
@@ -590,22 +590,22 @@ public interface Attachment extends Appendix {
             this.deadline = ((Long) attachmentData.get("deadline")).intValue();
             this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
             this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
-            this.percentage_pow_fund = ((Long) attachmentData.get("percentage_pow_fund")).intValue();
+            this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
             
             
         }
 
-        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, int percentage_pow_fund) {
+        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, long xel_per_bounty) {
         	this.workTitle = workTitle;
             this.deadline = deadline;
             this.bountyLimit = bountyLimit;
             this.xelPerPow = xel_per_pow;
-            this.percentage_pow_fund = percentage_pow_fund;
+            this.xelPerBounty = xel_per_bounty;
         }
 
         @Override
         int getMySize() {
-            int size = 2 + Convert.toBytes(workTitle).length + 4 + 4 + 8 + 4;
+            int size = 2 + Convert.toBytes(workTitle).length + 4 + 4 + 8 + 8;
             return size;
         }
 
@@ -617,7 +617,7 @@ public interface Attachment extends Appendix {
             buffer.putInt(this.deadline);
             buffer.putInt(this.bountyLimit);
             buffer.putLong(this.xelPerPow);
-            buffer.putInt(this.percentage_pow_fund);
+            buffer.putLong(this.xelPerBounty);
         }
 
         @Override
@@ -626,7 +626,7 @@ public interface Attachment extends Appendix {
             attachment.put("deadline", this.deadline);
             attachment.put("bountyLimit", this.bountyLimit);
             attachment.put("xel_per_pow", this.xelPerPow);
-            attachment.put("percentage_pow_fund", this.percentage_pow_fund);
+            attachment.put("xel_per_bounty", this.xelPerBounty);
         }
 
         @Override
@@ -642,8 +642,9 @@ public interface Attachment extends Appendix {
 			return bountyLimit;
 		}
 		
-		public int getPercentage_pow_fund() {
-			return percentage_pow_fund;
+
+		public long getXelPerBounty() {
+			return xelPerBounty;
 		}
 
 		public long getXelPerPow() {
