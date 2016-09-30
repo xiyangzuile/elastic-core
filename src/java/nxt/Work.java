@@ -74,15 +74,15 @@ public final class Work {
     static {
         Nxt.getBlockchainProcessor().addListener(block -> {
             List<Work> shufflings = new ArrayList<>();
-            try (DbIterator<Work> iterator = getActiveWorks(0, -1)) {
+            try (DbIterator<Work> iterator = getActiveAndPendingWorks(0, -1)) {
                 for (Work shuffling : iterator) {
                         shufflings.add(shuffling);
                 }
             }
             shufflings.forEach(shuffling -> {
-                if (--shuffling.blocksRemaining <= 0) {
+                if (shuffling.close_pending || --shuffling.blocksRemaining <= 0) {
                 	// Work has timed out natually
-                    shuffling.natural_timeout();
+                    shuffling.natural_timeout(block);
                 } else {
                     workTable.insert(shuffling);
                 }
@@ -94,33 +94,79 @@ public final class Work {
         return listeners.addListener(listener, eventType);
     }
 
-    public void natural_timeout() {
+    public void natural_timeout(Block bl) {
     	
-    	if(closed == true){
+    	if(closed == true && close_pending == true){
     		return;
     	}
     	
-		this.closed = true;
 		
-		// Check if cancelled or timedout
-		if(this.blocksRemaining == 0 && this.balance_pow_fund>=this.xel_per_pow && this.received_bounties<this.bounty_limit){
-			// timedout with money remaining and bounty slots remaining
-			this.timedout = true;
-		}else if(this.blocksRemaining > 0 && (this.balance_pow_fund<this.xel_per_pow || this.received_bounties==this.bounty_limit)) {
-			// closed regularily, nothing to bother about
-		}else{
-			// manual cancellation
-			this.cancelled = true;
+		if(this.close_pending == false && this.closed == false){
+			// Check if cancelled or timedout
+			if(this.blocksRemaining == 0 && this.balance_pow_fund>=this.xel_per_pow && this.received_bounties<this.bounty_limit){
+				// timedout with money remaining and bounty slots remaining
+				this.timedout = true;
+				if(this.received_bounties==this.received_bounty_announcements){
+					this.closed = true;
+					// Now create ledger event for "refund" what is left in the pow and bounty funds
+			        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+			        Account participantAccount = Account.getAccount(this.sender_account_id);
+			        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);  
+			        
+				}else{
+					this.close_pending = true;
+				}
+				
+			}else if(this.blocksRemaining > 0 && (this.balance_pow_fund<this.xel_per_pow || this.received_bounties==this.bounty_limit)) {
+				// closed regularily, nothing to bother about
+				if(this.received_bounties==this.received_bounty_announcements){
+					this.closed = true;
+					// Now create ledger event for "refund" what is left in the pow and bounty funds
+			        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+			        Account participantAccount = Account.getAccount(this.sender_account_id);
+			        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);  
+			        
+				}else{
+					this.close_pending = true;
+				}
+			}else{
+				// manual cancellation
+				this.cancelled = true;
+				if(this.received_bounties==this.received_bounty_announcements){
+					this.closed = true;
+					// Now create ledger event for "refund" what is left in the pow and bounty funds
+			        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+			        Account participantAccount = Account.getAccount(this.sender_account_id);
+			        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);  
+			        
+				}else{
+					this.close_pending = true;
+				}
+			}
+		}
+		
+		if(this.close_pending == true && this.closed == false){
+			if(bl.getTimestamp()-this.closing_timestamp >= Constants.DEPOSIT_GRACE_PERIOD || this.received_bounty_announcements == this.received_bounties){
+				this.closed = true;
+				this.close_pending = false;
+				
+				int refundAnnouncements = 0;
+				if(received_bounty_announcements>this.received_bounties){
+					refundAnnouncements = received_bounty_announcements-received_bounties;
+				}
+				// Now create ledger event for "refund" what is left in the pow and bounty funds
+		        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+		        Account participantAccount = Account.getAccount(this.sender_account_id);
+		        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund+refundAnnouncements*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION); 
+			}else{
+				// pass through
+			}
 		}
 		
 		        
 		workTable.insert(this);
 		
-		// Now create ledger event for "refund" what is left in the pow and bounty funds
-        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
-        Account participantAccount = Account.getAccount(this.sender_account_id);
-        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);  
-        
+		
 		// notify
 		listeners.notify(this, Event.WORK_CANCELLED);
 		
@@ -193,7 +239,7 @@ public final class Work {
             PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
                     + (includeFinished ? "" : "AND work.blocks_remaining IS NOT NULL ")
                     + (onlyOneId==0 ? "" : "AND work.work_id = ? ")
-                    + "AND work.latest = TRUE ORDER BY closed, originating_height DESC "
+                    + "AND work.latest = TRUE ORDER BY closed, close_pending, originating_height DESC "
                     + DbUtils.limitsClause(from, to));
             int i = 0;
             pstmt.setLong(++i, accountId);
@@ -216,6 +262,7 @@ public final class Work {
     private final long block_id;
     private final long sender_account_id;
     private boolean closed;
+    private boolean close_pending;
     private boolean cancelled;
     private boolean timedout;
     private final String title;
@@ -227,9 +274,11 @@ public final class Work {
     private final long balance_pow_fund_orig;
     private final long balance_bounty_fund_orig;
     private int received_bounties;
+    private int received_bounty_announcements;
     private int received_pows;
     private short blocksRemaining;
     private final int originating_height;
+    private int closing_timestamp;
 
     private Work(Transaction transaction, Attachment.WorkCreation attachment) {
         this.id = transaction.getId();
@@ -240,18 +289,21 @@ public final class Work {
         this.title = attachment.getWorkTitle();
         this.blocksRemaining = (short) attachment.getDeadline();
         this.closed = false;
+        this.close_pending = false;
         this.xel_per_bounty = attachment.getXelPerBounty();
         this.balance_pow_fund = (long)(transaction.getAmountNQT() - (attachment.getBountyLimit()*attachment.getXelPerBounty()));
         this.balance_bounty_fund = (attachment.getBountyLimit()*attachment.getXelPerBounty());
         this.balance_pow_fund_orig = balance_pow_fund;
         this.balance_bounty_fund_orig = balance_bounty_fund;
         this.received_bounties = 0;
+        this.received_bounty_announcements = 0;
         this.received_pows = 0;        
         this.bounty_limit = attachment.getBountyLimit();
         this.sender_account_id = transaction.getSenderId();
         this.cancelled=false;
         this.timedout=false;
         this.originating_height = transaction.getBlock().getHeight();
+        this.closing_timestamp=0;
     }
 
     private Work(ResultSet rs, DbKey dbKey) throws SQLException {
@@ -265,6 +317,7 @@ public final class Work {
         this.title = rs.getString("title");
         this.blocksRemaining = rs.getShort("blocks_remaining");
         this.closed = rs.getBoolean("closed");
+        this.close_pending = rs.getBoolean("close_pending");
         this.cancelled = rs.getBoolean("cancelled");
         this.timedout = rs.getBoolean("timedout");
         this.xel_per_bounty = rs.getLong("xel_per_bounty");
@@ -277,24 +330,32 @@ public final class Work {
         this.bounty_limit = rs.getInt("bounty_limit");
         this.sender_account_id = rs.getLong("sender_account_id");
         this.originating_height = rs.getInt("originating_height");
+        this.received_bounty_announcements = rs.getInt("received_bounty_announcements");
+        this.closing_timestamp=rs.getInt("closing_timestamp");
     }
 
     public static DbIterator<Work> getActiveWorks(int from, int to) {
+        return workTable.getManyBy(new DbClause.BooleanClause("closed",false).and(new DbClause.BooleanClause("latest",true)).and(new DbClause.BooleanClause("close_pending",false)), from, to, " ORDER BY blocks_remaining, height DESC ");
+    }
+    
+    public static DbIterator<Work> getActiveAndPendingWorks(int from, int to) {
         return workTable.getManyBy(new DbClause.BooleanClause("closed",false).and(new DbClause.BooleanClause("latest",true)), from, to, " ORDER BY blocks_remaining, height DESC ");
     }
     
     private void save(Connection con) throws SQLException {
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_pows, bounty_limit, originating_height, height, latest) "
+        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, latest) "
                 + "KEY (id, height) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
+            pstmt.setInt(++i, this.closing_timestamp);
             pstmt.setLong(++i, this.work_id);
             pstmt.setLong(++i, this.block_id);
             pstmt.setLong(++i, this.sender_account_id);
             pstmt.setLong(++i, this.xel_per_pow);
             pstmt.setString(++i, this.title);
             pstmt.setShort(++i, this.blocksRemaining);
+            pstmt.setBoolean(++i, this.closed);
             pstmt.setBoolean(++i, this.closed);
             pstmt.setBoolean(++i, this.cancelled);
             pstmt.setBoolean(++i, this.timedout);
@@ -304,6 +365,7 @@ public final class Work {
             pstmt.setLong(++i, this.balance_pow_fund_orig);
             pstmt.setLong(++i, this.balance_bounty_fund_orig);
             pstmt.setInt(++i, this.received_bounties);
+            pstmt.setInt(++i, this.received_bounty_announcements);
             pstmt.setInt(++i, this.received_pows);
             pstmt.setInt(++i, this.bounty_limit);
             pstmt.setInt(++i, this.originating_height);
@@ -312,7 +374,15 @@ public final class Work {
         }
     }
 
-    public DbKey getDbKey() {
+    public boolean isClose_pending() {
+		return close_pending;
+	}
+
+	public void setClose_pending(boolean close_pending) {
+		this.close_pending = close_pending;
+	}
+
+	public DbKey getDbKey() {
 		return dbKey;
 	}
 
@@ -445,6 +515,8 @@ public final class Work {
 		response.put("originating_height",this.originating_height);
 		response.put("blocksRemaining",this.blocksRemaining);
 		response.put("closed",this.closed);
+		response.put("closing_timestamp",this.closing_timestamp);
+		response.put("close_pending",this.close_pending);
 		response.put("cancelled",this.cancelled);
 		response.put("timedout",this.timedout);
 		response.put("xel_per_bounty",this.getXel_per_bounty());
@@ -453,6 +525,8 @@ public final class Work {
 		response.put("balance_pow_fund_orig",this.balance_pow_fund_orig);
 		response.put("balance_bounty_fund_orig",this.balance_bounty_fund_orig);
 		response.put("received_bounties",this.received_bounties);
+		response.put("received_bounty_announcements",this.received_bounty_announcements);
+
 		response.put("received_pows",this.received_pows);    
 		response.put("bounty_limit",this.bounty_limit);
 		response.put("sender_account_id",Convert.toUnsignedLong(this.sender_account_id));
@@ -481,8 +555,8 @@ public JSONObject toJsonObjectWithSource() {
 		return timedout;
 	}
 
-	public void reduce_one_pow_submission() {
-		if(this.isClosed() == false){
+	public void reduce_one_pow_submission(Block bl) {
+		if(this.isClosed() == false && this.isClose_pending() == false){
 			
 			if(balance_pow_fund>=this.xel_per_pow){
 				this.balance_pow_fund -= this.xel_per_pow;
@@ -491,7 +565,7 @@ public JSONObject toJsonObjectWithSource() {
 			
 			if(balance_pow_fund<this.xel_per_pow){
 				// all was paid out, close it!
-				this.natural_timeout();
+				this.natural_timeout(bl);
 			}else{
 				workTable.insert(this);
 			}
@@ -499,7 +573,7 @@ public JSONObject toJsonObjectWithSource() {
 		
 	}
 	
-public void kill_bounty_fund() {
+public void kill_bounty_fund(Block bl) {
 		
 	if(this.isClosed() == false){
 		if(balance_bounty_fund>=this.xel_per_bounty){
@@ -509,16 +583,23 @@ public void kill_bounty_fund() {
 		
 		if(balance_bounty_fund<this.xel_per_bounty){
 			// all was paid out, close it!
-			this.natural_timeout();
+			this.natural_timeout(bl);
 		}else{
 			workTable.insert(this);
 		}
 	}
 }
+public void register_bounty_announcement() {
+	
+	if(this.isClosed() == false && this.isClose_pending() == false){
+		this.received_bounty_announcements++;
+		workTable.insert(this);
+	}
+}
 
 public static int countAccountWork(long accountId, boolean onlyOpen) {
 	if(onlyOpen){
-		return workTable.getCount(new DbClause.BooleanClause("closed",false).and(new DbClause.LongClause("sender_account_id",accountId)));
+		return workTable.getCount(new DbClause.BooleanClause("closed",false).and(new DbClause.LongClause("sender_account_id",accountId).and(new DbClause.BooleanClause("close_pending",false))));
 	}else{
 		return workTable.getCount(new DbClause.LongClause("sender_account_id",accountId));
 	}

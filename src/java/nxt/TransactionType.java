@@ -748,7 +748,7 @@ public abstract class TransactionType {
 			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
 				Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
 						.getAttachment();
-				Work.getWork(attachment.getWorkId()).natural_timeout();
+				Work.getWork(attachment.getWorkId()).natural_timeout(transaction.getBlock());
 			}
 			
 			@Override
@@ -863,7 +863,7 @@ public abstract class TransactionType {
 						.getAttachment();
 				PowAndBounty.addPow(transaction, attachment);
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				obj.applyPowPayment();
+				obj.applyPowPayment(transaction.getBlock());
 			}
 			
 			@Override
@@ -1102,7 +1102,7 @@ public abstract class TransactionType {
 						.getAttachment();
 				PowAndBounty.addBounty(transaction, attachment);
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				obj.applyBounty();
+				obj.applyBounty(transaction.getBlock());
 			}
 			
 			@Override
@@ -1131,9 +1131,9 @@ public abstract class TransactionType {
 				}
 				
 				// check if we had an announcement for this bounty earlier
-				boolean hadAnnouncement = PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), attachment.getHash());
+				boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(), attachment.getHash());
 				if(!hadAnnouncement){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a bounty announcement for this submission");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a \"counted\" bounty announcement for this submission");
 				}
 				
 				

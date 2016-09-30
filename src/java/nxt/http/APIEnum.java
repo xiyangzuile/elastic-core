@@ -109,6 +109,7 @@ public enum APIEnum {
     SHUTDOWN("shutdown", Shutdown.instance),
     TRIM_DERIVED_TABLES("trimDerivedTables", TrimDerivedTables.instance),
     HASH("hash", Hash.instance),
+    BHASH("bountyAnnouncement", BountyAnnouncement.instance),
     FULL_HASH_TO_ID("fullHashToId", FullHashToId.instance),
     DETECT_MIME_TYPE("detectMimeType", DetectMimeType.instance),
     DOWNLOAD_PRUNABLE_MESSAGE("downloadPrunableMessage", DownloadPrunableMessage.instance),

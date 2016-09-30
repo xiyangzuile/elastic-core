@@ -158,7 +158,7 @@ public final class PowAndBounty {
     private final byte[] multiplicator;
     private final byte[] hash;
     
-    public void applyPowPayment(){
+    public void applyPowPayment(Block bl){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	
     	if(w.isClosed() == false){
@@ -167,7 +167,7 @@ public final class PowAndBounty {
 	        Account participantAccount = Account.getAccount(this.accountId);
 	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_pow());
 	        // Reduce work remaining xel
-	        w.reduce_one_pow_submission();
+	        w.reduce_one_pow_submission(bl);
     	}else{
     		this.too_late = true;
     		this.powAndBountyTable.insert(this);
@@ -186,7 +186,7 @@ public final class PowAndBounty {
         return new String(hexChars);
     }
     
-    public void applyBounty(){
+    public void applyBounty(Block bl){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	if(w.isClosed() == false){
     		// Immediate payout incl. the bounty deposit
@@ -194,7 +194,7 @@ public final class PowAndBounty {
 	        Account participantAccount = Account.getAccount(this.accountId);
 	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 	        // Reduce bounty fund entirely
-	        w.kill_bounty_fund();
+	        w.kill_bounty_fund(bl);
     	}else{
     		this.too_late = true;
     		this.powAndBountyTable.insert(this);

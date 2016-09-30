@@ -47,6 +47,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_BOUNTYHOOK = incorrect("bounty hook");
 	public static final JSONStreamAware INCORRECT_WORKID = incorrect("workId");
 	public static final JSONStreamAware INCORRECT_BOOLEAN = incorrect("boolean");
+	public static final JSONStreamAware INCORRECT_HASH = incorrect("hash");
+
 	public static final JSONStreamAware INCORRECT_XEL_PER_POW = incorrect("pow price in XEL");
 	public static final JSONStreamAware INCORRECT_XEL_PER_BOUNTY = incorrect("bounty price in XEL");
 	public static final JSONStreamAware MISSING_XEL_PER_POW = missing("pow price in XEL");

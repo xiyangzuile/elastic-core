@@ -22,6 +22,8 @@ import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
 import static nxt.http.JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
 import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 import static nxt.http.JSONResponses.MISSING_ACCOUNT;
+import static nxt.http.JSONResponses.INCORRECT_HASH;
+
 import static nxt.http.JSONResponses.MISSING_RECIPIENT_PUBLIC_KEY;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES_OR_JSON;
@@ -379,6 +381,14 @@ public final class ParameterParser {
 		String secretPhrase = Convert.emptyToNull(req.getParameter("multiplicator"));
 		if (secretPhrase == null && isMandatory) {
 			throw new ParameterException(INCORRECT_MULTIPLICATOR);
+		}
+		return secretPhrase;
+	}
+	
+	public static String getAnnouncement(HttpServletRequest req, boolean isMandatory) throws ParameterException {
+		String secretPhrase = Convert.emptyToNull(req.getParameter("hash_announcenement"));
+		if (secretPhrase == null && isMandatory) {
+			throw new ParameterException(INCORRECT_HASH);
 		}
 		return secretPhrase;
 	}

@@ -98,6 +98,10 @@ public final class PowAndBountyAnnouncements {
         return powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)))>0;
     }
     
+    static boolean hasValidHash(long work_id, byte[] hash) {
+        return powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)).and(new DbClause.BooleanClause("too_late", false)))>0;
+    }
+    
     static int getBountyCount(long wid) {
         return powAndBountyAnnouncementTable.getCount(new DbClause.LongClause("work_id", wid).and(
                 new DbClause.BooleanClause("is_pow", false)));
@@ -113,11 +117,12 @@ public final class PowAndBountyAnnouncements {
     
     public void applyBountyAnnouncement(){
     	Work w = Work.getWorkByWorkId(this.work_id);
-    	if(w.isClosed() == false){
+    	if(w.isClosed() == false && w.isClose_pending() == false){
 	    	// Now create ledger event for "bounty submission"
 	        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
 	        Account participantAccount = Account.getAccount(this.accountId);
 	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, -1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+	        w.register_bounty_announcement();
     	}else{
     		this.too_late = true;
     		this.powAndBountyAnnouncementTable.insert(this);
