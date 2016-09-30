@@ -577,11 +577,10 @@ public interface Attachment extends Appendix {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
 			short hashSize = buffer.getShort();
+			
 			if (hashSize > 0 && hashSize <= Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES) {
 				this.hashAnnounced = new byte[hashSize];
-				for (int i = 0; i < hashSize; i++) {
-					hashAnnounced[i] = buffer.get();
-				}
+				buffer.get(hashAnnounced, 0, hashSize);
 			} else {
 				this.hashAnnounced = null;
 			}
@@ -611,10 +610,12 @@ public interface Attachment extends Appendix {
 				this.hashAnnounced = null;
 			}
 		}
+		
 
 		public PiggybackedProofOfBountyAnnouncement(long workId, byte[] hash_assigned) {
 			this.workId = workId;
 			this.hashAnnounced = hash_assigned;
+			System.out.println("Created ANN Bounty: " + ((new BigInteger(hash_assigned)).toString(16)));
 		}
 
 		@Override
@@ -630,7 +631,7 @@ public interface Attachment extends Appendix {
 			buffer.putLong(this.workId);
 			if(this.hashAnnounced != null)
 				{
-				buffer.putShort((short)this.hashAnnounced.length);
+				buffer.putShort((new Integer(this.hashAnnounced.length)).shortValue());
 				buffer.put(this.hashAnnounced);
 				}
 			else

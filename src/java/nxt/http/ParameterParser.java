@@ -386,7 +386,7 @@ public final class ParameterParser {
 	}
 	
 	public static String getAnnouncement(HttpServletRequest req, boolean isMandatory) throws ParameterException {
-		String secretPhrase = Convert.emptyToNull(req.getParameter("hash_announcenement"));
+		String secretPhrase = Convert.emptyToNull(req.getParameter("hash_announcement"));
 		if (secretPhrase == null && isMandatory) {
 			throw new ParameterException(INCORRECT_HASH);
 		}

@@ -991,15 +991,15 @@ public abstract class TransactionType {
 			}
 		
 			@Override
-			Attachment.PiggybackedProofOfBounty parseAttachment(ByteBuffer buffer, byte transactionVersion)
+			Attachment.PiggybackedProofOfBountyAnnouncement parseAttachment(ByteBuffer buffer, byte transactionVersion)
 					throws NxtException.NotValidException {
-				return new Attachment.PiggybackedProofOfBounty(buffer, transactionVersion);
+				return new Attachment.PiggybackedProofOfBountyAnnouncement(buffer, transactionVersion);
 			}
 		
 			@Override
-			Attachment.PiggybackedProofOfBounty parseAttachment(JSONObject attachmentData)
+			Attachment.PiggybackedProofOfBountyAnnouncement parseAttachment(JSONObject attachmentData)
 					throws NxtException.NotValidException {
-				return new Attachment.PiggybackedProofOfBounty(attachmentData);
+				return new Attachment.PiggybackedProofOfBountyAnnouncement(attachmentData);
 			}
 		
 			@Override

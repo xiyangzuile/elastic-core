@@ -58,7 +58,7 @@ public final class PowAndBountyAnnouncements {
 
     };
 
-    private static final VersionedEntityDbTable<PowAndBountyAnnouncements> powAndBountyAnnouncementTable = new VersionedEntityDbTable<PowAndBountyAnnouncements>("pow_and_bounty_announcement", powAndBountyAnnouncementDbKeyFactory) {
+    private static final VersionedEntityDbTable<PowAndBountyAnnouncements> powAndBountyAnnouncementTable = new VersionedEntityDbTable<PowAndBountyAnnouncements>("pow_and_bounty_announcements", powAndBountyAnnouncementDbKeyFactory) {
 
         @Override
         protected PowAndBountyAnnouncements load(Connection con, ResultSet rs, DbKey dbKey) throws SQLException {

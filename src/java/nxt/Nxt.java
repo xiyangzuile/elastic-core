@@ -351,6 +351,7 @@ public final class Nxt {
                 PrunableSourceCode.init();
                 Work.init();
                 PowAndBounty.init();
+                PowAndBountyAnnouncements.init();
                 Peers.init();
                 APIProxy.init();
                 Generator.init();

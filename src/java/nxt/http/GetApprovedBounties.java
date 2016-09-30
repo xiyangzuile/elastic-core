@@ -31,19 +31,13 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
     protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
 
 	
-		long wid = 0;
-		try {
-			String readParam = ParameterParser.getParameterMultipart(req, "work_id");
-			BigInteger b = new BigInteger(readParam);
-			wid = b.longValue();
-		} catch (Exception e) {
-			wid = 0;
-		}
+		long wid = ParameterParser.getUnsignedLong(req, "work_id",true);
 		
 		byte hash[] = null;
 		try {
-			String readParam = ParameterParser.getParameterMultipart(req, "hash_announced");
-			BigInteger b = new BigInteger(readParam);
+			String readParam = ParameterParser.getAnnouncement(req, true);
+
+			BigInteger b = new BigInteger(readParam, 16);
 			hash = b.toByteArray();
 		} catch (Exception e) {
 			hash = null;
