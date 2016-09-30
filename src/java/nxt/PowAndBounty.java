@@ -140,8 +140,8 @@ public final class PowAndBounty {
                 new DbClause.BooleanClause("is_pow", true)));
     }
     
-    static boolean hasHash(byte[] hash) {
-        return powAndBountyTable.getCount(new DbClause.BytesClause("hash", hash))>0;
+    static boolean hasHash(long workId, byte[] hash) {
+        return powAndBountyTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", workId)))>0;
     }
     
     static int getBountyCount(long wid) {
@@ -189,6 +189,10 @@ public final class PowAndBounty {
     public void applyBounty(){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	if(w.isClosed() == false){
+    		// Immediate payout incl. the bounty deposit
+    		AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
+	        Account participantAccount = Account.getAccount(this.accountId);
+	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 	        // Reduce bounty fund entirely
 	        w.kill_bounty_fund();
     	}else{

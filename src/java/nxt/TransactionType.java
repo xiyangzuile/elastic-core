@@ -895,7 +895,7 @@ public abstract class TransactionType {
 				}
 				
 				byte[] hash = attachment.getHash();
-				if(PowAndBounty.hasHash(hash)){
+				if(PowAndBounty.hasHash(attachment.getWorkId(), hash)){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
@@ -1130,8 +1130,15 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
 				
+				// check if we had an announcement for this bounty earlier
+				boolean hadAnnouncement = PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), attachment.getHash());
+				if(!hadAnnouncement){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a bounty announcement for this submission");
+				}
+				
+				
 				byte[] hash = attachment.getHash();
-				if(PowAndBounty.hasHash(hash)){
+				if(PowAndBounty.hasHash(attachment.getWorkId(), hash)){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				

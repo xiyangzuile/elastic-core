@@ -113,38 +113,13 @@ public final class Work {
 			this.cancelled = true;
 		}
 		
-		
-        // Pay out all bounties here
-        
+		        
 		workTable.insert(this);
 		
-		long rest = 0;
-		long total_payout = 0;
-		
-		if(this.balance_bounty_fund == 0){
-			Map<Long, Integer> map = PowAndBounty.GetAccountBountyMap(this.work_id);
-			int total_bounties = 0;
-			Set<Long> allKeys = map.keySet();
-			for(Long l : allKeys){
-				total_bounties += map.get(l);
-			}
-			
-			long fraction = (long) (this.balance_bounty_fund_orig / (total_bounties * 1.0));
-			
-			for(Long l : allKeys){
-				AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
-		        Account participantAccount = Account.getAccount(l);
-		        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, fraction * map.get(l));
-		        total_payout += fraction * map.get(l);
-			}
-			rest = this.balance_bounty_fund_orig - total_payout;
-		}
-		
-
 		// Now create ledger event for "refund" what is left in the pow and bounty funds
         AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
         Account participantAccount = Account.getAccount(this.sender_account_id);
-        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund + rest);  
+        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, this.balance_pow_fund+this.balance_bounty_fund);  
         
 		// notify
 		listeners.notify(this, Event.WORK_CANCELLED);
@@ -527,11 +502,13 @@ public JSONObject toJsonObjectWithSource() {
 public void kill_bounty_fund() {
 		
 	if(this.isClosed() == false){
-		this.balance_bounty_fund = 0;
-		this.received_bounties++;
+		if(balance_bounty_fund>=this.xel_per_bounty){
+			this.balance_bounty_fund -= this.xel_per_bounty;
+			this.received_bounties++;
+		}
 		
-		if(this.received_bounties >= this.bounty_limit){
-			// Bounty Limit Reached
+		if(balance_bounty_fund<this.xel_per_bounty){
+			// all was paid out, close it!
 			this.natural_timeout();
 		}else{
 			workTable.insert(this);
