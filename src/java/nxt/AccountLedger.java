@@ -457,7 +457,8 @@ public class AccountLedger {
     		WORK_CANCELLATION(102, true),
     		WORK_BOUNTY(103, true),
     		WORK_BOUNTY_PAYOUT(104, true),
-    		WORK_POW(105, true);
+    		WORK_POW(105, true),
+    		WORK_BOUNTY_ANNOUNCEMENT(106, true);
 
 
         /** Event code mapping */

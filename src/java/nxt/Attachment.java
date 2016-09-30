@@ -31,617 +31,706 @@ import nxt.crypto.Crypto;
 import nxt.util.Convert;
 
 public interface Attachment extends Appendix {
-    TransactionType getTransactionType();
+	TransactionType getTransactionType();
 
-    abstract class AbstractAttachment extends Appendix.AbstractAppendix implements Attachment {
+	abstract class AbstractAttachment extends Appendix.AbstractAppendix implements Attachment {
 
-        private AbstractAttachment(ByteBuffer buffer, byte transactionVersion) {
-            super(buffer, transactionVersion);
-        }
+		private AbstractAttachment(ByteBuffer buffer, byte transactionVersion) {
+			super(buffer, transactionVersion);
+		}
 
-        private AbstractAttachment(JSONObject attachmentData) {
-            super(attachmentData);
-        }
+		private AbstractAttachment(JSONObject attachmentData) {
+			super(attachmentData);
+		}
 
-        private AbstractAttachment(int version) {
-            super(version);
-        }
+		private AbstractAttachment(int version) {
+			super(version);
+		}
 
-        private AbstractAttachment() {}
+		private AbstractAttachment() {
+		}
 
-        @Override
-        final String getAppendixName() {
-            return getTransactionType().getName();
-        }
+		@Override
+		final String getAppendixName() {
+			return getTransactionType().getName();
+		}
 
-        @Override
-        final void validate(Transaction transaction) throws NxtException.ValidationException {
-            getTransactionType().validateAttachment(transaction);
-        }
+		@Override
+		final void validate(Transaction transaction) throws NxtException.ValidationException {
+			getTransactionType().validateAttachment(transaction);
+		}
 
-        @Override
-        final void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
-            getTransactionType().apply((TransactionImpl) transaction, senderAccount, recipientAccount);
-        }
+		@Override
+		final void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
+			getTransactionType().apply((TransactionImpl) transaction, senderAccount, recipientAccount);
+		}
 
-        @Override
-        public final Fee getBaselineFee(Transaction transaction) {
-            return getTransactionType().getBaselineFee(transaction);
-        }
+		@Override
+		public final Fee getBaselineFee(Transaction transaction) {
+			return getTransactionType().getBaselineFee(transaction);
+		}
 
-        @Override
-        public final Fee getNextFee(Transaction transaction) {
-            return getTransactionType().getNextFee(transaction);
-        }
+		@Override
+		public final Fee getNextFee(Transaction transaction) {
+			return getTransactionType().getNextFee(transaction);
+		}
 
-        @Override
-        public final int getBaselineFeeHeight() {
-            return getTransactionType().getBaselineFeeHeight();
-        }
+		@Override
+		public final int getBaselineFeeHeight() {
+			return getTransactionType().getBaselineFeeHeight();
+		}
 
-        @Override
-        public final int getNextFeeHeight() {
-            return getTransactionType().getNextFeeHeight();
-        }
+		@Override
+		public final int getNextFeeHeight() {
+			return getTransactionType().getNextFeeHeight();
+		}
 
- 
-        final int getFinishValidationHeight(Transaction transaction) {
-            return Nxt.getBlockchain().getHeight();
-        }
+		final int getFinishValidationHeight(Transaction transaction) {
+			return Nxt.getBlockchain().getHeight();
+		}
 
-    }
+	}
 
-    abstract class EmptyAttachment extends AbstractAttachment {
+	abstract class EmptyAttachment extends AbstractAttachment {
 
-        private EmptyAttachment() {
-            super(0);
-        }
+		private EmptyAttachment() {
+			super(0);
+		}
 
-        @Override
-        final int getMySize() {
-            return 0;
-        }
+		@Override
+		final int getMySize() {
+			return 0;
+		}
 
-        @Override
-        final void putMyBytes(ByteBuffer buffer) {
-        }
+		@Override
+		final void putMyBytes(ByteBuffer buffer) {
+		}
 
-        @Override
-        final void putMyJSON(JSONObject json) {
-        }
+		@Override
+		final void putMyJSON(JSONObject json) {
+		}
 
-        @Override
-        final boolean verifyVersion(byte transactionVersion) {
-        	// FIXME (Schauen wieso das vorher nur alte blocks gecheckt hat. ist das attaCHMENT obsolet?)
-            return getVersion() == 0;
-        }
+		@Override
+		final boolean verifyVersion(byte transactionVersion) {
+			// FIXME (Schauen wieso das vorher nur alte blocks gecheckt hat. ist
+			// das attaCHMENT obsolet?)
+			return getVersion() == 0;
+		}
 
-    }
+	}
 
-    EmptyAttachment ORDINARY_PAYMENT = new EmptyAttachment() {
+	EmptyAttachment ORDINARY_PAYMENT = new EmptyAttachment() {
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.Payment.ORDINARY;
-        }
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.Payment.ORDINARY;
+		}
 
-    };
+	};
 
-    // the message payload is in the Appendix
-    EmptyAttachment ARBITRARY_MESSAGE = new EmptyAttachment() {
+	// the message payload is in the Appendix
+	EmptyAttachment ARBITRARY_MESSAGE = new EmptyAttachment() {
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.Messaging.ARBITRARY_MESSAGE;
-        }
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.Messaging.ARBITRARY_MESSAGE;
+		}
 
-    };
-    
+	};
 
-    final class MessagingHubAnnouncement extends AbstractAttachment {
+	final class MessagingHubAnnouncement extends AbstractAttachment {
 
-        private final long minFeePerByteNQT;
-        private final String[] uris;
+		private final long minFeePerByteNQT;
+		private final String[] uris;
 
-        MessagingHubAnnouncement(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.minFeePerByteNQT = buffer.getLong();
-            int numberOfUris = buffer.get();
-            if (numberOfUris > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
-                throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
-            }
-            this.uris = new String[numberOfUris];
-            for (int i = 0; i < uris.length; i++) {
-                uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH);
-            }
-        }
+		MessagingHubAnnouncement(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.minFeePerByteNQT = buffer.getLong();
+			int numberOfUris = buffer.get();
+			if (numberOfUris > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
+				throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
+			}
+			this.uris = new String[numberOfUris];
+			for (int i = 0; i < uris.length; i++) {
+				uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH);
+			}
+		}
 
-        MessagingHubAnnouncement(JSONObject attachmentData) throws NxtException.NotValidException {
-            super(attachmentData);
-            this.minFeePerByteNQT = (Long) attachmentData.get("minFeePerByte");
-            try {
-                JSONArray urisData = (JSONArray) attachmentData.get("uris");
-                this.uris = new String[urisData.size()];
-                for (int i = 0; i < uris.length; i++) {
-                    uris[i] = (String) urisData.get(i);
-                }
-            } catch (RuntimeException e) {
-                throw new NxtException.NotValidException("Error parsing hub terminal announcement parameters", e);
-            }
-        }
+		MessagingHubAnnouncement(JSONObject attachmentData) throws NxtException.NotValidException {
+			super(attachmentData);
+			this.minFeePerByteNQT = (Long) attachmentData.get("minFeePerByte");
+			try {
+				JSONArray urisData = (JSONArray) attachmentData.get("uris");
+				this.uris = new String[urisData.size()];
+				for (int i = 0; i < uris.length; i++) {
+					uris[i] = (String) urisData.get(i);
+				}
+			} catch (RuntimeException e) {
+				throw new NxtException.NotValidException("Error parsing hub terminal announcement parameters", e);
+			}
+		}
 
-        public MessagingHubAnnouncement(long minFeePerByteNQT, String[] uris) {
-            this.minFeePerByteNQT = minFeePerByteNQT;
-            this.uris = uris;
-        }
+		public MessagingHubAnnouncement(long minFeePerByteNQT, String[] uris) {
+			this.minFeePerByteNQT = minFeePerByteNQT;
+			this.uris = uris;
+		}
 
-        @Override
-        int getMySize() {
-            int size = 8 + 1;
-            for (String uri : uris) {
-                size += 2 + Convert.toBytes(uri).length;
-            }
-            return size;
-        }
+		@Override
+		int getMySize() {
+			int size = 8 + 1;
+			for (String uri : uris) {
+				size += 2 + Convert.toBytes(uri).length;
+			}
+			return size;
+		}
 
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(minFeePerByteNQT);
-            buffer.put((byte) uris.length);
-            for (String uri : uris) {
-                byte[] uriBytes = Convert.toBytes(uri);
-                buffer.putShort((short)uriBytes.length);
-                buffer.put(uriBytes);
-            }
-        }
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putLong(minFeePerByteNQT);
+			buffer.put((byte) uris.length);
+			for (String uri : uris) {
+				byte[] uriBytes = Convert.toBytes(uri);
+				buffer.putShort((short) uriBytes.length);
+				buffer.put(uriBytes);
+			}
+		}
 
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("minFeePerByteNQT", minFeePerByteNQT);
-            JSONArray uris = new JSONArray();
-            Collections.addAll(uris, this.uris);
-            attachment.put("uris", uris);
-        }
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("minFeePerByteNQT", minFeePerByteNQT);
+			JSONArray uris = new JSONArray();
+			Collections.addAll(uris, this.uris);
+			attachment.put("uris", uris);
+		}
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.Messaging.HUB_ANNOUNCEMENT;
-        }
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.Messaging.HUB_ANNOUNCEMENT;
+		}
 
-        public long getMinFeePerByteNQT() {
-            return minFeePerByteNQT;
-        }
+		public long getMinFeePerByteNQT() {
+			return minFeePerByteNQT;
+		}
 
-        public String[] getUris() {
-            return uris;
-        }
+		public String[] getUris() {
+			return uris;
+		}
 
-    }
-    
+	}
 
-   
-    
-    public final static class WorkIdentifierCancellationRequest extends AbstractAttachment {
+	public final static class WorkIdentifierCancellationRequest extends AbstractAttachment {
 
-        public long getWorkId() {
+		public long getWorkId() {
 			return workId;
 		}
 
 		private final long workId;
 
-		WorkIdentifierCancellationRequest(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workId = buffer.getLong();
-        }
+		WorkIdentifierCancellationRequest(ByteBuffer buffer, byte transactionVersion)
+				throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.workId = buffer.getLong();
+		}
 
 		WorkIdentifierCancellationRequest(JSONObject attachmentData) {
-            super(attachmentData);
-            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
-        }
+			super(attachmentData);
+			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
+		}
 
-        public WorkIdentifierCancellationRequest(long workId) {
-            this.workId = workId;
-        }
+		public WorkIdentifierCancellationRequest(long workId) {
+			this.workId = workId;
+		}
 
-        @Override
-        int getMySize() {
-            return 8;
-        }
+		@Override
+		int getMySize() {
+			return 8;
+		}
 
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(this.workId);
-        }
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putLong(this.workId);
+		}
 
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("id", Convert.toUnsignedLong(this.workId));
-        }
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("id", Convert.toUnsignedLong(this.workId));
+		}
 
-        @Override
-        public TransactionType getTransactionType() {
-        	return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
-        }
-    }
-    
-   
-    
-    public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
+		}
+	}
 
-        public long getWorkId() {
+	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
+
+		public long getWorkId() {
 			return workId;
 		}
-        public int toInt(byte[] bytes, int offset) {
-        	  int ret = 0;
-        	  for (int i=0; i<4 && i+offset<bytes.length; i++) {
-        	    ret <<= 8;
-        	    ret |= (int)bytes[i] & 0xFF;
-        	  }
-        	  return ret;
-        }
-        
+
+		public int toInt(byte[] bytes, int offset) {
+			int ret = 0;
+			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
+				ret <<= 8;
+				ret |= (int) bytes[i] & 0xFF;
+			}
+			return ret;
+		}
+
 		private final long workId;
-        private final byte[] multiplicator;
-        final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-    	public static String bytesToHex(byte[] bytes) {
-    	    char[] hexChars = new char[bytes.length * 2];
-    	    for ( int j = 0; j < bytes.length; j++ ) {
-    	        int v = bytes[j] & 0xFF;
-    	        hexChars[j * 2] = hexArray[v >>> 4];
-    	        hexChars[j * 2 + 1] = hexArray[v & 0x0F];
-    	    }
-    	    return new String(hexChars);
-    	}
-        public int[] personalizedIntStream(byte[] publicKey, long blockId){
-        	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
-        	MessageDigest dig = Crypto.sha256();
-        	
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	DataOutputStream dos = new DataOutputStream(baos);
-        	try{
-	        	dos.write(publicKey);
-	        	dos.writeLong(this.workId);
-	        	dos.writeLong(blockId);
-	        	dos.write(this.multiplicator);
-	        	dos.close();
-        	}catch(IOException e){
-        		
-        	}
-        	byte[] longBytes = baos.toByteArray();
-        	if(longBytes == null)
-        		longBytes = new byte[0];
-        	dig.update(longBytes);
-        	byte[] digest = dig.digest();
-        	for(int i=0;i<12;++i){
-        		int got = toInt(digest,0) ;
-        		stream[i] = got;
-        		dig.update(digest);
-        		digest = dig.digest();
-        	}
-        	return stream;        	
-        }
+		private final byte[] multiplicator;
+		final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
+		public static String bytesToHex(byte[] bytes) {
+			char[] hexChars = new char[bytes.length * 2];
+			for (int j = 0; j < bytes.length; j++) {
+				int v = bytes[j] & 0xFF;
+				hexChars[j * 2] = hexArray[v >>> 4];
+				hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+			}
+			return new String(hexChars);
+		}
+
+		public int[] personalizedIntStream(byte[] publicKey, long blockId) {
+			int[] stream = new int[Constants.INTEGERS_FOR_WORK];
+			MessageDigest dig = Crypto.sha256();
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			try {
+				dos.write(publicKey);
+				dos.writeLong(this.workId);
+				dos.writeLong(blockId);
+				dos.write(this.multiplicator);
+				dos.close();
+			} catch (IOException e) {
+
+			}
+			byte[] longBytes = baos.toByteArray();
+			if (longBytes == null)
+				longBytes = new byte[0];
+			dig.update(longBytes);
+			byte[] digest = dig.digest();
+			for (int i = 0; i < 12; ++i) {
+				int got = toInt(digest, 0);
+				stream[i] = got;
+				dig.update(digest);
+				digest = dig.digest();
+			}
+			return stream;
+		}
 
 		PiggybackedProofOfWork(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workId = buffer.getLong();
-            
-           
-            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-            	multiplicator[i] = buffer.get();
-            }
-        }
+			super(buffer, transactionVersion);
+			this.workId = buffer.getLong();
+
+			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+				multiplicator[i] = buffer.get();
+			}
+		}
 
 		PiggybackedProofOfWork(JSONObject attachmentData) {
-            super(attachmentData);
-            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
+			super(attachmentData);
+			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
 
-            String inputRaw = (String) attachmentData.get("multiplicator");
-            
-            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            // null it first (just to be safe)
-            for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
-            	this.multiplicator[i] = 0;
-            }
-            if(inputRaw != null){
-	            BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
-	            // restore fixed sized multiplicator array
-	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-	            for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
-	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
-	            	back_position--;
-	            }
-            }
-        }
+			String inputRaw = (String) attachmentData.get("multiplicator");
 
-        public PiggybackedProofOfWork(long workId, byte[] multiplicator) {
-            this.workId = workId;
-            if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
-            	this.multiplicator = multiplicator;
-            else{
-            	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            	for(int i=0;i<32;++i){
-            		this.multiplicator[i] = 0;
-            	}
-            }
-        }
-
-        @Override
-        int getMySize() {
-            return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(this.workId);
-            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-            	buffer.put(this.multiplicator[i]);
-            }
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("id", Convert.toUnsignedLong(this.workId));
-            BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
-            String hex_string = multiplicator_bigint.toString(16);
-            attachment.put("multiplicator", hex_string);
-        }
-
-        @Override
-        public TransactionType getTransactionType() {
-        	return TransactionType.WorkControl.PROOF_OF_WORK;
-        }
-
-        @Override
-		public byte[] getHash() {
-        	MessageDigest dig = Crypto.sha256();
-        	
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	DataOutputStream dos = new DataOutputStream(baos);
-        	try{
-	        	dos.writeLong(this.workId);
-	        	dos.write(this.multiplicator);
-	        	dos.writeBoolean(false); // distinguish between pow and bounty
-	        	dos.close();
-        	}catch(IOException e){
-        		
-        	}
-        	byte[] longBytes = baos.toByteArray();
-        	if(longBytes == null)
-        		longBytes = new byte[0];
-        	dig.update(longBytes);
-        	byte[] digest = dig.digest();
-        	return digest;
+			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+			// null it first (just to be safe)
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; ++i) {
+				this.multiplicator[i] = 0;
+			}
+			if (inputRaw != null) {
+				BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
+				// restore fixed sized multiplicator array
+				byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+				int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
+				for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
+					multiplicator[back_position] = multiplicator_byte_representation[i - 1];
+					back_position--;
+				}
+			}
 		}
+
+		public PiggybackedProofOfWork(long workId, byte[] multiplicator) {
+			this.workId = workId;
+			if (multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
+				this.multiplicator = multiplicator;
+			else {
+				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+				for (int i = 0; i < 32; ++i) {
+					this.multiplicator[i] = 0;
+				}
+			}
+		}
+
+		@Override
+		int getMySize() {
+			return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
+		}
+
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putLong(this.workId);
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+				buffer.put(this.multiplicator[i]);
+			}
+		}
+
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("id", Convert.toUnsignedLong(this.workId));
+			BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
+			String hex_string = multiplicator_bigint.toString(16);
+			attachment.put("multiplicator", hex_string);
+		}
+
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.WorkControl.PROOF_OF_WORK;
+		}
+
+		@Override
+		public byte[] getHash() {
+			MessageDigest dig = Crypto.sha256();
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			try {
+				dos.writeLong(this.workId);
+				dos.write(this.multiplicator);
+				dos.writeBoolean(false); // distinguish between pow and bounty
+				dos.close();
+			} catch (IOException e) {
+
+			}
+			byte[] longBytes = baos.toByteArray();
+			if (longBytes == null)
+				longBytes = new byte[0];
+			dig.update(longBytes);
+			byte[] digest = dig.digest();
+			return digest;
+		}
+
 		public byte[] getMultiplicator() {
 			return multiplicator;
 		}
-    }
-    
-    public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable {
-    	public byte[] getMultiplicator() {
+	}
+
+	public final static class PiggybackedProofOfBounty extends AbstractAttachment implements Hashable {
+		public byte[] getMultiplicator() {
 			return multiplicator;
 		}
-        public long getWorkId() {
+
+		public long getWorkId() {
 			return workId;
 		}
-        public int toInt(byte[] bytes, int offset) {
-        	  int ret = 0;
-        	  for (int i=0; i<4 && i+offset<bytes.length; i++) {
-        	    ret <<= 8;
-        	    ret |= (int)bytes[i] & 0xFF;
-        	  }
-        	  return ret;
-        }
-        
-		private final long workId;
-        private final byte[] multiplicator;
-		
-        public int[] personalizedIntStream(byte[] publicKey, long blockId){
-        	int[] stream = new int[Constants.INTEGERS_FOR_WORK];
-        	MessageDigest dig = Crypto.sha256();
-        	
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	DataOutputStream dos = new DataOutputStream(baos);
-        	try{
-	        	dos.write(publicKey);
-	        	dos.writeLong(this.workId);
-	        	dos.writeLong(blockId);
-	        	dos.write(this.multiplicator);
-	        	dos.close();
-        	}catch(IOException e){
-        		
-        	}
-        	byte[] longBytes = baos.toByteArray();
-        	if(longBytes == null)
-        		longBytes = new byte[0];
-        	dig.update(longBytes);
-        	byte[] digest = dig.digest();
-        	for(int i=0;i<12;++i){
-        		int got = toInt(digest,0) ;
-        		stream[i] = got;
-        		dig.update(digest);
-        		digest = dig.digest();
-        	}
-        	return stream;        	
-        }
 
-        PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workId = buffer.getLong();
-            
-           
-            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-            	multiplicator[i] = buffer.get();
-            }
-        }
-
-        PiggybackedProofOfBounty(JSONObject attachmentData) {
-            super(attachmentData);
-            this.workId = Convert.parseUnsignedLong((String)attachmentData.get("id"));
-
-            String inputRaw = (String) attachmentData.get("multiplicator");
-            
-            this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-            // null it first (just to be safe)
-            for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES;++i){
-            	this.multiplicator[i] = 0;
-            }
-            if(inputRaw != null){
-	            BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
-	            // restore fixed sized multiplicator array
-	            byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-	            int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-	            for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
-	            	multiplicator[back_position] = multiplicator_byte_representation[i-1];
-	            	back_position--;
-	            }
-            }
-        }
-
-        public PiggybackedProofOfBounty(long workId, byte[] multiplicator) {
-            this.workId = workId;
-            if(multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
-                	this.multiplicator = multiplicator;
-            else{
-                	this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-                	for(int i=0;i<32;++i){
-                		this.multiplicator[i] = 0;
-                	}
-            }
-        }
-
-        @Override
-        int getMySize() {
-            return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
-        }
-
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putLong(this.workId);
-            for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-            	buffer.put(this.multiplicator[i]);
-            }
-        }
-
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("id", Convert.toUnsignedLong(this.workId));
-            BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
-            String hex_string = multiplicator_bigint.toString(16);
-            
-            attachment.put("multiplicator", hex_string);
-        }
-
-        @Override
-        public TransactionType getTransactionType() {
-        	return TransactionType.WorkControl.BOUNTY;
-        }
-
-        @Override
-		public byte[] getHash() {
-        	MessageDigest dig = Crypto.sha256();
-        	
-        	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        	DataOutputStream dos = new DataOutputStream(baos);
-        	try{
-	        	dos.writeLong(this.workId);
-	        	dos.write(this.multiplicator);
-	        	dos.writeBoolean(true); // distinguish between pow and bounty
-	        	dos.close();
-        	}catch(IOException e){
-        		
-        	}
-        	byte[] longBytes = baos.toByteArray();
-        	if(longBytes == null)
-        		longBytes = new byte[0];
-        	dig.update(longBytes);
-        	byte[] digest = dig.digest();
-        	return digest;
+		public int toInt(byte[] bytes, int offset) {
+			int ret = 0;
+			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
+				ret <<= 8;
+				ret |= (int) bytes[i] & 0xFF;
+			}
+			return ret;
 		}
-    }
 
-    public final static class WorkCreation extends AbstractAttachment {
+		private final long workId;
+		private final byte[] multiplicator;
 
-        private final String workTitle;
-        private final int deadline;
-        private final long xelPerPow;
-        private final int bountyLimit;
-        private final long xelPerBounty;
+		public int[] personalizedIntStream(byte[] publicKey, long blockId) {
+			int[] stream = new int[Constants.INTEGERS_FOR_WORK];
+			MessageDigest dig = Crypto.sha256();
 
-        WorkCreation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.workTitle = Convert.readString(buffer, buffer.getShort(), Constants.MAX_TITLE_LENGTH);
-            this.deadline = buffer.getInt();
-            this.bountyLimit = buffer.getInt();
-            this.xelPerPow = buffer.getLong();
-            this.xelPerBounty = buffer.getLong();
-        }
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			try {
+				dos.write(publicKey);
+				dos.writeLong(this.workId);
+				dos.writeLong(blockId);
+				dos.write(this.multiplicator);
+				dos.close();
+			} catch (IOException e) {
 
-        
-  
-        
-        WorkCreation(JSONObject attachmentData) {
-            super(attachmentData);
-            
-            this.workTitle = ((String) attachmentData.get("title")).trim();
-            this.deadline = ((Long) attachmentData.get("deadline")).intValue();
-            this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
-            this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
-            this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
-            
-            
-        }
+			}
+			byte[] longBytes = baos.toByteArray();
+			if (longBytes == null)
+				longBytes = new byte[0];
+			dig.update(longBytes);
+			byte[] digest = dig.digest();
+			for (int i = 0; i < 12; ++i) {
+				int got = toInt(digest, 0);
+				stream[i] = got;
+				dig.update(digest);
+				digest = dig.digest();
+			}
+			return stream;
+		}
 
-        public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit, long xel_per_pow, long xel_per_bounty) {
-        	this.workTitle = workTitle;
-            this.deadline = deadline;
-            this.bountyLimit = bountyLimit;
-            this.xelPerPow = xel_per_pow;
-            this.xelPerBounty = xel_per_bounty;
-        }
+		PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.workId = buffer.getLong();
 
-        @Override
-        int getMySize() {
-            int size = 2 + Convert.toBytes(workTitle).length + 4 + 4 + 8 + 8;
-            return size;
-        }
+			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+				multiplicator[i] = buffer.get();
+			}
+		}
 
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            byte[] name = Convert.toBytes(this.workTitle);
-            buffer.putShort((short)name.length);
-            buffer.put(name);
-            buffer.putInt(this.deadline);
-            buffer.putInt(this.bountyLimit);
-            buffer.putLong(this.xelPerPow);
-            buffer.putLong(this.xelPerBounty);
-        }
+		PiggybackedProofOfBounty(JSONObject attachmentData) {
+			super(attachmentData);
+			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
 
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("title", this.workTitle);
-            attachment.put("deadline", this.deadline);
-            attachment.put("bountyLimit", this.bountyLimit);
-            attachment.put("xel_per_pow", this.xelPerPow);
-            attachment.put("xel_per_bounty", this.xelPerBounty);
-        }
+			String inputRaw = (String) attachmentData.get("multiplicator");
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.WorkControl.NEW_TASK;
-        }
+			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+			// null it first (just to be safe)
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; ++i) {
+				this.multiplicator[i] = 0;
+			}
+			if (inputRaw != null) {
+				BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
+				// restore fixed sized multiplicator array
+				byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+				int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
+				for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
+					multiplicator[back_position] = multiplicator_byte_representation[i - 1];
+					back_position--;
+				}
+			}
+		}
 
-        public String getWorkTitle() {
+		public PiggybackedProofOfBounty(long workId, byte[] multiplicator) {
+			this.workId = workId;
+			if (multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES)
+				this.multiplicator = multiplicator;
+			else {
+				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+				for (int i = 0; i < 32; ++i) {
+					this.multiplicator[i] = 0;
+				}
+			}
+		}
+
+		@Override
+		int getMySize() {
+			return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
+		}
+
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putLong(this.workId);
+			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
+				buffer.put(this.multiplicator[i]);
+			}
+		}
+
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("id", Convert.toUnsignedLong(this.workId));
+			BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
+			String hex_string = multiplicator_bigint.toString(16);
+
+			attachment.put("multiplicator", hex_string);
+		}
+
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.WorkControl.BOUNTY;
+		}
+
+		@Override
+		public byte[] getHash() {
+			MessageDigest dig = Crypto.sha256();
+
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			try {
+				dos.writeLong(this.workId);
+				dos.write(this.multiplicator);
+				dos.writeBoolean(true); // distinguish between pow and bounty
+				dos.close();
+			} catch (IOException e) {
+
+			}
+			byte[] longBytes = baos.toByteArray();
+			if (longBytes == null)
+				longBytes = new byte[0];
+			dig.update(longBytes);
+			byte[] digest = dig.digest();
+			return digest;
+		}
+	}
+
+	public final static class PiggybackedProofOfBountyAnnouncement extends AbstractAttachment {
+
+		public long getWorkId() {
+			return workId;
+		}
+
+		private final long workId;
+		private final byte[] hashAnnounced;
+
+		PiggybackedProofOfBountyAnnouncement(ByteBuffer buffer, byte transactionVersion)
+				throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.workId = buffer.getLong();
+			short hashSize = buffer.getShort();
+			if (hashSize > 0 && hashSize <= Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES) {
+				this.hashAnnounced = new byte[hashSize];
+				for (int i = 0; i < hashSize; i++) {
+					hashAnnounced[i] = buffer.get();
+				}
+			} else {
+				this.hashAnnounced = null;
+			}
+
+		}
+
+		PiggybackedProofOfBountyAnnouncement(JSONObject attachmentData) {
+			super(attachmentData);
+			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
+			String inputRaw = (String) attachmentData.get("hash_announced");
+
+			if (inputRaw != null) {
+				BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
+				// restore fixed sized multiplicator array
+				byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
+				
+				if (multiplicator_byte_representation.length > 0
+						&& multiplicator_byte_representation.length <= Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES) {
+					this.hashAnnounced = new byte[multiplicator_byte_representation.length];
+					for (int i = 0; i < this.hashAnnounced.length; ++i) {
+						hashAnnounced[i] = multiplicator_byte_representation[i];
+					}
+				} else {
+					this.hashAnnounced = null;
+				}
+			} else {
+				this.hashAnnounced = null;
+			}
+		}
+
+		public PiggybackedProofOfBountyAnnouncement(long workId, byte[] hash_assigned) {
+			this.workId = workId;
+			this.hashAnnounced = hash_assigned;
+		}
+
+		@Override
+		int getMySize() {
+			if(this.hashAnnounced != null)
+				return 8 + 2 + this.hashAnnounced.length;
+			else
+				return 8 + 2;
+		}
+
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putLong(this.workId);
+			if(this.hashAnnounced != null)
+				{
+				buffer.putShort((short)this.hashAnnounced.length);
+				buffer.put(this.hashAnnounced);
+				}
+			else
+				buffer.putShort((short)0);
+		}
+
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("id", Convert.toUnsignedLong(this.workId));
+			BigInteger hash = new BigInteger(this.hashAnnounced);
+			String hex_string = hash.toString(16);
+
+			attachment.put("hash_announced", hex_string);
+		}
+
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT;
+		}
+
+		public byte[] getHashAnnounced() {
+			return hashAnnounced;
+		}
+	}
+
+	public final static class WorkCreation extends AbstractAttachment {
+
+		private final String workTitle;
+		private final int deadline;
+		private final long xelPerPow;
+		private final int bountyLimit;
+		private final long xelPerBounty;
+
+		WorkCreation(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.workTitle = Convert.readString(buffer, buffer.getShort(), Constants.MAX_TITLE_LENGTH);
+			this.deadline = buffer.getInt();
+			this.bountyLimit = buffer.getInt();
+			this.xelPerPow = buffer.getLong();
+			this.xelPerBounty = buffer.getLong();
+		}
+
+		WorkCreation(JSONObject attachmentData) {
+			super(attachmentData);
+
+			this.workTitle = ((String) attachmentData.get("title")).trim();
+			this.deadline = ((Long) attachmentData.get("deadline")).intValue();
+			this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
+			this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
+			this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
+
+		}
+
+		public WorkCreation(String workTitle, byte workLanguage, byte[] programmCode, int deadline, int bountyLimit,
+				long xel_per_pow, long xel_per_bounty) {
+			this.workTitle = workTitle;
+			this.deadline = deadline;
+			this.bountyLimit = bountyLimit;
+			this.xelPerPow = xel_per_pow;
+			this.xelPerBounty = xel_per_bounty;
+		}
+
+		@Override
+		int getMySize() {
+			int size = 2 + Convert.toBytes(workTitle).length + 4 + 4 + 8 + 8;
+			return size;
+		}
+
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			byte[] name = Convert.toBytes(this.workTitle);
+			buffer.putShort((short) name.length);
+			buffer.put(name);
+			buffer.putInt(this.deadline);
+			buffer.putInt(this.bountyLimit);
+			buffer.putLong(this.xelPerPow);
+			buffer.putLong(this.xelPerBounty);
+		}
+
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("title", this.workTitle);
+			attachment.put("deadline", this.deadline);
+			attachment.put("bountyLimit", this.bountyLimit);
+			attachment.put("xel_per_pow", this.xelPerPow);
+			attachment.put("xel_per_bounty", this.xelPerBounty);
+		}
+
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.WorkControl.NEW_TASK;
+		}
+
+		public String getWorkTitle() {
 			return workTitle;
 		}
 
 		public int getBountyLimit() {
 			return bountyLimit;
 		}
-		
 
 		public long getXelPerBounty() {
 			return xelPerBounty;
@@ -655,106 +744,106 @@ public interface Attachment extends Appendix {
 			return deadline;
 		}
 
-    }
-    
-    final class MessagingAccountInfo extends AbstractAttachment {
+	}
 
-        private final String name;
-        private final String description;
+	final class MessagingAccountInfo extends AbstractAttachment {
 
-        MessagingAccountInfo(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-            super(buffer, transactionVersion);
-            this.name = Convert.readString(buffer, buffer.get(), Constants.MAX_ACCOUNT_NAME_LENGTH);
-            this.description = Convert.readString(buffer, buffer.getShort(), Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH);
-        }
+		private final String name;
+		private final String description;
 
-        MessagingAccountInfo(JSONObject attachmentData) {
-            super(attachmentData);
-            this.name = Convert.nullToEmpty((String) attachmentData.get("name"));
-            this.description = Convert.nullToEmpty((String) attachmentData.get("description"));
-        }
+		MessagingAccountInfo(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.name = Convert.readString(buffer, buffer.get(), Constants.MAX_ACCOUNT_NAME_LENGTH);
+			this.description = Convert.readString(buffer, buffer.getShort(), Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH);
+		}
 
-        public MessagingAccountInfo(String name, String description) {
-            this.name = name;
-            this.description = description;
-        }
+		MessagingAccountInfo(JSONObject attachmentData) {
+			super(attachmentData);
+			this.name = Convert.nullToEmpty((String) attachmentData.get("name"));
+			this.description = Convert.nullToEmpty((String) attachmentData.get("description"));
+		}
 
-        @Override
-        int getMySize() {
-            return 1 + Convert.toBytes(name).length + 2 + Convert.toBytes(description).length;
-        }
+		public MessagingAccountInfo(String name, String description) {
+			this.name = name;
+			this.description = description;
+		}
 
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            byte[] name = Convert.toBytes(this.name);
-            byte[] description = Convert.toBytes(this.description);
-            buffer.put((byte)name.length);
-            buffer.put(name);
-            buffer.putShort((short) description.length);
-            buffer.put(description);
-        }
+		@Override
+		int getMySize() {
+			return 1 + Convert.toBytes(name).length + 2 + Convert.toBytes(description).length;
+		}
 
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("name", name);
-            attachment.put("description", description);
-        }
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			byte[] name = Convert.toBytes(this.name);
+			byte[] description = Convert.toBytes(this.description);
+			buffer.put((byte) name.length);
+			buffer.put(name);
+			buffer.putShort((short) description.length);
+			buffer.put(description);
+		}
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.Messaging.ACCOUNT_INFO;
-        }
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("name", name);
+			attachment.put("description", description);
+		}
 
-        public String getName() {
-            return name;
-        }
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.Messaging.ACCOUNT_INFO;
+		}
 
-        public String getDescription() {
-            return description;
-        }
+		public String getName() {
+			return name;
+		}
 
-    }
+		public String getDescription() {
+			return description;
+		}
 
-    final class AccountControlEffectiveBalanceLeasing extends AbstractAttachment {
+	}
 
-        private final int period;
+	final class AccountControlEffectiveBalanceLeasing extends AbstractAttachment {
 
-        AccountControlEffectiveBalanceLeasing(ByteBuffer buffer, byte transactionVersion) {
-            super(buffer, transactionVersion);
-            this.period = Short.toUnsignedInt(buffer.getShort());
-        }
+		private final int period;
 
-        AccountControlEffectiveBalanceLeasing(JSONObject attachmentData) {
-            super(attachmentData);
-            this.period = ((Long) attachmentData.get("period")).intValue();
-        }
+		AccountControlEffectiveBalanceLeasing(ByteBuffer buffer, byte transactionVersion) {
+			super(buffer, transactionVersion);
+			this.period = Short.toUnsignedInt(buffer.getShort());
+		}
 
-        public AccountControlEffectiveBalanceLeasing(int period) {
-            this.period = period;
-        }
+		AccountControlEffectiveBalanceLeasing(JSONObject attachmentData) {
+			super(attachmentData);
+			this.period = ((Long) attachmentData.get("period")).intValue();
+		}
 
-        @Override
-        int getMySize() {
-            return 2;
-        }
+		public AccountControlEffectiveBalanceLeasing(int period) {
+			this.period = period;
+		}
 
-        @Override
-        void putMyBytes(ByteBuffer buffer) {
-            buffer.putShort((short)period);
-        }
+		@Override
+		int getMySize() {
+			return 2;
+		}
 
-        @Override
-        void putMyJSON(JSONObject attachment) {
-            attachment.put("period", period);
-        }
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putShort((short) period);
+		}
 
-        @Override
-        public TransactionType getTransactionType() {
-            return TransactionType.AccountControl.EFFECTIVE_BALANCE_LEASING;
-        }
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("period", period);
+		}
 
-        public int getPeriod() {
-            return period;
-        }
-    }
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.AccountControl.EFFECTIVE_BALANCE_LEASING;
+		}
+
+		public int getPeriod() {
+			return period;
+		}
+	}
 }

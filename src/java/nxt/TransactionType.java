@@ -46,7 +46,7 @@ public abstract class TransactionType {
 	private static final byte SUBTYPE_WORK_CONTROL_CANCEL_TASK = 1;
 	private static final byte SUBTYPE_WORK_CONTROL_PROOF_OF_WORK = 2;
 	private static final byte SUBTYPE_WORK_CONTROL_BOUNTY = 3;
-	private static final byte SUBTYPE_WORK_CONTROL_BOUNTY_PAYOUT = 4;
+	private static final byte SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT = 4;
 	private static final byte SUBTYPE_WORK_CONTROL_CANCEL_TASK_REQUEST = 5;
 
     public static TransactionType findTransactionType(byte type, byte subtype) {
@@ -84,6 +84,8 @@ public abstract class TransactionType {
     				return TransactionType.WorkControl.PROOF_OF_WORK;
     			case SUBTYPE_WORK_CONTROL_BOUNTY:
     				return TransactionType.WorkControl.BOUNTY;
+    			case SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT:
+    				return TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT;
     			case SUBTYPE_WORK_CONTROL_CANCEL_TASK_REQUEST:
     				return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
     			default:
@@ -981,6 +983,99 @@ public abstract class TransactionType {
 			}
 
 		};
+		public final static TransactionType BOUNTY_ANNOUNCEMENT = new WorkControl() {
+		
+			@Override
+			public final byte getSubtype() {
+				return TransactionType.SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT;
+			}
+		
+			@Override
+			Attachment.PiggybackedProofOfBounty parseAttachment(ByteBuffer buffer, byte transactionVersion)
+					throws NxtException.NotValidException {
+				return new Attachment.PiggybackedProofOfBounty(buffer, transactionVersion);
+			}
+		
+			@Override
+			Attachment.PiggybackedProofOfBounty parseAttachment(JSONObject attachmentData)
+					throws NxtException.NotValidException {
+				return new Attachment.PiggybackedProofOfBounty(attachmentData);
+			}
+		
+			@Override
+			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+		
+				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
+						.getAttachment();
+				PowAndBountyAnnouncements obj = PowAndBountyAnnouncements.addBountyAnnouncement(transaction, attachment);
+				obj.applyBountyAnnouncement();
+			}
+			
+			@Override
+		    boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+		        Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction.getAttachment();
+		        return isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, Convert.toHexString(attachment.getHashAnnounced()), duplicates, true);
+		    }
+			
+			@Override
+		    boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+		        Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction.getAttachment();
+		        return isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, Convert.toHexString(attachment.getHashAnnounced()), duplicates, true);
+		    }
+			
+		
+			@Override
+			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
+						.getAttachment();
+				
+				if(transaction.getAmountNQT() != Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION){
+					throw new NxtException.NotValidException("You must specify " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION + " NQT deposit fee with your bounty announcement.");
+				}
+						
+				Work w = Work.getWorkByWorkId(attachment.getWorkId());
+				
+				if(w==null){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
+				}
+				
+				byte[] hash = attachment.getHashAnnounced();
+				if(PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash)){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+				}
+		
+			}
+		
+			@Override
+			public boolean canHaveRecipient() {
+				return false;
+			}
+		
+			@Override
+			public boolean zeroFeeTransaction() {
+				return true;
+			}
+		
+			@Override
+			public boolean mustHaveRecipient() {
+				return false;
+			}
+		
+			public boolean moneyComesFromNowhere() {
+				return false;
+			}
+		
+			@Override
+			public LedgerEvent getLedgerEvent() {
+				return LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
+			}
+		
+			@Override
+			public String getName() {
+				return "PiggybackedProofOfBountyAnnouncement";
+			}
+		};
+
 		public final static TransactionType BOUNTY = new WorkControl() {
 
 			@Override

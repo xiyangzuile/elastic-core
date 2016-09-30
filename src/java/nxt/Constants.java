@@ -43,6 +43,9 @@ public final class Constants {
     public static final int PAY_FOR_AT_LEAST_X_POW=20;
     public static final long MIN_XEL_PER_POW=1000;
     public static final long MIN_XEL_PER_BOUNTY=5000;
+    public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION=5000;
+    public static final long MAX_HASH_ANNOUNCEMENT_SIZE_BYTES=64;
+
     public static final int MAX_WORK_BOUNTY_LIMIT=10;
     public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;
     public static final int MAX_PAYLOAD_LENGTH = MAX_NUMBER_OF_TRANSACTIONS * MIN_TRANSACTION_SIZE;
