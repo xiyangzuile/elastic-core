@@ -87,29 +87,11 @@ var NRS = (function(NRS, $, undefined) {
 	    if(isNumeric(elem.val())){
 	    	try{
 
-	    		var total_amt = workItem.balance_pow_fund + workItem.balance_bounty_fund;
-	    		var pow_amt = workItem.balance_pow_fund;
-	    		var bnt_amt = workItem.balance_bounty_fund;
-
-	    		NRS.updateWorkCreationPlots(total_amt,pow_amt,bnt_amt);
-	    		$("#fund_pow_cr").html(NRS.formatAmount(new BigInteger((pow_amt).toString())) );
-	    		$("#fund_bnt_cr").html(NRS.formatAmount(new BigInteger((bnt_amt).toString())) );
-	    		$("#fund_pow2_cr").html(NRS.formatAmount(new BigInteger((pow_amt).toString())) );
-	    		$("#fund_bnt2_cr").html(NRS.formatAmount(new BigInteger((bnt_amt).toString())) );
-	    	}catch(err) {
-	    		console.log(err);
-	    		NRS.updateWorkCreationPlots(0,0,0);
-	    		$("#fund_pow_cr").html(0);
-	    		$("#fund_bnt_cr").html(0);
-	    		$("#fund_pow2_cr").html(0);
-	    		$("#fund_bnt2_cr").html(0);
+	    	}catch(e){
+	    		
 	    	}
     	}else{
-    		NRS.updateWorkCreationPlots(0,0,0);
-    		$("#fund_pow_cr").html(0);
-	    	$("#fund_bnt_cr").html(0);
-	    	$("#fund_pow2_cr").html(0);
-	    	$("#fund_bnt2_cr").html(0);
+    		
     	}
 	}
 	});

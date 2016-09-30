@@ -93,6 +93,12 @@ var NRS = (function(NRS, $, undefined) {
                     'iconHTML': '<i class="fa fa-circle-thin"></i>',
                     'receiverPage': "myownwork"
                 },
+                4: {
+                    'title': "Bounty Announcement",
+                    'i18nKeyTitle': 'bounty_announcement',
+                    'iconHTML': '<i class="fa fa-spinner"></i>',
+                    'receiverPage': "myownwork"
+                },
                 5: {
                     'title': "Work Cancellation Request",
                     'i18nKeyTitle': 'work_cancellation_r',

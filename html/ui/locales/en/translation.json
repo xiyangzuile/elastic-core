@@ -10,6 +10,7 @@
   "Price": "Price",
   "Quantity": "Quantity",
   "Rate": "Rate",
+  "bounty_announcement":"Bounty Announcement",
   "redeem_btn":"Redeem your XEL",
   "json_input":"Input Array (ordered)",
   "Refund Note": "Refund Note",
