@@ -88,7 +88,7 @@ var NRS = (function(NRS, $, undefined) {
 	    	try{
 
 	    	}catch(e){
-	    		
+
 	    	}
     	}else{
     		
@@ -687,6 +687,7 @@ var NRS = (function(NRS, $, undefined) {
 		}else{
 			workItem = null;
 		}
+		console.log(workItem);
 		// restore plot scale
 		var p01 = localStorage.getItem('plotscale');
 		var p02 = localStorage.getItem('plotscaleTXT');
@@ -793,8 +794,7 @@ var NRS = (function(NRS, $, undefined) {
 
 
 
-			$("#bountyfundthere").show();
-			$("#bountyfundgone").hide();
+		
 			$("#bnt_percent_left").empty().append("100.00");
 			$("#bal_remained_bnt").empty().append(NRS.formatAmount(new BigInteger((origBntFund).toString())) );
 			

@@ -94,18 +94,15 @@ public final class PowAndBountyAnnouncements {
     }
     
 
-    static boolean hasHash(long work_id, byte[] hash) {
+    public static boolean hasHash(long work_id, byte[] hash) {
         return powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)))>0;
     }
     
-    static boolean hasValidHash(long work_id, byte[] hash) {
+    public static boolean hasValidHash(long work_id, byte[] hash) {
         return powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)).and(new DbClause.BooleanClause("too_late", false)))>0;
     }
     
-    static int getBountyCount(long wid) {
-        return powAndBountyAnnouncementTable.getCount(new DbClause.LongClause("work_id", wid).and(
-                new DbClause.BooleanClause("is_pow", false)));
-    }
+  
     
     static void init() {}
     private final long id;
