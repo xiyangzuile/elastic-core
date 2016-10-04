@@ -293,8 +293,10 @@ var NRS = (function(NRS, $, undefined) {
 		return "<b>" + message.received_bounties + "</b> bounties";
 	}
 	function statusspan(message){
-		if(message.closed == false)
+		if(message.closed == false && message.close_pending == false)
 			return "<span id='activeLabel' class='label label-success label12px'>Active</span>";
+		else if(message.closed == false && message.close_pending == true)
+			return "<span id='activeLabel' class='label label-warning label12px'>Awaiting Bounties</span>";
 		else{
 			if(message.timedout == true)
 				return "<span id='activeLabel' class='label label-warning label12px'>Timed-out</span>";
@@ -510,16 +512,21 @@ var NRS = (function(NRS, $, undefined) {
 
 
 	function bottom_status_row(message){
-		if(message.closed==false){
+		if(message.closed == false && message.close_pending == false){
 			return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-tasks fa-fw'></i> " + status2Text(message) + "</div><div class='col-md-3'><i class='fa fa-hourglass-1 fa-fw'></i> " + "" + "</div><div class='col-md-3'><i class='fa fa-times-circle-o fa-fw'></i> " + timeOut(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 		}
 		else{
+			if(message.closed == false && message.close_pending == true){
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + "100% done" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			}else{
 			if(message.timedout)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			else if(message.cancelled)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			else
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + "100% done" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+			}
+			
 		}
 	}
 
@@ -735,7 +742,7 @@ var NRS = (function(NRS, $, undefined) {
 		}
 		// TODO, create labels
 		$("#cancel_btn").hide();
-		if(workItem.closed==false){
+		if(workItem.closed == false && workItem.close_pending == false){
 			$("#work_indicator").removeClass("btn-success").removeClass("btn-warning").removeClass("btn-default").removeClass("btn-info").addClass("btn-success");
 			$("#work_indicator_inner").empty().append("Active");
 			$("#cancel_btn").show();
@@ -750,20 +757,25 @@ var NRS = (function(NRS, $, undefined) {
 			$("#detailedlisting").empty().append("[<a href=#'>breakdown</a>]");
 		}
 		else{
-			
-			if(workItem.timedout == true){
+			if(workItem.closed == false && workItem.close_pending == true){
 				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
-				$("#work_indicator_inner").empty().append("Timed-out");
+				$("#work_indicator_inner").empty().append("Waiting for missing bounties");
+			}else{
+				if(workItem.timedout == true){
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
+					$("#work_indicator_inner").empty().append("Timed-out");
+				}
+				else if (workItem.cancelled == true){
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-danger");
+					$("#work_indicator_inner").empty().append("Cancelled");
+				}
+				else
+				{
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
+					$("#work_indicator_inner").empty().append("Completed");
+				}
 			}
-			else if (workItem.cancelled == true){
-				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-danger");
-				$("#work_indicator_inner").empty().append("Cancelled");
-			}
-			else
-			{
-				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
-				$("#work_indicator_inner").empty().append("Completed");
-			}
+			
 			$("#hideable").hide();
 			$("#balancelefttitle").empty().append("...");
 			$("#detailedlisting").empty().append("");

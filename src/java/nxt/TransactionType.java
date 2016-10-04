@@ -1028,9 +1028,9 @@ public abstract class TransactionType {
 			void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
 				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
 						.getAttachment();
-				
-				if(transaction.getAmountNQT() != Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION){
-					throw new NxtException.NotValidException("You must specify " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION + " NQT deposit fee with your bounty announcement.");
+				Account acc = Account.getAccount(transaction.getSenderId());
+				if(acc == null || acc.getGuaranteedBalanceNQT(1, Nxt.getBlockchain().getHeight()) < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION){
+					throw new NxtException.NotValidException("You cannot cover the " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION + " NQT deposit fee for your bounty announcement.");
 				}
 						
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());

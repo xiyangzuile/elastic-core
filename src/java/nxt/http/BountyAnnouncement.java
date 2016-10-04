@@ -68,7 +68,7 @@ public final class BountyAnnouncement extends CreateTransaction {
 		
 		Attachment.PiggybackedProofOfBountyAnnouncement attachment = new Attachment.PiggybackedProofOfBountyAnnouncement(
 					workId, hash);
-		return createTransaction(req, account, 0, Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION, attachment);
+		return createTransaction(req, account, attachment);
 		
 
 	}

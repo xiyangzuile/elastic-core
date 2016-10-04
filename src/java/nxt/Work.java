@@ -96,7 +96,7 @@ public final class Work {
 
     public void natural_timeout(Block bl) {
     	
-    	if(closed == true && close_pending == true){
+    	if(closed == true){
     		return;
     	}
     	
@@ -106,6 +106,7 @@ public final class Work {
 			if(this.blocksRemaining == 0 && this.balance_pow_fund>=this.xel_per_pow && this.received_bounties<this.bounty_limit){
 				// timedout with money remaining and bounty slots remaining
 				this.timedout = true;
+				this.closing_timestamp = Nxt.getEpochTime();
 				if(this.received_bounties==this.received_bounty_announcements){
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the pow and bounty funds
@@ -119,6 +120,7 @@ public final class Work {
 				
 			}else if(this.blocksRemaining > 0 && (this.balance_pow_fund<this.xel_per_pow || this.received_bounties==this.bounty_limit)) {
 				// closed regularily, nothing to bother about
+				this.closing_timestamp = Nxt.getEpochTime();
 				if(this.received_bounties==this.received_bounty_announcements){
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the pow and bounty funds
@@ -132,6 +134,7 @@ public final class Work {
 			}else{
 				// manual cancellation
 				this.cancelled = true;
+				this.closing_timestamp = Nxt.getEpochTime();
 				if(this.received_bounties==this.received_bounty_announcements){
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the pow and bounty funds
@@ -144,8 +147,7 @@ public final class Work {
 				}
 			}
 		}
-		
-		if(this.close_pending == true && this.closed == false){
+		else if(this.close_pending == true && this.closed == false){
 			if(bl.getTimestamp()-this.closing_timestamp >= Constants.DEPOSIT_GRACE_PERIOD || this.received_bounty_announcements == this.received_bounties){
 				this.closed = true;
 				this.close_pending = false;
@@ -356,7 +358,7 @@ public final class Work {
             pstmt.setString(++i, this.title);
             pstmt.setShort(++i, this.blocksRemaining);
             pstmt.setBoolean(++i, this.closed);
-            pstmt.setBoolean(++i, this.closed);
+            pstmt.setBoolean(++i, this.close_pending);
             pstmt.setBoolean(++i, this.cancelled);
             pstmt.setBoolean(++i, this.timedout);
             pstmt.setLong(++i, this.xel_per_bounty);
