@@ -327,7 +327,7 @@ var NRS = (function(NRS, $, undefined) {
 	}
 
 	function moneyReturned(message){
-		return "<b>" + shortMoney(message.balance_pow_fund+message.balance_bounty_fund) + "</b>";
+		return "<b>" + shortMoney(message.balance_pow_fund+message.balance_bounty_fund) + " XEL</b>";
 	}
 	function moneyPaid(message){
 		return "<b>" + shortMoney((message.balance_pow_fund_orig+message.balance_bounty_fund_orig)-(message.balance_pow_fund+message.balance_bounty_fund)) + " XEL</b> paid out";
@@ -599,7 +599,7 @@ var NRS = (function(NRS, $, undefined) {
 		rows += newworkrow;
 		for (var i = 0; i < _work.length; i++) {
 			var message = _work[i];
-			rows += "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>ElasticPL</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.height) + " (block #" + message.height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
+			rows += "<a href='#' data-workid='" + message.work_id + "' class='list-group-item larger-sidebar-element selectable'><p class='list-group-item-text agopullright'>" + balancespan(message) + " " + statusspan(message) + " <span class='label label-primary label12px'>ElasticPL</span></p><span class='list-group-item-heading betterh4'>" + message.title + "</span><br><small>created " + blockToAgo(message.originating_height) + " (block #" + message.originating_height + ")</small><span class='middletext_list'>" + /* BEGIN GRID */ bottom_status_row(message) /* END GRID */ + "</span></span></a>";
 		}
 
 		$("#myownwork_sidebar").empty().append(rows);
