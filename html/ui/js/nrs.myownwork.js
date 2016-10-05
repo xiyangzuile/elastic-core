@@ -302,8 +302,12 @@ var NRS = (function(NRS, $, undefined) {
 				return "<span id='activeLabel' class='label label-warning label12px'>Timed-out</span>";
 			else if (message.cancelled == true)
 				return "<span id='activeLabel' class='label label-danger label12px'>Cancelled</span>";
-			else
-				return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+			else{
+				if(message.received_bounties == message.received_bounty_announcements)
+					return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
+				else if(message.received_bounties < message.received_bounty_announcements)
+					return "<span id='activeLabel' class='label label-partially label12px'>Partially Completed</span>";
+			}
 				
 		}
 	}

@@ -3736,42 +3736,70 @@ margin-top: 20px;
 .progress {
   background: #d09b9b !important;
 }
-ul.pagination {
+ul.pagination2 {
     display: inline-block;
     padding: 0;
     margin: 0;
+    border-bottom: 1px solid #ddd;
 }
 
-ul.pagination li {display: inline;}
+ul.pagination2 li {display: inline;}
 
-ul.pagination li a {
+ul.pagination2 li a {
     color: black;
     float: left;
     padding: 8px 16px;
     text-decoration: none;
     transition: background-color .3s;
-    border: 1px solid #ddd;
+    border-right: 1px solid #ddd;
 }
 
-ul.pagination li a.active {
+ul.pagination2 li a.active {
     background-color: #c1d2dc;
     color: black;
     font-weight: bold;
-    border: 1px solid #c1d2dc;
+    border-right: 1px solid #c1d2dc;
 }
-ul.pagination li a:hover:not(.active) {background-color: #ddd;}
+ul.pagination2 li a:hover:not(.active) {background-color: #ddd;}
 
 .infofield_pagination {
-    width: 170px;
     color: black;
     float: left;
     font-size: small;
     padding: 8px 16px;
     text-decoration: none;
     transition: background-color .3s;
-    border: 1px solid #ddd;
+    border-right: 1px solid #ddd;
     text-align: center;
 }
+
 .infofield_pagination_wider {
     width: 170px;
+}
+
+.btn-stripe {
+    color: #fff;
+  background: #008cdd;
+  background-image: -webkit-linear-gradient(top, #7dc5ee, #008cdd 85%, #30a2e4);
+  background-image: -moz-linear-gradient(top, #7dc5ee, #008cdd 85%, #30a2e4);
+  background-image: -ms-linear-gradient(#7dc5ee, #008cdd 85%, #30a2e4);
+  background-image: -o-linear-gradient(#7dc5ee, #008cdd 85%, #30a2e4);
+  background-image: linear-gradient(#7dc5ee, #008cdd 85%, #30a2e4);     
+  background: linear-gradient(top, #7dc5ee, #008cdd 85%, #30a2e4);      
+  text-shadow: 0 1px 1px rgba(0,0,0,0.53);
+  -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  -ms-box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  -o-box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  -webkit-border-radius: 17px;
+  -moz-border-radius: 17px;
+  -ms-border-radius: 17px;
+  -o-border-radius: 17px;
+  border-radius: 17px;
+  border-color: #008cdd;
+}
+
+.label-partially {
+  background-color:#8f83ce;
 }
