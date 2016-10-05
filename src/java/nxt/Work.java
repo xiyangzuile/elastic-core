@@ -103,7 +103,7 @@ public final class Work {
 		
 		if(this.close_pending == false && this.closed == false){
 			// Check if cancelled or timedout
-			if(this.blocksRemaining == 0 && this.balance_pow_fund>=this.xel_per_pow && this.received_bounties<this.bounty_limit){
+			if(this.blocksRemaining == 0 && this.balance_pow_fund>=this.xel_per_pow && this.received_bounties<this.bounty_limit && this.received_bounty_announcements<this.bounty_limit){
 				// timedout with money remaining and bounty slots remaining
 				this.timedout = true;
 				this.closing_timestamp = Nxt.getEpochTime();
@@ -118,7 +118,7 @@ public final class Work {
 					this.close_pending = true;
 				}
 				
-			}else if(this.blocksRemaining > 0 && (this.balance_pow_fund<this.xel_per_pow || this.received_bounties==this.bounty_limit)) {
+			}else if(this.blocksRemaining > 0 && (this.balance_pow_fund<this.xel_per_pow || this.received_bounties==this.bounty_limit || this.received_bounty_announcements==this.bounty_limit)) {
 				// closed regularily, nothing to bother about
 				this.closing_timestamp = Nxt.getEpochTime();
 				if(this.received_bounties==this.received_bounty_announcements){
@@ -591,11 +591,16 @@ public void kill_bounty_fund(Block bl) {
 		}
 	}
 }
-public void register_bounty_announcement() {
+public void register_bounty_announcement(Block bl) {
 	
 	if(this.isClosed() == false && this.isClose_pending() == false){
 		this.received_bounty_announcements++;
-		workTable.insert(this);
+		if(this.received_bounty_announcements==this.bounty_limit){
+			// all was paid out, close it!
+			this.natural_timeout(bl);
+		}else{
+			workTable.insert(this);
+		}
 	}
 }
 

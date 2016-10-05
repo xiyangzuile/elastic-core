@@ -1008,7 +1008,7 @@ public abstract class TransactionType {
 				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
 						.getAttachment();
 				PowAndBountyAnnouncements obj = PowAndBountyAnnouncements.addBountyAnnouncement(transaction, attachment);
-				obj.applyBountyAnnouncement();
+				obj.applyBountyAnnouncement(transaction.getBlock());
 			}
 			
 			@Override
@@ -1136,7 +1136,6 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a \"counted\" bounty announcement for this submission");
 				}
 				
-				
 				byte[] hash = attachment.getHash();
 				if(PowAndBounty.hasHash(attachment.getWorkId(), hash)){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
@@ -1153,7 +1152,7 @@ public abstract class TransactionType {
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
 						valid = Executioner.executeBountyHooks(code.getSource(), attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()));
-					} catch (Exception e1) {
+					} catch (Exception e1) { // TODO, FIXME! Here, a flawed interpreter might cause netsplits
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
 								"Bounty is invalid: causes ElasticPL function to crash");

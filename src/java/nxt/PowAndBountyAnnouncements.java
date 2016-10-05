@@ -112,14 +112,14 @@ public final class PowAndBountyAnnouncements {
     private final DbKey dbKey;
     private final byte[] hash;
     
-    public void applyBountyAnnouncement(){
+    public void applyBountyAnnouncement(Block bl){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	if(w.isClosed() == false && w.isClose_pending() == false){
 	    	// Now create ledger event for "bounty submission"
 	        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
 	        Account participantAccount = Account.getAccount(this.accountId);
 	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, -1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
-	        w.register_bounty_announcement();
+	        w.register_bounty_announcement(bl);
     	}else{
     		this.too_late = true;
     		this.powAndBountyAnnouncementTable.insert(this);
