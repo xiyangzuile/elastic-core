@@ -3801,5 +3801,10 @@ ul.pagination2 li a:hover:not(.active) {background-color: #ddd;}
 }
 
 .label-partially {
-  background-color:#8f83ce;
+  background-color:#8f83ce !important;
+  border-color:#8f83ce !important;
+}
+
+.larger-sidebar-element br {
+  line-height: 2em;
 }

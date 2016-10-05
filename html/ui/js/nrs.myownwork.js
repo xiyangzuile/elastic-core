@@ -332,6 +332,9 @@ var NRS = (function(NRS, $, undefined) {
 	function moneyPaid(message){
 		return "<b>" + shortMoney((message.balance_pow_fund_orig+message.balance_bounty_fund_orig)-(message.balance_pow_fund+message.balance_bounty_fund)) + " XEL</b> paid out";
 	}
+	function moneyBountyForfeit(message){
+		return "<b>" + ((message.received_bounty_announcements-message.received_bounties)*10) + " XEL</b>";
+	}
 
 	function balancespan(message){
 		return writeIfTrue("<span class='label label-white label12px'>" + NRS.formatAmount(new BigInteger((message.balance_pow_fund + message.balance_bounty_fund).toString())) + " XEL</span>", message.closed == false);
@@ -521,14 +524,17 @@ var NRS = (function(NRS, $, undefined) {
 		}
 		else{
 			if(message.closed == false && message.close_pending == true){
-				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + "100% done" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			}else{
 			if(message.timedout)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			else if(message.cancelled)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			else
-				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + "100% done" + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+				if(message.received_bounties == message.received_bounty_announcements)
+				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+				else if(message.received_bounties < message.received_bounty_announcements)
+				return "<div class='row fourtwenty'><div class='col-md-9'><i class='fa fa-bank'></i> Made " + moneyBountyForfeit(message) + " with forfeited bounties</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			}
 			
 		}
@@ -762,21 +768,31 @@ var NRS = (function(NRS, $, undefined) {
 		}
 		else{
 			if(workItem.closed == false && workItem.close_pending == true){
-				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
+				$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-warning");
 				$("#work_indicator_inner").empty().append("Waiting for missing bounties");
 			}else{
 				if(workItem.timedout == true){
-					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-warning");
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-warning");
 					$("#work_indicator_inner").empty().append("Timed-out");
 				}
 				else if (workItem.cancelled == true){
-					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-danger");
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-danger");
 					$("#work_indicator_inner").empty().append("Cancelled");
 				}
 				else
 				{
-					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").addClass("btn-info");
+					
+
+					if(workItem.received_bounties == workItem.received_bounty_announcements)
+					{
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-info");
 					$("#work_indicator_inner").empty().append("Completed");
+					}
+					else if(workItem.received_bounties < workItem.received_bounty_announcements)
+					{
+					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-info").addClass("label-partially");
+					$("#work_indicator_inner").empty().append("Partially Completed");
+				    }
 				}
 			}
 			
