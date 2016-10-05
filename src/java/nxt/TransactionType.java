@@ -1133,7 +1133,7 @@ public abstract class TransactionType {
 				// check if we had an announcement for this bounty earlier
 				boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(), attachment.getHash());
 				if(!hadAnnouncement){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a \"counted\" bounty announcement for this submission");
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a \"counted\" bounty announcement for this submission with work_id " + attachment.getWorkId() + ", hash " + (new BigInteger(attachment.getHash()).toString(16)) + " and multi " + (new BigInteger(attachment.getMultiplicator()).toString(16)));
 				}
 				
 				byte[] hash = attachment.getHash();

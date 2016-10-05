@@ -11,6 +11,7 @@ import org.json.simple.JSONStreamAware;
 import nxt.NxtException;
 import nxt.PowAndBounty;
 import nxt.PowAndBountyAnnouncements;
+import nxt.Work;
 import nxt.db.DbIterator;
 
 
@@ -43,6 +44,12 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 			hash = null;
 		}
 
+		Work w = Work.getWork(wid);
+		if(w == null || w.isClosed() || w.isClose_pending()){
+			JSONObject response = new JSONObject();
+			response.put("approved", "deprecated");
+			return response;
+		}
       
 		 
 		JSONObject response = new JSONObject();
