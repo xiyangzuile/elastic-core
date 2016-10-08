@@ -1020,7 +1020,21 @@ public abstract class TransactionType {
 			@Override
 		    boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
 		        Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction.getAttachment();
-		        return isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, Convert.toHexString(attachment.getHashAnnounced()), duplicates, true);
+		        boolean duplicate = isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, Convert.toHexString(attachment.getHashAnnounced()), duplicates, true);
+		        if(duplicate == false){
+		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
+		        	// But first, check out how many more we want from what has been already confirmed!
+		        	Work w = Work.getWork(attachment.getWorkId());
+		        	int count_wanted = w.getBounty_limit();
+		        	int count_has_announcements = w.getReceived_bounty_announcements();
+		        	int left_wanted = count_wanted-count_has_announcements;
+		        	if(left_wanted<=0){
+		        		duplicate = true;
+		        	}else{
+			        	duplicate = isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
+		        	}
+		        }
+		        return duplicate;
 		    }
 			
 		

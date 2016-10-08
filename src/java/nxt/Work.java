@@ -57,7 +57,11 @@ public final class Work {
 
     };
 
-    private static final VersionedEntityDbTable<Work> workTable = new VersionedEntityDbTable<Work>("work", workDbKeyFactory) {
+    public int getReceived_bounty_announcements() {
+		return received_bounty_announcements;
+	}
+
+	private static final VersionedEntityDbTable<Work> workTable = new VersionedEntityDbTable<Work>("work", workDbKeyFactory) {
 
         @Override
         protected Work load(Connection con, ResultSet rs, DbKey dbKey) throws SQLException {
