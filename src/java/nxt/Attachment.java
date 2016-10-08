@@ -615,7 +615,6 @@ public interface Attachment extends Appendix {
 		public PiggybackedProofOfBountyAnnouncement(long workId, byte[] hash_assigned) {
 			this.workId = workId;
 			this.hashAnnounced = hash_assigned;
-			System.out.println("Created ANN Bounty: " + ((new BigInteger(hash_assigned)).toString(16)));
 		}
 
 		@Override
