@@ -45,7 +45,7 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 		}
 
 		Work w = Work.getWork(wid);
-		if(w == null || w.isClosed() || w.isClose_pending()){
+		if(w == null || w.isClosed()){
 			JSONObject response = new JSONObject();
 			response.put("approved", "deprecated");
 			return response;
