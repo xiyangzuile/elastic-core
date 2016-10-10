@@ -632,6 +632,21 @@ var NRS = (function(NRS, $) {
 					}
 				}
 			});
+
+			var convertNXTFieldsReplace = ["xel_per_bounty","xel_per_pow"];
+			$.each(convertNXTFieldsReplace, function(key, field) {
+				if (field in data) {
+					try {
+						data[field] = NRS.convertToNQT(data[field]);
+					} catch (err) {
+						$form.find(".error_message").html(String(err).escapeHTML()).show();
+						if (formErrorFunction) {
+							formErrorFunction(false, data);
+						}
+						NRS.unlockForm($modal, $btn);
+					}
+				}
+			});
 		}
 
 		if (data.doNotBroadcast || data.calculateFee) {
