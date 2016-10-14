@@ -280,7 +280,7 @@ public interface Attachment extends Appendix {
 		private final long workId;
 		private final byte[] multiplicator;
 		final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
+		public static MessageDigest dig = Crypto.md5();
 		public static String bytesToHex(byte[] bytes) {
 			char[] hexChars = new char[bytes.length * 2];
 			for (int j = 0; j < bytes.length; j++) {
@@ -291,34 +291,43 @@ public interface Attachment extends Appendix {
 			return new String(hexChars);
 		}
 
-		public int[] personalizedIntStream(byte[] publicKey, long blockId) {
-			int[] stream = new int[Constants.INTEGERS_FOR_WORK];
-			MessageDigest dig = Crypto.sha256();
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			try {
-				dos.write(publicKey);
-				dos.writeLong(this.workId);
-				dos.writeLong(blockId);
-				dos.write(this.multiplicator);
-				dos.close();
-			} catch (IOException e) {
-
-			}
-			byte[] longBytes = baos.toByteArray();
-			if (longBytes == null)
-				longBytes = new byte[0];
-			dig.update(longBytes);
-			byte[] digest = dig.digest();
-			for (int i = 0; i < 12; ++i) {
-				int got = toInt(digest, 0);
-				stream[i] = got;
-				dig.update(digest);
-				digest = dig.digest();
-			}
-			return stream;
-		}
+		public int[] personalizedIntStream(byte[] publicKey, long blockId){
+			int[] stream = new int[12];
+	    	
+	    	
+	    	
+	    	dig.reset();
+	    	dig.update(multiplicator);
+	    	dig.update(publicKey);
+	    	
+	    	byte[] b1 = new byte[16];
+	    	for (int i = 0; i < 8; ++i) {
+	    	  b1[i] = (byte) (workId >> (8 - i - 1 << 3));
+	    	}
+	    	
+	    	for (int i = 0; i < 8; ++i) {
+	    	  b1[i+8] = (byte) (blockId >> (8 - i - 1 << 3));
+	    	}
+	    	
+	    	dig.update(b1);
+	    	
+	    	byte[] digest = dig.digest();
+	    	int ln = digest.length;
+	    	if(ln==0){
+	    		digest=new byte[1];
+	    		digest[0]=0x01;
+	    		ln=1;
+	    	}
+	    	for(int i=0;i<12;++i){
+	    		int got = toInt(digest,i*4 % ln) ;
+	    		if(i>4){
+	    			got = got ^ stream[i-3];
+	    		}
+	    		stream[i] = got;
+	    	}
+	    	return stream;  
+	    	
+	    }
 
 		PiggybackedProofOfWork(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
@@ -427,7 +436,7 @@ public interface Attachment extends Appendix {
 			return workId;
 		}
 
-		public int toInt(byte[] bytes, int offset) {
+		public  static int toInt(byte[] bytes, int offset) {
 			int ret = 0;
 			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
 				ret <<= 8;
@@ -438,35 +447,44 @@ public interface Attachment extends Appendix {
 
 		private final long workId;
 		private final byte[] multiplicator;
-
-		public int[] personalizedIntStream(byte[] publicKey, long blockId) {
-			int[] stream = new int[Constants.INTEGERS_FOR_WORK];
-			MessageDigest dig = Crypto.sha256();
-
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			try {
-				dos.write(publicKey);
-				dos.writeLong(this.workId);
-				dos.writeLong(blockId);
-				dos.write(this.multiplicator);
-				dos.close();
-			} catch (IOException e) {
-
-			}
-			byte[] longBytes = baos.toByteArray();
-			if (longBytes == null)
-				longBytes = new byte[0];
-			dig.update(longBytes);
-			byte[] digest = dig.digest();
-			for (int i = 0; i < 12; ++i) {
-				int got = toInt(digest, 0);
-				stream[i] = got;
-				dig.update(digest);
-				digest = dig.digest();
-			}
-			return stream;
-		}
+		public MessageDigest dig = Crypto.md5();
+		public int[] personalizedIntStream(byte[] publicKey, long blockId){
+	    	int[] stream = new int[12];
+	    	
+	    	
+	    	
+	    	dig.reset();
+	    	dig.update(this.multiplicator);
+	    	dig.update(publicKey);
+	    	
+	    	byte[] b1 = new byte[16];
+	    	for (int i = 0; i < 8; ++i) {
+	    	  b1[i] = (byte) (workId >> (8 - i - 1 << 3));
+	    	}
+	    	
+	    	for (int i = 0; i < 8; ++i) {
+	    	  b1[i+8] = (byte) (blockId >> (8 - i - 1 << 3));
+	    	}
+	    	
+	    	dig.update(b1);
+	    	
+	    	byte[] digest = dig.digest();
+	    	int ln = digest.length;
+	    	if(ln==0){
+	    		digest=new byte[1];
+	    		digest[0]=0x01;
+	    		ln=1;
+	    	}
+	    	for(int i=0;i<12;++i){
+	    		int got = toInt(digest,i*4 % ln);
+	    		if(i>4){
+	    			got = got ^ stream[i-3];
+	    		}
+	    		stream[i] = got;
+	    	}
+	    	return stream;  
+	    	
+	    }
 
 		PiggybackedProofOfBounty(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
