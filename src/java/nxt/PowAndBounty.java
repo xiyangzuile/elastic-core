@@ -161,7 +161,7 @@ public final class PowAndBounty {
     public void applyPowPayment(Block bl){
     	Work w = Work.getWorkByWorkId(this.work_id);
     	
-    	if(w.isClosed() == false){
+    	if(w.isClosed() == false && w.isClose_pending() == false){
 	    	// Now create ledger event for "bounty submission"
 	        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
 	        Account participantAccount = Account.getAccount(this.accountId);
