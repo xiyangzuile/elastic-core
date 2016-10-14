@@ -72,7 +72,9 @@ public final class Crypto {
     public static MessageDigest sha256() {
         return getMessageDigest("SHA-256");
     }
-
+    public static MessageDigest md5() {
+        return getMessageDigest("MD5");
+    }
     public static MessageDigest ripemd160() {
         return new RIPEMD160.Digest();
     }
