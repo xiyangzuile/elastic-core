@@ -880,6 +880,10 @@ public abstract class TransactionType {
 		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
 		        	// But first, check out how many more we want from what has been already confirmed!
 		        	Work w = Work.getWork(attachment.getWorkId());
+		        	
+		        	if(w.isClose_pending()) return true;
+		        	
+		        	
 		        	long bal_fund = w.getBalance_pow_fund();
 		        	long xel_per_pow = w.getXel_per_pow();
 		        	long how_many_left = Math.floorDiv(bal_fund, xel_per_pow);
@@ -1043,6 +1047,8 @@ public abstract class TransactionType {
 		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
 		        	// But first, check out how many more we want from what has been already confirmed!
 		        	Work w = Work.getWork(attachment.getWorkId());
+		        	
+		        	if(w.isClose_pending()) return true;
 		        	int count_wanted = w.getBounty_limit();
 		        	int count_has_announcements = w.getReceived_bounty_announcements();
 		        	int left_wanted = count_wanted-count_has_announcements;
@@ -1070,6 +1076,8 @@ public abstract class TransactionType {
 				if(w==null){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
+				
+				
 				
 				byte[] hash = attachment.getHashAnnounced();
 				if(PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash)){
@@ -1161,6 +1169,8 @@ public abstract class TransactionType {
 				if(w==null){
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
+				
+				
 				
 				// check if we had an announcement for this bounty earlier
 				boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(), attachment.getHash());
