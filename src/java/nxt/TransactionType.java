@@ -210,6 +210,25 @@ public abstract class TransactionType {
         }
         return true;
     }
+    
+    static boolean isDuplicateOnlyCheck(TransactionType uniqueType, String key, Map<TransactionType, Map<String, Integer>> duplicates, int maxCount) {
+        Map<String,Integer> typeDuplicates = duplicates.get(uniqueType);
+        if (typeDuplicates == null) {
+            typeDuplicates = new HashMap<>();
+            duplicates.put(uniqueType, typeDuplicates);
+        }
+        Integer currentCount = typeDuplicates.get(key);
+        if (currentCount == null) {
+            return false;
+        }
+        if (currentCount == 0) {
+            return true;
+        }
+        if (currentCount < maxCount) {
+            return false;
+        }
+        return true;
+    }
 
     boolean isPruned(long transactionId) {
         return false;
@@ -900,7 +919,7 @@ public abstract class TransactionType {
 		        	if(left_wanted<=0){
 		        		duplicate = true;
 		        	}else{
-			        	duplicate = isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
+			        	duplicate = isDuplicateOnlyCheck(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
 		        	}
 		        }
 		        return duplicate;
