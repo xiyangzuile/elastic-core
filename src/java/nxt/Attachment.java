@@ -272,7 +272,7 @@ public interface Attachment extends Appendix {
 			int ret = 0;
 			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
 				ret <<= 8;
-				ret |= (int) bytes[i] & 0xFF;
+				ret |= (int) bytes[i + offset] & 0xFF;
 			}
 			return ret;
 		}
@@ -314,9 +314,12 @@ public interface Attachment extends Appendix {
 	    	byte[] digest = dig.digest();
 	    	int ln = digest.length;
 	    	if(ln==0){
-	    		digest=new byte[1];
+	    		digest=new byte[4];
 	    		digest[0]=0x01;
-	    		ln=1;
+	    		digest[1]=0x01;
+	    		digest[2]=0x01;
+	    		digest[3]=0x01;
+	    		ln=4;
 	    	}
 	    	for(int i=0;i<12;++i){
 	    		int got = toInt(digest,i*4 % ln) ;
@@ -440,7 +443,7 @@ public interface Attachment extends Appendix {
 			int ret = 0;
 			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
 				ret <<= 8;
-				ret |= (int) bytes[i] & 0xFF;
+				ret |= (int) bytes[i + offset] & 0xFF;
 			}
 			return ret;
 		}
@@ -471,12 +474,15 @@ public interface Attachment extends Appendix {
 	    	byte[] digest = dig.digest();
 	    	int ln = digest.length;
 	    	if(ln==0){
-	    		digest=new byte[1];
+	    		digest=new byte[4];
 	    		digest[0]=0x01;
-	    		ln=1;
+	    		digest[1]=0x01;
+	    		digest[2]=0x01;
+	    		digest[3]=0x01;
+	    		ln=4;
 	    	}
 	    	for(int i=0;i<12;++i){
-	    		int got = toInt(digest,i*4 % ln);
+	    		int got = toInt(digest,i*4 % ln) ;
 	    		if(i>4){
 	    			got = got ^ stream[i-3];
 	    		}
