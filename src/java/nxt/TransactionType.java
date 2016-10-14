@@ -754,18 +754,6 @@ public abstract class TransactionType {
 			@Override
             boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
 				
-				// Whitelist one specific, broken TX on the testnet (TODO, FIXME, TOREMOVE)
-				List<Long> valid = new ArrayList<Long>();
-				valid.add(Convert.parseUnsignedLong("7598634667181063828"));
-				valid.add(Convert.parseUnsignedLong("2649304177138953307"));
-				valid.add(Convert.parseUnsignedLong("10947343728076427070"));
-				valid.add(Convert.parseUnsignedLong("16510862602090746736"));
-				valid.add(Convert.parseUnsignedLong("12295851544522530488"));
-				valid.add(Convert.parseUnsignedLong("4910487200763544778"));
-				valid.add(Convert.parseUnsignedLong("17361899352291164537"));
-				valid.add(Convert.parseUnsignedLong("16952754390074337318"));
-				if(valid.contains(transaction.getId()))
-					return false;
 				
                 Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
                 return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
@@ -774,7 +762,15 @@ public abstract class TransactionType {
 			@Override
             boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
                 Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction.getAttachment();
-                return isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true);
+                boolean duplicate = isDuplicate(WorkControl.CANCEL_TASK_REQUEST, String.valueOf(attachment.getWorkId()), duplicates, true) ;                
+                
+                if(duplicate == false){
+                	Work w = Work.getWorkByWorkId(attachment.getWorkId());
+                	if(w.isClosed()) return true;
+                	if(w.isClose_pending()) return true;
+                }
+                
+                return duplicate;
             }
 
 			@Override
@@ -788,14 +784,9 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist yet");
 				}
 				
-				// Whitelist one specific, broken TX on the testnet (TODO, FIXME, TOREMOVE)
-				List<Long> valid = new ArrayList<Long>();
-				valid.add(Convert.parseUnsignedLong("15378102222798893417"));
-				valid.add(Convert.parseUnsignedLong("17933960539120946680"));
-				valid.add(Convert.parseUnsignedLong("9543329167509234430"));
-				
-				if(w.isClosed() && !valid.contains(transaction.getId())){
-					throw new NxtException.NotValidException("Work " + attachment.getWorkId() + " is already closed");
+
+				if(w.isClosed()){
+					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " is already closed");
 				}
 				
 				if (w.getSender_account_id() != transaction
@@ -882,7 +873,7 @@ public abstract class TransactionType {
 		        	Work w = Work.getWork(attachment.getWorkId());
 		        	
 		        	if(w.isClose_pending()) return true;
-		        	
+		        	if(w.isClosed()) return true;
 		        	
 		        	long bal_fund = w.getBalance_pow_fund();
 		        	long xel_per_pow = w.getXel_per_pow();
@@ -895,6 +886,21 @@ public abstract class TransactionType {
 		        		duplicate = true;
 		        	}else{
 			        	duplicate = isDuplicate(WorkControl.PROOF_OF_WORK, String.valueOf(attachment.getWorkId()), duplicates, left);
+		        	}
+		        }
+                
+                if(duplicate == false){
+		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
+		        	// But first, check out how many more we want from what has been already confirmed!
+		        	Work w = Work.getWork(attachment.getWorkId());
+		        	
+		        	int count_wanted = w.getBounty_limit();
+		        	int count_has_announcements = w.getReceived_bounty_announcements();
+		        	int left_wanted = count_wanted-count_has_announcements;
+		        	if(left_wanted<=0){
+		        		duplicate = true;
+		        	}else{
+			        	duplicate = isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
 		        	}
 		        }
 		        return duplicate;
@@ -1049,6 +1055,8 @@ public abstract class TransactionType {
 		        	Work w = Work.getWork(attachment.getWorkId());
 		        	
 		        	if(w.isClose_pending()) return true;
+		        	if(w.isClosed()) return true;
+		        	
 		        	int count_wanted = w.getBounty_limit();
 		        	int count_has_announcements = w.getReceived_bounty_announcements();
 		        	int left_wanted = count_wanted-count_has_announcements;
@@ -1154,7 +1162,16 @@ public abstract class TransactionType {
 			@Override
             boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
                 Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction.getAttachment();
-                return isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()), duplicates, true);
+                boolean duplicate = isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()), duplicates, true);
+		        if(duplicate == false){
+		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
+		        	// But first, check out how many more we want from what has been already confirmed!
+		        	Work w = Work.getWork(attachment.getWorkId());
+		        	
+		        	if(w.isClosed()) return true;
+		        	
+		        }
+		        return duplicate;
             }
 			
 	
