@@ -25,7 +25,7 @@ public final class Constants {
     public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
     public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
     public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
-    public static BigInteger least_possible_target = new BigInteger("0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",16);
+    public static BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",16);
     public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
     public static final int MAX_TITLE_LENGTH = 255;
     public static final int MAX_WORK_CODE_LENGTH = 1024*1024;

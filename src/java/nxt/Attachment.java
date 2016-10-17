@@ -327,6 +327,7 @@ public interface Attachment extends Appendix {
 	    			got = got ^ stream[i-3];
 	    		}
 	    		stream[i] = got;
+	    		
 	    	}
 	    	return stream;  
 	    	
