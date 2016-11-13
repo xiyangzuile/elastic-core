@@ -30,155 +30,162 @@ import nxt.db.DbUtils;
 import nxt.db.PrunableDbTable;
 
 public final class Redeem {
-	
+
 	Map<String, Long> allowedRedeems = new HashMap<String, Long>();
 
-    private static final DbKey.LongKeyFactory<Redeem> redeemKeyFactory = new DbKey.LongKeyFactory<Redeem>("id") {
-        @Override
-        public DbKey newKey(Redeem prunableSourceCode) {
-            return prunableSourceCode.dbKey;
-        }
-    };
+	private static final DbKey.LongKeyFactory<Redeem> redeemKeyFactory = new DbKey.LongKeyFactory<Redeem>("id") {
+		@Override
+		public DbKey newKey(Redeem prunableSourceCode) {
+			return prunableSourceCode.dbKey;
+		}
+	};
 
-    private static final PrunableDbTable<Redeem> redeemTable = new PrunableDbTable<Redeem>("redeems", redeemKeyFactory) {
-        @Override
-        protected Redeem load(Connection con, ResultSet rs, DbKey dbKey) throws SQLException {
-            return new Redeem(rs, dbKey);
-        }
-        @Override
-        protected void save(Connection con, Redeem prunableSourceCode) throws SQLException {
-        	prunableSourceCode.save(con);
-        }
-        @Override
-        protected String defaultSort() {
-            return " ORDER BY block_timestamp DESC, db_id DESC ";
-        }
-    };
+	private static final PrunableDbTable<Redeem> redeemTable = new PrunableDbTable<Redeem>("redeems",
+			redeemKeyFactory) {
+		@Override
+		protected Redeem load(Connection con, ResultSet rs, DbKey dbKey) throws SQLException {
+			return new Redeem(rs, dbKey);
+		}
 
-    public static int getCount() {
-        return redeemTable.getCount();
-    }
+		@Override
+		protected void save(Connection con, Redeem prunableSourceCode) throws SQLException {
+			prunableSourceCode.save(con);
+		}
 
-    public static DbIterator<Redeem> getAll(int from, int to) {
-        return redeemTable.getAll(from, to);
-    }
+		@Override
+		protected String defaultSort() {
+			return " ORDER BY block_timestamp DESC, db_id DESC ";
+		}
+	};
 
+	public static int getCount() {
+		return redeemTable.getCount();
+	}
 
-    static void init() {}
+	public static DbIterator<Redeem> getAll(int from, int to) {
+		return redeemTable.getAll(from, to);
+	}
 
-    private final long id;
-    private final DbKey dbKey;
-    private String address;
-    private String secp_signatures;
-    private long receiver_id;
-    private long amount;
-    private final int transactionTimestamp;
-    private final int blockTimestamp;
-    private final int height;
+	static void init() {
+	}
 
-    private Redeem(Transaction transaction, int blockTimestamp, int height) {
-        this.id = transaction.getId();
-        this.dbKey = redeemKeyFactory.newKey(this.id);
-        this.blockTimestamp = blockTimestamp;
-        this.height = height;
-        this.transactionTimestamp = transaction.getTimestamp();
-        
-        Attachment.RedeemAttachment r = (Attachment.RedeemAttachment)transaction.getAttachment();
-        this.address = r.getAddress();
-        this.receiver_id = r.getReceiver_id();
-        this.secp_signatures = r.getSecp_signatures();
-        this.amount = transaction.getAmountNQT();
-    }
-    
-   private void update(Transaction tx){
-	   Attachment.RedeemAttachment r = (Attachment.RedeemAttachment)tx.getAttachment();
-       this.address = r.getAddress();
-       this.receiver_id = r.getReceiver_id();
-       this.secp_signatures = r.getSecp_signatures();
-       this.amount = tx.getAmountNQT();
-   }
+	private final long id;
+	private final DbKey dbKey;
+	private String address;
+	private String secp_signatures;
+	private long receiver_id;
+	private long amount;
+	private final int transactionTimestamp;
+	private final int blockTimestamp;
+	private final int height;
 
-   
+	private Redeem(Transaction transaction, int blockTimestamp, int height) {
+		this.id = transaction.getId();
+		this.dbKey = redeemKeyFactory.newKey(this.id);
+		this.blockTimestamp = blockTimestamp;
+		this.height = height;
+		this.transactionTimestamp = transaction.getTimestamp();
 
-    private Redeem(ResultSet rs, DbKey dbKey) throws SQLException {
-        this.id = rs.getLong("id");
-        this.dbKey = dbKey;
-        this.address = rs.getString("address");
-        this.secp_signatures = rs.getString("secp_signatures");
-        this.receiver_id = rs.getLong("receiver_id");
-        this.blockTimestamp = rs.getInt("block_timestamp");
-        this.transactionTimestamp = rs.getInt("transaction_timestamp");
-        this.height = rs.getInt("height");
-        this.amount = rs.getLong("amount");
-    }
+		Attachment.RedeemAttachment r = (Attachment.RedeemAttachment) transaction.getAttachment();
+		this.address = r.getAddress();
+		this.receiver_id = r.getReceiver_id();
+		this.secp_signatures = r.getSecp_signatures();
+		this.amount = transaction.getAmountNQT();
+	}
 
-    private void save(Connection con) throws SQLException {
-        
-        try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO redeems (id, address, secp_signatures, receiver_id, amount, block_timestamp, transaction_timestamp, height, language) "
-                + "KEY (id) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
-            int i = 0;
-            pstmt.setLong(++i, this.id);
-            pstmt.setString(++i, this.address);
-            pstmt.setString(++i, this.secp_signatures);
-            pstmt.setLong(++i, this.receiver_id);
-            pstmt.setLong(++i, this.amount);
-            pstmt.setInt(++i, this.blockTimestamp);
-            pstmt.setInt(++i, this.transactionTimestamp);
-            pstmt.setInt(++i, this.height);
-            pstmt.executeUpdate();
-        }
-    }
+	private void update(Transaction tx) {
+		Attachment.RedeemAttachment r = (Attachment.RedeemAttachment) tx.getAttachment();
+		this.address = r.getAddress();
+		this.receiver_id = r.getReceiver_id();
+		this.secp_signatures = r.getSecp_signatures();
+		this.amount = tx.getAmountNQT();
+	}
 
-    public long getId() {
-        return id;
-    }
+	private Redeem(ResultSet rs, DbKey dbKey) throws SQLException {
+		this.id = rs.getLong("id");
+		this.dbKey = dbKey;
+		this.address = rs.getString("address");
+		this.secp_signatures = rs.getString("secp_signatures");
+		this.receiver_id = rs.getLong("receiver_id");
+		this.blockTimestamp = rs.getInt("block_timestamp");
+		this.transactionTimestamp = rs.getInt("transaction_timestamp");
+		this.height = rs.getInt("height");
+		this.amount = rs.getLong("amount");
+	}
 
-    public int getTransactionTimestamp() {
-        return transactionTimestamp;
-    }
+	private void save(Connection con) throws SQLException {
 
-    public int getBlockTimestamp() {
-        return blockTimestamp;
-    }
+		try (PreparedStatement pstmt = con.prepareStatement(
+				"MERGE INTO redeems (id, address, secp_signatures, receiver_id, amount, block_timestamp, transaction_timestamp, height, language) "
+						+ "KEY (id) " + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+			int i = 0;
+			pstmt.setLong(++i, this.id);
+			pstmt.setString(++i, this.address);
+			pstmt.setString(++i, this.secp_signatures);
+			pstmt.setLong(++i, this.receiver_id);
+			pstmt.setLong(++i, this.amount);
+			pstmt.setInt(++i, this.blockTimestamp);
+			pstmt.setInt(++i, this.transactionTimestamp);
+			pstmt.setInt(++i, this.height);
+			pstmt.executeUpdate();
+		}
+	}
 
-    public int getHeight() {
-        return height;
-    }
+	public long getId() {
+		return id;
+	}
 
-    static void add(TransactionImpl transaction) {
-        add(transaction, Nxt.getBlockchain().getLastBlockTimestamp(), Nxt.getBlockchain().getHeight());
-    }
+	public int getTransactionTimestamp() {
+		return transactionTimestamp;
+	}
 
-    static void add(TransactionImpl transaction, int blockTimestamp, int height) {
-            Redeem prunableSourceCode = redeemTable.get(transaction.getDbKey());
-            if (prunableSourceCode == null) {
-            	prunableSourceCode = new Redeem(transaction, blockTimestamp, height);
-            } else if (prunableSourceCode.height != height) {
-                throw new RuntimeException("Attempt to modify prunable source code from height " + prunableSourceCode.height + " at height " + height);
-            }
-            prunableSourceCode.update(transaction);
-            redeemTable.insert(prunableSourceCode);
-            
-            // Credit the redeemer account
-            AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.REDEEM_PAYMENT;
-            Account participantAccount = Account.addOrGetAccount(prunableSourceCode.receiver_id);
-            if (participantAccount == null) { // should never happen
-            	participantAccount = Account.getAccount(Genesis.FUCKED_TX_ID);
-            }
-	        participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), prunableSourceCode.amount);
-    }
+	public int getBlockTimestamp() {
+		return blockTimestamp;
+	}
 
-    static boolean isAlreadyRedeemed(String address) {
-        try (Connection con = Db.db.getConnection();
-                PreparedStatement pstmt = con.prepareStatement("SELECT receipient_id FROM redeems WHERE address = ?")) {
-            pstmt.setString(1, address);
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return !rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	public int getHeight() {
+		return height;
+	}
+
+	static void add(TransactionImpl transaction) {
+		add(transaction, Nxt.getBlockchain().getLastBlockTimestamp(), Nxt.getBlockchain().getHeight());
+	}
+
+	static void add(TransactionImpl transaction, int blockTimestamp, int height) {
+
+		boolean was_fresh = false;
+
+		Redeem prunableSourceCode = redeemTable.get(transaction.getDbKey());
+		if (prunableSourceCode == null) {
+			was_fresh = true;
+			prunableSourceCode = new Redeem(transaction, blockTimestamp, height);
+		} else if (prunableSourceCode.height != height) {
+			throw new RuntimeException("Attempt to modify prunable source code from height " + prunableSourceCode.height
+					+ " at height " + height);
+		}
+		prunableSourceCode.update(transaction);
+		redeemTable.insert(prunableSourceCode);
+
+		// Credit the redeemer account
+		AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.REDEEM_PAYMENT;
+		Account participantAccount = Account.addOrGetAccount(prunableSourceCode.receiver_id);
+		if (participantAccount == null) { // should never happen
+			participantAccount = Account.getAccount(Genesis.FUCKED_TX_ID);
+		}
+		if(was_fresh)
+			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), prunableSourceCode.amount);
+	}
+
+	static boolean isAlreadyRedeemed(String address) {
+		try (Connection con = Db.db.getConnection();
+				PreparedStatement pstmt = con.prepareStatement("SELECT receipient_id FROM redeems WHERE address = ?")) {
+			pstmt.setString(1, address);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				return !rs.next();
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
 }

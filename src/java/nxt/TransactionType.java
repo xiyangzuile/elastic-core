@@ -367,7 +367,21 @@ public abstract class TransactionType {
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-               // TODO
+            	Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction.getAttachment();
+            	
+                if (!attachment.getAddress().matches("[a-zA-Z0-9-]*")) {
+                	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.address");
+                }
+                
+                // Check if this "address" is a valid entry in the "genesis block" claim list
+                
+                if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9-]*")) {
+                	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.secp_signatures");
+                }
+                if (attachment.getReceiver_id()==0) {
+                	throw new NxtException.NotValidException("Invalid receiver ID in redeem transaction");
+                }
+     
             }
             
             @Override
