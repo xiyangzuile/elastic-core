@@ -105,6 +105,7 @@ public final class Work {
 
     public void natural_timeout(Block bl) {
     	
+    	
     	if(closed == true){
     		return;
     	}

@@ -38,6 +38,7 @@ public abstract class TransactionType {
     private static final byte TYPE_ACCOUNT_CONTROL = 2;
     private static final byte TYPE_WORK_CONTROL = 3;
     private static final byte SUBTYPE_PAYMENT_ORDINARY_PAYMENT = 0;
+    private static final byte SUBTYPE_PAYMENT_REDEEM = 1;
     private static final byte SUBTYPE_MESSAGING_ARBITRARY_MESSAGE = 0;
     private static final byte SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 1;
     private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 2;
@@ -55,6 +56,8 @@ public abstract class TransactionType {
                 switch (subtype) {
                     case SUBTYPE_PAYMENT_ORDINARY_PAYMENT:
                         return Payment.ORDINARY;
+                    case SUBTYPE_PAYMENT_REDEEM:
+                        return Payment.REDEEM;
                     default:
                         return null;
                 }
@@ -332,6 +335,40 @@ public abstract class TransactionType {
                 if (transaction.getAmountNQT() <= 0 || transaction.getAmountNQT() >= Constants.MAX_BALANCE_NQT) {
                     throw new NxtException.NotValidException("Invalid ordinary payment");
                 }
+            }
+
+        };
+        
+        public static final TransactionType REDEEM = new Payment() {
+
+            @Override
+            public final byte getSubtype() {
+                return TransactionType.SUBTYPE_PAYMENT_REDEEM;
+            }
+
+            @Override
+            public final LedgerEvent getLedgerEvent() {
+                return LedgerEvent.REDEEM_PAYMENT;
+            }
+
+            @Override
+            public String getName() {
+                return "RedeemPayment";
+            }
+
+            @Override
+            Attachment.RedeemAttachment parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
+            	return new Attachment.RedeemAttachment(buffer, transactionVersion);
+            }
+
+            @Override
+            Attachment.RedeemAttachment parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
+            	return new Attachment.RedeemAttachment(attachmentData);
+            }
+
+            @Override
+            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+               // TODO
             }
 
         };

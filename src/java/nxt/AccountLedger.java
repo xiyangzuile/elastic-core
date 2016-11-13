@@ -392,6 +392,7 @@ public class AccountLedger {
             TRANSACTION_FEE(50, true),
         // TYPE_PAYMENT
             ORDINARY_PAYMENT(3, true),
+            REDEEM_PAYMENT(150, true),
         // TYPE_MESSAGING
             ACCOUNT_INFO(4, true),
             ALIAS_ASSIGNMENT(5, true),

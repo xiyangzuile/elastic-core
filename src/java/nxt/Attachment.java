@@ -261,6 +261,71 @@ public interface Attachment extends Appendix {
 			return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
 		}
 	}
+	
+	public final static class RedeemAttachment extends AbstractAttachment {
+
+		private short address_length;
+		private short secp_length;
+		private String address;
+		private String secp_signatures;
+		private long receiver_id;
+
+		RedeemAttachment(ByteBuffer buffer, byte transactionVersion)
+				throws NxtException.NotValidException {
+			super(buffer, transactionVersion);
+			this.address_length = buffer.getShort();
+			this.address = Convert.readString(buffer, address_length, 4096);
+			this.secp_length = buffer.getShort();
+			this.secp_signatures = Convert.readString(buffer, secp_length, 10400);
+			this.receiver_id = buffer.getLong();
+		}
+
+		RedeemAttachment(JSONObject attachmentData) {
+			super(attachmentData);
+			this.receiver_id = Convert.parseUnsignedLong((String) attachmentData.get("reveiver_id"));
+			this.address = (String) attachmentData.get("address");
+			this.address_length = (short) this.address.length();
+			this.secp_signatures = (String) attachmentData.get("secp_signatures");
+			this.secp_length = (short) this.secp_signatures.length();
+		}
+
+		public RedeemAttachment(String address, String secp_signatures, long receiver_id) {
+			this.address = address;
+			this.address_length = (short) address.length();
+			this.secp_signatures = secp_signatures;
+			this.secp_length = (short) this.secp_signatures.length();
+			this.receiver_id = receiver_id;
+		}
+
+		@Override
+		int getMySize() {
+			return 2 + 2 + 8 + Convert.toBytes(this.address).length + Convert.toBytes(this.secp_signatures).length;
+		}
+
+		@Override
+		void putMyBytes(ByteBuffer buffer) {
+			buffer.putShort((short) Convert.toBytes(this.address).length);
+			byte[] byteAddr = Convert.toBytes(this.address);
+			byte[] byteSecp = Convert.toBytes(this.secp_signatures);
+			buffer.put(byteAddr);
+			buffer.putShort((short) Convert.toBytes(this.secp_signatures).length);
+			buffer.put(byteSecp);
+			buffer.putLong(this.receiver_id);
+		}
+
+		@Override
+		void putMyJSON(JSONObject attachment) {
+			attachment.put("receiver_id", Convert.toUnsignedLong(this.receiver_id));
+			attachment.put("address", this.address);
+			attachment.put("secp_signatures", this.secp_signatures);
+		}
+
+		@Override
+		public TransactionType getTransactionType() {
+			return TransactionType.Payment.REDEEM;
+		}
+	}
+	
 
 	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
