@@ -31,6 +31,7 @@ import org.json.simple.JSONObject;
 
 import nxt.AccountLedger.LedgerEvent;
 import nxt.crypto.Crypto;
+import nxt.db.DbIterator;
 import nxt.util.Convert;
 import nxt.util.Logger;
 
@@ -49,7 +50,8 @@ public final class BlockImpl implements Block {
 	
 	private volatile List<TransactionImpl> blockTransactions;
 	private static LRUCache powDifficultyLRUCache = new LRUCache(50);
-
+	private static DoubleLongLRUCache powPerBlockAndWorkLRUCache = new DoubleLongLRUCache(100);
+	
 	private byte[] blockSignature;
 	private BigInteger cumulativeDifficulty = BigInteger.ZERO;
 	private long baseTarget = Constants.INITIAL_BASE_TARGET;
@@ -478,82 +480,33 @@ public final class BlockImpl implements Block {
 		return BlockchainImpl.getInstance().getBlock(this.getPreviousBlockId());
 	}
 	
-	
-	
 	public static BigInteger calculateNextMinPowTarget(long lastBlockId) {
 		
-		// First check in cache
 		BigInteger cached = powDifficultyLRUCache.get(lastBlockId);
 		if(cached != null)
 			return cached;
-
-		// Genesis specialty
-		if (lastBlockId == 0)
-			return Constants.least_possible_target;
-
-		Block b = Nxt.getBlockchain().getBlock(lastBlockId);
 		
-		// try to cycle over the last N blocks, or - if height is smaller -
-		// over entire blockchain
-		int go_back_counter = Math.min(Constants.POWRETARGET_N_BLOCKS, b.getHeight());
-		int original_back_counter = go_back_counter;
-
-		// ... and count the number of PoW transactions inside those blocks
-		int pow_counter = 0;
-		BigInteger last_pow_target = b.getMinPowTarget();
-		while (go_back_counter > 0) {
-			pow_counter += b.countNumberPOW();
-			b = b.getPreviousBlock();
-			go_back_counter -= 1;
+		BigInteger converted_new_pow = BigInteger.valueOf(0);
+		
+		DbIterator<Work> it = Work.getLastTenClosed();
+		long counter = 0;
+		
+		if(it.hasNext()==false){
+			converted_new_pow = Constants.least_possible_target;
+		}else{
+			while(it.hasNext()){
+				Work w = it.next();
+				BigInteger candidate = w.getWork_min_pow_target_bigint();
+				if(candidate.compareTo(converted_new_pow)==1){
+					converted_new_pow = candidate;
+				}
+			}
 		}
 		
-		// scale up if there are not yet N blocks there, avoids MADNESS
-		if(original_back_counter<Constants.POWRETARGET_N_BLOCKS){
-			
-			double scaledCounter = (double)pow_counter;
-			
-			scaledCounter = scaledCounter / (1.0*original_back_counter);
-			scaledCounter = scaledCounter * Constants.POWRETARGET_N_BLOCKS;
-
-			pow_counter = (int)scaledCounter;
-		}
-
-		// if no PoW was sent during last n blocks, something is strange, give
-		// back the lowest possible target
-		if (pow_counter == 0){
-			pow_counter = 1; // dirty ugly fix
-		}
-
-		// Check the needed adjustment here, but make sure we do not adjust more
-		// than * 2 or /2.
-		// This will prevent huge difficulty jumps, yet it will quickly
-		// (exponentially) approxiamate the desired number
-		// of PoW packages per block.
-		BigDecimal new_pow_target = new BigDecimal(last_pow_target);
-		double factor = (double)(Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER) / (double)pow_counter; // RETARGETING
-		
-		// limits, we do not want to change the target too CRAZY at once
-		if (factor > 1.25)
-			factor = 1.25;
-		if (factor < 0.75)
-			factor = (double) 0.75;
-		//System.out.println("Retargetting: Had POW " + pow_counter + " should be " + ((Constants.POWRETARGET_N_BLOCKS * Constants.POWRETARGET_POW_PER_BLOCK_SCALER)) + ", scaling by factor " + factor);
-
-		BigDecimal factorDec = new BigDecimal(factor);
-
-		// Apply the retarget: Adjust target so that we again - on average -
-		// reach n PoW per block
-		new_pow_target = new_pow_target.multiply(factorDec);
-		BigInteger converted_new_pow = new_pow_target.toBigInteger();
-		
-		if(converted_new_pow.compareTo(Constants.least_possible_target)==1) converted_new_pow = Constants.least_possible_target;
 		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
-		//System.out.println("    old diff was: " + last_pow_target.toString(16));
-		//System.out.println("    new diff is : " + converted_new_pow.toString(16));
-
-
 		return converted_new_pow;
 	}
+	
 
 	public int countNumberPOW() {
 		int cntr = 0;
@@ -563,6 +516,22 @@ public final class BlockImpl implements Block {
 			}
 		}
 		return cntr;
+	}
+	
+	public long countNumberPOWPerWorkId(long work_id) {
+		long cached = powPerBlockAndWorkLRUCache.get(this.getId(), work_id);
+		if(cached != -1)
+			return cached;
+		cached = 0;
+		for (TransactionImpl t : getTransactions()) {
+			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK) {
+				Attachment.PiggybackedProofOfWork patt = (Attachment.PiggybackedProofOfWork)t.getAttachment();
+				if(patt.getWorkId() == work_id)
+					cached++;
+			}
+		}
+		powPerBlockAndWorkLRUCache.set(this.getId(), work_id, cached);
+		return cached;
 	}
 
 	@Override

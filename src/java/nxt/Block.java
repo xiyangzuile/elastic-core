@@ -70,6 +70,8 @@ public interface Block {
     BigInteger getMinPowTarget();
     
     int countNumberPOW();
+    
+    long countNumberPOWPerWorkId(long work_id);
 
 
 }

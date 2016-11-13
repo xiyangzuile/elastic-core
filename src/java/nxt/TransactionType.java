@@ -946,36 +946,10 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
 				}
 				
-				Long rel_id;
-				
-				if(transaction.getBlock() != null)
-					rel_id = transaction.getBlock().getPreviousBlockId();
-				else
-					rel_id = BlockchainImpl.getInstance().getLastBlockId();
-				
-				BigInteger soft_unblock_target = soft_unblock_cache.get(rel_id);
-				BlockImpl b = BlockchainImpl.getInstance().getBlock(rel_id);
-				BigInteger real_block_target = b.getMinPowTarget();
-
-				if(soft_unblock_target == null){
-					soft_unblock_target = real_block_target;
-					int counter = Constants.POW_VERIFICATION_UNBLOCK_WHEN_VALID_IN_LAST_BLOCKS;
-					while (counter > 0){
-						counter --;
-						b = b.getPreviousBlock();
-						if(b == null)
-							break;
-						BigInteger tempDiff = b.getMinPowTarget();
-						if (tempDiff.compareTo(soft_unblock_target) > 0) {
-							soft_unblock_target = tempDiff;
-						}
-					}
-					soft_unblock_cache.set(rel_id, soft_unblock_target);
-				}
+				BigInteger real_block_target = w.getWork_min_pow_target_bigint();
 				
 				POW_CHECK_RESULT valid = POW_CHECK_RESULT.ERROR;
-				
-				
+								
 				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
 					// If the tx is already pruned we assume POW is valid!
 					// no need to execute after all! We assume that the pruning is happened long enough ago
@@ -983,19 +957,15 @@ public abstract class TransactionType {
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
-						valid = Executioner.executeProofOfWork(code.getSource(),attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()), real_block_target, soft_unblock_target);
+						valid = Executioner.executeProofOfWork(code.getSource(),attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()), real_block_target, real_block_target /* deprecated soft unblock */);
 					} catch (Exception e1) {
 						e1.printStackTrace();
 						throw new NxtException.NotValidException(
 								"Proof of work is invalid: causes ElasticPL function to crash");
 					}
 					if (valid == POW_CHECK_RESULT.ERROR) {
-						throw new NxtException.NotValidException(
-								"Proof of work is invalid: does neither meet target " + real_block_target.toString(16) + " nor the soft block target " + soft_unblock_target.toString(16));
-					}
-					if (valid == POW_CHECK_RESULT.SOFT_UNBLOCKED) {
 						throw new NxtException.LostValidityException(
-								"Proof of work became invalid: block target changed recently");
+								"Proof of work is invalid: does not anylonger meet target " + real_block_target.toString(16));
 					}
 				}
 			}
