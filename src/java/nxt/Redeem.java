@@ -32,7 +32,29 @@ import nxt.db.PrunableDbTable;
 public final class Redeem {
 
 	Map<String, Long> allowedRedeems = new HashMap<String, Long>();
+	
+	public static String[] listOfAddresses = {};
+	public static Long[] amounts = {};
 
+	
+	public static boolean hasAddress(String targetValue) {
+		for(String s: listOfAddresses){
+			if(s.equals(targetValue))
+				return true;
+		}
+		return false;
+	}
+	
+	public static Long getClaimableAmount(String targetValue) {
+		int cntr = 0;
+		for(String s: listOfAddresses){
+			if(s.equals(targetValue))
+				return amounts[cntr];
+			cntr += 1;
+		}
+		return 0L;
+	}
+	
 	private static final DbKey.LongKeyFactory<Redeem> redeemKeyFactory = new DbKey.LongKeyFactory<Redeem>("id") {
 		@Override
 		public DbKey newKey(Redeem prunableSourceCode) {

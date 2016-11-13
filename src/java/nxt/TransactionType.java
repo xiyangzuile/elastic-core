@@ -369,11 +369,24 @@ public abstract class TransactionType {
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
             	Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction.getAttachment();
             	
+            	if(transaction.getFeeNQT()!=0){
+                	throw new NxtException.NotValidException("You have to send a redeem TX without any fees");
+                }
+            	
                 if (!attachment.getAddress().matches("[a-zA-Z0-9-]*")) {
                 	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.address");
                 }
                 
                 // Check if this "address" is a valid entry in the "genesis block" claim list
+                if(Redeem.hasAddress(attachment.getAddress()) == false){
+                	throw new NxtException.NotValidException("You have no right to claim from genesis");
+                }
+                
+                // Check if the amountNQT matches the "allowed" amount
+                Long claimableAmount = Redeem.getClaimableAmount(attachment.getAddress());
+                if(claimableAmount<=0 || claimableAmount != transaction.getAmountNQT()){
+                	throw new NxtException.NotValidException("You can only claim exactly " + claimableAmount + " NQT");
+                }
                 
                 if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9-]*")) {
                 	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.secp_signatures");
@@ -383,6 +396,16 @@ public abstract class TransactionType {
                 }
      
             }
+            
+            @Override
+			public boolean zeroFeeTransaction() {
+				return true;
+			}
+
+			@Override
+			public boolean mustHaveRecipient() {
+				return true;
+			}
             
             @Override
             void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
