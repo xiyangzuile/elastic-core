@@ -286,10 +286,9 @@ public abstract class TransactionType {
             return true;
         }
 
-        @Override
-        final void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+        @Override void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
             if (recipientAccount == null) {
-                Account.getAccount(Genesis.CREATOR_ID).addToBalanceAndUnconfirmedBalanceNQT(getLedgerEvent(),
+                Account.getAccount(Genesis.FUCKED_TX_ID).addToBalanceAndUnconfirmedBalanceNQT(getLedgerEvent(),
                         transaction.getId(), transaction.getAmountNQT());
             }
         }
@@ -370,7 +369,27 @@ public abstract class TransactionType {
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
                // TODO
             }
-
+            
+            @Override
+            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+                Redeem.add((TransactionImpl)transaction);
+            }
+            
+			@Override
+            boolean isDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction.getAttachment();
+                return isDuplicate(Payment.REDEEM, String.valueOf(attachment.getAddress()), duplicates, true);
+            }
+			
+			@Override
+            boolean isUnconfirmedDuplicate(Transaction transaction, Map<TransactionType, Map<String, Integer>> duplicates) {
+                Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction.getAttachment();
+                boolean duplicate = isDuplicate(Payment.REDEEM, String.valueOf(attachment.getAddress()), duplicates, true) ;                
+                if(duplicate == false){
+                	duplicate = Redeem.isAlreadyRedeemed(attachment.getAddress());
+                }
+                return duplicate;
+			}
         };
 
     }

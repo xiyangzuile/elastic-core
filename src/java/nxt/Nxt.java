@@ -349,6 +349,7 @@ public final class Nxt {
                 Hub.init();
                 PrunableMessage.init();
                 PrunableSourceCode.init();
+                Redeem.init();
                 Work.init();
                 PowAndBounty.init();
                 PowAndBountyAnnouncements.init();

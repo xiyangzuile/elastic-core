@@ -313,6 +313,18 @@ public interface Attachment extends Appendix {
 			buffer.putLong(this.receiver_id);
 		}
 
+		public String getAddress() {
+			return address;
+		}
+
+		public String getSecp_signatures() {
+			return secp_signatures;
+		}
+
+		public long getReceiver_id() {
+			return receiver_id;
+		}
+
 		@Override
 		void putMyJSON(JSONObject attachment) {
 			attachment.put("receiver_id", Convert.toUnsignedLong(this.receiver_id));
