@@ -1005,7 +1005,12 @@ final class TransactionImpl implements Transaction {
 					+ timestamp + ", deadline: " + deadline + ", fee: " + feeNQT + ", amount: " + amountNQT);
 		}
 		
-		
+		// Just a safe guard, should never be fulfilled actually
+		long maxMangle = Math.max(this.amountNQT, this.feeNQT);
+		if(this.amountNQT + this.feeNQT < maxMangle){
+			throw new NxtException.NotValidException(
+					"Keep out, script kiddie.");
+		}
 
 		if (referencedTransactionFullHash != null && referencedTransactionFullHash.length != 32) {
 			throw new NxtException.NotValidException(
