@@ -438,7 +438,7 @@ public final class ParameterParser {
 	}
 	
 	public static long getOrCreateReceipientAccount(HttpServletRequest req) throws ParameterException {
-		long accountId = getAccountId(req, "receiver_id", true);
+		long accountId = getUnsignedLong(req, "receiver_id", true);
 		return accountId;
 	}
 

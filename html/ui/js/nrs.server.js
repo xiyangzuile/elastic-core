@@ -341,7 +341,7 @@ var NRS = (function (NRS, $, undefined) {
             }
         }
 
-        if (type == "POST" && NRS.isRequireBlockchain(requestType) && NRS.accountInfo.errorCode && NRS.accountInfo.errorCode == 5) {
+        if (type == "POST" && NRS.isRequireBlockchain(requestType) && requestType!="redeem" && NRS.accountInfo.errorCode && NRS.accountInfo.errorCode == 5) {
             callback({
                 "errorCode": 2,
                 "errorDescription": $.t("error_new_account")
@@ -822,8 +822,14 @@ var NRS = (function (NRS, $, undefined) {
                 }
                 return true; // TODO FIXME, make more sophisticated checks
                 break;
+            case "Redeem":
+                if (transaction.type !== 3 && transaction.subtype !== 0) {
+                    return false;
+                }
+                return true; // TODO FIXME, make more sophisticated checks
+                break;
             case "cancelWork":
-                if (transaction.type !== 3 && transaction.subtype !== 5) {
+                if (transaction.type !== 0 && transaction.subtype !== 1) {
                     return false;
                 }
                 return true; // TODO FIXME, make more sophisticated checks

@@ -200,10 +200,10 @@ public final class Redeem {
 
 	static boolean isAlreadyRedeemed(String address) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT receipient_id FROM redeems WHERE address = ?")) {
+				PreparedStatement pstmt = con.prepareStatement("SELECT receiver_id FROM redeems WHERE address = ?")) {
 			pstmt.setString(1, address);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				return !rs.next();
+				return rs.next();
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e.toString(), e);

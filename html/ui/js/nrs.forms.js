@@ -405,6 +405,19 @@ var NRS = (function(NRS, $) {
 			}
 		}
 
+		if(requestType == "redeem"){
+			var solution = $("#solution").val();
+	        var redeemEntry = $("#redeem_type_selector").val();
+	        if(parseInt(redeemEntry) == 0){
+	            data["secp_signatures"] = solution;
+	        }else{
+	            console.log("REDEEM TYPE NOT SUPPORTED!! ERROR!");
+	            $form.find(".error_message").html("Redeem type not yet supported!").show();
+	            NRS.unlockForm($modal, $btn);
+				return;
+	        }
+		}
+
 		// handle file upload in create work function
 		if (requestType == "createWork"){
 			var files = $('#source_code').fileinput('getFileStack'); // returns file list selected

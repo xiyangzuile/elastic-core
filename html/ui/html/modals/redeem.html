@@ -7,12 +7,12 @@
                 <h4 class="modal-title" data-i18n="confirm_redeem_start">Redeem from Genesis Block</h4>
             </div>
             <div class="modal-body">            
-                <form role="form" autocomplete="off">
+                <form role="form" autocomplete="off" id="redeem_form" name="redeem_form">
                     <div class="form-group">
                         
                         <div id="redeem_type" class="form-group">
                             <label for="at_revealed_secret" data-i18n="redeem-type">How do you want to redeem</label>
-                            <select name="redeem_type_selector" class="form-control" style="width:550px">
+                            <select name="redeem_type_selector" id="redeem_type_selector" class="form-control" style="width:550px">
                             <option value="0">Regular Bitcoin Signature</option>
                             <option value="1">Blockchain.info HD Wallet Phrase</option>
                             <option value="2">Breadwallet Phrase</option>
@@ -45,7 +45,7 @@
                     <div class="form-group">
                         <div id="redeem_entry" class="form-group">
                             <label for="at_revealed_secret" data-i18n="unclaimed-input">Enter your solution here (see above: Bitcoin sig, recovery phrase, ...)</label>
-                            <textarea style="width: 550px;height: 128px;" name="solution">
+                            <textarea style="width: 550px;height: 128px;" name="solution" id="solution">
                             </textarea>
                         </div>
                         
@@ -62,7 +62,11 @@
                         <label for="redeem_password" data-i18n="passphrase">PASSPHRASE</label>
                         <input type="password" name="secretPhrase" id="redeem_password" class="form-control" placeholder="" tabindex="1">
                     </div>
-                    <input type="hidden" name="request_type" value="Redeem" />
+                    <input type="hidden" id="request_type" name="request_type" value="redeem" />
+                    <input type="hidden" id="receiver_id" name="receiver_id" value="" />
+                    <input type="hidden" id="amountNQT" name="amountNQT" value="" />
+                    <input type="hidden" id="feeNQT" name="feeNQT" value="0" />
+                    <input type="hidden" id="deadline" name="deadline" value="60" />
                 </form>
             </div>
             <div class="modal-footer" style="margin-top:0;">
