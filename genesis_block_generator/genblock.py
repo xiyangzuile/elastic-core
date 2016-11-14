@@ -243,7 +243,7 @@ with open(file_name) as data_file:
             address = P2PKHBitcoinAddress.from_pubkey(pubkey.decode("hex"))
             a = str(address)
             normal_addresses.append(a)
-            normal_addresses_xel.append(str(float(amount)*100000000))
+            normal_addresses_xel.append(str(int(float(amount)*100000000)))
         else:
             abnormal.append(x)
 
@@ -343,7 +343,7 @@ for x in abnormal:
             else:
                 have = kk
                 normal_addresses.append(str(want)+"-"+reas[:-1])
-                normal_addresses_xel.append(str(float(x["mir_amount"])*100000000))
+                normal_addresses_xel.append(str(int(float(x["mir_amount"])*100000000)))
                 break
 
         cnt = cnt + 1
