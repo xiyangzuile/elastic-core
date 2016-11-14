@@ -1018,7 +1018,6 @@ final class TransactionImpl implements Transaction {
 		}
 		
 		// Redeemer-Account is not allowed to do any transaction whatsoever
-
 		if( this.getSenderId() == Genesis.REDEEM_ID && type != TransactionType.Payment.REDEEM){
 			throw new NxtException.NotValidException(
 					"Redeem Account is not allowed to do anything.");
