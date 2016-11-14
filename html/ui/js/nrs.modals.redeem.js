@@ -31,6 +31,16 @@ var NRS = (function(NRS, $, undefined) {
         $("#redeem_address_field").html(res[1]);
         $("#redeem_amount_field").html(res[2]);
         $("#redeem_account_field").html(NRS.account);
+
+        if (redeemEntry.indexOf("-")>=0){
+            $("#redeemfieldsign2").show();
+            var tt = res[1].split("-");
+            $("#exactlynr").html(tt[0]);
+            tt.shift();
+            $("#exactlyaddr").html(tt.join("<br>"));
+        }else{
+            $("#redeemfieldsign2").hide();
+        }
         address=res[1];
         amountNQT = res[2];
         receipient = NRS.account;
@@ -70,7 +80,6 @@ var NRS = (function(NRS, $, undefined) {
                                     }
                                 });
                                 var my_options = $("#redeem_address option");
-                                var selected = $("#redeem_address").val();
 
                                 my_options.sort(function(a,b) {
                                     if (a.text > b.text) return 1;
@@ -79,7 +88,6 @@ var NRS = (function(NRS, $, undefined) {
                                 })
 
                                 $("#redeem_address").empty().append( my_options );
-                                $("#redeem_address").val(selected);
                             }
                             updateSignatureView();
 

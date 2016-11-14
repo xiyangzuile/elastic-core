@@ -425,8 +425,8 @@ public abstract class TransactionType {
                 }
                 if(sigs.indexOf("-")>=0){
                 	String[] multiples = sigs.split("-");
-                	gotsigs = Integer.valueOf(multiples[0]);
-                	for(int i=1;i<multiples.length;++i)
+                	gotsigs = multiples.length;
+                	for(int i=0;i<multiples.length;++i)
                 		signatures.add(multiples[i]);
                 }else{
                 	gotsigs = 1;
@@ -434,7 +434,7 @@ public abstract class TransactionType {
                 }
                 
                 if(signatures.size()!=need){
-                	throw new NxtException.NotValidException("You have to provide exactly " + String.valueOf(need) + " signatures");
+                	throw new NxtException.NotValidException("You have to provide exactly " + String.valueOf(need) + " signatures, you provided " + gotsigs);
                 }
                 
                 System.out.println("Found REDEEM transaction");
