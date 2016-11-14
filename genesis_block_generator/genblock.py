@@ -339,7 +339,7 @@ for x in abnormal:
             want=kk
         else:
             if len(str(kk))>30:
-                reas += b2x(str(kk)) + "-"
+                reas += str(P2PKHBitcoinAddress.from_pubkey(kk)) + "-"
             else:
                 have = kk
                 normal_addresses.append(str(want)+"-"+reas[:-1])

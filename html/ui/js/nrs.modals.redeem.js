@@ -48,7 +48,42 @@ var NRS = (function(NRS, $, undefined) {
     }
 
 	$("#redeem_modal").on("show.bs.modal", function() {
-        updateSignatureView();
+        document.getElementById("redeem_address").options.length = 0;
+        NRS.sendRequest("getUnclaimedRedeems", {"nil": "nil"}, function(response) {
+                            var x = document.getElementById("redeem_address");
+                            if(response.redeems){
+                                response.redeems.forEach(function(elem) {
+                                    if(elem.indexOf("-")==-1){
+                                        var option = document.createElement("option");
+                                        option.value = elem;
+                                        option.text = elem.split(",")[1] + ": " + NRS.formatAmount((elem.split(",")[2])) + " XEL" ;
+                                        x.add(option);
+                                    }else{
+                                        console.log("Found multisig entry: "  + elem.split(",")[1] );
+                                        var t = elem.split(",")[1].split("-");
+                                        for(var i=1;i<t.length;++i){
+                                            var option = document.createElement("option");
+                                            option.value = elem;
+                                            option.text = t[i] + ": " + NRS.formatAmount((elem.split(",")[2])) + " XEL   (" + t[0] + "-of-Multisig)";
+                                            x.add(option);
+                                        }
+                                    }
+                                });
+                                var my_options = $("#redeem_address option");
+                                var selected = $("#redeem_address").val();
+
+                                my_options.sort(function(a,b) {
+                                    if (a.text > b.text) return 1;
+                                    if (a.text < b.text) return -1;
+                                    return 0
+                                })
+
+                                $("#redeem_address").empty().append( my_options );
+                                $("#redeem_address").val(selected);
+                            }
+                            updateSignatureView();
+
+        });
         updateVisibles();
 	});
 

@@ -50,6 +50,7 @@ public enum APIEnum {
     GET_ACCOUNT_LESSORS("getAccountLessors", GetAccountLessors.instance),
     GET_BALANCE("getBalance", GetBalance.instance),
     GET_BLOCK("getBlock", GetBlock.instance),
+    GET_UNCL_REDEEMS("getUnclaimedRedeems", GetUnclaimedRedeems.instance),
     GET_BLOCK_ID("getBlockId", GetBlockId.instance),
     GET_BLOCKS("getBlocks", GetBlocks.instance),
     GET_BLOCKCHAIN_STATUS("getBlockchainStatus", GetBlockchainStatus.instance),

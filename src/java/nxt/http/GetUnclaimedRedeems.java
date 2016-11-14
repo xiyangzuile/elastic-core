@@ -1,0 +1,46 @@
+package nxt.http;
+
+import java.math.BigInteger;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONStreamAware;
+
+import nxt.NxtException;
+import nxt.PowAndBounty;
+import nxt.db.DbIterator;
+
+
+
+public final class GetUnclaimedRedeems extends APIServlet.APIRequestHandler {
+
+	static final GetUnclaimedRedeems instance = new GetUnclaimedRedeems();
+
+	
+
+	private GetUnclaimedRedeems() {
+		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
+				"timestamp", "type", "subtype", "firstIndex", "lastIndex",
+				"numberOfConfirmations", "withMessage");
+	}
+
+	@Override
+    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+		
+
+		JSONArray redeems = new JSONArray();
+		for(int i=0;i<nxt.Redeem.listOfAddresses.length;++i){
+			if(!nxt.Redeem.isAlreadyRedeemed(nxt.Redeem.listOfAddresses[i] ))
+				redeems.add(new String(String.valueOf(i) + "," + nxt.Redeem.listOfAddresses[i] + "," + String.valueOf(nxt.Redeem.amounts[i]).replace("L", "")));
+		}
+
+        
+		JSONObject response = new JSONObject();
+		response.put("redeems", redeems);
+		return response;
+
+	}
+
+}
