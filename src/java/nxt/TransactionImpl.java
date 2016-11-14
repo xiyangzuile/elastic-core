@@ -1004,6 +1004,8 @@ final class TransactionImpl implements Transaction {
 			throw new NxtException.NotValidException("Invalid transaction parameters:\n type: " + type + ", timestamp: "
 					+ timestamp + ", deadline: " + deadline + ", fee: " + feeNQT + ", amount: " + amountNQT);
 		}
+		
+		
 
 		if (referencedTransactionFullHash != null && referencedTransactionFullHash.length != 32) {
 			throw new NxtException.NotValidException(
@@ -1013,6 +1015,17 @@ final class TransactionImpl implements Transaction {
 		if (attachment == null || type != attachment.getTransactionType()) {
 			throw new NxtException.NotValidException(
 					"Invalid attachment " + attachment + " for transaction of type " + type);
+		}
+		
+		// Redeemer-Account is not allowed to do any transaction whatsoever
+
+		if( this.getSenderId() == Genesis.REDEEM_ID && type != TransactionType.Payment.REDEEM){
+			throw new NxtException.NotValidException(
+					"Redeem Account is not allowed to do anything.");
+		}
+		if( this.getRecipientId() == Genesis.REDEEM_ID){
+			throw new NxtException.NotValidException(
+					"Redeem Account is not allowed to do anything.");
 		}
 
 		if (!type.canHaveRecipient()) {
