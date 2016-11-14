@@ -18,12 +18,18 @@ package nxt;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.bitcoinj.core.Address;
+import org.bitcoinj.core.ECKey;
+import org.bitcoinj.core.NetworkParameters;
 import org.json.simple.JSONObject;
 
 import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
@@ -331,6 +337,9 @@ public abstract class TransactionType {
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+            	if(transaction.getAttachment() != null && transaction.getAttachment() instanceof Attachment.RedeemAttachment){
+            		throw new NxtException.NotValidException("Invalid attachment found");
+            	}
                 if (transaction.getAmountNQT() <= 0 || transaction.getAmountNQT() >= Constants.MAX_BALANCE_NQT) {
                     throw new NxtException.NotValidException("Invalid ordinary payment");
                 }
@@ -364,7 +373,9 @@ public abstract class TransactionType {
             Attachment.RedeemAttachment parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
             	return new Attachment.RedeemAttachment(attachmentData);
             }
-
+            
+           
+            
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
             	Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction.getAttachment();
@@ -388,7 +399,7 @@ public abstract class TransactionType {
                 	throw new NxtException.NotValidException("You can only claim exactly " + claimableAmount + " NQT");
                 }
                 
-                if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9-]*")) {
+                if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9+/=-]*")) {
                 	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.secp_signatures");
                 }
                 if (transaction.getRecipientId()==0) {
@@ -396,7 +407,73 @@ public abstract class TransactionType {
                 }
                 
                 // Finally, do the costly SECP signature verification checks
-     
+                ArrayList<String> signedBy = new ArrayList<String>();
+                ArrayList<String> signatures = new ArrayList<String>();
+                ArrayList<String> addresses = new ArrayList<String>();
+                int need = 0;
+                int gotsigs = 0;
+                String addy = attachment.getAddress();
+                String sigs = attachment.getSecp_signatures();
+                if(addy.indexOf("-")>=0){
+                	String[] multiples = addy.split("-");
+                	need = Integer.valueOf(multiples[0]);
+                	for(int i=1;i<multiples.length;++i)
+                			addresses.add(multiples[i]);
+                }else{
+                	need = 1;
+                	addresses.add(addy);
+                }
+                if(sigs.indexOf("-")>=0){
+                	String[] multiples = sigs.split("-");
+                	gotsigs = Integer.valueOf(multiples[0]);
+                	for(int i=1;i<multiples.length;++i)
+                		signatures.add(multiples[i]);
+                }else{
+                	gotsigs = 1;
+                	signatures.add(sigs);
+                }
+                
+                if(signatures.size()!=need){
+                	throw new NxtException.NotValidException("You have to provide exactly " + String.valueOf(need) + " signatures");
+                }
+                
+                System.out.println("Found REDEEM transaction");
+                System.out.println("========================");
+                String loginSig = ""; // base64 encoded signature                
+                String message = "I hereby confirm to redeem " + String.valueOf(transaction.getAmountNQT()).replace("L", "") + " NQT-XEL from genesis entry " + attachment.getAddress() + " to account " + Convert.toUnsignedLong(transaction.getRecipientId()).replace("L", "");
+                System.out.println("String to sign:\t" + message);
+                System.out.println("We need " + String.valueOf(need) + " signatures from these addresses:");
+                for (int i=0;i<addresses.size();++i)
+                	System.out.println(" -> " + addresses.get(i));
+                System.out.println("We got " + String.valueOf(gotsigs) + " signatures:");
+                for (int i=0;i<signatures.size();++i) {
+                	System.out.println(" -> " + signatures.get(i).substring(0, Math.min(12, signatures.get(i).length()))+ "...");
+                	ECKey result;
+					try {
+						result = new ECKey().signedMessageToKey(message, signatures.get(i));
+					} catch (SignatureException e) {
+						throw new NxtException.NotValidException("Invalid signatures provided");
+					}
+					
+					if(result==null)
+						throw new NxtException.NotValidException("Invalid signatures provided");
+					
+                	String add = result.toAddress(NetworkParameters.prodNet()).toString();
+                	signedBy.add(add);        
+                	
+                }
+                System.out.println("These addresses seem to have signed:");
+                for (int i=0;i<signedBy.size();++i)
+                	System.out.println(" -> " + signedBy.get(i));
+                
+                addresses.retainAll(signedBy);
+                System.out.println("We matched " + String.valueOf(need) + " signatures from these addresses:");
+                for (int i=0;i<addresses.size();++i)
+                	System.out.println(" -> " + addresses.get(i));
+                if(addresses.size()!=need){
+                	System.out.println("== " + String.valueOf(addresses.size()) + " out of " + String.valueOf(need) + " matched!");
+                	throw new NxtException.NotValidException("You have to provide exactly " + String.valueOf(need) + " correct signatures");
+                }
             }
             
             @Override
@@ -485,6 +562,10 @@ public abstract class TransactionType {
 
             @Override
             void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
+            	if(transaction.getAttachment() != null && transaction.getAttachment() instanceof Attachment.RedeemAttachment){
+            		throw new NxtException.NotValidException("Invalid attachment found");
+            	}
+            	
                 Attachment attachment = transaction.getAttachment();
                 if (transaction.getAmountNQT() != 0) {
                     throw new NxtException.NotValidException("Invalid arbitrary message: " + attachment.getJSONObject());
