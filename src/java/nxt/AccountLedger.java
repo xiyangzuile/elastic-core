@@ -392,7 +392,6 @@ public class AccountLedger {
             TRANSACTION_FEE(50, true),
         // TYPE_PAYMENT
             ORDINARY_PAYMENT(3, true),
-            REDEEM_PAYMENT(150, true),
         // TYPE_MESSAGING
             ACCOUNT_INFO(4, true),
             ALIAS_ASSIGNMENT(5, true),
@@ -459,7 +458,9 @@ public class AccountLedger {
     		WORK_BOUNTY(103, true),
     		WORK_BOUNTY_PAYOUT(104, true),
     		WORK_POW(105, true),
-    		WORK_BOUNTY_ANNOUNCEMENT(106, true);
+    		WORK_BOUNTY_ANNOUNCEMENT(106, true),
+            REDEEM_PAYMENT(107, true);
+;
 
 
         /** Event code mapping */

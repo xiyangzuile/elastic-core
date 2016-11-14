@@ -31,6 +31,12 @@ var NRS = (function(NRS, $, undefined) {
                     'i18nKeyTitle': 'ordinary_payment',
                     'iconHTML': "<i class='fa fa-money'></i>",
                     'receiverPage': 'transactions'
+                },
+                1: {
+                    'title': "Redeem from Genesis",
+                    'i18nKeyTitle': 'redeem_payment',
+                    'iconHTML': "<i class='fa fa-money'></i>",
+                    'receiverPage': 'transactions'
                 }
             }
         },

@@ -130,7 +130,7 @@ public final class Redeem {
 		this.secp_signatures = rs.getString("secp_signatures");
 		this.receiver_id = rs.getLong("receiver_id");
 		this.blockTimestamp = rs.getInt("block_timestamp");
-		this.transactionTimestamp = rs.getInt("transaction_timestamp");
+		this.transactionTimestamp = rs.getInt("timestamp");
 		this.height = rs.getInt("height");
 		this.amount = rs.getLong("amount");
 	}
@@ -138,8 +138,8 @@ public final class Redeem {
 	private void save(Connection con) throws SQLException {
 
 		try (PreparedStatement pstmt = con.prepareStatement(
-				"MERGE INTO redeems (id, address, secp_signatures, receiver_id, amount, block_timestamp, transaction_timestamp, height, language) "
-						+ "KEY (id) " + "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+				"MERGE INTO redeems (id, address, secp_signatures, receiver_id, amount, block_timestamp, timestamp, height) "
+						+ "KEY (id) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setString(++i, this.address);
@@ -194,8 +194,12 @@ public final class Redeem {
 		if (participantAccount == null) { // should never happen
 			participantAccount = Account.getAccount(Genesis.FUCKED_TX_ID);
 		}
-		if(was_fresh)
+		if(was_fresh){
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), prunableSourceCode.amount);
+			Account genesis = Account.getAccount(Genesis.REDEEM_ID);
+			genesis.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), -prunableSourceCode.amount);
+			
+		}
 	}
 
 	static boolean isAlreadyRedeemed(String address) {

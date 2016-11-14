@@ -295,7 +295,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		int getMySize() {
-			return 2 + 2 + 8 + Convert.toBytes(this.address).length + Convert.toBytes(this.secp_signatures).length;
+			return 2 + 2 + Convert.toBytes(this.address).length + Convert.toBytes(this.secp_signatures).length;
 		}
 
 		@Override
