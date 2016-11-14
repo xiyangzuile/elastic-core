@@ -2,8 +2,8 @@
 CP="lib/*:classes"
 SP=src/java/
 
-/bin/rm -f nxt.jar
-/bin/rm -f nxtservice.jar
+/bin/rm -f elastic-core.jar
+/bin/rm -f elastic-core-service.jar
 /bin/rm -rf classes
 /bin/mkdir -p classes/
 /bin/rm -rf addons/classes
@@ -11,7 +11,7 @@ SP=src/java/
 
 echo "compiling nxt core..."
 find src/java/nxt/ -name "*.java" > sources.tmp
-javac -encoding utf8 -sourcepath "${SP}:src/evil/" -classpath "${CP}" -d classes/ @sources.tmp || exit 1
+javac -encoding utf8 -sourcepath "${SP}:src/anc/" -classpath "${CP}" -d classes/ @sources.tmp || exit 1
 echo "nxt core class files compiled successfully"
 
 rm -f sources.tmp

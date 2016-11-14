@@ -1022,15 +1022,6 @@ final class TransactionImpl implements Transaction {
 					"Invalid attachment " + attachment + " for transaction of type " + type);
 		}
 		
-		// Redeemer-Account is not allowed to do any transaction whatsoever
-		if( this.getSenderId() == Genesis.REDEEM_ID && type != TransactionType.Payment.REDEEM){
-			throw new NxtException.NotValidException(
-					"Redeem Account is not allowed to do anything.");
-		}
-		if( this.getRecipientId() == Genesis.REDEEM_ID){
-			throw new NxtException.NotValidException(
-					"Redeem Account is not allowed to do anything.");
-		}
 		
 		// just another safe guard, better be safe than sorry
 		if(type != TransactionType.Payment.REDEEM && this.getAttachment() != null && (this.getAttachment() instanceof Attachment.RedeemAttachment)){
