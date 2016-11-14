@@ -1027,6 +1027,12 @@ final class TransactionImpl implements Transaction {
 			throw new NxtException.NotValidException(
 					"Redeem Account is not allowed to do anything.");
 		}
+		
+		// just another safe guard, better be safe than sorry
+		if(type != TransactionType.Payment.REDEEM && this.getAttachment() != null && (this.getAttachment() instanceof Attachment.RedeemAttachment)){
+			throw new NxtException.NotValidException(
+					"Keep out, script kiddie.");
+		}
 
 		if (!type.canHaveRecipient()) {
 			if (recipientId != 0) {
