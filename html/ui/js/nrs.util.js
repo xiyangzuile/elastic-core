@@ -760,6 +760,8 @@ var NRS = (function (NRS, $, undefined) {
             return $.t("you");
         } else if (formattedAcc == NRS.constants.GENESIS || formattedAcc == NRS.constants.GENESIS_RS) {
             return $.t("genesis");
+        } else if (formattedAcc == NRS.constants.REDEEM || formattedAcc == NRS.constants.REDEEM_RS) {
+            return $.t("redeemacc");
         } else if (formattedAcc in NRS.contacts) {
             return NRS.contacts[formattedAcc].name.escapeHTML();
         } else {

@@ -333,8 +333,14 @@ final class TransactionImpl implements Transaction {
 		} else if (builder.signature != null) {
 			this.signature = builder.signature;
 		} else if (secretPhrase != null) {
-			if (getSenderPublicKey() != null && !Arrays.equals(senderPublicKey, Crypto.getPublicKey(secretPhrase))) {
+			if (!(this.getAttachment() instanceof Attachment.RedeemAttachment) &&  getSenderPublicKey() != null && !Arrays.equals(senderPublicKey, Crypto.getPublicKey(secretPhrase))) {
 				throw new NxtException.NotValidException("Secret phrase doesn't match transaction sender public key");
+			}
+			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && getSenderPublicKey() != null && !Arrays.equals(senderPublicKey, Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY))) {
+				throw new NxtException.NotValidException("Secret phrase doesn't match REDEEM_ID public key");
+			}
+			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && getSenderPublicKey() == null) {
+				throw new NxtException.NotValidException("This transaction must be bound to REDEEM_ID public key");
 			}
 			signature = Crypto.sign(bytes(), secretPhrase);
 			bytes = null;
@@ -351,6 +357,10 @@ final class TransactionImpl implements Transaction {
 
 	@Override
 	public byte[] getSenderPublicKey() {
+		if ((this.getAttachment() instanceof Attachment.RedeemAttachment)){
+			return Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
+		}
+		
 		if (senderPublicKey == null) {
 			senderPublicKey = Account.getPublicKey(senderId);
 		}
@@ -902,15 +912,24 @@ final class TransactionImpl implements Transaction {
 	}
 
 	public boolean verifySignature() {
-		return checkSignature() && Account.setOrVerify(getSenderId(), getSenderPublicKey());
+		if (this.getAttachment() instanceof Attachment.RedeemAttachment){
+			return checkSignature();
+		}else{
+			return checkSignature() && Account.setOrVerify(getSenderId(), getSenderPublicKey());
+		}
 	}
 
 	private volatile boolean hasValidSignature = false;
 
 	private boolean checkSignature() {
 		if (!hasValidSignature) {
-			hasValidSignature = signature != null
-					&& Crypto.verify(signature, zeroSignature(getBytes()), getSenderPublicKey(), useNQT());
+			if (this.getAttachment() instanceof Attachment.RedeemAttachment){
+				hasValidSignature = true; // TODO FIXME! CHECK IF SIGNATURE BELONGS TO RECEIVER!!!!!
+			}else{
+				hasValidSignature = signature != null
+						&& Crypto.verify(signature, zeroSignature(getBytes()), getSenderPublicKey(), useNQT());
+			}
+			
 		}
 		return hasValidSignature;
 	}

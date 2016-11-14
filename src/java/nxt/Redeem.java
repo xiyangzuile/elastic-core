@@ -194,12 +194,7 @@ public final class Redeem {
 		if (participantAccount == null) { // should never happen
 			participantAccount = Account.getAccount(Genesis.FUCKED_TX_ID);
 		}
-		if(was_fresh){
-			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), prunableSourceCode.amount);
-			Account genesis = Account.getAccount(Genesis.REDEEM_ID);
-			genesis.addToBalanceAndUnconfirmedBalanceNQT(event, transaction.getId(), -prunableSourceCode.amount);
-			
-		}
+		
 	}
 
 	static boolean isAlreadyRedeemed(String address) {

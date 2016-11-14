@@ -65,6 +65,8 @@ var NRS = (function (NRS, $) {
         'MAX_PRUNABLE_MESSAGE_LENGTH': 0,
         'GENESIS': '',
         'GENESIS_RS': '',
+        'REDEEM': '',
+        'REDEEM_RS': '',
         'EPOCH_BEGINNING': 0,
         'FORGING': 'forging',
         'NOT_FORGING': 'not_forging',
@@ -100,6 +102,8 @@ var NRS = (function (NRS, $) {
                 NRS.constants.MAX_PRUNABLE_MESSAGE_LENGTH = response.maxPrunableMessageLength;
                 NRS.constants.GENESIS = response.genesisAccountId;
                 NRS.constants.GENESIS_RS = NRS.convertNumericToRSAccountFormat(response.genesisAccountId);
+                NRS.constants.REDEEM = response.redeemAccountId;
+                NRS.constants.REDEEM_RS = NRS.convertNumericToRSAccountFormat(response.redeemAccountId);
                 NRS.constants.EPOCH_BEGINNING = response.epochBeginning;
                 NRS.constants.REQUEST_TYPES = response.requestTypes;
                 NRS.constants.API_TAGS = response.apiTags;

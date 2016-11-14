@@ -33,6 +33,7 @@ import org.json.simple.JSONStreamAware;
 import nxt.Account;
 import nxt.Appendix;
 import nxt.Attachment;
+import nxt.Genesis;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
@@ -149,8 +150,13 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
         JSONObject response = new JSONObject();
 
         // shouldn't try to get publicKey from senderAccount as it may have not been set yet
-        byte[] publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase) : Convert.parseHexString(publicKeyValue);
-
+        byte[] publicKey = null;
+        if(attachment instanceof Attachment.RedeemAttachment){
+        	publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
+        }else{
+        	publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase) : Convert.parseHexString(publicKeyValue);
+        }
+        
         try {
             Transaction.Builder builder = Nxt.newTransactionBuilder(publicKey, amountNQT, feeNQT,
                     deadline, attachment).referencedTransactionFullHash(referencedTransactionFullHash);

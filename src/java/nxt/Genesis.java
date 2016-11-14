@@ -22,6 +22,7 @@ public final class Genesis {
     public static final long CREATOR_ID = 4823535488705771609L;
     public static final long FUCKED_TX_ID = 4823535488705771609L;
     public static final long REDEEM_ID    = Long.parseUnsignedLong("10687454573350862535");
+    public static final String REDEEM_ID_PUBKEY    = "15d039ed644401856cf294e475cc9b9ed1d8abbf8393435f89f4ab484faa0e2e";
     
     public static final byte[] CREATOR_PUBLIC_KEY = {
     		(byte)0xf1, (byte)0xb3, (byte)0x03, (byte)0xe3, (byte)0x8c, (byte)0x3c, (byte)0x29, (byte)0x34, (byte)0x7a, (byte)0x89, (byte)0x6c, (byte)0x85, (byte)0x7e, (byte)0x29, (byte)0x88, (byte)0x32, (byte)0x3f, (byte)0x40, (byte)0x66, (byte)0x75, (byte)0x22, (byte)0xa1, (byte)0x0b, (byte)0x6f, (byte)0xeb, (byte)0x46, (byte)0xc0, (byte)0xaf, (byte)0x2f, (byte)0x2c, (byte)0x13, (byte)0x59};
