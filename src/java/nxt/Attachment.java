@@ -268,7 +268,6 @@ public interface Attachment extends Appendix {
 		private short secp_length;
 		private String address;
 		private String secp_signatures;
-		private long receiver_id;
 
 		RedeemAttachment(ByteBuffer buffer, byte transactionVersion)
 				throws NxtException.NotValidException {
@@ -277,24 +276,21 @@ public interface Attachment extends Appendix {
 			this.address = Convert.readString(buffer, address_length, 4096);
 			this.secp_length = buffer.getShort();
 			this.secp_signatures = Convert.readString(buffer, secp_length, 10400);
-			this.receiver_id = buffer.getLong();
 		}
 
 		RedeemAttachment(JSONObject attachmentData) {
 			super(attachmentData);
-			this.receiver_id = Convert.parseUnsignedLong((String) attachmentData.get("reveiver_id"));
 			this.address = (String) attachmentData.get("address");
 			this.address_length = (short) this.address.length();
 			this.secp_signatures = (String) attachmentData.get("secp_signatures");
 			this.secp_length = (short) this.secp_signatures.length();
 		}
 
-		public RedeemAttachment(String address, String secp_signatures, long receiver_id) {
+		public RedeemAttachment(String address, String secp_signatures) {
 			this.address = address;
 			this.address_length = (short) address.length();
 			this.secp_signatures = secp_signatures;
 			this.secp_length = (short) this.secp_signatures.length();
-			this.receiver_id = receiver_id;
 		}
 
 		@Override
@@ -310,7 +306,6 @@ public interface Attachment extends Appendix {
 			buffer.put(byteAddr);
 			buffer.putShort((short) Convert.toBytes(this.secp_signatures).length);
 			buffer.put(byteSecp);
-			buffer.putLong(this.receiver_id);
 		}
 
 		public String getAddress() {
@@ -321,13 +316,10 @@ public interface Attachment extends Appendix {
 			return secp_signatures;
 		}
 
-		public long getReceiver_id() {
-			return receiver_id;
-		}
+		
 
 		@Override
 		void putMyJSON(JSONObject attachment) {
-			attachment.put("receiver_id", Convert.toUnsignedLong(this.receiver_id));
 			attachment.put("address", this.address);
 			attachment.put("secp_signatures", this.secp_signatures);
 		}

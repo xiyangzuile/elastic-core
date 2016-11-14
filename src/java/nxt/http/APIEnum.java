@@ -121,6 +121,7 @@ public enum APIEnum {
     CREATE_WORK("createWork", CreateWork.instance),
     CANCEL_WORK("cancelWork", CancelWork.instance),
     CREATE_POX("createPoX", ProofOfX.instance),
+    CREATE_REDEEM("redeem", Redeem.instance),
     HASHBOUNTY("getApprovedBounties", GetApprovedBounties.instance),
     GET_ACCOUNT_WORK("getAccountWork", GetAccountWork.instance),
     GET_ACCOUNT_EFFICIENCY("getAccountWorkEfficiencyPlot", GetAccountWorkEfficiencyPlot.instance),

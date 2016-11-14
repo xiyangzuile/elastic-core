@@ -3808,3 +3808,10 @@ ul.pagination2 li a:hover:not(.active) {background-color: #ddd;}
 .larger-sidebar-element br {
   line-height: 2em;
 }
+
+#redeemfieldsign {
+    background: #cdf0f2;
+    padding: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}

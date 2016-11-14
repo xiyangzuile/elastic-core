@@ -436,6 +436,11 @@ public final class ParameterParser {
 		}
 		return account;
 	}
+	
+	public static long getOrCreateReceipientAccount(HttpServletRequest req) throws ParameterException {
+		long accountId = getAccountId(req, "receiver_id", true);
+		return accountId;
+	}
 
 	public static Account getAccount(HttpServletRequest req) throws ParameterException {
 		return getAccount(req, true);

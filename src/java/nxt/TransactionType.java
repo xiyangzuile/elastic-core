@@ -391,9 +391,11 @@ public abstract class TransactionType {
                 if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9-]*")) {
                 	throw new NxtException.NotValidException("Invalid characters in redeem transaction: fields.secp_signatures");
                 }
-                if (attachment.getReceiver_id()==0) {
+                if (transaction.getRecipientId()==0) {
                 	throw new NxtException.NotValidException("Invalid receiver ID in redeem transaction");
                 }
+                
+                // Finally, do the costly SECP signature verification checks
      
             }
             

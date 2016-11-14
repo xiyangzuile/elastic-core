@@ -33,8 +33,8 @@ public final class Redeem {
 
 	Map<String, Long> allowedRedeems = new HashMap<String, Long>();
 	
-	public static String[] listOfAddresses = {};
-	public static Long[] amounts = {};
+	public static String[] listOfAddresses = {"1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T"};
+	public static Long[] amounts = {1419299300000L};
 
 	
 	public static boolean hasAddress(String targetValue) {
@@ -110,7 +110,7 @@ public final class Redeem {
 
 		Attachment.RedeemAttachment r = (Attachment.RedeemAttachment) transaction.getAttachment();
 		this.address = r.getAddress();
-		this.receiver_id = r.getReceiver_id();
+		this.receiver_id = transaction.getRecipientId();
 		this.secp_signatures = r.getSecp_signatures();
 		this.amount = transaction.getAmountNQT();
 	}
@@ -118,7 +118,7 @@ public final class Redeem {
 	private void update(Transaction tx) {
 		Attachment.RedeemAttachment r = (Attachment.RedeemAttachment) tx.getAttachment();
 		this.address = r.getAddress();
-		this.receiver_id = r.getReceiver_id();
+		this.receiver_id = tx.getRecipientId();
 		this.secp_signatures = r.getSecp_signatures();
 		this.amount = tx.getAmountNQT();
 	}

@@ -52,6 +52,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_XEL_PER_POW = incorrect("pow price in XEL");
 	public static final JSONStreamAware INCORRECT_XEL_PER_BOUNTY = incorrect("bounty price in XEL");
 	public static final JSONStreamAware MISSING_XEL_PER_POW = missing("pow price in XEL");
+	public static final JSONStreamAware MISSING_FIELDS_REDEEM = missing("address or secp_signatures");
+
 	public static final JSONStreamAware MISSING_XEL_PER_BOUNTY = missing("bounty price in XEL");
 	public static final JSONStreamAware INCORRECT_EXECUTION_TIME = incorrect("worst case execution time");
 	public static final JSONStreamAware INCORRECT_PUBLIC_KEY = incorrect("publicKey");

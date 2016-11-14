@@ -13,10 +13,40 @@
                         <div id="redeem_type" class="form-group">
                             <label for="at_revealed_secret" data-i18n="redeem-type">How do you want to redeem</label>
                             <select name="redeem_type_selector" class="form-control" style="width:550px">
-                            <option>Regular Bitcoin Signature</option>
-                            <option>Blockchain.info HD Wallet Phrase</option>
-                            <option>Breadwallet Phrase</option>
+                            <option value="0">Regular Bitcoin Signature</option>
+                            <option value="1">Blockchain.info HD Wallet Phrase</option>
+                            <option value="2">Breadwallet Phrase</option>
                             </select>
+                        </div>
+                        
+                    </div>
+
+                    <div class="form-group">
+                        <div id="redeem_entry" class="form-group">
+                            <label for="at_revealed_secret" data-i18n="unclaimed-genesis">Unclaimed genesis block entry</label>
+                            <select name="redeem_address" id="redeem_address" class="form-control" style="width:550px">
+                            <option value="0,1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T,1419299300000">1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T: 14192.993 XEL</option>
+                            <option value="1,1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T,0">1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T: 0 XEL</option>
+
+                            </select>
+                        </div>
+                        
+                    </div>
+
+                    <div class="form-group" style="width: 550px;" id="hiddeable_group" name="hiddeable_group">
+                        Please sign the following text <i>(all in one line with no trailing or leading whitespaces)</i>:
+                        <div id="redeemfieldsign" class="form-group">
+                            I hereby confirm to redeem <span id="redeem_amount_field"></span> XEL from genesis entry <span id="redeem_address_field"></span> to account <span id="redeem_account_field"></span>
+                        </div>
+                        
+                    </div>
+
+
+                    <div class="form-group">
+                        <div id="redeem_entry" class="form-group">
+                            <label for="at_revealed_secret" data-i18n="unclaimed-input">Enter your solution here (see above: Bitcoin sig, recovery phrase, ...)</label>
+                            <textarea style="width: 550px;height: 128px;" name="solution">
+                            </textarea>
                         </div>
                         
                     </div>
@@ -32,7 +62,7 @@
                         <label for="redeem_password" data-i18n="passphrase">PASSPHRASE</label>
                         <input type="password" name="secretPhrase" id="redeem_password" class="form-control" placeholder="" tabindex="1">
                     </div>
-                    <input type="hidden" name="request_type" value="redeemFromGenesis" />
+                    <input type="hidden" name="request_type" value="Redeem" />
                 </form>
             </div>
             <div class="modal-footer" style="margin-top:0;">
