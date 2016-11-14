@@ -3,7 +3,9 @@ import os.path
 import json
 import time
 import sys
-
+from bitcoin.wallet import CBitcoinSecret, P2PKHBitcoinAddress
+from bitcoin.core import x, CScript
+from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
 def ensure_is_present(url, file_name):
     exists = os.path.isfile(file_name) 
     if not exists:
@@ -41,6 +43,8 @@ outgoing = []
 incoming = []
 ignored = []
 failures = []
+
+hash_to_script = {}
 
 def ensure_is_present_with_offset(url, file_name, offset=0):
     global estimations
@@ -89,6 +93,9 @@ def ensure_is_present_with_offset(url, file_name, offset=0):
         for x in data["txs"]:
             is_outgoing = False
             is_ignored = False
+
+            hash_to_script[x["hash"]] = x["inputs"][0]["script"]
+
             for n in x["inputs"]:
                 for uu in internals_ignore:
                     if n["prev_out"]["addr"] == uu:
@@ -209,6 +216,11 @@ import json
 from pprint import pprint
 abnormal = []
 
+abnormal_addresses = []
+normal_addresses = []
+abnormal_addresses_xel = []
+normal_addresses_xel = []
+
 hashes_missing_in_history = []
 btc_not_counted_in_genesis = 0.0
 hashes_missing_in_genesis_block = []
@@ -227,6 +239,11 @@ with open(file_name) as data_file:
         if pubkey[0:2]=="02" or pubkey[0:2]=="03" or pubkey[0:2]=="04" and ' ' not in pubkey:
             # print "Pubkey [%s...] burned for [%.6f] XEL" % (pubkey[0:12], amount)
             btc_normal += float(x["btc_amount"])
+
+            address = P2PKHBitcoinAddress.from_pubkey(pubkey.decode("hex"))
+            a = str(address)
+            normal_addresses.append(a)
+            normal_addresses_xel.append(str(int(amount)*100000000))
         else:
             abnormal.append(x)
 
@@ -308,6 +325,32 @@ print "Now, Handing the Abnormal ..."
 btc_abnormal = 0
 for x in abnormal:
     btc_abnormal += float(x["btc_amount"])
+    scr = CScript(hash_to_script[x["btc_tx"]].decode("hex"))
+    reas=""
+    for kk in iter(scr):
+        reas = kk
+    scr2 = CScript(reas)
+    reas=""
+    want = 0
+    have = 0
+    cnt=0
+    for kk in iter(scr2):
+        if cnt==0:
+            want=kk
+        else:
+            if len(str(kk))>30:
+                reas += b2x(str(kk)) + "-"
+            else:
+                have = kk
+                normal_addresses.append(str(want)+"-"+reas[:-1])
+                normal_addresses_xel.append(str(int(x["mir_amount"])*100000000))
+                break
+
+        cnt = cnt + 1
+
+    print " --> abnormal: ",want,"out of",have,"required",reas
+
+
 
 print ""
 print "STATISTICS"
@@ -318,3 +361,14 @@ print "    -> %d are regular multisig transactions" % 0
 print "    -> %d are cosigned by some creepy wallet" % 0
 print "In total, %.6f BTC came from normal transactions" % btc_normal
 
+
+
+
+print "\n\n\n"
+print "ADDR ARRAY"
+print ", ".join("\"" + d + "\"" for d in normal_addresses) 
+
+
+print "\n\n\n"
+print "AMOUNTS ARRAY"
+print ", ".join(str(d) + "L" for d in normal_addresses_xel) 
