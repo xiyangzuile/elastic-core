@@ -389,7 +389,23 @@ print "Total scaled amount of XEL available:",t/100000000.0
 
 
 
+addrset={}
+for i in range(len(normal_addresses)):
+    add = normal_addresses[i]
+    if add not in addrset:
+        addrset[add]=0
+    addrset[add] += normal_addresses_xel[i]
 
+normal_addresses = []
+normal_addresses_xel = []
+
+for key in addrset:
+    normal_addresses.append(key)
+    normal_addresses_xel.append(addrset[key])
+
+total = 0
+for i in range(len(normal_addresses_xel)):
+    total += normal_addresses_xel[i]
 
 print "\n\n\n"
 print "ADDR ARRAY"
@@ -400,6 +416,6 @@ print "\n\n\n"
 print "AMOUNTS ARRAY"
 print ", ".join(str(d) + "L" for d in normal_addresses_xel) 
 
-
+print "\n\nVerify:",total
 for i in range(len(normal_addresses)):
     print normal_addresses[i] + "\t\t"+str(normal_addresses_xel[i]/100000000.0) + " XEL"
