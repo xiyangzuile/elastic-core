@@ -128,16 +128,6 @@ public interface Attachment extends Appendix {
 
 	};
 
-	// the message payload is in the Appendix
-	EmptyAttachment ARBITRARY_MESSAGE = new EmptyAttachment() {
-
-		@Override
-		public TransactionType getTransactionType() {
-			return TransactionType.Messaging.ARBITRARY_MESSAGE;
-		}
-
-	};
-
 	final class MessagingHubAnnouncement extends AbstractAttachment {
 
 		private final long minFeePerByteNQT;

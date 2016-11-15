@@ -69,8 +69,8 @@ public abstract class TransactionType {
                 }
             case TYPE_MESSAGING:
                 switch (subtype) {
-                    case SUBTYPE_MESSAGING_ARBITRARY_MESSAGE:
-                        return Messaging.ARBITRARY_MESSAGE;
+                    case SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT:
+                        return Messaging.HUB_ANNOUNCEMENT;
                     case SUBTYPE_MESSAGING_ACCOUNT_INFO:
                         return Messaging.ACCOUNT_INFO;
                         
@@ -529,65 +529,7 @@ public abstract class TransactionType {
         final void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
         }
 
-        public final static TransactionType ARBITRARY_MESSAGE = new Messaging() {
-
-            @Override
-            public final byte getSubtype() {
-                return TransactionType.SUBTYPE_MESSAGING_ARBITRARY_MESSAGE;
-            }
-
-            @Override
-            public LedgerEvent getLedgerEvent() {
-                return LedgerEvent.ARBITRARY_MESSAGE;
-            }
-
-            @Override
-            public String getName() {
-                return "ArbitraryMessage";
-            }
-
-            @Override
-            Attachment.EmptyAttachment parseAttachment(ByteBuffer buffer, byte transactionVersion) throws NxtException.NotValidException {
-                return Attachment.ARBITRARY_MESSAGE;
-            }
-
-            @Override
-            Attachment.EmptyAttachment parseAttachment(JSONObject attachmentData) throws NxtException.NotValidException {
-                return Attachment.ARBITRARY_MESSAGE;
-            }
-
-            @Override
-            void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
-            }
-
-            @Override
-            void validateAttachment(Transaction transaction) throws NxtException.ValidationException {
-            	if(transaction.getAttachment() != null && transaction.getAttachment() instanceof Attachment.RedeemAttachment){
-            		throw new NxtException.NotValidException("Invalid attachment found");
-            	}
-            	
-                Attachment attachment = transaction.getAttachment();
-                if (transaction.getAmountNQT() != 0) {
-                    throw new NxtException.NotValidException("Invalid arbitrary message: " + attachment.getJSONObject());
-                }
-                if (transaction.getRecipientId() == Genesis.CREATOR_ID) {
-                    throw new NxtException.NotValidException("Sending messages to Genesis not allowed.");
-                }
-            }
-
-            @Override
-            public boolean canHaveRecipient() {
-                return true;
-            }
-
-            @Override
-            public boolean mustHaveRecipient() {
-                return false;
-            }
-
-           
-
-        };
+       
 
         public static final TransactionType HUB_ANNOUNCEMENT = new Messaging() {
 

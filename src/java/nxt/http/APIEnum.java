@@ -81,8 +81,6 @@ public enum APIEnum {
     MARK_HOST("markHost", MarkHost.instance),
     PARSE_TRANSACTION("parseTransaction", ParseTransaction.instance),
     RS_CONVERT("rsConvert", RSConvert.instance),
-    READ_MESSAGE("readMessage", ReadMessage.instance),
-    SEND_MESSAGE("sendMessage", SendMessage.instance),
     SEND_MONEY("sendMoney", SendMoney.instance),
     SET_ACCOUNT_INFO("setAccountInfo", SetAccountInfo.instance),
     SIGN_TRANSACTION("signTransaction", SignTransaction.instance),
