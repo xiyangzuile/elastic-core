@@ -37,6 +37,8 @@ def ensure_is_present(url, file_name):
 
 addresses = ["3Q2aKEGFTKDw3hghsBifXp39CZVMtZukxn","3Qnj4QtdD4qtZcP82xyLq2paAEPDgfwezd","1ELC1CgH9jcuQtzXRfmSNKtTiRYKqwjr9q"]
 internals_ignore = ["1NETgKnhsGzpN3sW3vid6bhTjBM4o2iaKi","3AVhok6gvrgSbTXfGEksYKEWBdxS9qo8E6"]
+ignore_because_refunded = ["1AKo8QK11FurGNvCnKuHvDFEFdavDRMZGo","16MmuQWvJuNqJRLgoYfwvBeqVHr3BqmFwk","13HfJkxPLJhTrCJEQSP3h6AZ23f63HpRGM"]
+
 estimations = {}
 loaded = {}
 outgoing = []
@@ -249,8 +251,11 @@ with open(file_name) as data_file:
 
 missing_addresses = {}
 missing_amounts_per_address = {}
+missing_heights = {}
 
 for x in incoming:
+    missing_heights[x["hash"]] = str(x["block_height"]) 
+
     if x["hash"] not in loaded_hashes:
         hashes_missing_in_genesis_block.append(x["hash"])
         total_missing = 0.0
@@ -311,16 +316,21 @@ for k in hashes_missing_in_genesis_block:
 for pao in tokill:
     hashes_missing_in_genesis_block.remove(pao)
 
+def amtamt(height,amount):
+    t = max(min(-(4000.0/25920.0)*(int(height)-400000)+8000,8000),0) * amount
+    return str(t)
 print "Found %d suspicious tx" % (len(hashes_missing_in_genesis_block)+len(hashes_missing_in_history))
 print "Hashes in blockchain but not in genesis block **AND NOT EXPLAINED SO FAR**:"
 for x in hashes_missing_in_genesis_block:
-    print "  ->",x,"[" + missing_addresses[x] + "] =",missing_amounts_per_address[missing_addresses[x]],"BTC in total (dont count addrs twice)"
+    if missing_addresses[x] in ignore_because_refunded:
+        continue
+    print "  ->",x," height:" + str(missing_heights[x]) + " XEL:" + amtamt(missing_heights[x],float(missing_amounts_per_address[missing_addresses[x]])) + " [" + missing_addresses[x] + "] =",missing_amounts_per_address[missing_addresses[x]],"BTC in total (dont count addrs twice)"
 
 
 
 
 
-print "Now, Handing the Abnormal ..."
+print "\n\nNow, Handing the Abnormal ..."
 # Now handling the abnormals
 btc_abnormal = 0
 for x in abnormal:
@@ -360,6 +370,23 @@ print "    -> %d are save 1-of-many multisig transactions" % 0
 print "    -> %d are regular multisig transactions" % 0
 print "    -> %d are cosigned by some creepy wallet" % 0
 print "In total, %.6f BTC came from normal transactions" % btc_normal
+
+print "\n\n"
+t = 0
+desired = 100000000
+for ft in normal_addresses_xel:
+    t += float(ft)
+print "Total amount of XEL available:",t/100000000
+print "Desired: ",desired
+desired = desired * 100000000
+print "[!!] scaing in background"
+for i in range(len(normal_addresses_xel)):
+    normal_addresses_xel[i] = long((float(normal_addresses_xel[i]) / t) * desired)
+t = 0
+for ft in normal_addresses_xel:
+    t += float(ft)
+print "Total scaled amount of XEL available:",t/100000000
+
 
 
 
