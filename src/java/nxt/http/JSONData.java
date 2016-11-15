@@ -29,7 +29,6 @@ import nxt.Block;
 import nxt.Constants;
 import nxt.Generator;
 import nxt.Nxt;
-import nxt.PrunableMessage;
 import nxt.Token;
 import nxt.Transaction;
 import nxt.crypto.Crypto;
@@ -274,44 +273,6 @@ public final class JSONData {
         return response;
     }
 
-
-    static JSONObject prunableMessage(PrunableMessage prunableMessage, String secretPhrase, byte[] sharedKey) {
-        JSONObject json = new JSONObject();
-        json.put("transaction", Long.toUnsignedString(prunableMessage.getId()));
-        if (prunableMessage.getMessage() == null || prunableMessage.getEncryptedData() == null) {
-            json.put("isText", prunableMessage.getMessage() != null ? prunableMessage.messageIsText() : prunableMessage.encryptedMessageIsText());
-        }
-        putAccount(json, "sender", prunableMessage.getSenderId());
-        if (prunableMessage.getRecipientId() != 0) {
-            putAccount(json, "recipient", prunableMessage.getRecipientId());
-        }
-        json.put("transactionTimestamp", prunableMessage.getTransactionTimestamp());
-        json.put("blockTimestamp", prunableMessage.getBlockTimestamp());
-        EncryptedData encryptedData = prunableMessage.getEncryptedData();
-        if (encryptedData != null) {
-            json.put("encryptedMessage", encryptedData(prunableMessage.getEncryptedData()));
-            json.put("encryptedMessageIsText", prunableMessage.encryptedMessageIsText());
-            byte[] decrypted = null;
-            try {
-                if (secretPhrase != null) {
-                    decrypted = prunableMessage.decrypt(secretPhrase);
-                } else if (sharedKey != null && sharedKey.length > 0) {
-                    decrypted = prunableMessage.decrypt(sharedKey);
-                }
-                if (decrypted != null) {
-                    json.put("decryptedMessage", Convert.toString(decrypted, prunableMessage.encryptedMessageIsText()));
-                }
-            } catch (RuntimeException e) {
-                putException(json, e, "Decryption failed");
-            }
-            json.put("isCompressed", prunableMessage.isCompressed());
-        }
-        if (prunableMessage.getMessage() != null) {
-            json.put("message", Convert.toString(prunableMessage.getMessage(), prunableMessage.messageIsText()));
-            json.put("messageIsText", prunableMessage.messageIsText());
-        }
-        return json;
-    }
 
     static JSONObject apiRequestHandler(APIServlet.APIRequestHandler handler) {
         JSONObject json = new JSONObject();

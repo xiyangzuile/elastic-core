@@ -93,24 +93,8 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
         String secretPhrase = ParameterParser.getSecretPhrase(req, false);
         String publicKeyValue = Convert.emptyToNull(req.getParameter("publicKey"));
         boolean broadcast = !"false".equalsIgnoreCase(req.getParameter("broadcast")) && secretPhrase != null;
-        Appendix.EncryptedMessage encryptedMessage = null;
-        Appendix.PrunableEncryptedMessage prunableEncryptedMessage = null;
-        if (attachment.getTransactionType().canHaveRecipient() && recipientId != 0) {
-            Account recipient = Account.getAccount(recipientId);
-            if ("true".equalsIgnoreCase(req.getParameter("encryptedMessageIsPrunable"))) {
-                prunableEncryptedMessage = (Appendix.PrunableEncryptedMessage) ParameterParser.getEncryptedMessage(req, recipient, true);
-            } else {
-                encryptedMessage = (Appendix.EncryptedMessage) ParameterParser.getEncryptedMessage(req, recipient, false);
-            }
-        }
-        Appendix.EncryptToSelfMessage encryptToSelfMessage = ParameterParser.getEncryptToSelfMessage(req);
-        Appendix.Message message = null;
-        Appendix.PrunablePlainMessage prunablePlainMessage = null;
-        if ("true".equalsIgnoreCase(req.getParameter("messageIsPrunable"))) {
-            prunablePlainMessage = (Appendix.PrunablePlainMessage) ParameterParser.getPlainMessage(req, true);
-        } else {
-            message = (Appendix.Message) ParameterParser.getPlainMessage(req, false);
-        }
+      
+
         Appendix.PrunableSourceCode prunableSourceCode = null;
         if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK) {
         	prunableSourceCode = (Appendix.PrunableSourceCode) ParameterParser.getSourceCode(req);
@@ -163,13 +147,10 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
             if (attachment.getTransactionType().canHaveRecipient()) {
                 builder.recipientId(recipientId);
             }
-            builder.appendix(encryptedMessage);
-            builder.appendix(message);
+ 
             builder.appendix(publicKeyAnnouncement);
-            builder.appendix(encryptToSelfMessage);
-            builder.appendix(prunablePlainMessage);
-            builder.appendix(prunableEncryptedMessage);
             builder.appendix(prunableSourceCode);
+            
             if (ecBlockId != 0) {
                 builder.ecBlockId(ecBlockId);
                 builder.ecBlockHeight(ecBlockHeight);

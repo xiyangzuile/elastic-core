@@ -242,34 +242,14 @@ class UnconfirmedTransaction implements Transaction {
         return transaction.getFullSize();
     }
 
-    @Override
-    public Appendix.Message getMessage() {
-        return transaction.getMessage();
-    }
-
-    @Override
-    public Appendix.PrunablePlainMessage getPrunablePlainMessage() {
-        return transaction.getPrunablePlainMessage();
-    }
+   
     
     @Override
     public Appendix.PrunableSourceCode getPrunableSourceCode() {
         return transaction.getPrunableSourceCode();
     }
 
-    @Override
-    public Appendix.EncryptedMessage getEncryptedMessage() {
-        return transaction.getEncryptedMessage();
-    }
-
-    @Override
-    public Appendix.PrunableEncryptedMessage getPrunableEncryptedMessage() {
-        return transaction.getPrunableEncryptedMessage();
-    }
-
-    public Appendix.EncryptToSelfMessage getEncryptToSelfMessage() {
-        return transaction.getEncryptToSelfMessage();
-    }
+   
 
     @Override
     public List<? extends Appendix> getAppendages() {

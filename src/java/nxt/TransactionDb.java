@@ -213,24 +213,7 @@ final class TransactionDb {
                     builder.recipientId(recipientId);
                 }
             }
-            if (rs.getBoolean("has_message")) {
-                builder.appendix(new Appendix.Message(buffer, version));
-            }
-            if (rs.getBoolean("has_encrypted_message")) {
-                builder.appendix(new Appendix.EncryptedMessage(buffer, version));
-            }
-            if (rs.getBoolean("has_public_key_announcement")) {
-                builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
-            }
-            if (rs.getBoolean("has_encrypttoself_message")) {
-                builder.appendix(new Appendix.EncryptToSelfMessage(buffer, version));
-            }
-            if (rs.getBoolean("has_prunable_message")) {
-                builder.appendix(new Appendix.PrunablePlainMessage(buffer, version));
-            }
-            if (rs.getBoolean("has_prunable_encrypted_message")) {
-                builder.appendix(new Appendix.PrunableEncryptedMessage(buffer, version));
-            }
+           
             if (rs.getBoolean("has_prunable_source_code")) {
                 builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
             }
@@ -349,13 +332,13 @@ final class TransactionDb {
                     pstmt.setInt(++i, transaction.getBlockTimestamp());
                     pstmt.setBytes(++i, transaction.fullHash());
                     pstmt.setByte(++i, transaction.getVersion());
-                    pstmt.setBoolean(++i, transaction.getMessage() != null);
-                    pstmt.setBoolean(++i, transaction.getEncryptedMessage() != null);
-                    pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
-                    pstmt.setBoolean(++i, transaction.getEncryptToSelfMessage() != null);
-                    pstmt.setBoolean(++i, transaction.hasPrunablePlainMessage());
+                    pstmt.setBoolean(++i, false);
+                    pstmt.setBoolean(++i, false);
+                    pstmt.setBoolean(++i, false);
+                    pstmt.setBoolean(++i, false);
+                    pstmt.setBoolean(++i, false);
                     pstmt.setBoolean(++i, transaction.hasPrunableSourceCode());
-                    pstmt.setBoolean(++i, transaction.hasPrunableEncryptedMessage());
+                    pstmt.setBoolean(++i, false);
                     pstmt.setBoolean(++i, transaction.getAttachment() instanceof Appendix.Prunable);
                     pstmt.setInt(++i, transaction.getECBlockHeight());
                     DbUtils.setLongZeroToNull(pstmt, ++i, transaction.getECBlockId());
@@ -379,18 +362,12 @@ final class TransactionDb {
     static class PrunableTransaction {
         private final long id;
         private final TransactionType transactionType;
-        private final boolean prunableAttachment;
-        private final boolean prunablePlainMessage;
-        private final boolean prunableEncryptedMessage;
         private final boolean prunableSourceCode;
 
         public PrunableTransaction(long id, TransactionType transactionType, boolean prunableAttachment,
                                    boolean prunablePlainMessage, boolean prunableEncryptedMessage, boolean prunableSourceCode) {
             this.id = id;
             this.transactionType = transactionType;
-            this.prunableAttachment = prunableAttachment;
-            this.prunablePlainMessage = prunablePlainMessage;
-            this.prunableEncryptedMessage = prunableEncryptedMessage;
             this.prunableSourceCode = prunableSourceCode;
         }
 
@@ -402,18 +379,6 @@ final class TransactionDb {
             return transactionType;
         }
 
-        public boolean hasPrunableAttachment() {
-            return prunableAttachment;
-        }
-
-        public boolean hasPrunablePlainMessage() {
-            return prunablePlainMessage;
-        }
-
-        public boolean hasPrunableEncryptedMessage() {
-            return prunableEncryptedMessage;
-        }
-        
         public boolean hasPrunableSourceCode() {
             return prunableSourceCode;
         }

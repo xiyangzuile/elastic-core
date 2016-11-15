@@ -30,17 +30,7 @@ public interface Transaction {
 
         Builder referencedTransactionFullHash(String referencedTransactionFullHash);
 
-        Builder appendix(Appendix.Message message);
-
-        Builder appendix(Appendix.EncryptedMessage encryptedMessage);
-
-        Builder appendix(Appendix.EncryptToSelfMessage encryptToSelfMessage);
-
         Builder appendix(Appendix.PublicKeyAnnouncement publicKeyAnnouncement);
-
-        Builder appendix(Appendix.PrunablePlainMessage prunablePlainMessage);
-
-        Builder appendix(Appendix.PrunableEncryptedMessage prunableEncryptedMessage);
         
         Builder appendix(Appendix.PrunableSourceCode prunableSourceCode);
 
@@ -112,16 +102,6 @@ public interface Transaction {
     byte getVersion();
 
     int getFullSize();
-
-    Appendix.Message getMessage();
-
-    Appendix.EncryptedMessage getEncryptedMessage();
-
-    Appendix.EncryptToSelfMessage getEncryptToSelfMessage();
-
-    Appendix.PrunablePlainMessage getPrunablePlainMessage();
-
-    Appendix.PrunableEncryptedMessage getPrunableEncryptedMessage();
     
     Appendix.PrunableSourceCode getPrunableSourceCode();
 

@@ -340,35 +340,6 @@ public final class ParameterParser {
 		return new EncryptedData(data, nonce);
 	}
 
-	public static Appendix.EncryptToSelfMessage getEncryptToSelfMessage(HttpServletRequest req)
-			throws ParameterException {
-		boolean isText = !"false".equalsIgnoreCase(req.getParameter("messageToEncryptToSelfIsText"));
-		boolean compress = !"false".equalsIgnoreCase(req.getParameter("compressMessageToEncryptToSelf"));
-		byte[] plainMessageBytes = null;
-		EncryptedData encryptedData = ParameterParser.getEncryptedData(req, "encryptToSelfMessage");
-		if (encryptedData == null) {
-			String plainMessage = Convert.emptyToNull(req.getParameter("messageToEncryptToSelf"));
-			if (plainMessage == null) {
-				return null;
-			}
-			try {
-				plainMessageBytes = isText ? Convert.toBytes(plainMessage) : Convert.parseHexString(plainMessage);
-			} catch (RuntimeException e) {
-				throw new ParameterException(INCORRECT_MESSAGE_TO_ENCRYPT);
-			}
-			String secretPhrase = getSecretPhrase(req, false);
-			if (secretPhrase != null) {
-				byte[] publicKey = Crypto.getPublicKey(secretPhrase);
-				encryptedData = Account.encryptTo(publicKey, plainMessageBytes, secretPhrase, compress);
-			}
-		}
-		if (encryptedData != null) {
-			return new Appendix.EncryptToSelfMessage(encryptedData, isText, compress);
-		} else {
-			return new Appendix.UnencryptedEncryptToSelfMessage(plainMessageBytes, isText, compress);
-		}
-	}
-
 	public static String getSecretPhrase(HttpServletRequest req, boolean isMandatory) throws ParameterException {
 		String secretPhrase = Convert.emptyToNull(req.getParameter("secretPhrase"));
 		if (secretPhrase == null && isMandatory) {
@@ -585,48 +556,6 @@ public final class ParameterParser {
 		}
 	}
 
-	public static Appendix getPlainMessage(HttpServletRequest req, boolean prunable) throws ParameterException {
-		String messageValue = Convert.emptyToNull(req.getParameter("message"));
-		boolean messageIsText = !"false".equalsIgnoreCase(req.getParameter("messageIsText"));
-		if (messageValue != null) {
-			try {
-				if (prunable) {
-					return new Appendix.PrunablePlainMessage(messageValue, messageIsText);
-				} else {
-					return new Appendix.Message(messageValue, messageIsText);
-				}
-			} catch (RuntimeException e) {
-				throw new ParameterException(INCORRECT_ARBITRARY_MESSAGE);
-			}
-		}
-		if (req.getContentType() == null || !req.getContentType().startsWith("multipart/form-data")) {
-			return null;
-		}
-		try {
-			Part part = req.getPart("messageFile");
-			if (part == null) {
-				return null;
-			}
-			FileData fileData = new FileData(part).invoke();
-			byte[] message = fileData.getData();
-			String detectedMimeType = Search.detectMimeType(message);
-			if (detectedMimeType != null) {
-				messageIsText = detectedMimeType.equals("text/plain");
-			}
-			if (messageIsText && !Arrays.equals(message, Convert.toBytes(Convert.toString(message)))) {
-				messageIsText = false;
-			}
-			if (prunable) {
-				return new Appendix.PrunablePlainMessage(message, messageIsText);
-			} else {
-				return new Appendix.Message(message, messageIsText);
-			}
-		} catch (IOException | ServletException e) {
-			Logger.logDebugMessage("error in reading file data", e);
-			throw new ParameterException(INCORRECT_ARBITRARY_MESSAGE);
-		}
-	}
-
 	public static Appendix getSourceCode(HttpServletRequest req) throws ParameterException {
 		String messageValue = Convert.emptyToNull(getParameterMultipart(req, "source_code"));
 		if (messageValue != null) {
@@ -637,77 +566,6 @@ public final class ParameterParser {
 			}
 		}
 		return null;
-	}
-
-	public static Appendix getEncryptedMessage(HttpServletRequest req, Account recipient, boolean prunable)
-			throws ParameterException {
-		boolean isText = !"false".equalsIgnoreCase(req.getParameter("messageToEncryptIsText"));
-		boolean compress = !"false".equalsIgnoreCase(req.getParameter("compressMessageToEncrypt"));
-		byte[] plainMessageBytes = null;
-		byte[] recipientPublicKey = null;
-		EncryptedData encryptedData = ParameterParser.getEncryptedData(req, "encryptedMessage");
-		if (encryptedData == null) {
-			String plainMessage = Convert.emptyToNull(req.getParameter("messageToEncrypt"));
-			if (plainMessage == null) {
-				if (req.getContentType() == null || !req.getContentType().startsWith("multipart/form-data")) {
-					return null;
-				}
-				try {
-					Part part = req.getPart("messageToEncryptFile");
-					if (part == null) {
-						return null;
-					}
-					FileData fileData = new FileData(part).invoke();
-					plainMessageBytes = fileData.getData();
-					String detectedMimeType = Search.detectMimeType(plainMessageBytes);
-					if (detectedMimeType != null) {
-						isText = detectedMimeType.equals("text/plain");
-					}
-					if (isText && !Arrays.equals(plainMessageBytes,
-							Convert.toBytes(Convert.toString(plainMessageBytes)))) {
-						isText = false;
-					}
-				} catch (IOException | ServletException e) {
-					Logger.logDebugMessage("error in reading file data", e);
-					throw new ParameterException(INCORRECT_MESSAGE_TO_ENCRYPT);
-				}
-			} else {
-				try {
-					plainMessageBytes = isText ? Convert.toBytes(plainMessage) : Convert.parseHexString(plainMessage);
-				} catch (RuntimeException e) {
-					throw new ParameterException(INCORRECT_MESSAGE_TO_ENCRYPT);
-				}
-			}
-			if (recipient != null) {
-				recipientPublicKey = Account.getPublicKey(recipient.getId());
-			}
-			if (recipientPublicKey == null) {
-				recipientPublicKey = Convert
-						.parseHexString(Convert.emptyToNull(req.getParameter("recipientPublicKey")));
-			}
-			if (recipientPublicKey == null) {
-				throw new ParameterException(MISSING_RECIPIENT_PUBLIC_KEY);
-			}
-			String secretPhrase = getSecretPhrase(req, false);
-			if (secretPhrase != null) {
-				encryptedData = Account.encryptTo(recipientPublicKey, plainMessageBytes, secretPhrase, compress);
-			}
-		}
-		if (encryptedData != null) {
-			if (prunable) {
-				return new Appendix.PrunableEncryptedMessage(encryptedData, isText, compress);
-			} else {
-				return new Appendix.EncryptedMessage(encryptedData, isText, compress);
-			}
-		} else {
-			if (prunable) {
-				return new Appendix.UnencryptedPrunableEncryptedMessage(plainMessageBytes, isText, compress,
-						recipientPublicKey);
-			} else {
-				return new Appendix.UnencryptedEncryptedMessage(plainMessageBytes, isText, compress,
-						recipientPublicKey);
-			}
-		}
 	}
 
 	private ParameterParser() {

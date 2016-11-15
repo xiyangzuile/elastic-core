@@ -27,7 +27,7 @@ import nxt.Account;
 import nxt.Constants;
 import nxt.Generator;
 import nxt.Nxt;
-import nxt.PrunableMessage;
+import nxt.PrunableSourceCode;
 import nxt.peer.Peers;
 import nxt.util.UPnP;
 
@@ -47,7 +47,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
         if ("true".equalsIgnoreCase(req.getParameter("includeCounts")) && API.checkPassword(req)) {
             response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
             response.put("numberOfAccounts", Account.getCount());
-            response.put("numberOfPrunableMessages", PrunableMessage.getCount());
+            response.put("numberOfPrunableSourceCodes", PrunableSourceCode.getCount());
             response.put("numberOfAccountLeases", Account.getAccountLeaseCount());
             response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
         }
