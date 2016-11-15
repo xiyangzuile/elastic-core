@@ -373,10 +373,10 @@ print "In total, %.6f BTC came from normal transactions" % btc_normal
 
 print "\n\n"
 t = 0
-desired = 100000000
+desired = 100000000.0
 for ft in normal_addresses_xel:
     t += float(ft)
-print "Total amount of XEL available:",t/100000000
+print "Total amount of XEL available:",t/100000000.0
 print "Desired: ",desired
 desired = desired * 100000000
 print "[!!] scaing in background"
@@ -385,7 +385,7 @@ for i in range(len(normal_addresses_xel)):
 t = 0
 for ft in normal_addresses_xel:
     t += float(ft)
-print "Total scaled amount of XEL available:",t/100000000
+print "Total scaled amount of XEL available:",t/100000000.0
 
 
 
@@ -399,3 +399,7 @@ print ", ".join("\"" + d + "\"" for d in normal_addresses)
 print "\n\n\n"
 print "AMOUNTS ARRAY"
 print ", ".join(str(d) + "L" for d in normal_addresses_xel) 
+
+
+for i in range(len(normal_addresses)):
+    print normal_addresses[i] + "\t\t"+str(normal_addresses_xel[i]/100000000.0) + " XEL"
