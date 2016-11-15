@@ -41,16 +41,10 @@ var NRS = (function(NRS, $, undefined) {
             }
         },
         1: {
-            'title': "Messaging/Voting/Aliases",
+            'title': "Messaging/Announcements",
             'i18nKeyTitle': 'messaging_voting_aliases',
             'iconHTML': "<i class='fa fa-envelope-square'></i>",
             'subTypes': {
-                0: {
-                    'title': "Arbitrary Message",
-                    'i18nKeyTitle': 'arbitrary_message',
-                    'iconHTML': "<i class='fa fa-envelope-o'></i>",
-                    'receiverPage': 'messages'
-                },
                 1: {
                     'title': "Hub Announcement",
                     'i18nKeyTitle': 'hub_announcement',
