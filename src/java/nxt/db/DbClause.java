@@ -1,18 +1,18 @@
-/******************************************************************************
- * Copyright © 2013-2016 The Nxt Core Developers.                             *
- *                                                                            *
- * See the AUTHORS.txt, DEVELOPER-AGREEMENT.txt and LICENSE.txt files at      *
- * the top-level directory of this distribution for the individual copyright  *
- * holder information and the developer policies on copyright and licensing.  *
- *                                                                            *
- * Unless otherwise agreed in a custom licensing agreement, no part of the    *
- * Nxt software, including this file, may be copied, modified, propagated,    *
- * or distributed except according to the terms contained in the LICENSE.txt  *
- * file.                                                                      *
- *                                                                            *
- * Removal or modification of this copyright notice is prohibited.            *
- *                                                                            *
- ******************************************************************************/
+/*
+ * Copyright © 2013-2016 The Nxt Core Developers.
+ * Copyright © 2016 Jelurida IP B.V.
+ *
+ * See the LICENSE.txt file at the top-level directory of this distribution
+ * for licensing information.
+ *
+ * Unless otherwise agreed in a custom licensing agreement with Jelurida B.V.,
+ * no part of the Nxt software, including this file, may be copied, modified,
+ * propagated, or distributed except according to the terms contained in the
+ * LICENSE.txt file.
+ *
+ * Removal or modification of this copyright notice is prohibited.
+ *
+ */
 
 package nxt.db;
 
@@ -91,18 +91,6 @@ public abstract class DbClause {
 
         public NotNullClause(String columnName) {
             super(" " + columnName + " IS NOT NULL ");
-        }
-
-        @Override
-        protected int set(PreparedStatement pstmt, int index) throws SQLException {
-            return index;
-        }
-
-    }
-    public static final class NotNullClauseAndNotClosed extends DbClause {
-
-        public NotNullClauseAndNotClosed(String columnName) {
-            super(" " + columnName + " IS NOT NULL AND closed = false");
         }
 
         @Override
@@ -209,8 +197,8 @@ public abstract class DbClause {
         }
 
     }
-    
-    public static final class BytesClause extends DbClause {
+
+      public static final class BytesClause extends DbClause {
 
         private final byte[] value;
 

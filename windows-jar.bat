@@ -67,7 +67,8 @@ mkdir classes
     rem cd ..
     rem mkdir classes
 	"%javaDir%"\bin\javac.exe -classpath classes;lib\*;conf -d classes/ @FilesList.txt  
-	"%javaDir%"\bin\java.exe -cp classes nxt.tools.ManifestGenerator
+	rem "%javaDir%"\bin\java.exe -cp classes nxt.tools.ManifestGenerator
+	BatchSubstitute.bat "/" "\" resource\nxt.manifest.mf 
 	del elastic-core.jar
 	"%javaDir%"\bin\jar.exe cfm elastic-core.jar resource/nxt.manifest.mf -C classes . || exit 1
 	del elastic-core-service.jar
