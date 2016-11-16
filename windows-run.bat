@@ -57,7 +57,7 @@
 	)
 
 :startJava	
-	"%javaDir%"\bin\java.exe -cp classes;lib\*;conf -Dnxt.runtime.mode=desktop nxt.Nxt
+	"%javaDir%"\bin\java.exe -jar elastic-core.jar
 
 :endProcess 
 	endlocal
