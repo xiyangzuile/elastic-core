@@ -76,7 +76,7 @@ public final class Nxt {
         System.out.println("User home folder " + dirProvider.getUserHomeDir());
         loadProperties(defaultProperties, NXT_DEFAULT_PROPERTIES, true);
         if (!VERSION.equals(Nxt.defaultProperties.getProperty("nxt.version"))) {
-            throw new RuntimeException("Using an nxt-default.properties file from a version other than " + VERSION + " is not supported!!!");
+            throw new RuntimeException("Using an nxt-default.properties file from a version other than " + VERSION + " is not supported!!! You provided " + Nxt.defaultProperties.getProperty("nxt.version") + ".");
         }
     }
 
@@ -130,7 +130,7 @@ public final class Nxt {
                     throw new IllegalArgumentException(String.format("Error loading %s from %s", propertiesFile, configFile));
                 }
             } else {
-                try (InputStream is = ClassLoader.getSystemResourceAsStream(propertiesFile)) {
+                try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertiesFile)) {
                     // When running nxt.exe from a Windows installation we always have nxt.properties in the classpath but this is not the nxt properties file
                     // Therefore we first load it from the classpath and then look for the real nxt.properties in the user folder.
                     if (is != null) {
