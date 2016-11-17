@@ -24,7 +24,7 @@ public class DefaultDirProvider implements DirProvider {
 
     @Override
     public boolean isLoadPropertyFileFromUserDir() {
-        return false;
+        return true;
     }
 
     @Override

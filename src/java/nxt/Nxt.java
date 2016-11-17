@@ -134,7 +134,8 @@ public final class Nxt {
                     // When running nxt.exe from a Windows installation we always have nxt.properties in the classpath but this is not the nxt properties file
                     // Therefore we first load it from the classpath and then look for the real nxt.properties in the user folder.
                     if (is != null) {
-                        System.out.printf("Loading %s from classpath\n", propertiesFile);
+                    	System.out.println("Loading default properties from resources file.");
+
                         properties.load(is);
                         if (isDefault) {
                             return properties;
@@ -142,11 +143,14 @@ public final class Nxt {
                     }
                     // load non-default properties files from the user folder
                     if (!dirProvider.isLoadPropertyFileFromUserDir()) {
+                    	System.out.println("Skipping to load properties from home folder.");
+
                         return properties;
                     }
                     String homeDir = dirProvider.getUserHomeDir();
                     if (!Files.isReadable(Paths.get(homeDir))) {
-                        System.out.printf("Creating dir %s\n", homeDir);
+                    	System.out.println("Creating home directory: " + homeDir);
+
                         try {
                             Files.createDirectory(Paths.get(homeDir));
                         } catch(Exception e) {
@@ -160,15 +164,18 @@ public final class Nxt {
                     }
                     Path confDir = Paths.get(homeDir, CONFIG_DIR);
                     if (!Files.isReadable(confDir)) {
-                        System.out.printf("Creating dir %s\n", confDir);
+                    	System.out.println("Creating config directory: " + confDir);
+
                         Files.createDirectory(confDir);
                     }
                     Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
                     if (Files.isReadable(propPath)) {
-                        System.out.printf("Loading %s from dir %s\n", propertiesFile, confDir);
+                    	System.out.println("Loading customized properties " + propertiesFile + " from " + confDir);
+
                         properties.load(Files.newInputStream(propPath));
                     } else {
-                        System.out.printf("Creating property file %s\n", propPath);
+                    	System.out.println("Creating property file in:" + propPath);
+
                         Files.createFile(propPath);
                         Files.write(propPath, Convert.toBytes("# use this file for workstation specific " + propertiesFile));
                     }
