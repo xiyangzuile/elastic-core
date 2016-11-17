@@ -49,13 +49,13 @@ var NRS = (function(NRS, $) {
 				var timeDiff = NRS.state.time - NRS.blocks[0].timestamp;
 				if (timeDiff > 60 * 60 * 18) {
 					if (timeDiff > 60 * 60 * 24 * 14) {
-						NRS.setStateInterval(30);
+						NRS.setStateInterval(5);
 					} else if (timeDiff > 60 * 60 * 24 * 7) {
 						//second to last week
-						NRS.setStateInterval(15);
+						NRS.setStateInterval(5);
 					} else {
 						//last week
-						NRS.setStateInterval(10);
+						NRS.setStateInterval(5);
 					}
 					NRS.downloadingBlockchain = true;
 					$("#nrs_update_explanation").find("span").hide();
@@ -66,10 +66,10 @@ var NRS = (function(NRS, $) {
 				} else {
 					//continue with faster state intervals if we still haven't reached current block from within 1 hour
 					if (timeDiff < 60 * 60) {
-						NRS.setStateInterval(30);
+						NRS.setStateInterval(5);
 						trackBlockchain = false;
 					} else {
-						NRS.setStateInterval(10);
+						NRS.setStateInterval(5);
 						trackBlockchain = true;
 					}
 				}
@@ -136,6 +136,13 @@ var NRS = (function(NRS, $) {
 		$(".nrs_current_block").empty().append(NRS.escapeRespStr(block.height));
 	};
 
+	NRS.updateWorkCount = function(count,openwork) {
+		if(openwork)
+			$("#open_work_count").empty().append(count);
+		else
+			$("#closed_work_count").empty().append(count);
+	};
+
 	//we always update the dashboard page..
 	NRS.incoming.updateDashboardBlocks = function(newBlocksCount) {
         var timeDiff;
@@ -144,9 +151,9 @@ var NRS = (function(NRS, $) {
 				timeDiff = NRS.state.time - NRS.blocks[0].timestamp;
 				if (timeDiff < 60 * 60 * 18) {
 					if (timeDiff < 60 * 60) {
-						NRS.setStateInterval(30);
+						NRS.setStateInterval(5);
 					} else {
-						NRS.setStateInterval(10);
+						NRS.setStateInterval(5);
 						trackBlockchain = true;
 					}
 					NRS.downloadingBlockchain = false;
@@ -164,13 +171,13 @@ var NRS = (function(NRS, $) {
 					NRS.checkIfOnAFork();
 				} else {
 					if (timeDiff > 60 * 60 * 24 * 14) {
-						NRS.setStateInterval(30);
+						NRS.setStateInterval(5);
 					} else if (timeDiff > 60 * 60 * 24 * 7) {
 						//second to last week
-						NRS.setStateInterval(15);
+						NRS.setStateInterval(5);
 					} else {
 						//last week
-						NRS.setStateInterval(10);
+						NRS.setStateInterval(5);
 					}
 
 					NRS.updateBlockchainDownloadProgress();
@@ -180,10 +187,10 @@ var NRS = (function(NRS, $) {
 			//continue with faster state intervals if we still haven't reached current block from within 1 hour
             timeDiff = NRS.state.time - NRS.blocks[0].timestamp;
 			if (timeDiff < 60 * 60) {
-				NRS.setStateInterval(30);
+				NRS.setStateInterval(5);
 				trackBlockchain = false;
 			} else {
-				NRS.setStateInterval(10);
+				NRS.setStateInterval(5);
 			}
 		}
 

@@ -17,6 +17,7 @@
 package nxt.http;
 
 import java.net.InetAddress;
+import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,6 +29,7 @@ import nxt.Constants;
 import nxt.Generator;
 import nxt.Nxt;
 import nxt.PrunableSourceCode;
+import nxt.Work;
 import nxt.peer.Peers;
 import nxt.util.UPnP;
 
@@ -53,6 +55,9 @@ public final class GetState extends APIServlet.APIRequestHandler {
         }
         response.put("numberOfPeers", Peers.getAllPeers().size());
         response.put("numberOfActivePeers", Peers.getActivePeers().size());
+        response.put("numberOpenWorks", Work.getActiveCount());
+        response.put("numberClosedWorks", Work.getCount()-Work.getActiveCount());
+        
         response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());
         response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
         response.put("maxMemory", Runtime.getRuntime().maxMemory());

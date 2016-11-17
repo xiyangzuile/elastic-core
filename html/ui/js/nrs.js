@@ -126,6 +126,18 @@ var NRS = (function(NRS, $, undefined) {
 				if (key == "version") {
 					NRS.appVersion = response[key];
 				}
+				if (key == "numberOpenWorks"){
+					NRS.openWorkCount = response[key];
+					if (NRS.currentPage == "dashboard") {
+						NRS.updateWorkCount(response[key],true);
+					}
+				}
+				if (key == "numberClosedWorks"){
+					NRS.closedWorkCount = response[key];
+					if (NRS.currentPage == "dashboard") {
+						NRS.updateWorkCount(response[key],false);
+					}
+				}
 			}
 
 			if (!isTestnet) {
@@ -185,7 +197,7 @@ var NRS = (function(NRS, $, undefined) {
 		});
 
 		NRS.showLockscreen();
-		NRS.setStateInterval(30);
+		NRS.setStateInterval(5);
 
 		// Register Longpolling here (1s delay to give things time to setup)
 		setTimeout(function() {
@@ -248,6 +260,7 @@ var NRS = (function(NRS, $, undefined) {
 		if (stateInterval) {
 			clearInterval(stateInterval);
 		}
+		console.log("Setting state interval to " + seconds + " seconds.");
 		stateIntervalSeconds = seconds;
 		stateInterval = setInterval(function() {
 			NRS.getState(null);
@@ -359,6 +372,31 @@ var NRS = (function(NRS, $, undefined) {
 		if (msg) {
 			NRS.logConsole("getState event " + msg);
 		}
+
+		NRS.sendRequest("getState", {
+			"includeCounts": "false"
+		}, function (response) {
+			var isTestnet = false;
+			var isOffline = false;
+			var peerPort = 0;
+			for (var key in response) {
+                if (!response.hasOwnProperty(key)) {
+                    continue;
+                }
+				if (key == "numberOpenWorks"){
+					NRS.openWorkCount = response[key];
+					if (NRS.currentPage == "dashboard") {
+						NRS.updateWorkCount(response[key],true);
+					}
+				}
+				if (key == "numberClosedWorks"){
+					NRS.closedWorkCount = response[key];
+					if (NRS.currentPage == "dashboard") {
+						NRS.updateWorkCount(response[key],false);
+					}
+				}
+			}
+		});
 		NRS.sendRequest("getBlockchainStatus", {}, function(response) {
 			if (response.errorCode) {
 				NRS.serverConnect = false;
