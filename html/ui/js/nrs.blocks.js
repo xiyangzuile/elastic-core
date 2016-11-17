@@ -136,11 +136,22 @@ var NRS = (function(NRS, $) {
 		$(".nrs_current_block").empty().append(NRS.escapeRespStr(block.height));
 	};
 
+	
+
 	NRS.updateWorkCount = function(count,openwork) {
 		if(openwork)
 			$("#open_work_count").empty().append(count);
 		else
 			$("#closed_work_count").empty().append(count);
+	};
+
+	NRS.updateHashpower = function(count) {
+			$("#account_message_count").empty().append(count);
+		
+	};
+	NRS.updateClaim = function(count) {
+			$("#claimable_balance").empty().append(NRS.formatAmount(count));
+		
 	};
 
 	//we always update the dashboard page..

@@ -57,6 +57,8 @@ public final class GetState extends APIServlet.APIRequestHandler {
         response.put("numberOfActivePeers", Peers.getActivePeers().size());
         response.put("numberOpenWorks", Work.getActiveCount());
         response.put("numberClosedWorks", Work.getCount()-Work.getActiveCount());
+        response.put("estimatedComputationPower", "179 Gflops");
+        response.put("openWorkMoney", 0);
         
         response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());
         response.put("availableProcessors", Runtime.getRuntime().availableProcessors());

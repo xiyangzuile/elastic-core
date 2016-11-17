@@ -128,15 +128,20 @@ var NRS = (function(NRS, $, undefined) {
 				}
 				if (key == "numberOpenWorks"){
 					NRS.openWorkCount = response[key];
-					if (NRS.currentPage == "dashboard") {
-						NRS.updateWorkCount(response[key],true);
-					}
+					NRS.updateWorkCount(response[key],true);
+					
 				}
 				if (key == "numberClosedWorks"){
 					NRS.closedWorkCount = response[key];
-					if (NRS.currentPage == "dashboard") {
-						NRS.updateWorkCount(response[key],false);
-					}
+					NRS.updateWorkCount(response[key],false);
+					
+				}
+
+				if(key == "estimatedComputationPower"){
+					NRS.updateHashpower(response[key]);
+				}
+				if(key == "openWorkMoney"){
+					NRS.updateClaim(response[key]);
 				}
 			}
 
@@ -385,16 +390,20 @@ var NRS = (function(NRS, $, undefined) {
                 }
 				if (key == "numberOpenWorks"){
 					NRS.openWorkCount = response[key];
-					if (NRS.currentPage == "dashboard") {
 						NRS.updateWorkCount(response[key],true);
-					}
 				}
 				if (key == "numberClosedWorks"){
 					NRS.closedWorkCount = response[key];
-					if (NRS.currentPage == "dashboard") {
 						NRS.updateWorkCount(response[key],false);
-					}
 				}
+				if(key == "estimatedComputationPower"){
+					NRS.updateHashpower(response[key]);
+				}
+				if(key == "openWorkMoney"){
+					NRS.updateClaim(response[key]);
+				}
+				
+
 			}
 		});
 		NRS.sendRequest("getBlockchainStatus", {}, function(response) {
@@ -984,7 +993,7 @@ NRS.addPagination = function () {
 			NRS.accountInfo = response;
 
 			if (response.errorCode) {
-				$("#account_balance, #account_balance_sidebar, #account_message_count").html("0");
+				$("#account_balance, #account_balance_sidebar").html("0");
 
                 NRS.updateDashboardMessage();
 			} else {
@@ -1002,23 +1011,6 @@ NRS.addPagination = function () {
 
 
 
-				/* Display message count in top and limit to 100 for now because of possible performance issues*/
-				NRS.sendRequest("getBlockchainTransactions+", {
-					"account": NRS.account,
-					"type": 1,
-					"subtype": 0,
-					"firstIndex": 0,
-					"lastIndex": 99
-				}, function(response) {
-					if (response.transactions && response.transactions.length) {
-						if (response.transactions.length > 99)
-							$("#account_message_count").empty().append("99+");
-						else
-							$("#account_message_count").empty().append(response.transactions.length);
-					} else {
-						$("#account_message_count").empty().append("0");
-					}
-				});
 
 				/***  ******************   ***/
 
