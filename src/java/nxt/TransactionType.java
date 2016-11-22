@@ -801,6 +801,11 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("Work creation transaction MUST come with a source code appendix");
 				}
 				
+				// Now, source must not be pruned if the transaction is "young"
+				if(transaction.getPrunableSourceCode().hasPrunableData() && !(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME)){
+					throw new NxtException.NotValidException("Script kiddie, stay home! Please refrain from pruning unpruneable data");
+				}
+				
 				// Check for correct title length
 				if (attachment.getWorkTitle().length() > Constants.MAX_TITLE_LENGTH || attachment.getWorkTitle().length() < 1) {
 					throw new NxtException.NotValidException("User provided POW Algorithm has incorrect title length");
@@ -830,6 +835,8 @@ public abstract class TransactionType {
 				if(transaction.getAmountNQT() < Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow() + attachment.getXelPerBounty()*attachment.getBountyLimit()){
 					throw new NxtException.NotValidException("You must attach XEL for at least 20 POW submissions and all bounties, i.e., " + (Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow()+attachment.getXelPerBounty()*attachment.getBountyLimit()) + " XEL");
 				}
+				
+				
 				
 				
 			}
@@ -1069,9 +1076,17 @@ public abstract class TransactionType {
 				POW_CHECK_RESULT valid = POW_CHECK_RESULT.ERROR;
 								
 				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
-					// If the tx is already pruned we assume POW is valid!
+					// If the tx is already pruned AND the transaction timestamp is old enough, we assume POW is valid!
 					// no need to execute after all! We assume that the pruning is happened long enough ago
-					valid = POW_CHECK_RESULT.OK;
+					// This is valid, because MIN_PRUNABLE_LIFETIME is longer than the maximum work timeout length! We are just catching up the blockchain here, not actually "submitting live work"
+					if(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME)
+						valid = POW_CHECK_RESULT.OK;
+					else
+						// Otherwise a script kiddie is trying to be an uber haxx0r:
+						throw new NxtException.NotValidException(
+								"Proof of work is invalid: references a pruned source code when it should not be pruned");
+					
+					
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
@@ -1192,6 +1207,14 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
 				}
 				
+				if(PrunableSourceCode.isPrunedByWorkId(w.getId())){
+					// If the tx is already pruned AND the transaction timestamp is old enough, we assume submission is valid!
+					// no need to execute after all! We assume that the pruning is happened long enough ago
+					// This is valid, because MIN_PRUNABLE_LIFETIME is longer than the maximum work timeout length! We are just catching up the blockchain here, not actually "submitting live work"
+					if(!(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME))
+						throw new NxtException.NotValidException(
+								"Bounty announcement is invalid: references a work package with pruned source code when it should not be pruned");
+				}
 				
 				
 				byte[] hash = attachment.getHashAnnounced();
@@ -1311,9 +1334,15 @@ public abstract class TransactionType {
 				boolean valid = false;
 				
 				if(PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())){
-					// If the tx is already pruned we assume POW is valid!
+					// If the tx is already pruned AND the transaction timestamp is old enough, we assume POW is valid!
 					// no need to execute after all! We assume that the pruning is happened long enough ago
-					valid = true;
+					// This is valid, because MIN_PRUNABLE_LIFETIME is longer than the maximum work timeout length! We are just catching up the blockchain here, not actually "submitting live work"
+					if(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME)
+						valid = true;
+					else
+						// Otherwise a script kiddie is trying to be an uber haxx0r:
+						throw new NxtException.NotValidException(
+								"Bounty is invalid: references a pruned source code when it should not be pruned");
 				}else{
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
