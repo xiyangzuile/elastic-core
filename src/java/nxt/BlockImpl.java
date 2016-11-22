@@ -215,7 +215,7 @@ public final class BlockImpl implements Block {
 	public long getId() {
 		if (id == 0) {
 			boolean is_special_case = false;
-			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 5000) {
 				for (Transaction t : this.blockTransactions) {
 					if (t.getType() == Payment.REDEEM) {
 						is_special_case = true;
@@ -359,7 +359,7 @@ public final class BlockImpl implements Block {
 	private boolean checkSignature() {
 
 		boolean is_special_case = false;
-		if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+		if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 5000) {
 			for (Transaction t : this.blockTransactions) {
 				if (t.getType() == Payment.REDEEM) {
 					is_special_case = true;
@@ -396,7 +396,7 @@ public final class BlockImpl implements Block {
 			// This helps bootstrapping the blockchain, as at the beginning
 			// nobody has coins and so nobody could forge
 			// PLEASE DISCUSS THIS IN THE COMMUNITY
-			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 5000) {
 				for (Transaction t : this.blockTransactions) {
 					if (t.getType() == Payment.REDEEM) {
 						return true;

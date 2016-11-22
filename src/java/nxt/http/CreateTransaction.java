@@ -186,7 +186,6 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
                 		BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase), Nxt.getEpochTime());
                 	}catch(Exception e){
                 		// fall through
-                		e.printStackTrace();
                 	}
                 }
                 
