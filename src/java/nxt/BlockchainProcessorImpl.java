@@ -1683,6 +1683,57 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             throw e;
         }
     }
+    
+    public void generateBlock(byte[] publicKey, int blockTimestamp) throws BlockNotAcceptedException {
+
+        Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
+        
+        BlockImpl previousBlock = blockchain.getLastBlock();
+        TransactionProcessorImpl.getInstance().processWaitingTransactions();
+        SortedSet<UnconfirmedTransaction> sortedTransactions = selectUnconfirmedTransactions(duplicates, previousBlock, blockTimestamp);
+        List<TransactionImpl> blockTransactions = new ArrayList<>();
+        MessageDigest digest = Crypto.sha256();
+        long totalAmountNQT = 0;
+        long totalFeeNQT = 0;
+        int payloadLength = 0;
+        for (UnconfirmedTransaction unconfirmedTransaction : sortedTransactions) {
+            TransactionImpl transaction = unconfirmedTransaction.getTransaction();
+            blockTransactions.add(transaction);
+            digest.update(transaction.bytes());
+            totalAmountNQT += transaction.getAmountNQT();
+            totalFeeNQT += transaction.getFeeNQT();
+            payloadLength += transaction.getFullSize();
+        }
+        byte[] payloadHash = digest.digest();
+        digest.update(previousBlock.getGenerationSignature());
+        byte[] generationSignature = digest.digest(publicKey);
+        byte[] previousBlockHash = Crypto.sha256().digest(previousBlock.bytes());
+
+        BlockImpl block = new BlockImpl(getBlockVersion(previousBlock.getHeight()), blockTimestamp, previousBlock.getId(), totalAmountNQT, totalFeeNQT, payloadLength,
+                payloadHash, publicKey, generationSignature, previousBlockHash, blockTransactions, null, BlockImpl.calculateNextMinPowTarget(previousBlock.getId()));
+
+        try {
+            pushBlock(block);
+            blockListeners.notify(block, Event.BLOCK_GENERATED);
+            Logger.logDebugMessage("Account " + Long.toUnsignedString(block.getGeneratorId()) + " generated block " + block.getStringId()
+                    + " at height " + block.getHeight() + " timestamp " + block.getTimestamp() + " fee " + ((float)block.getTotalFeeNQT())/Constants.ONE_NXT);
+        } catch (TransactionNotAcceptedException e) {
+            Logger.logDebugMessage("Generate block failed: " + e.getMessage());
+            TransactionProcessorImpl.getInstance().processWaitingTransactions();
+            TransactionImpl transaction = e.getTransaction();
+            Logger.logDebugMessage("Removing invalid transaction: " + transaction.getStringId());
+            blockchain.writeLock();
+            try {
+                TransactionProcessorImpl.getInstance().removeUnconfirmedTransaction(transaction);
+            } finally {
+                blockchain.writeUnlock();
+            }
+            throw e;
+        } catch (BlockNotAcceptedException e) {
+            Logger.logDebugMessage("Generate block failed: " + e.getMessage());
+            throw e;
+        }
+    }
 
     boolean hasAllReferencedTransactions(TransactionImpl transaction, int timestamp, int count) {
         if (transaction.referencedTransactionFullHash() == null) {

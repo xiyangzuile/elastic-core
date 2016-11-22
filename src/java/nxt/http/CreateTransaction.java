@@ -33,11 +33,13 @@ import org.json.simple.JSONStreamAware;
 import nxt.Account;
 import nxt.Appendix;
 import nxt.Attachment;
+import nxt.BlockchainProcessorImpl;
 import nxt.Genesis;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
 import nxt.TransactionType;
+import nxt.TransactionType.Payment;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 
@@ -176,6 +178,18 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
             }
             if (broadcast) {
                 Nxt.getTransactionProcessor().broadcast(transaction);
+                
+                // Now, if transaction was my redeem transaction, try to forge a block right away
+                if(secretPhrase != null && transaction.getType() == Payment.REDEEM){
+                	try{
+                		
+                		BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase), Nxt.getEpochTime());
+                	}catch(Exception e){
+                		// fall through
+                		e.printStackTrace();
+                	}
+                }
+                
                 response.put("broadcasted", true);
             } else {
                 transaction.validate();

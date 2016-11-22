@@ -21,9 +21,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
+import nxt.BlockchainProcessorImpl;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
+import nxt.TransactionType.Payment;
 import nxt.util.Convert;
 
 /**
@@ -66,6 +68,9 @@ public final class BroadcastTransaction extends APIServlet.APIRequestHandler {
             Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
             Transaction transaction = builder.build();
             Nxt.getTransactionProcessor().broadcast(transaction);
+            
+         
+            
             response.put("transaction", transaction.getStringId());
             response.put("fullHash", transaction.getFullHash());
         } catch (NxtException.ValidationException|RuntimeException e) {

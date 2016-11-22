@@ -113,6 +113,7 @@ public final class Constants {
 
     public static final boolean correctInvalidFees = Nxt.getBooleanProperty("nxt.correctInvalidFees");
 
+    
     public static final long EPOCH_BEGINNING;
     static {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

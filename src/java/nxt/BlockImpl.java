@@ -30,6 +30,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import nxt.AccountLedger.LedgerEvent;
+import nxt.TransactionType.Payment;
 import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
 import nxt.util.Convert;
@@ -47,11 +48,11 @@ public final class BlockImpl implements Block {
 	private final int payloadLength;
 	private final byte[] generationSignature;
 	private final byte[] payloadHash;
-	
+
 	private volatile List<TransactionImpl> blockTransactions;
 	private static LRUCache powDifficultyLRUCache = new LRUCache(50);
 	private static DoubleLongLRUCache powPerBlockAndWorkLRUCache = new DoubleLongLRUCache(100);
-	
+
 	private byte[] blockSignature;
 	private BigInteger cumulativeDifficulty = BigInteger.ZERO;
 	private long baseTarget = Constants.INITIAL_BASE_TARGET;
@@ -65,17 +66,20 @@ public final class BlockImpl implements Block {
 
 	BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT,
 			int payloadLength, byte[] payloadHash, byte[] generatorPublicKey, byte[] generationSignature,
-			byte[] previousBlockHash, List<TransactionImpl> transactions, String secretPhrase, BigInteger min_pow_target) {
+			byte[] previousBlockHash, List<TransactionImpl> transactions, String secretPhrase,
+			BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
-		blockSignature = Crypto.sign(bytes(), secretPhrase);
+		if (secretPhrase != null)
+			blockSignature = Crypto.sign(bytes(), secretPhrase);
 		bytes = null;
-		
+
 	}
 
 	BlockImpl(int version, int timestamp, long previousBlockId, long totalAmountNQT, long totalFeeNQT,
 			int payloadLength, byte[] payloadHash, byte[] generatorPublicKey, byte[] generationSignature,
-			byte[] blockSignature, byte[] previousBlockHash, List<TransactionImpl> transactions, BigInteger min_pow_target) {
+			byte[] blockSignature, byte[] previousBlockHash, List<TransactionImpl> transactions,
+			BigInteger min_pow_target) {
 		this.version = version;
 		this.timestamp = timestamp;
 		this.previousBlockId = previousBlockId;
@@ -106,7 +110,7 @@ public final class BlockImpl implements Block {
 		this.id = id;
 		this.generatorId = generatorId;
 		this.blockTransactions = blockTransactions;
-		
+
 	}
 
 	@Override
@@ -210,7 +214,16 @@ public final class BlockImpl implements Block {
 	@Override
 	public long getId() {
 		if (id == 0) {
-			if (blockSignature == null) {
+			boolean is_special_case = false;
+			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+				for (Transaction t : this.blockTransactions) {
+					if (t.getType() == Payment.REDEEM) {
+						is_special_case = true;
+						break;
+					}
+				}
+			}
+			if (is_special_case == false && blockSignature == null) {
 				throw new IllegalStateException("Block is not signed yet");
 			}
 			byte[] hash = Crypto.sha256().digest(bytes());
@@ -307,6 +320,7 @@ public final class BlockImpl implements Block {
 	}
 
 	byte[] bytes() {
+
 		if (bytes == null) {
 			ByteBuffer buffer = ByteBuffer
 					.allocate(4 + 4 + 8 + 4 + 8 + 8 + 4 + 32 + 32 + 32 + 32 + (blockSignature != null ? 64 : 0));
@@ -331,17 +345,33 @@ public final class BlockImpl implements Block {
 	}
 
 	boolean verifyBlockSignature() {
-		// Fail is "REMEED_ACCOUNT" created block, he should be not allowed to do anything
-        if(getGeneratorId() == Genesis.REDEEM_ID){
-        	return false;
-        }
-        
+		// Fail is "REMEED_ACCOUNT" created block, he should be not allowed to
+		// do anything
+		if (getGeneratorId() == Genesis.REDEEM_ID) {
+			return false;
+		}
+
 		return checkSignature() && Account.setOrVerify(getGeneratorId(), getGeneratorPublicKey());
 	}
 
 	private volatile boolean hasValidSignature = false;
 
 	private boolean checkSignature() {
+
+		boolean is_special_case = false;
+		if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+			for (Transaction t : this.blockTransactions) {
+				if (t.getType() == Payment.REDEEM) {
+					is_special_case = true;
+					break;
+				}
+			}
+		}
+
+		if (is_special_case) {
+			hasValidSignature = true;
+		}
+
 		if (!hasValidSignature) {
 			byte[] data = Arrays.copyOf(bytes(), bytes.length - 64);
 			hasValidSignature = blockSignature != null
@@ -358,6 +388,20 @@ public final class BlockImpl implements Block {
 			if (previousBlock == null) {
 				throw new BlockchainProcessor.BlockOutOfOrderException(
 						"Can't verify signature because previous block is missing", this);
+			}
+
+			// Now comes a dirty hack, if the block contains a redeem
+			// transaction, and the blockheight is low enough (1440) then anyone
+			// can mine the block!
+			// This helps bootstrapping the blockchain, as at the beginning
+			// nobody has coins and so nobody could forge
+			// PLEASE DISCUSS THIS IN THE COMMUNITY
+			if (this.previousBlockId == 0 || this.getPreviousBlock().getHeight() <= 1440) {
+				for (Transaction t : this.blockTransactions) {
+					if (t.getType() == Payment.REDEEM) {
+						return true;
+					}
+				}
 			}
 
 			Account account = Account.getAccount(getGeneratorId());
@@ -458,8 +502,9 @@ public final class BlockImpl implements Block {
 
 	private void calculateBaseTarget(BlockImpl previousBlock) {
 		long prevBaseTarget = previousBlock.baseTarget;
-		
-		if (previousBlock.getHeight() % 2 == 0 && previousBlock.getHeight() > 2 /* fix for early forkers */) {
+
+		if (previousBlock.getHeight() % 2 == 0
+				&& previousBlock.getHeight() > 2 /* fix for early forkers */) {
 			BlockImpl block = BlockDb.findBlockAtHeight(previousBlock.getHeight() - 2);
 			int blocktimeAverage = (this.timestamp - block.timestamp) / 3;
 			if (blocktimeAverage > 60) {
@@ -480,38 +525,37 @@ public final class BlockImpl implements Block {
 		cumulativeDifficulty = previousBlock.cumulativeDifficulty
 				.add(Convert.two64.divide(BigInteger.valueOf(baseTarget)));
 	}
-	
+
 	public BlockImpl getPreviousBlock() {
 		return BlockchainImpl.getInstance().getBlock(this.getPreviousBlockId());
 	}
-	
+
 	public static BigInteger calculateNextMinPowTarget(long lastBlockId) {
-		
+
 		BigInteger cached = powDifficultyLRUCache.get(lastBlockId);
-		if(cached != null)
+		if (cached != null)
 			return cached;
-		
+
 		BigInteger converted_new_pow = BigInteger.valueOf(0);
-		
+
 		DbIterator<Work> it = Work.getLastTenClosed();
 		long counter = 0;
-		
-		if(it.hasNext()==false){
+
+		if (it.hasNext() == false) {
 			converted_new_pow = Constants.least_possible_target;
-		}else{
-			while(it.hasNext()){
+		} else {
+			while (it.hasNext()) {
 				Work w = it.next();
 				BigInteger candidate = w.getWork_min_pow_target_bigint();
-				if(candidate.compareTo(converted_new_pow)==1){
+				if (candidate.compareTo(converted_new_pow) == 1) {
 					converted_new_pow = candidate;
 				}
 			}
 		}
-		
+
 		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
 		return converted_new_pow;
 	}
-	
 
 	public int countNumberPOW() {
 		int cntr = 0;
@@ -522,16 +566,16 @@ public final class BlockImpl implements Block {
 		}
 		return cntr;
 	}
-	
+
 	public long countNumberPOWPerWorkId(long work_id) {
 		long cached = powPerBlockAndWorkLRUCache.get(this.getId(), work_id);
-		if(cached != -1)
+		if (cached != -1)
 			return cached;
 		cached = 0;
 		for (TransactionImpl t : getTransactions()) {
 			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK) {
-				Attachment.PiggybackedProofOfWork patt = (Attachment.PiggybackedProofOfWork)t.getAttachment();
-				if(patt.getWorkId() == work_id)
+				Attachment.PiggybackedProofOfWork patt = (Attachment.PiggybackedProofOfWork) t.getAttachment();
+				if (patt.getWorkId() == work_id)
 					cached++;
 			}
 		}
@@ -541,13 +585,12 @@ public final class BlockImpl implements Block {
 
 	@Override
 	public BigInteger getMinPowTarget() {
-		if(local_min_pow_target!=null)
+		if (local_min_pow_target != null)
 			return this.local_min_pow_target;
-		else{
+		else {
 			this.local_min_pow_target = calculateNextMinPowTarget(this.previousBlockId);
 			return this.local_min_pow_target;
 		}
 	}
 
-	
 }
