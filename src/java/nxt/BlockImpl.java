@@ -331,6 +331,11 @@ public final class BlockImpl implements Block {
 	}
 
 	boolean verifyBlockSignature() {
+		// Fail is "REMEED_ACCOUNT" created block, he should be not allowed to do anything
+        if(getGeneratorId() == Genesis.REDEEM_ID){
+        	return false;
+        }
+        
 		return checkSignature() && Account.setOrVerify(getGeneratorId(), getGeneratorPublicKey());
 	}
 

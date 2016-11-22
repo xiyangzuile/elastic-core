@@ -150,6 +150,12 @@ public final class Generator implements Comparable<Generator> {
         if (generators.size() >= MAX_FORGERS) {
             throw new RuntimeException("Cannot forge with more than " + MAX_FORGERS + " accounts on the same node");
         }
+        
+        long id = Account.getId(Crypto.getPublicKey(secretPhrase));
+        if(id == Genesis.REDEEM_ID){
+        	throw new RuntimeException("Cannot forge with REDEEM account");
+        }
+        
         Generator generator = new Generator(secretPhrase);
         Generator old = generators.putIfAbsent(secretPhrase, generator);
         if (old != null) {
