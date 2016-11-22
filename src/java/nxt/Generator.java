@@ -264,8 +264,10 @@ public final class Generator implements Comparable<Generator> {
     }
 
     static long getHitTime(BigInteger effectiveBalance, BigInteger hit, Block block) {
-        return block.getTimestamp()
-                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance).multiply(new BigInteger("10"))).longValue();
+    	float scaledHitTIme = Redeem.getRedeemedPercentage();
+    	System.out.println("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
+        return (long) (block.getTimestamp()
+                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance).multiply(new BigInteger("10"))).longValue()*scaledHitTIme);
     }
 
 

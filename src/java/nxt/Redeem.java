@@ -204,6 +204,23 @@ public final class Redeem {
 		
 	}
 
+	public static float getRedeemedPercentage() {
+		try (Connection con = Db.db.getConnection();
+				PreparedStatement pstmt = con.prepareStatement("SELECT SUM(AMOUNT) as amount FROM redeems")) {
+			try (ResultSet rs = pstmt.executeQuery()) {
+				if(rs.next()){
+					long redeemed = rs.getLong("amount");
+					float percentage = (float)redeemed / (float)Constants.MAX_BALANCE_NQT;
+					return percentage;
+				}else{
+					return 0.0f;
+				}
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+	
 	public static boolean isAlreadyRedeemed(String address) {
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT receiver_id FROM redeems WHERE address = ?")) {
