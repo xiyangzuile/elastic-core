@@ -802,7 +802,7 @@ public abstract class TransactionType {
 				}
 				
 				// Now, source must not be pruned if the transaction is "young"
-				if(transaction.getPrunableSourceCode().hasPrunableData() && !(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME)){
+				if(!transaction.getPrunableSourceCode().hasPrunableData() && !(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.MIN_PRUNABLE_LIFETIME)){
 					throw new NxtException.NotValidException("Script kiddie, stay home! Please refrain from pruning unpruneable data");
 				}
 				
