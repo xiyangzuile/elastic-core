@@ -288,6 +288,7 @@ public interface Appendix {
 				if (src == null && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
+				
 
 				
 				if (language == 0x01) {
@@ -330,6 +331,13 @@ public interface Appendix {
 			if (hash != null) {
 				return hash;
 			}
+			MessageDigest digest = Crypto.sha256();
+			digest.update(source);
+			digest.update(Short.toString(language).getBytes());
+			return digest.digest();
+		}
+		
+		public byte[] recalcHash() {
 			MessageDigest digest = Crypto.sha256();
 			digest.update(source);
 			digest.update(Short.toString(language).getBytes());
