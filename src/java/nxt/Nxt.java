@@ -49,6 +49,7 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 import nxt.util.ThreadPool;
 import nxt.util.Time;
+import nxt.util.Logger.Level;
 
 public final class Nxt {
 
@@ -365,6 +366,8 @@ public final class Nxt {
                 AddOns.init();
                 API.init();
                 Users.init();
+                
+                
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {

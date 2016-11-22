@@ -628,7 +628,6 @@ final class TransactionImpl implements Transaction {
 				builder.recipientId(recipientId);
 			}
 			int position = 1;
-			position <<= 1;
 			if ((flags & position) != 0) {
 				builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
 			}

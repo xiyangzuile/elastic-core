@@ -1083,7 +1083,7 @@ public abstract class TransactionType {
 					}
 					if (valid == POW_CHECK_RESULT.ERROR) {
 						throw new NxtException.LostValidityException(
-								"Proof of work is invalid: does not anylonger meet target " + real_block_target.toString(16));
+								"Proof of work is invalid: does not anylonger meet target " + real_block_target.toString(16) + " for work_id = " + String.valueOf(w.getWork_id()));
 					}
 				}
 			}

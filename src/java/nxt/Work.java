@@ -400,7 +400,7 @@ public final class Work {
     		if(pows_per_60_seconds > 0 && pows_per_60_seconds<1)
     			pows_per_60_seconds = 1;
     		
-    		double factor = 0;
+    		double factor = 1;
     		
     		if(pows_per_60_seconds>0){
     			// We have received at least one POW in the last 60 seconds
@@ -437,7 +437,7 @@ public final class Work {
     		}
     	
     		BigDecimal intermediate = new BigDecimal(targetI);
-    		System.out.println("Factor is_ " + factor);
+    		System.out.println("Factor is: " + factor);
     		intermediate = intermediate.multiply(BigDecimal.valueOf(factor));
     		targetI = intermediate.toBigInteger();
     		if(targetI.compareTo(Constants.least_possible_target)==1){
