@@ -238,11 +238,18 @@ public final class Generator implements Comparable<Generator> {
     }
 
     static boolean verifyHit(BigInteger hit, BigInteger effectiveBalance, Block previousBlock, int timestamp) {
+    	
+    	float scaledHitTIme = Redeem.getRedeemedPercentage();
+    	System.out.println("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
+    	float inverse = (float) (1.0/scaledHitTIme);
+    	long absolute = (long) inverse;
+    	BigInteger factor = BigInteger.valueOf(absolute);
+    	
         int elapsedTime = timestamp - previousBlock.getTimestamp();
         if (elapsedTime <= 0) {
             return false;
         }
-        BigInteger effectiveBaseTarget = BigInteger.valueOf(previousBlock.getBaseTarget()).multiply(effectiveBalance);
+        BigInteger effectiveBaseTarget = BigInteger.valueOf(previousBlock.getBaseTarget()).multiply(effectiveBalance.multiply(factor));
         BigInteger prevTarget = effectiveBaseTarget.multiply(BigInteger.valueOf(elapsedTime - 1));
         BigInteger target = prevTarget.add(effectiveBaseTarget);
         return hit.compareTo(prevTarget) >= 0 || (Constants.isTestnet ? elapsedTime > 300 : elapsedTime > 3600);
@@ -265,9 +272,14 @@ public final class Generator implements Comparable<Generator> {
 
     static long getHitTime(BigInteger effectiveBalance, BigInteger hit, Block block) {
     	float scaledHitTIme = Redeem.getRedeemedPercentage();
+    	float inverse = (float) (1.0/scaledHitTIme);
+    	long absolute = (long) inverse;
+    	BigInteger factor = BigInteger.valueOf(absolute);
     	System.out.println("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
+
+    	
         return (long) (block.getTimestamp()
-                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance).multiply(new BigInteger("10"))).longValue()*scaledHitTIme);
+                + hit.divide(BigInteger.valueOf(block.getBaseTarget()).multiply(effectiveBalance.multiply(factor)).multiply(new BigInteger("10"))).longValue());
     }
 
 
