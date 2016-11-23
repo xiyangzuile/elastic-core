@@ -9,7 +9,7 @@ First of all, you need Git installed.
 
 Then, if you go the preferred way, all you need is Docker.
 
-Otherwise, if you want to build everything from scratch, make sure you have [[http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html|Java Development Kit 1.8]] installed, the JRE will not suffice. If you have only JRE installed, you will get an error, that the `javac` command can't be found. Furthermore, you will need to have Maven installed. Also ... get Linux or macOS ;-) Of course it works on Windows too, the process might however look slightly different.
+Otherwise, if you want to build everything from scratch, make sure you have Java Development Kit 1.8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed, the JRE will not suffice. If you have only JRE installed, you will get an error, that the `javac` command can't be found. Furthermore, you will need to have Maven installed. Also ... get Linux or macOS ;-) Of course it works on Windows too, the process might however look slightly different.
 
 
 ### Using Docker (preferred) ###
@@ -65,7 +65,7 @@ to compile and package the code. Afterwards, you can launch the elastic client b
 
 ### Getting Some XEL for Testing ###
 
-You can obtain some testnet XEL from the faucet located at [[http://elasticexplorer.org/faucet]].
+You can obtain some testnet XEL from the faucet located at http://elasticexplorer.org/faucet.
 
 ### Updating Source Code to the Latest Version ###
 
