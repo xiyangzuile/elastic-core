@@ -1,85 +1,90 @@
 ----
-# Welcome to Nxt! #
+# Welcome to Elastic Core! #
 
-----
-## What is Nxt? ##
-Nxt is a modern economic system based on cryptography and blockchain technology.
+## Installing and Running Elastic (Testnet) ##
 
-With Nxt, you can manage and interact with
+### Preliminaries ###
 
- - your **assets**
- - your **businesses**
- - your **customers**
+First of all, you need Git installed.
 
-in such a way that no trusted third parties are required anymore.
+Then, if you go the preferred way, all you need is Docker.
 
-----
-## Get it! ##
+Otherwise, if you want to build everything from scratch, make sure you have [[http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html|Java Development Kit 1.8]] installed, the JRE will not suffice. If you have only JRE installed, you will get an error, that the `javac` command can't be found. Furthermore, you will need to have Maven installed. Also ... get Linux or macOS ;-) Of course it works on Windows too, the process might however look slightly different.
 
-  - *pre-packaged* - `https://bitbucket.org/JeanLucPicard/nxt/downloads/nxt-client-{version}.zip`
 
-  - *dependencies*:
-    - *general* - Java 8
-    - *Ubuntu* - `http://www.webupd8.org/2012/09/install-oracle-java-8-in-ubuntu-via-ppa.html`
-    - *Debian* - `http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html`
-    - *FreeBSD* - `pkg install openjdk8`
+### Using Docker (preferred) ###
 
-  - *repository* - `git clone https://bitbucket.org/JeanLucPicard/nxt.git`
-  
-----
-## Run it! ##
+Get the Docker repository:
 
-  - click on the Nxt icon, or start from the command line:
-  - Unix: `./start.sh`
-  - Mac: `./run.command`
-  - Window: `run.bat`
+`git clone https://github.com/OrdinaryDude/elastic-docker.git`
 
-  - wait for the JavaFX wallet window to open
-  - on platforms without JavaFX, open http://localhost:7876/ in a browser
+Now, use the simple scripts to create the docker container and launch an instance.
+So, first of all: create the container (this has to be done only once):
 
-----
-## Compile it! ##
+`./build_docker.sh`
 
-  - if necessary with: `./compile.sh`
-  - you need jdk-8 as well
+Now you can use
 
-----
-## Improve it! ##
+`./run_docker.sh`
 
-  - we love **pull requests**
-  - we love issues (resolved ones actually ;-) )
-  - in any case, make sure you leave **your ideas** at BitBucket
-  - assist others on the issue tracker
-  - **review** existing code and pull requests
-  - cf. coding guidelines in DEVELOPERS-GUIDE.md
+to launch Elastic, and
 
-----
-## Troubleshooting the NRS (Nxt Reference Software) ##
+`./stop_docker.sh`
 
-  - How to Stop the NRS Server?
-    - click on Nxt Stop icon, or run `./stop.sh`
-    - or if started from command line, ctrl+c or close the console window
+to stop it again.
 
-  - UI Errors or Stacktraces?
-    - report on BitBucket
+The web wallet will listen on http://localhost:6876.
 
-  - Permissions Denied?
-    - no spaces and only latin characters in the path to the NRS installation directory
-    - known jetty issue
+If you want to remove Elastic entirely, just do:
 
-----
-## Further Reading ##
+`./deinstall_docker.sh`
 
-  - in this repository:
-    - USERS-GUIDE.md
-    - DEVELOPERS-GUIDE.md
-    - OPERATORS-GUIDE.md
+### Alternative: Compiling from Scratch ###
 
-  - in the wiki:
-    - nxtwiki.org
+Go to your "Development" folder and issue:
 
-  - on the forums:
-    - nxtforum.org
-    
-----
+`git clone https://github.com/OrdinaryDude/elastic-pl.git`
 
+Go into the elastic-pl/ directory, and issue
+
+`mvn compile package install`
+
+to install the Elastic Programming Language in your local Maven repository. This will be required as a dependency for Elastic. Now, go back to the original path (`cd ..`).
+
+Now, do
+
+`git clone https://github.com/OrdinaryDude/elastic-core.git`
+
+in order to checkout the fresh source code, followed by going into the elastic-core directory and issuing
+
+`mvn compile package`
+
+to compile and package the code. Afterwards, you can launch the elastic client by running
+
+`java -jar target/elastic-core*.jar`
+
+### Getting Some XEL for Testing ###
+
+You can obtain some testnet XEL from the faucet located at [[http://elasticexplorer.org/faucet]].
+
+### Updating Source Code to the Latest Version ###
+
+If you already have an old elastic version running and you now want to update XEL to the newest version, first stop your node (CTRL + C).
+Go to main directory of XEL and issue the following commands.
+
+`git pull;
+mvn clean compile package;
+rm -rf elastic_test_db/`
+
+This will delete all old blockchain data, and recompile the updated source code. If you get any error message that you have unstashed changes, stash them using
+
+`git stash`
+
+first and (if you need to) unstash them after compiling using
+
+`git stash apply`
+
+Then, you can run elastic again using
+
+`java -jar target\elastic-core-*.jar
+`
