@@ -53,7 +53,7 @@ import nxt.util.Logger.Level;
 
 public final class Nxt {
 
-    public static final String VERSION = "0.7.0";
+    public static final String VERSION = "0.7.1";
     public static final String APPLICATION = "Elastic";
 
     private static volatile Time time = new Time.EpochTime();

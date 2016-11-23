@@ -1063,12 +1063,12 @@ public abstract class TransactionType {
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());	
 				
 				if(w==null){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
 				}
 				
 				byte[] hash = attachment.getHash();
 				if(PowAndBounty.hasHash(attachment.getWorkId(), hash)){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " already has this submission, dropping duplicate");
 				}
 				
 				BigInteger real_block_target = w.getWork_min_pow_target_bigint();
@@ -1093,12 +1093,12 @@ public abstract class TransactionType {
 						valid = Executioner.executeProofOfWork(code.getSource(),attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()), real_block_target, real_block_target /* deprecated soft unblock */);
 					} catch (Exception e1) {
 						e1.printStackTrace();
-						throw new NxtException.NotValidException(
+						throw new NxtException.NotCurrentlyValidException(
 								"Proof of work is invalid: causes ElasticPL function to crash");
 					}
 					if (valid == POW_CHECK_RESULT.ERROR) {
 						throw new NxtException.LostValidityException(
-								"Proof of work is invalid: does not anylonger meet target " + real_block_target.toString(16) + " for work_id = " + String.valueOf(w.getWork_id()));
+								"Proof of work is invalid: does not anylonger meet target " + real_block_target.toString(16) + " for work_id = " + Convert.toUnsignedLong((w.getWork_id())));
 					}
 				}
 			}
@@ -1219,7 +1219,7 @@ public abstract class TransactionType {
 				
 				byte[] hash = attachment.getHashAnnounced();
 				if(PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash)){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " already has this submission, dropping duplicate");
 				}
 		
 			}
@@ -1314,7 +1314,7 @@ public abstract class TransactionType {
 				Work w = Work.getWorkByWorkId(attachment.getWorkId());
 				
 				if(w==null){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " does not exist");
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
 				}
 				
 				
@@ -1322,12 +1322,12 @@ public abstract class TransactionType {
 				// check if we had an announcement for this bounty earlier
 				boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(), attachment.getHash());
 				if(!hadAnnouncement){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " has not yet seen a \"counted\" bounty announcement for this submission with work_id " + attachment.getWorkId() + ", hash " + (new BigInteger(attachment.getHash()).toString(16)) + " and multi " + (new BigInteger(attachment.getMultiplicator()).toString(16)));
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " has not yet seen a \"counted\" bounty announcement for this submission with work_id " + attachment.getWorkId() + ", hash " + (new BigInteger(attachment.getHash()).toString(16)) + " and multi " + (new BigInteger(attachment.getMultiplicator()).toString(16)));
 				}
 				
 				byte[] hash = attachment.getHash();
 				if(PowAndBounty.hasHash(attachment.getWorkId(), hash)){
-					throw new NxtException.NotCurrentlyValidException("Work " + attachment.getWorkId() + " already has this submission, dropping duplicate");
+					throw new NxtException.NotCurrentlyValidException("Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " already has this submission, dropping duplicate");
 				}
 				
 				long rel_id = transaction.getBlockId();
@@ -1347,9 +1347,9 @@ public abstract class TransactionType {
 					PrunableSourceCode code = nxt.PrunableSourceCode.getPrunableSourceCodeByWorkId(attachment.getWorkId());
 					try {
 						valid = Executioner.executeBountyHooks(code.getSource(), attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()));
-					} catch (Exception e1) { // TODO, FIXME! Here, a flawed interpreter might cause netsplits
+					} catch (Exception e1) { 
 						e1.printStackTrace();
-						throw new NxtException.NotValidException(
+						throw new NxtException.NotCurrentlyValidException(
 								"Bounty is invalid: causes ElasticPL function to crash");
 					}
 					if (!valid) {

@@ -328,6 +328,7 @@ public final class Work {
         this.timedout=false;
         this.originating_height = transaction.getBlock().getHeight();
         this.closing_timestamp=0;
+        this.work_min_pow_target = "";
         updatePowTarget(transaction.getBlock());
     }
     
@@ -364,8 +365,12 @@ public final class Work {
     	// Initialize with the blocks base target (this is set in BlockImpl::calculateNextMinPowTarget
     	// to the lowest difficulty over the last 1<=n<=10 closed jobs,
     	// or to the minimal possible difficulty if there aren't any closed jobs yet)
-    	BigInteger targetI = Nxt.getBlockchain().getBlock(this.getBlock_id()).getMinPowTarget();
     	
+    	BigInteger targetI = null;
+    	if(work_min_pow_target.length()==0)
+    		targetI = Nxt.getBlockchain().getBlock(this.getBlock_id()).getMinPowTarget();
+    	else
+    		targetI = new BigInteger(this.work_min_pow_target, 16);
     	
     	if( currentBlock.getId() != this.getBlock_id() ){   		
     		// Do standard retargeting (yet to be peer reviewed)
@@ -445,6 +450,8 @@ public final class Work {
     		}else if(targetI.compareTo(BigInteger.valueOf(1L))==-1){ // safe guard, should never happen at all
     			targetI = BigInteger.valueOf(1L);
     		}
+    		System.out.println("New target: " + targetI.toString(16));
+
     	}else{
     		// do nothing, especially when its the block where the work was included
     	}
