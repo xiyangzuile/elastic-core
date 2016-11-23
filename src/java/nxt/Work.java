@@ -376,7 +376,7 @@ public final class Work {
     		// Do standard retargeting (yet to be peer reviewed)
     		
     		long PastBlocksMass = 0;
-    		int account_for_blocks_max=3;
+    		int account_for_blocks_max=10;
     		long seconds_passed = 0;
     		int desired_pows = 0;
     		long PastBlocksTotalMass = 0;
@@ -398,31 +398,31 @@ public final class Work {
     		// Now see how we would scale the target, this is important because 3 blocks do not always take the same amount of time
     		if(seconds_passed<1) seconds_passed=1;
     		
-    		// Normalize the time span so we always work with "60 second windows"
-    		double pows_per_60_seconds = (PastBlocksMass * 60.0 / seconds_passed);
+    		// Normalize the time span so we always work with "360 second windows"
+    		double pows_per_360_seconds = (PastBlocksMass * 360.0 / seconds_passed);
     		
     		// DIRTY HACK; Assume 0<x<=1 pow is equal to 1 pow, to avoid calculating with fractions
-    		if(pows_per_60_seconds > 0 && pows_per_60_seconds<1)
-    			pows_per_60_seconds = 1;
+    		if(pows_per_360_seconds > 0 && pows_per_360_seconds<1)
+    			pows_per_360_seconds = 1;
     		
     		double factor = 1;
     		
-    		if(pows_per_60_seconds>0){
+    		if(pows_per_360_seconds>0){
     			// We have received at least one POW in the last 60 seconds
     			System.out.println("*** RETARGETING ***");
     			System.out.println("Workid: " + this.getId());
     			System.out.println("Accounted last blocks: " + counter);
     			System.out.println("Blocks span how much time: " + seconds_passed);
     			System.out.println("How many seen POWs: " + PastBlocksMass);
-    			System.out.println("Normalized # per 60s: " + pows_per_60_seconds);
-    			System.out.println("Wanted # per 60s: " + 10);
-    			factor = 10 / pows_per_60_seconds;
+    			System.out.println("Normalized # per 360s: " + pows_per_360_seconds);
+    			System.out.println("Wanted # per 360s: " + 10*6);
+    			factor = 10*6 / pows_per_360_seconds;
     			// round the factor to change the diff max 20% per block!
         		if(factor<0.80) factor=0.80;
         		if(factor>1.20) factor=1.20;
         		
         		System.out.println("Scalingfactor: " + factor);
-    		}else if(pows_per_60_seconds == 0 && PastBlocksTotalMass==0){
+    		}else if(pows_per_360_seconds == 0 && PastBlocksTotalMass==0){
     			// This job did not get any POWs but and others also didnt get any! Seems the diff is too high!
     			// The best way is to gradually decrease the difficulty (increase the target value) until the job is mineable again.
     			// As a safe guard, we do not allow "too high" changes in this case. Lets move by 5% at a time.
@@ -687,6 +687,7 @@ public final class Work {
 		response.put("bounty_limit",this.bounty_limit);
 		response.put("sender_account_id",Convert.toUnsignedLong(this.sender_account_id));
 		//response.put("height",this.height);
+		response.put("target",this.work_min_pow_target);
 		return response;
 	}
 	

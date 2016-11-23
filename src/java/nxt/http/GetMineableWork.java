@@ -41,9 +41,7 @@ public final class GetMineableWork extends APIServlet.APIRequestHandler {
 		 
 		JSONObject response = new JSONObject();
 		response.put("work_packages", work_packages);
-		
-		// Also add difficulty
-		response.put("pow_target", Nxt.getBlockchain().getLastBlock().getMinPowTarget().toString(16));
+	
 		return response;
 
 	}
