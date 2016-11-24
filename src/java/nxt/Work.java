@@ -193,7 +193,7 @@ public final class Work {
     }
 
     public static int getActiveCount() {
-        return workTable.getCount(new DbClause.NotNullClause("blocks_remaining"));
+        return workTable.getCount(new DbClause.BooleanClause("closed", false));
     }
 
     public static DbIterator<Work> getAll(int from, int to) {
