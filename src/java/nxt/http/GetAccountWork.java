@@ -1,6 +1,8 @@
 package nxt.http;
 
 import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -59,9 +61,11 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 	        int firstIndex = ParameterParser.getFirstIndex(req);
 	        int lastIndex = ParameterParser.getLastIndex(req);
 			
-	        try (DbIterator<? extends Work> iterator = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId)) {
-			  while (iterator.hasNext()) { Work transaction = iterator.next(); work_packages.add(transaction.toJsonObject());
-			} }
+	        List<Work> work = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId);
+	        for(Work w: work){
+	        	work_packages.add(w.toJsonObject());
+	        }
+	        
 			 
 	        
 			JSONObject response = new JSONObject();

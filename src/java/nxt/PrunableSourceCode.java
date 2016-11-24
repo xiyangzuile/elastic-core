@@ -70,11 +70,10 @@ public final class PrunableSourceCode {
 
   
     public static PrunableSourceCode getPrunableSourceCodeByWorkId(long work_id) {
-        Connection con = null;
-        try {
-            con = Db.db.getConnection();
-            PreparedStatement pstmt = con.prepareStatement("SELECT * FROM prunable_source_code WHERE work_id = ?");
-            int i = 0;
+       
+        try (Connection con = Db.db.getConnection();
+        		PreparedStatement pstmt = con.prepareStatement("SELECT * FROM prunable_source_code WHERE work_id = ?")) {
+        	int i = 0;
             pstmt.setLong(++i, work_id);
             DbIterator<PrunableSourceCode> it =  prunableSourceCodeTable.getManyBy(con, pstmt, false);
             PrunableSourceCode s = null;
@@ -83,9 +82,9 @@ public final class PrunableSourceCode {
             it.close();
             return s;
         } catch (SQLException e) {
-            DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
         }
+        
     }
 
     static void init() {}

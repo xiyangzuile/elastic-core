@@ -213,16 +213,7 @@ public final class Work {
     }
     
     public static DbIterator<Work> getLastTenClosed() {
-    	
-    	try (Connection con = Db.db.getConnection();
-    			PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.closed = TRUE AND work.latest = TRUE ORDER BY closing_timestamp DESC LIMIT 10")) {
-    		DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
-            return it;
-	    } catch (SQLException e) {
-	        throw new RuntimeException(e.toString(), e);
-	    }
-    	
-
+    	return workTable.getManyBy(new DbClause.BooleanClause("closed", true), 0, 10, " ORDER BY closing_timestamp DESC");
     }
 
     
@@ -265,7 +256,8 @@ public final class Work {
 	    }
     }
     
-    public static DbIterator<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
+    public static List<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
+    	List<Work> ret = new ArrayList<Work>();
     	
     	try (Connection con = Db.db.getConnection();
     			PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
@@ -279,7 +271,14 @@ public final class Work {
              	pstmt.setLong(++i, onlyOneId);
              }
              DbUtils.setLimits(++i, pstmt, from, to);
-             return workTable.getManyBy(con, pstmt, true);
+             try(DbIterator<Work> w_it = workTable.getManyBy(con, pstmt, true)){
+            	 while (w_it.hasNext()){
+                	 ret.add(w_it.next());
+                 }
+             }catch (Exception e){
+            	 
+             }
+             return ret;
 	    } catch (SQLException e) {
 	        throw new RuntimeException(e.toString(), e);
 	    }
