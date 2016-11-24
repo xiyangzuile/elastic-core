@@ -266,24 +266,23 @@ public final class Work {
     }
     
     public static DbIterator<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
-        Connection con = null;
-        try {
-            con = Db.db.getConnection();
-            PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
-                    + (includeFinished ? "" : "AND work.blocks_remaining IS NOT NULL ")
-                    + (onlyOneId==0 ? "" : "AND work.work_id = ? ")
-                    + "AND work.latest = TRUE ORDER BY closed, close_pending, originating_height DESC "
-                    + DbUtils.limitsClause(from, to));
-            int i = 0;
-            pstmt.setLong(++i, accountId);
-            if(onlyOneId!=0){
-            	pstmt.setLong(++i, onlyOneId);
-            }
-            DbUtils.setLimits(++i, pstmt, from, to);
-            return workTable.getManyBy(con, pstmt, true);
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
+    	
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.sender_account_id = ? "
+                        + (includeFinished ? "" : "AND work.blocks_remaining IS NOT NULL ")
+                        + (onlyOneId==0 ? "" : "AND work.work_id = ? ")
+                        + "AND work.latest = TRUE ORDER BY closed, close_pending, originating_height DESC "
+                        + DbUtils.limitsClause(from, to))) {
+    		 int i = 0;
+             pstmt.setLong(++i, accountId);
+             if(onlyOneId!=0){
+             	pstmt.setLong(++i, onlyOneId);
+             }
+             DbUtils.setLimits(++i, pstmt, from, to);
+             return workTable.getManyBy(con, pstmt, true);
+	    } catch (SQLException e) {
+	        throw new RuntimeException(e.toString(), e);
+	    }
     }
 
     static void init() {}
