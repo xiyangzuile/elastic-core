@@ -714,7 +714,10 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 
 				if (transaction.isUnconfirmedDuplicate(unconfirmedDuplicates)) {
-					throw new NxtException.NotCurrentlyValidException("Duplicate unconfirmed transaction");
+					if(transaction.getExtraInfo().length()>0)
+						throw new NxtException.NotCurrentlyValidException("Duplicate unconfirmed transaction: " + transaction.getExtraInfo());
+					else
+						throw new NxtException.NotCurrentlyValidException("Duplicate unconfirmed transaction");
 				}
 
 				unconfirmedTransactionTable.insert(unconfirmedTransaction);

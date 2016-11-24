@@ -34,6 +34,7 @@ class UnconfirmedTransaction implements Transaction {
     private final TransactionImpl transaction;
     private final long arrivalTimestamp;
     private final long feePerByte;
+    private String extraInfo = "";
 
     UnconfirmedTransaction(TransactionImpl transaction, long arrivalTimestamp) {
         this.transaction = transaction;
@@ -280,4 +281,15 @@ class UnconfirmedTransaction implements Transaction {
     public short getIndex() {
         return transaction.getIndex();
     }
+
+	
+	@Override
+	public String getExtraInfo() {
+		return extraInfo;
+	}
+
+	@Override
+	public void setExtraInfo(String extraInfo) {
+		this.extraInfo = extraInfo;		
+	}
 }

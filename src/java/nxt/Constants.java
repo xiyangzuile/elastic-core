@@ -102,7 +102,8 @@ public final class Constants {
     public static final int MAX_TAGGED_DATA_FILENAME_LENGTH = 100;
     public static final int MAX_TAGGED_DATA_DATA_LENGTH = 42 * 1024;
 
-
+    public static final int MAX_POWS_PER_BLOCK = 20;
+    
     public static final int LAST_CHECKSUM_BLOCK = 0;
     public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 0;
 

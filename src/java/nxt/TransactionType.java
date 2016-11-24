@@ -1012,12 +1012,11 @@ public abstract class TransactionType {
                 Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
                 boolean duplicate = isDuplicate(WorkControl.PROOF_OF_WORK, Convert.toHexString(attachment.getHash()), duplicates, true);
                 if(duplicate == false){
-		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
-		        	// But first, check out how many more we want from what has been already confirmed!
+		        	// This is required to limit the amount of unconfirmed POWs to not exceed either the money or the hard limit per block.
 		        	Work w = Work.getWork(attachment.getWorkId());
 		        	
-		        	if(w.isClose_pending()) return true;
-		        	if(w.isClosed()) return true;
+		        	if(w.isClose_pending()) {transaction.setExtraInfo("work already closed"); return true; }
+		        	if(w.isClosed())  {transaction.setExtraInfo("work already closed"); return true; }
 		        	
 		        	long bal_fund = w.getBalance_pow_fund();
 		        	long xel_per_pow = w.getXel_per_pow();
@@ -1026,25 +1025,21 @@ public abstract class TransactionType {
 		        	if(how_many_left < left){
 		        		left = (int)how_many_left;
 		        	}
+		        	
+		        	boolean soft_throttling = false;
+		        	if(left >Constants.MAX_POWS_PER_BLOCK){
+		        		soft_throttling = true;
+		        		left = Constants.MAX_POWS_PER_BLOCK;
+		        	}
+		        	
 		        	if(how_many_left<=0){
+		        		if(soft_throttling)
+		        			transaction.setExtraInfo("maximum pows per block reached");
+		        		else
+		        			transaction.setExtraInfo("work ran out of funds");
 		        		duplicate = true;
 		        	}else{
 			        	duplicate = isDuplicate(WorkControl.PROOF_OF_WORK, String.valueOf(attachment.getWorkId()), duplicates, left);
-		        	}
-		        }
-                
-                if(duplicate == false){
-		        	// This is required to limit the amount of unconfirmed BNT Announcements to not exceed the requested bounty # by the requester.
-		        	// But first, check out how many more we want from what has been already confirmed!
-		        	Work w = Work.getWork(attachment.getWorkId());
-		        	
-		        	int count_wanted = w.getBounty_limit();
-		        	int count_has_announcements = w.getReceived_bounty_announcements();
-		        	int left_wanted = count_wanted-count_has_announcements;
-		        	if(left_wanted<=0){
-		        		duplicate = true;
-		        	}else{
-			        	duplicate = isDuplicateOnlyCheck(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
 		        	}
 		        }
 		        return duplicate;
@@ -1183,6 +1178,7 @@ public abstract class TransactionType {
 		        	int count_has_announcements = w.getReceived_bounty_announcements();
 		        	int left_wanted = count_wanted-count_has_announcements;
 		        	if(left_wanted<=0){
+		        		transaction.setExtraInfo("no more bounty announcement slots available");
 		        		duplicate = true;
 		        	}else{
 			        	duplicate = isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT, String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
@@ -1298,7 +1294,10 @@ public abstract class TransactionType {
 		        	// But first, check out how many more we want from what has been already confirmed!
 		        	Work w = Work.getWork(attachment.getWorkId());
 		        	
-		        	if(w.isClosed()) return true;
+		        	if(w.isClosed()){
+		        		transaction.setExtraInfo("work is already closed, you missed the reveal period");
+		        		return true;
+		        	}
 		        	
 		        }
 		        return duplicate;

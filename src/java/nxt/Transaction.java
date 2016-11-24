@@ -114,4 +114,8 @@ public interface Transaction {
     int getECBlockHeight();
 
     long getECBlockId();
+    
+    String getExtraInfo();
+    
+    void setExtraInfo(String extraInfo);
 }

@@ -222,6 +222,8 @@ final class TransactionImpl implements Transaction {
 	private volatile byte[] fullHash;
 	private volatile DbKey dbKey;
 	private volatile byte[] bytes = null;
+	
+	private String extraInfo = "";
 
 	private TransactionImpl(BuilderImpl builder, String secretPhrase) throws NxtException.NotValidException {
 
@@ -1018,6 +1020,16 @@ final class TransactionImpl implements Transaction {
 			totalFee = Math.addExact(totalFee, Constants.ONE_NXT);
 		}
 		return totalFee;
+	}
+
+	@Override
+	public String getExtraInfo() {
+		return extraInfo;
+	}
+
+	@Override
+	public void setExtraInfo(String extraInfo) {
+		this.extraInfo = extraInfo;		
 	}
 
 }
