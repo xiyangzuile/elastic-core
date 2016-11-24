@@ -708,7 +708,7 @@ class NxtDbVersion extends DbVersion {
                 apply("ALTER TABLE poll ADD COLUMN IF NOT EXISTS timestamp INT NOT NULL");
             case 285:
             	apply("CREATE TABLE IF NOT EXISTS redeems (db_id IDENTITY, id BIGINT NOT NULL, address VARCHAR, secp_signatures VARCHAR, receiver_id BIGINT NOT NULL, amount BIGINT NOT NULL, block_timestamp INT NOT NULL, timestamp INT NOT NULL, height INT NOT NULL, "
-                        + "FOREIGN KEY (height) REFERENCES block (height) ON DELETE CASCADE)");
+                        + "FOREIGN KEY (height) REFERENCES block (height) ON DELETE CASCADE, latest BOOLEAN NOT NULL DEFAULT TRUE)");
             case 286:
                 apply("CREATE TABLE IF NOT EXISTS prunable_message (db_id IDENTITY, id BIGINT NOT NULL, sender_id BIGINT NOT NULL, "
                         + "recipient_id BIGINT, message VARBINARY NOT NULL, is_text BOOLEAN NOT NULL, is_compressed BOOLEAN NOT NULL, "

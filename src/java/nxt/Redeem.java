@@ -28,6 +28,7 @@ import nxt.db.DbIterator;
 import nxt.db.DbKey;
 import nxt.db.DbUtils;
 import nxt.db.PrunableDbTable;
+import nxt.db.VersionedEntityDbTable;
 
 public final class Redeem {
 
@@ -69,7 +70,7 @@ public final class Redeem {
 		}
 	};
 
-	private static final PrunableDbTable<Redeem> redeemTable = new PrunableDbTable<Redeem>("redeems",
+	private static final VersionedEntityDbTable<Redeem> redeemTable = new VersionedEntityDbTable<Redeem>("redeems",
 			redeemKeyFactory) {
 		@Override
 		protected Redeem load(Connection con, ResultSet rs, DbKey dbKey) throws SQLException {
@@ -206,7 +207,7 @@ public final class Redeem {
 
 	public static float getRedeemedPercentage() {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT SUM(AMOUNT) as amount FROM redeems")) {
+				PreparedStatement pstmt = con.prepareStatement("SELECT SUM(AMOUNT) as amount FROM redeems WHERE latest = true")) {
 			try (ResultSet rs = pstmt.executeQuery()) {
 				if(rs.next()){
 					long redeemed = rs.getLong("amount");
@@ -223,7 +224,7 @@ public final class Redeem {
 	
 	public static boolean isAlreadyRedeemed(String address) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT receiver_id FROM redeems WHERE address = ?")) {
+				PreparedStatement pstmt = con.prepareStatement("SELECT receiver_id FROM redeems WHERE address = ? AND latest = true")) {
 			pstmt.setString(1, address);
 			try (ResultSet rs = pstmt.executeQuery()) {
 				return rs.next();
