@@ -141,7 +141,7 @@ var NRS = (function(NRS, $, undefined) {
 					NRS.updateHashpower(response[key]);
 				}
 				if(key == "openWorkMoney"){
-					NRS.updateClaim(response[key]);
+					NRS.updateClaim(NRS.formatAmount(parseInt(response[key]) + ""));
 				}
 			}
 

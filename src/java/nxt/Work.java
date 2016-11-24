@@ -195,22 +195,34 @@ public final class Work {
     public static int getActiveCount() {
         return workTable.getCount(new DbClause.BooleanClause("closed", false));
     }
+    
+    public static long getActiveMoney() {
+	   	try (Connection con = Db.db.getConnection();
+	   			PreparedStatement pstmt = con.prepareStatement("SELECT SUM(balance_pow_fund+balance_bounty_fund) as summ FROM work WHERE work.closed = FALSE AND work.latest = TRUE")) {
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            if(rs.next()) return rs.getLong("summ");
+	            else return 0;
+	        }
+	    } catch (SQLException e) {
+	        throw new RuntimeException(e.toString(), e);
+	    }
+   }
 
     public static DbIterator<Work> getAll(int from, int to) {
         return workTable.getAll(from, to, " ORDER BY blocks_remaining NULLS LAST, height DESC ");
     }
     
     public static DbIterator<Work> getLastTenClosed() {
-    	 Connection con = null;
-         try {
-             con = Db.db.getConnection();
-             PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.closed = TRUE AND work.latest = TRUE ORDER BY closing_timestamp DESC LIMIT 10");
-             DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
-             return it;
-             
-         } catch (SQLException e) {
-             throw new RuntimeException(e.toString(), e);
-         }
+    	
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.closed = TRUE AND work.latest = TRUE ORDER BY closing_timestamp DESC LIMIT 10")) {
+    		DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
+            return it;
+	    } catch (SQLException e) {
+	        throw new RuntimeException(e.toString(), e);
+	    }
+    	
+
     }
 
     
@@ -237,23 +249,20 @@ public final class Work {
     }
     
     public static Work getWorkByWorkId(long work_id) {
-        Connection con = null;
-        try {
-            con = Db.db.getConnection();
-            PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.work_id = ? AND work.latest = TRUE");
-            int i = 0;
+    	
+    	try (Connection con = Db.db.getConnection();
+    			PreparedStatement pstmt = con.prepareStatement("SELECT work.* FROM work WHERE work.work_id = ? AND work.latest = TRUE")) {
+    		int i = 0;
             pstmt.setLong(++i, work_id);
-            
             DbIterator<Work> it = workTable.getManyBy(con, pstmt, true);
             Work w = null;
             if(it.hasNext())
             	w = it.next();
             it.close();
             return w;
-            
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
+	    } catch (SQLException e) {
+	        throw new RuntimeException(e.toString(), e);
+	    }
     }
     
     public static DbIterator<Work> getAccountWork(long accountId, boolean includeFinished, int from, int to, long onlyOneId) {
