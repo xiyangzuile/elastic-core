@@ -615,19 +615,23 @@ var NRS = (function (NRS, $, undefined) {
             if (isVerifyECBlock) {
                 var ecBlock = NRS.getECBlock(NRS.isTestNet);
                 if (transaction.ecBlockHeight != ecBlock.height) {
+                	console.log("Crippled TX Verification: ecBlockHeight not matching");
                     return false;
                 }
                 if (transaction.ecBlockId != ecBlock.id) {
+                	console.log("Crippled TX Verification: ecBlockId not matching");
                     return false;
                 }
             }
         }
 
         if (transaction.publicKey != NRS.accountInfo.publicKey && transaction.publicKey != data.publicKey) {
+        	console.log("Crippled TX Verification: bad programmer screwed up the pubkey check");
             return false;
         }
 
         if (transaction.deadline !== data.deadline) {
+        	console.log("Crippled TX Verification: crook added wrong deadline");
             return false;
         }
 
@@ -635,19 +639,23 @@ var NRS = (function (NRS, $, undefined) {
             if ((data.recipient == NRS.constants.GENESIS || data.recipient == "") && transaction.recipient == "0") {
                 //ok
             } else {
+            	console.log("Crippled TX Verification: receipient now sucks, didnn't before");
                 return false;
             }
         }
 
         if (transaction.amountNQT !== data.amountNQT) {
+        	console.log("Crippled TX Verification: amountNQT not matching");
             return false;
         }
 
         if ("referencedTransactionFullHash" in data) {
             if (transaction.referencedTransactionFullHash !== data.referencedTransactionFullHash) {
+            	console.log("Crippled TX Verification: problem in referenced TX hash");
                 return false;
             }
         } else if (transaction.referencedTransactionFullHash !== "") {
+            console.log("Crippled TX Verification: problem in referenced TX hash #2");
             return false;
         }
         var pos;
