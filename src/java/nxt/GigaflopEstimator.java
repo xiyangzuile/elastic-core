@@ -304,7 +304,7 @@ public class GigaflopEstimator {
 				}
 			}
 		}
-		// last_estimation = System.currentTimeMillis();
+		last_estimation = System.currentTimeMillis();
 		return estimation;
 	}
 	public static double round(double value, int places) {
