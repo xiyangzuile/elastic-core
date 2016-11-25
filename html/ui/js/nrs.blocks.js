@@ -150,7 +150,7 @@ var NRS = (function(NRS, $) {
 		
 	};
 	NRS.updateClaim = function(count) {
-			$("#claimable_balance").empty().append(NRS.formatAmount(count));
+			$("#claimable_balance").empty().append(NRS.formatAmount(String(count)));
 		
 	};
 
