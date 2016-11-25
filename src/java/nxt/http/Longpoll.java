@@ -132,7 +132,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 		BlockchainProcessorImpl.getInstance().blockListeners.addListener(new Listener<Block>() {
             @Override
             public void notify(Block block) {
-            	String event = "block " + block.getHeight();
+            	String event = "new block (" + block.getHeight() + ")";
             	ArrayList<String> list = new ArrayList<String>();
             	list.add(event);
         		Longpoll.instance.addEvents(list);
