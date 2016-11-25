@@ -179,6 +179,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                     return;
                 }
                 if (response.get("blockchainHeight") != null) {
+                	Logger.logInfoMessage("Peer reported blockchain height: " + ((Long) response.get("blockchainHeight")).intValue());
                     lastBlockchainFeeder = peer;
                     lastBlockchainFeederHeight = ((Long) response.get("blockchainHeight")).intValue();
                 }
@@ -217,16 +218,20 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                 blockchain.updateLock();
                 try {
                     if (betterCumulativeDifficulty.compareTo(blockchain.getLastBlock().getCumulativeDifficulty()) <= 0) {
+                    	Logger.logInfoMessage("Cancelled in cumulative difficulty check");
                         return;
                     }
                     long lastBlockId = blockchain.getLastBlock().getId();
                     downloadBlockchain(peer, commonBlock, commonBlock.getHeight());
-                    if (blockchain.getHeight() - commonBlock.getHeight() <= 10) {
+                    /*if (blockchain.getHeight() - commonBlock.getHeight() <= 10) {
+                    	Logger.logInfoMessage("Cancelled in common block check, common block height = " + commonBlock.getHeight() + ", local chain height = " + blockchain.getHeight() + ", diff is = " + (blockchain.getHeight() - commonBlock.getHeight()));
                         return;
-                    }
+                    }*/
 
                     int confirmations = 0;
                     for (Peer otherPeer : connectedPublicPeers) {
+                    	
+                    	Logger.logInfoMessage("Probing peer for fork confirmations: " + otherPeer.getAnnouncedAddress());
                         if (confirmations >= numberOfForkConfirmations) {
                             break;
                         }
@@ -254,7 +259,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                         if (new BigInteger(otherPeerCumulativeDifficulty).compareTo(blockchain.getLastBlock().getCumulativeDifficulty()) <= 0) {
                             continue;
                         }
-                        Logger.logDebugMessage("Found a peer with better difficulty");
+                        Logger.logInfoMessage("Found a peer with better difficulty");
                         downloadBlockchain(otherPeer, otherPeerCommonBlock, commonBlock.getHeight());
                     }
                     Logger.logDebugMessage("Got " + confirmations + " confirmations");
