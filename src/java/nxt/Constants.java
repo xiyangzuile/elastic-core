@@ -42,6 +42,7 @@ public final class Constants {
     public static final int MIN_WORK_BOUNTY_LIMIT=1;
     public static final int PAY_FOR_AT_LEAST_X_POW=20;
     public static final long ONE_NXT = 100000000;
+    public static final int EVAL_WORK_EXEC_TIME_AGE_SECONDS = 120;
     public static final long MIN_XEL_PER_POW=(long)(0.001*ONE_NXT);
     public static final long MIN_XEL_PER_BOUNTY=1*ONE_NXT;
     public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION=10*ONE_NXT;
@@ -107,8 +108,8 @@ public final class Constants {
     public static final int LAST_CHECKSUM_BLOCK = 0;
     public static final int LAST_KNOWN_BLOCK = isTestnet ? 0 : 0;
 
-    public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] {0, 7, 1} : new int[] {0, 7, 1};
-    public static final int[] MIN_PROXY_VERSION = new int[] {0, 7, 1};
+    public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] {0, 7, 2} : new int[] {0, 7, 2};
+    public static final int[] MIN_PROXY_VERSION = new int[] {0, 7, 2};
 
     static final long UNCONFIRMED_POOL_DEPOSIT_NQT = (isTestnet ? 50 : 100) * ONE_NXT;
 

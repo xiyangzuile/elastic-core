@@ -110,6 +110,9 @@ public final class Work {
     		return;
     	}
     	
+    	// Prune from gigaflop estimator
+    	GigaflopEstimator.purge_by_id(this.work_id);
+    	
 		
 		if(this.close_pending == false && this.closed == false){
 			// Check if cancelled or timedout
@@ -447,7 +450,7 @@ public final class Work {
     			System.out.println("Workid: " + this.getId());
     			System.out.println("Skipped retargeting, no POW received for this job but others!");
     		}
-    	
+    		factor=1.0; // TODO FIXME REMOVE
     		BigDecimal intermediate = new BigDecimal(targetI);
     		System.out.println("Factor is: " + factor);
     		intermediate = intermediate.multiply(BigDecimal.valueOf(factor));

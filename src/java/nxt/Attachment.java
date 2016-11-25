@@ -499,7 +499,7 @@ public interface Attachment extends Appendix {
 			return workId;
 		}
 
-		public  static int toInt(byte[] bytes, int offset) {
+		public static int toInt(byte[] bytes, int offset) {
 			int ret = 0;
 			for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
 				ret <<= 8;

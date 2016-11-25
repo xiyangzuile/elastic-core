@@ -836,6 +836,15 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("You must attach XEL for at least 20 POW submissions and all bounties, i.e., " + (Constants.PAY_FOR_AT_LEAST_X_POW*attachment.getXelPerPow()+attachment.getXelPerBounty()*attachment.getBountyLimit()) + " XEL");
 				}
 				
+				// Measure work execution time for "new works" (avoid pointless evaluation during blockchain sync)
+				if(transaction.getPrunableSourceCode().hasPrunableData() && !(transaction.getTimestamp()<Nxt.getEpochTime()-Constants.EVAL_WORK_EXEC_TIME_AGE_SECONDS)){
+					
+					byte[] source = transaction.getPrunableSourceCode().getSource();
+					long wid = transaction.getId();
+					GigaflopEstimator.measure_and_store_source(wid, source);
+							
+				}
+				
 				
 				
 				

@@ -53,7 +53,7 @@ import nxt.util.Logger.Level;
 
 public final class Nxt {
 
-    public static final String VERSION = "0.7.1";
+    public static final String VERSION = "0.7.2";
     public static final String APPLICATION = "Elastic";
 
     private static volatile Time time = new Time.EpochTime();
@@ -366,6 +366,9 @@ public final class Nxt {
                 AddOns.init();
                 API.init();
                 Users.init();
+                
+                // Invoke measurement for gigaflop estimator
+                GigaflopEstimator.measure_baseline();
                 
                 
                 int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
