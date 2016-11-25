@@ -538,23 +538,26 @@ public final class BlockImpl implements Block {
 
 		BigInteger converted_new_pow = BigInteger.valueOf(0);
 
-		DbIterator<Work> it = Work.getLastTenClosed();
-		long counter = 0;
-
-		if (it.hasNext() == false) {
-			converted_new_pow = Constants.least_possible_target;
-		} else {
-			while (it.hasNext()) {
-				Work w = it.next();
-				BigInteger candidate = w.getWork_min_pow_target_bigint();
-				if (candidate.compareTo(converted_new_pow) == 1) {
-					converted_new_pow = candidate;
+		try(DbIterator<Work> it = Work.getLastTenClosed()){
+			long counter = 0;
+	
+			if (it.hasNext() == false) {
+				converted_new_pow = Constants.least_possible_target;
+			} else {
+				while (it.hasNext()) {
+					Work w = it.next();
+					BigInteger candidate = w.getWork_min_pow_target_bigint();
+					if (candidate.compareTo(converted_new_pow) == 1) {
+						converted_new_pow = candidate;
+					}
 				}
 			}
+	
+			powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
+			return converted_new_pow;
+		}catch(Exception e){
+			return Constants.least_possible_target; /* FIXME TODO, check this */
 		}
-
-		powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
-		return converted_new_pow;
 	}
 
 	public int countNumberPOW() {

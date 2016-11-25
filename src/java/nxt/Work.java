@@ -218,6 +218,10 @@ public final class Work {
     public static DbIterator<Work> getLastTenClosed() {
     	return workTable.getManyBy(new DbClause.BooleanClause("closed", true), 0, 10, " ORDER BY closing_timestamp DESC");
     }
+    
+    public static DbIterator<Work> getAllActive() {
+    	return workTable.getManyBy(new DbClause.BooleanClause("closed", false).and(new DbClause.BooleanClause("close_pending", false)), 0, Integer.MAX_VALUE);
+    }
 
     
 
