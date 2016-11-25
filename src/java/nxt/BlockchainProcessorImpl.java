@@ -193,8 +193,10 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                     commonMilestoneBlockId = getCommonMilestoneBlockId(peer);
                 }
                 if (commonMilestoneBlockId == 0 || !peerHasMore) {
+                	Logger.logInfoMessage("Peer has crippled common milestone!");
                     return;
                 }
+                Logger.logInfoMessage("Peer has common milestone: " + commonMilestoneBlockId);
 
                 chainBlockIds = getBlockIdsAfterCommon(peer, commonMilestoneBlockId, false);
                 if (chainBlockIds.size() < 2 || !peerHasMore) {
@@ -204,9 +206,11 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                 final long commonBlockId = chainBlockIds.get(0);
                 final Block commonBlock = blockchain.getBlock(commonBlockId);
                 if (commonBlock == null || blockchain.getHeight() - commonBlock.getHeight() >= 720) {
+                	Logger.logInfoMessage("Peers fork is older than 720 blocks, dropping: commonblockId = " + commonBlockId + ", block is null? " + (commonBlock==null));
                     return;
                 }
                 if (simulateEndlessDownload) {
+                	Logger.logInfoMessage("Aborting, simulating endless download!");
                     isDownloading = true;
                     return;
                 }
@@ -313,7 +317,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                 }
                 // prevent overloading with blockIds
                 if (milestoneBlockIds.size() > 20) {
-                    Logger.logDebugMessage("Obsolete or rogue peer " + peer.getHost() + " sends too many milestoneBlockIds, blacklisting");
+                    Logger.logInfoMessage("Obsolete or rogue peer " + peer.getHost() + " sends too many milestoneBlockIds, blacklisting");
                     peer.blacklist("Too many milestoneBlockIds");
                     return 0;
                 }
@@ -404,12 +408,14 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             // Break the download into multiple segments.  The first block in each segment
             // is the common block for that segment.
             //
+            Logger.logInfoMessage("Download Blockchain: feeder peer's address: " + feederPeer.getAnnouncedAddress());
             List<GetNextBlocks> getList = new ArrayList<>();
             int segSize = 36;
             int stop = chainBlockIds.size() - 1;
             for (int start = 0; start < stop; start += segSize) {
                 getList.add(new GetNextBlocks(chainBlockIds, start, Math.min(start + segSize, stop)));
             }
+            Logger.logInfoMessage("Download Blockchain: GetNextBlocks size = " + getList.size());
             int nextPeerIndex = ThreadLocalRandom.current().nextInt(connectedPublicPeers.size());
             long maxResponseTime = 0;
             Peer slowestPeer = null;
@@ -494,6 +500,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             // a missing block (this will happen if an invalid block is encountered
             // when downloading the blocks)
             //
+            
+            Logger.logInfoMessage("Download Blockchain: Connecting blocks ... received size = " + chainBlockIds.size());
+            
             blockchain.writeLock();
             try {
                 List<BlockImpl> forkBlocks = new ArrayList<>();
@@ -518,7 +527,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                 //
                 int myForkSize = blockchain.getHeight() - startHeight;
                 if (!forkBlocks.isEmpty() && myForkSize < 720) {
-                    Logger.logDebugMessage("Will process a fork of " + forkBlocks.size() + " blocks, mine is " + myForkSize);
+                    Logger.logInfoMessage("Will process a fork of " + forkBlocks.size() + " blocks, mine is " + myForkSize);
                     processFork(feederPeer, forkBlocks, commonBlock);
                 }
             } finally {
