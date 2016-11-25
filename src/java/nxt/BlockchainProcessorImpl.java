@@ -415,7 +415,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             for (int start = 0; start < stop; start += segSize) {
                 getList.add(new GetNextBlocks(chainBlockIds, start, Math.min(start + segSize, stop)));
             }
-            Logger.logInfoMessage("Download Blockchain: GetNextBlocks size = " + getList.size());
+            
+         
+           
             int nextPeerIndex = ThreadLocalRandom.current().nextInt(connectedPublicPeers.size());
             long maxResponseTime = 0;
             Peer slowestPeer = null;
@@ -472,10 +474,13 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                     }
                     Peer peer = nextBlocks.getPeer();
                     int index = nextBlocks.getStart() + 1;
+                    Logger.logInfoMessage("Received blocklist size: " + blockList.size() + " form peer " + peer.getAnnouncedAddress() + ", index = " + index);
                     for (BlockImpl block : blockList) {
                         if (block.getId() != chainBlockIds.get(index)) {
+                        	Logger.logInfoMessage("... ignoring " + block.getId());
                             break;
                         }
+                        Logger.logInfoMessage("... blockmapping " + block.getId() + " (was in original GetNextBlock? " + (nextBlocks.blockIds.indexOf(block.getId())>=0) + ")");
                         blockMap.put(block.getId(), new PeerBlock(peer, block));
                         index++;
                     }
@@ -501,21 +506,26 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             // when downloading the blocks)
             //
             
-            Logger.logInfoMessage("Download Blockchain: Connecting blocks ... received size = " + chainBlockIds.size());
+            Logger.logInfoMessage("Download Blockchain: Connecting blocks ... received size = " + chainBlockIds.size() + ", local chain height: " + blockchain.getHeight() + ", start height = " + startHeight);
             
             blockchain.writeLock();
             try {
                 List<BlockImpl> forkBlocks = new ArrayList<>();
                 for (int index = 1; index < chainBlockIds.size() && blockchain.getHeight() - startHeight < 720; index++) {
+                	Logger.logInfoMessage("... inspecing chain block id " + chainBlockIds.get(index));
                     PeerBlock peerBlock = blockMap.get(chainBlockIds.get(index));
                     if (peerBlock == null) {
+                    	Logger.logInfoMessage("... crippled, block not in blockMap!");
                         break;
                     }
                     BlockImpl block = peerBlock.getBlock();
                     if (blockchain.getLastBlock().getId() == block.getPreviousBlockId()) {
                         try {
+                        	Logger.logInfoMessage("About to push peer " + feederPeer.getAnnouncedAddress() + "'s block " + block.getId() + " with prevId = " + block.getPreviousBlockId());
                             pushBlock(block);
+                            
                         } catch (BlockNotAcceptedException e) {
+                        	Logger.logInfoMessage("Will blacklist peer " + feederPeer.getAnnouncedAddress() + " soon, block was not accepted!");
                             peerBlock.getPeer().blacklist(e);
                         }
                     } else {
@@ -529,6 +539,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                 if (!forkBlocks.isEmpty() && myForkSize < 720) {
                     Logger.logInfoMessage("Will process a fork of " + forkBlocks.size() + " blocks, mine is " + myForkSize);
                     processFork(feederPeer, forkBlocks, commonBlock);
+                }else{
+                	Logger.logInfoMessage("Skipping fork, since forksize is " + myForkSize + " and forkBlocks is empty? = " + forkBlocks.isEmpty());
                 }
             } finally {
                 blockchain.writeUnlock();
@@ -550,12 +562,14 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                             pushBlock(block);
                             pushedForkBlocks += 1;
                         } catch (BlockNotAcceptedException e) {
+                        	Logger.logInfoMessage("Will blacklist peer " + peer.getAnnouncedAddress() + " soon, block was not accepted!");
                             peer.blacklist(e);
                             break;
                         }
                     }
                 }
             }
+            Logger.logInfoMessage("Pushed forked blocks size = " + pushedForkBlocks);
 
             if (pushedForkBlocks > 0 && blockchain.getLastBlock().getCumulativeDifficulty().compareTo(curCumulativeDifficulty) < 0) {
                 Logger.logDebugMessage("Pop off caused by peer " + peer.getHost() + ", blacklisting");
@@ -663,7 +677,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             if (nextBlocks == null)
                 return null;
             if (nextBlocks.size() > 36) {
-                Logger.logDebugMessage("Obsolete or rogue peer " + peer.getHost() + " sends too many nextBlocks, blacklisting");
+                Logger.logInfoMessage("Obsolete or rogue peer " + peer.getHost() + " sends too many nextBlocks, blacklisting");
                 peer.blacklist("Too many nextBlocks");
                 return null;
             }
@@ -676,7 +690,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                         break;
                 }
             } catch (RuntimeException | NxtException.NotValidException e) {
-                Logger.logDebugMessage("Failed to parse block: " + e.toString(), e);
+                Logger.logInfoMessage("Failed to parse block: " + e.toString(), e);
                 peer.blacklist(e);
                 stop = start + blockList.size();
             }
