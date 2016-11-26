@@ -4,7 +4,7 @@
 <a href="https://scan.coverity.com/projects/ordinarydude-elastic-core">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/10946/badge.svg"/>
-</a>
+</a> <img src="https://travis-ci.org/OrdinaryDude/elastic-core.svg?branch=master"></img>
 
 ## Installing and Running Elastic (Testnet) ##
 
