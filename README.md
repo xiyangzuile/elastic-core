@@ -4,7 +4,7 @@
 <a href="https://scan.coverity.com/projects/ordinarydude-elastic-core">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/10946/badge.svg"/>
-</a> <img src="https://travis-ci.org/OrdinaryDude/elastic-core.svg?branch=master"></img>
+</a> <img src="https://travis-ci.org/OrdinaryDude/elastic-core.svg?branch=master"></img> [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/OrdinaryDude/elastic-core/issues)
 
 ## Installing and Running Elastic (Testnet) ##
 
