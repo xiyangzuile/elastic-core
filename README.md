@@ -4,7 +4,7 @@
 <a href="https://scan.coverity.com/projects/ordinarydude-elastic-core">
   <img alt="Coverity Scan Build Status"
        src="https://scan.coverity.com/projects/10946/badge.svg"/>
-</a> <img src="https://travis-ci.org/OrdinaryDude/elastic-core.svg?branch=master"></img> [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/OrdinaryDude/elastic-core/issues) [![Join the chat at https://gitter.im/OrdinaryDude/elastic-core](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dwyl/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+</a> <img src="https://travis-ci.org/OrdinaryDude/elastic-core.svg?branch=master"></img> [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/OrdinaryDude/elastic-core/issues) [![Join the chat at https://gitter.im/OrdinaryDude/elastic-core](https://gitter.im/OrdinaryDude/elastic-core)
 
 ## Installing and Running Elastic (Testnet) ##
 
