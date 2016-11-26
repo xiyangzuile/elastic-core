@@ -1,1 +1,2 @@
+before_install: git clone git@github.com:OrdinaryDude/elastic-pl.git; cd elastic-pl.git; mvn compile install
 language: java
