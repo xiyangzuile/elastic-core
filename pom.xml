@@ -115,7 +115,7 @@
         <dependency>
             <groupId>elastic-pl</groupId>
             <artifactId>elastic-pl</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
