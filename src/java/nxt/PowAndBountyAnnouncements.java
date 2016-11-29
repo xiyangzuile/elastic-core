@@ -171,7 +171,7 @@ public final class PowAndBountyAnnouncements {
 		JSONObject response = new JSONObject();
 		response.put("id",Convert.toUnsignedLong(this.id));
 		Transaction t = TransactionDb.findTransaction(this.id);
-		if(t == null){
+		if(t != null){
 			response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
 			response.put("hash_announcement",Arrays.toString(this.hash));
 		}else{
