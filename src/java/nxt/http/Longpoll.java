@@ -160,7 +160,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
         }, nxt.TransactionProcessor.Event.BROADCASTED_OWN_TRANSACTION);
 	}
 
-	public void addEvents(List<String> l) {
+	synchronized public void addEvents(List<String> l) {
 		for (String x : l) {
 			Longpoll.eventQueue.add(x);
 			//System.out.println("Adding: " + x);
@@ -194,8 +194,10 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 			p = setListings.get(randomId);
 		} else {
 			//System.out.println("Creating new Listener: " + randomId);
-			p = new ExpiringListPointer(Longpoll.eventQueue.size(), expireTime);
-			setListings.put(randomId, p);
+			synchronized (this) {
+				p = new ExpiringListPointer(Longpoll.eventQueue.size(), expireTime);
+				setListings.put(randomId, p);
+			}
 		}
 
 		// Schedule timer if not done yet

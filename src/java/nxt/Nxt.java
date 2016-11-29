@@ -173,8 +173,12 @@ public final class Nxt {
                     Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
                     if (Files.isReadable(propPath)) {
                     	System.out.println("Loading customized properties " + propertiesFile + " from " + confDir);
-
-                        properties.load(Files.newInputStream(propPath));
+                    	try(InputStream istream = Files.newInputStream(propPath)){
+                    		properties.load(istream);
+                    	}catch(Exception e){
+                    		System.err.println("Failed loading customized properties " + propertiesFile + " from " + confDir + ": " + e.getMessage());
+                    	}
+                        
                     } else {
                     	System.out.println("Creating property file in:" + propPath);
 
@@ -372,7 +376,7 @@ public final class Nxt {
                 GigaflopEstimator.measure_baseline();
                 
                 
-                int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
+                int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.min(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {
                     setTime(new Time.FasterTime(Math.max(getEpochTime(), Nxt.getBlockchain().getLastBlock().getTimestamp()), timeMultiplier));

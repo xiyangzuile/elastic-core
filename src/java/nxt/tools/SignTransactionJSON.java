@@ -64,15 +64,20 @@ public final class SignTransactionJSON {
                 JSONObject json = (JSONObject) JSONValue.parseWithException(reader);
                 byte[] publicKeyHash = Crypto.sha256().digest(Convert.parseHexString((String) json.get("senderPublicKey")));
                 String senderRS = Convert.rsAccount(Convert.fullHashToId(publicKeyHash));
-                String secretPhrase;
+                String secretPhrase=null;
                 Console console = System.console();
                 if (console == null) {
                     try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in))) {
                         secretPhrase = inputReader.readLine();
                     }
                 } else {
-                    secretPhrase = new String(console.readPassword("Secret phrase for account " + senderRS + ": "));
+                	char[] r = null;
+                	r = console.readPassword("Secret phrase for account " + senderRS + ": ");
+                	if(r!=null)
+                		secretPhrase = new String();
                 }
+                if(secretPhrase==null) return;
+                
                 Transaction.Builder builder = Nxt.newTransactionBuilder(json);
                 Transaction transaction = builder.build(secretPhrase);
                 writer.write(transaction.getJSONObject().toJSONString());

@@ -224,13 +224,18 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 				List<Transaction> transactionList = new ArrayList<>();
 				int curTime = Nxt.getEpochTime();
-				for (TransactionImpl transaction : broadcastedTransactions) {
+				
+				Iterator<TransactionImpl> iterator = broadcastedTransactions.iterator();
+				while (iterator.hasNext()) {
+					TransactionImpl transaction = iterator.next();
 					if (transaction.getExpiration() < curTime || TransactionDb.hasTransaction(transaction.getId())) {
 						broadcastedTransactions.remove(transaction);
 					} else if (transaction.getTimestamp() < curTime - 30) {
 						transactionList.add(transaction);
 					}
+					
 				}
+			
 
 				if (transactionList.size() > 0) {
 					Peers.sendToSomePeers(transactionList);

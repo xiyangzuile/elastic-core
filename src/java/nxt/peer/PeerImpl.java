@@ -802,7 +802,10 @@ final class PeerImpl implements Peer {
             }
 
             for (PeerImpl peer : groupedPeers) {
-                peer.adjustedWeight = Constants.MAX_BALANCE_NXT * peer.getHallmarkWeight(mostRecentDate) / totalWeight;
+            	if(totalWeight==0)
+            		peer.adjustedWeight = 0;
+            	else
+            		peer.adjustedWeight = Constants.MAX_BALANCE_NXT * peer.getHallmarkWeight(mostRecentDate) / totalWeight;
                 Peers.notifyListeners(peer, Peers.Event.WEIGHT);
             }
 

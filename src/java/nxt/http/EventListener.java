@@ -406,7 +406,11 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
      * @return                      Activity timestamp (milliseconds)
      */
     long getTimestamp() {
-        return timestamp;
+    	long t;
+    	lock.lock();
+        t = timestamp;
+        lock.unlock();
+        return t;
     }
 
     /**

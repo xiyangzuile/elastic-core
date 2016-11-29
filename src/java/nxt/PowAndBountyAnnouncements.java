@@ -19,6 +19,7 @@
  */
 package nxt;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -112,8 +113,10 @@ public final class PowAndBountyAnnouncements {
     private final DbKey dbKey;
     private final byte[] hash;
     
-    public void applyBountyAnnouncement(Block bl){
+    public void applyBountyAnnouncement(Block bl) throws IOException{
     	Work w = Work.getWorkByWorkId(this.work_id);
+    	if(w == null)
+    		throw new IOException("Unknown work id!");
     	if(w.isClosed() == false && w.isClose_pending() == false){
 	    	// Now create ledger event for "bounty submission"
 	        AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
@@ -168,8 +171,13 @@ public final class PowAndBountyAnnouncements {
 		JSONObject response = new JSONObject();
 		response.put("id",Convert.toUnsignedLong(this.id));
 		Transaction t = TransactionDb.findTransaction(this.id);
-		response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
-		response.put("hash_announcement",Arrays.toString(this.hash));
+		if(t == null){
+			response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
+			response.put("hash_announcement",Arrays.toString(this.hash));
+		}else{
+			response.put("error","Transaction not found");
+		}
+		
 		return response;
 	}
 

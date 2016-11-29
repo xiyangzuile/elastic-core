@@ -68,7 +68,7 @@ final class User {
         this.isInactive = inactive;
     }
 
-    void enqueue(JSONStreamAware response) {
+    synchronized void enqueue(JSONStreamAware response) {
         pendingResponses.offer(response);
     }
 

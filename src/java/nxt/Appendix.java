@@ -24,6 +24,7 @@ import java.util.Arrays;
 
 import org.json.simple.JSONObject;
 
+import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
 import nxt.crypto.EncryptedData;
 import nxt.util.Convert;
@@ -160,7 +161,7 @@ public interface Appendix {
 
 		abstract void validate(Transaction transaction) throws NxtException.ValidationException;
 
-		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount);
+		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException;
 
 		final void loadPrunable(Transaction transaction) {
 			loadPrunable(transaction, false);
@@ -293,7 +294,9 @@ public interface Appendix {
 				
 				if (language == 0x01) {
 					try {
-						Executioner.checkSyntax(src);
+						if(src != null)
+							Executioner.checkSyntax(src);
+						else throw new NxtException.NotValidException("Source code unavailable");
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw new NxtException.NotValidException(e.getMessage());
@@ -436,7 +439,11 @@ public interface Appendix {
 		}
 
 		@Override
-		void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
+		void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
+			if(recipientAccount == null){
+				throw new NxtException.NotValidException(
+						"PublicKeyAnnouncement must have a correct receipient");
+			}
 			if (Account.setOrVerify(recipientAccount.getId(), publicKey)) {
 				recipientAccount.apply(this.publicKey);
 			}

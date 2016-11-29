@@ -16,6 +16,7 @@
 
 package nxt;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.SignatureException;
@@ -34,6 +35,7 @@ import org.json.simple.JSONObject;
 
 import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
 import nxt.AccountLedger.LedgerEvent;
+import nxt.NxtException.NotValidException;
 import nxt.util.Convert;
 
 
@@ -157,7 +159,7 @@ public abstract class TransactionType {
 
     abstract boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount);
 
-    final void apply(TransactionImpl transaction, Account senderAccount, Account recipientAccount) {
+    final void apply(TransactionImpl transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
         long amount = transaction.getAmountNQT();
         long transactionId = transaction.getId();
         senderAccount.addToBalanceNQT(getLedgerEvent(), transactionId, -amount, -transaction.getFeeNQT());
@@ -168,7 +170,7 @@ public abstract class TransactionType {
         applyAttachment(transaction, senderAccount, recipientAccount);
     }
 
-    abstract void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount);
+    abstract void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException;
 
     final void undoUnconfirmed(TransactionImpl transaction, Account senderAccount) {
         undoAttachmentUnconfirmed(transaction, senderAccount);
@@ -919,6 +921,7 @@ public abstract class TransactionType {
                 
                 if(duplicate == false){
                 	Work w = Work.getWorkByWorkId(attachment.getWorkId());
+                	if(w==null) return true; // Assume tx with invalid work is duplicate to prevent it getting to the lower system levels
                 	if(w.isClosed()) return true;
                 	if(w.isClose_pending()) return true;
                 }
@@ -1001,13 +1004,18 @@ public abstract class TransactionType {
 			}
 
 			@Override
-			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
 				
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
 				PowAndBounty.addPow(transaction, attachment);
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				obj.applyPowPayment(transaction.getBlock());
+				try{
+					obj.applyPowPayment(transaction.getBlock());
+				}catch(Exception e){
+					throw new NotValidException(e.getMessage());
+				}
+				
 			}
 			
 			@Override
@@ -1041,14 +1049,15 @@ public abstract class TransactionType {
 		        		left = Constants.MAX_POWS_PER_BLOCK;
 		        	}
 		        	
-		        	if(how_many_left<=0){
-		        		if(soft_throttling)
-		        			transaction.setExtraInfo("maximum pows per block reached");
-		        		else
-		        			transaction.setExtraInfo("work ran out of funds");
+		        	if(left<=0){
+		        		transaction.setExtraInfo("work ran out of funds");
 		        		duplicate = true;
 		        	}else{
 			        	duplicate = isDuplicate(WorkControl.PROOF_OF_WORK, String.valueOf(attachment.getWorkId()), duplicates, left);
+			        	if(soft_throttling)
+		        			transaction.setExtraInfo("maximum pows per block reached");
+			        	else
+			        		transaction.setExtraInfo("work ran out of funds");
 		        	}
 		        }
 		        return duplicate;
@@ -1157,12 +1166,16 @@ public abstract class TransactionType {
 			}
 		
 			@Override
-			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) throws NxtException.NotValidException {
 		
 				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
 						.getAttachment();
 				PowAndBountyAnnouncements obj = PowAndBountyAnnouncements.addBountyAnnouncement(transaction, attachment);
+				try{
 				obj.applyBountyAnnouncement(transaction.getBlock());
+				}catch(Exception e){
+					throw new NxtException.NotValidException(e.getMessage());
+				}
 			}
 			
 			@Override
@@ -1279,13 +1292,17 @@ public abstract class TransactionType {
 			}
 
 			@Override
-			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) {
+			void applyAttachment(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
 
 				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
 				PowAndBounty.addBounty(transaction, attachment);
 				PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				obj.applyBounty(transaction.getBlock());
+				try{
+					obj.applyBounty(transaction.getBlock());
+				}catch(Exception e){
+					throw new NotValidException(e.getMessage());
+				}
 			}
 			
 			@Override

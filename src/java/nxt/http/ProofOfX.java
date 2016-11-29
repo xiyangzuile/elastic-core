@@ -58,7 +58,7 @@ public final class ProofOfX extends CreateTransaction {
 	    boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
 		String multiplicator_multipart = ParameterParser.getMultiplicator(req, true);
-		if(multiplicator_multipart.length()>65){
+		if(multiplicator_multipart == null || multiplicator_multipart.length()>65){
 			return INCORRECT_MULTIPLICATOR;
 		}
         byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];

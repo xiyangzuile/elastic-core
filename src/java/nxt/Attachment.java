@@ -27,6 +27,7 @@ import java.util.Collections;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 
@@ -61,7 +62,8 @@ public interface Attachment extends Appendix {
 		}
 
 		@Override
-		final void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
+		final void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
+			
 			getTransactionType().apply((TransactionImpl) transaction, senderAccount, recipientAccount);
 		}
 

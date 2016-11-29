@@ -190,9 +190,15 @@ public class PeerWebSocket {
     public void onConnect(Session session) {
         this.session = session;
         if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_200_RESPONSES) != 0) {
+        	String shost = null;
+        	InetSocketAddress addr = session.getRemoteAddress();
+        	if(addr != null)
+        		shost = addr.getHostString();
+        	if(shost == null)
+        		shost = "unknown address";
             Logger.logDebugMessage(String.format("%s WebSocket connection with %s completed",
                     peerServlet != null ? "Inbound" : "Outbound",
-                    session.getRemoteAddress().getHostString()));
+                    shost));
         }
     }
 
@@ -380,9 +386,16 @@ public class PeerWebSocket {
         try {
             if (session != null) {
                 if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_200_RESPONSES) != 0) {
+                	String shost = null;
+                	InetSocketAddress addr = session.getRemoteAddress();
+                	if(addr != null)
+                		shost = addr.getHostString();
+                	if(shost == null)
+                		shost = "unknown address";
+                	
                     Logger.logDebugMessage(String.format("%s WebSocket connection with %s closed",
                             peerServlet != null ? "Inbound" : "Outbound",
-                            session.getRemoteAddress().getHostString()));
+                            shost));
                 }
                 session = null;
             }

@@ -191,6 +191,8 @@ public final class BaseTargetTest {
                 }
 
             }
+            
+            if(count==0) return;
 
             Logger.logMessage("Cumulative difficulty " + cumulativeDifficulty.toString());
             Logger.logMessage("Test cumulative difficulty " + testCumulativeDifficulty.toString());

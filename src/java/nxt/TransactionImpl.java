@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.json.simple.JSONObject;
 
+import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
 import nxt.db.DbKey;
 import nxt.util.Convert;
@@ -622,6 +623,11 @@ final class TransactionImpl implements Transaction {
 			ecBlockId = buffer.getLong();
 
 			TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
+			if(transactionType == null){
+				throw new NxtException.NotValidException(
+						"Unknown transaction type");
+			}
+			
 			TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT, deadline,
 					transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
 							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
@@ -862,6 +868,9 @@ final class TransactionImpl implements Transaction {
 
 	@Override
 	public void validate() throws NxtException.ValidationException {
+		if(type==null){
+			throw new NxtException.NotValidException("Invalid transaction type");
+		}
 		if (timestamp == 0 ? (deadline != 0 || feeNQT != 0)
 				: (deadline < 1 || (type.zeroFeeTransaction()== false && feeNQT <= 0) || (type.zeroFeeTransaction()==true && feeNQT != 0)) || feeNQT > Constants.MAX_BALANCE_NQT || amountNQT < 0
 						|| amountNQT > Constants.MAX_BALANCE_NQT || type == null) {
@@ -962,7 +971,7 @@ final class TransactionImpl implements Transaction {
 		return senderAccount != null && type.applyUnconfirmed(this, senderAccount);
 	}
 
-	void apply() {
+	void apply() throws NotValidException {
 		Account senderAccount = Account.getAccount(getSenderId());
 		senderAccount.apply(getSenderPublicKey());
 		Account recipientAccount = null;

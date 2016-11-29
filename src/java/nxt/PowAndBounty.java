@@ -19,6 +19,7 @@
  */
 package nxt;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -158,8 +159,12 @@ public final class PowAndBounty {
     private final byte[] multiplicator;
     private final byte[] hash;
     
-    public void applyPowPayment(Block bl){
+    public void applyPowPayment(Block bl) throws IOException{
     	Work w = Work.getWorkByWorkId(this.work_id);
+    	
+    	if(w==null){
+    		throw new IOException("Work not found");
+    	}
     	
     	if(w.isClosed() == false && w.isClose_pending() == false){
 	    	// Now create ledger event for "bounty submission"
@@ -186,8 +191,9 @@ public final class PowAndBounty {
         return new String(hexChars);
     }
     
-    public void applyBounty(Block bl){
+    public void applyBounty(Block bl) throws IOException{
     	Work w = Work.getWorkByWorkId(this.work_id);
+    	if(w==null) throw new IOException("No such work found");
     	if(w.isClosed() == false){
     		// Immediate payout incl. the bounty deposit
     		AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
@@ -261,8 +267,12 @@ public final class PowAndBounty {
 		JSONObject response = new JSONObject();
 		response.put("id",Convert.toUnsignedLong(this.id));
 		Transaction t = TransactionDb.findTransaction(this.id);
-		response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
-		response.put("multiplicator",Arrays.toString(this.multiplicator));
+		if(t == null){
+			response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
+			response.put("multiplicator",Arrays.toString(this.multiplicator));
+		}else{
+			response.put("error","Transaction not found");
+		}
 		return response;
 	}
 

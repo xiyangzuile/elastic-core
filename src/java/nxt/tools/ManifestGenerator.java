@@ -36,8 +36,14 @@ public class ManifestGenerator {
 
     public static void main(String[] args) {
         ManifestGenerator manifestGenerator = new ManifestGenerator();
-        manifestGenerator.generate("./resource/nxt.manifest.mf", Nxt.class.getCanonicalName(), "./lib");
+        String scanon = Nxt.class.getCanonicalName();
+        if(scanon == null)
+        	return;
+        
+        manifestGenerator.generate("./resource/nxt.manifest.mf", scanon, "./lib");
         String serviceClassName = NxtService_ServiceManagement.class.getCanonicalName();
+        
+        if(serviceClassName == null) return;
         serviceClassName = serviceClassName.substring(0, serviceClassName.length() - "_ServiceManagement".length());
         manifestGenerator.generate("./resource/nxtservice.manifest.mf", serviceClassName, "./lib");
     }

@@ -16,6 +16,7 @@
 
 package nxt.http;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Base64;
@@ -81,12 +82,14 @@ public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 
         JSONObject response = new JSONObject();
         try {
+        	BufferedImage bImage = ImageIO.read(new ByteArrayInputStream(
+                    Base64.getDecoder().decode(qrCodeBase64)
+            ));
+        	if(bImage==null) throw new IOException("Cannot get binary buffered image!");
             BinaryBitmap binaryBitmap = new BinaryBitmap(
                     new HybridBinarizer(new BufferedImageLuminanceSource(
-                            ImageIO.read(new ByteArrayInputStream(
-                                    Base64.getDecoder().decode(qrCodeBase64)
-                            ))
-                    ))
+                            bImage)
+                    )
             );
 
             Map hints = new HashMap();

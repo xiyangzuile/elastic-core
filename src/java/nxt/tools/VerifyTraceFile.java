@@ -66,6 +66,9 @@ public final class VerifyTraceFile {
     public static void main(String[] args) {
         String fileName = args.length == 1 ? args[0] : "nxt-trace.csv";
         try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+        	
+        	if(reader == null) return;
+        	
             String line = reader.readLine();
             String[] headers = unquote(line.split("\t"));
 
@@ -77,7 +80,11 @@ public final class VerifyTraceFile {
             Map<String,Long> issuedCurrencyUnits = new HashMap<>();
             Map<String,Long> accountCurrencyUnits = new HashMap<>();
 
-            while ((line = reader.readLine()) != null) {
+            while (true) {
+            	line = reader.readLine();
+            	if(line == null)
+            		break;
+            	
                 String[] values = unquote(line.split("\t"));
                 Map<String,String> valueMap = new HashMap<>();
                 for (int i = 0; i < headers.length; i++) {

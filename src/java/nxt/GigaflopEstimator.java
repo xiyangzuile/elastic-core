@@ -60,7 +60,7 @@ public class GigaflopEstimator {
 
 		// We do not want to measure longer than 0.1 seconds but at least one
 		// repetition
-		double factor = 500 / firstTime;
+		double factor = 500.0 / (double)firstTime; // TODO FIXME
 		return Math.max((int) Math.floor(factor), 1);
 	}
 

@@ -48,6 +48,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 import org.json.simple.JSONValue;
 
+import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
 import nxt.db.DerivedDbTable;
@@ -1319,7 +1320,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
             } catch (Exception e) {
                 Db.db.rollbackTransaction();
                 blockchain.setLastBlock(previousLastBlock);
-                throw e;
+                throw new BlockNotAcceptedException(e.getMessage(), block);
             } finally {
                 Db.db.endTransaction();
             }
@@ -1449,7 +1450,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
     }
 
     private void accept(BlockImpl block, List<TransactionImpl> validPhasedTransactions, List<TransactionImpl> invalidPhasedTransactions,
-                        Map<TransactionType, Map<String, Integer>> duplicates) throws TransactionNotAcceptedException {
+                        Map<TransactionType, Map<String, Integer>> duplicates) throws TransactionNotAcceptedException, NotValidException {
         try {
             isProcessingBlock = true;
             for (TransactionImpl transaction : block.getTransactions()) {

@@ -46,14 +46,21 @@ public final class SignTransactions {
                 System.out.println("File already exists: " + signed.getAbsolutePath());
                 System.exit(1);
             }
-            String secretPhrase;
+            String secretPhrase = null;
             Console console = System.console();
             if (console == null) {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
                     secretPhrase = reader.readLine();
                 }
             } else {
-                secretPhrase = new String(console.readPassword("Secret phrase: "));
+            	char[] chararr = null;
+            	chararr = console.readPassword("Secret phrase: ");
+            	if (chararr != null)
+                secretPhrase = new String(chararr);
+            }
+            if(secretPhrase == null){
+            	System.err.println("No secret phrase given!");
+            	return;
             }
             int n = 0;
             try (BufferedReader reader = new BufferedReader(new FileReader(unsigned));
