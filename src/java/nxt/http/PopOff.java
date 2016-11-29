@@ -32,7 +32,7 @@ public final class PopOff extends APIServlet.APIRequestHandler {
 	static final PopOff instance = new PopOff();
 
 	private PopOff() {
-		super(new APITag[] {APITag.DEBUG}, "numBlocks", "height", "keepTransactions");
+		super(new APITag[] { APITag.DEBUG }, "numBlocks", "height", "keepTransactions");
 	}
 
 	@Override
@@ -46,11 +46,13 @@ public final class PopOff extends APIServlet.APIRequestHandler {
 		int numBlocks = 0;
 		try {
 			numBlocks = Integer.parseInt(req.getParameter("numBlocks"));
-		} catch (final NumberFormatException ignored) {}
+		} catch (final NumberFormatException ignored) {
+		}
 		int height = 0;
 		try {
 			height = Integer.parseInt(req.getParameter("height"));
-		} catch (final NumberFormatException ignored) {}
+		} catch (final NumberFormatException ignored) {
+		}
 		final boolean keepTransactions = "true".equalsIgnoreCase(req.getParameter("keepTransactions"));
 		List<? extends Block> blocks;
 		try {

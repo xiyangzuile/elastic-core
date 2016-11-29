@@ -33,7 +33,7 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 	static final GetPeers instance = new GetPeers();
 
 	private GetPeers() {
-		super(new APITag[] {APITag.NETWORK}, "active", "state", "service", "service", "service", "includePeerInfo");
+		super(new APITag[] { APITag.NETWORK }, "active", "state", "service", "service", "service", "includePeerInfo");
 	}
 
 	@Override
@@ -69,7 +69,8 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 			}
 		}
 
-		final Collection<? extends Peer> peers = active ? Peers.getActivePeers() : state != null ? Peers.getPeers(state) : Peers.getAllPeers();
+		final Collection<? extends Peer> peers = active ? Peers.getActivePeers()
+				: state != null ? Peers.getPeers(state) : Peers.getAllPeers();
 		final JSONArray peersJSON = new JSONArray();
 		if (serviceCodes != 0) {
 			final long services = serviceCodes;

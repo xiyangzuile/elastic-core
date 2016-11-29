@@ -11,9 +11,6 @@ import nxt.Genesis;
 import nxt.NxtException;
 import nxt.util.Logger;
 
-
-
-
 public final class Redeem extends CreateTransaction {
 
 	static final Redeem instance = new Redeem();
@@ -57,11 +54,11 @@ public final class Redeem extends CreateTransaction {
 		}
 
 		final String[] parts = address.split(",");
-		if(parts.length==3){
+		if (parts.length == 3) {
 			address = parts[1];
 		}
 
-		if(nxt.Redeem.hasAddress(address) == false){
+		if (nxt.Redeem.hasAddress(address) == false) {
 			return JSONResponses.MISSING_FIELDS_REDEEM;
 		}
 		// More boundary checks

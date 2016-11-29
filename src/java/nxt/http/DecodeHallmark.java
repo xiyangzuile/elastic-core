@@ -27,7 +27,7 @@ public final class DecodeHallmark extends APIServlet.APIRequestHandler {
 	static final DecodeHallmark instance = new DecodeHallmark();
 
 	private DecodeHallmark() {
-		super(new APITag[] {APITag.TOKENS}, "hallmark");
+		super(new APITag[] { APITag.TOKENS }, "hallmark");
 	}
 
 	@Override

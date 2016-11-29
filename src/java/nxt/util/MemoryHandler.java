@@ -25,7 +25,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 
 /**
- * MemoryHandler maintains a ring buffer of log messages.  The GetLog API is used
+ * MemoryHandler maintains a ring buffer of log messages. The GetLog API is used
  * to retrieve these log messages.
  *
  * The following logging.properties entries are used:
@@ -66,7 +66,7 @@ public class MemoryHandler extends Handler {
 		//
 		int bufferSize;
 		try {
-			value = manager.getProperty(cname+".size");
+			value = manager.getProperty(cname + ".size");
 			if (value != null) {
 				bufferSize = Math.max(Integer.valueOf(value.trim()), 10);
 			} else {
@@ -80,7 +80,7 @@ public class MemoryHandler extends Handler {
 		// Get publish level
 		//
 		try {
-			value = manager.getProperty(cname+".level");
+			value = manager.getProperty(cname + ".level");
 			if (value != null) {
 				this.level = Level.parse(value.trim());
 			} else {
@@ -94,7 +94,8 @@ public class MemoryHandler extends Handler {
 	/**
 	 * Close the handler
 	 */
-	@Override public void close() {
+	@Override
+	public void close() {
 		this.level = Level.OFF;
 	}
 
@@ -103,7 +104,7 @@ public class MemoryHandler extends Handler {
 	 */
 	@Override
 	public void flush() {
-		synchronized(this.buffer) {
+		synchronized (this.buffer) {
 			this.start = 0;
 			this.count = 0;
 		}
@@ -112,16 +113,17 @@ public class MemoryHandler extends Handler {
 	/**
 	 * Return the log messages from the ring buffer
 	 *
-	 * @param   msgCount            Number of messages to return
-	 * @return                      List of log messages
+	 * @param msgCount
+	 *            Number of messages to return
+	 * @return List of log messages
 	 */
 	public List<String> getMessages(final int msgCount) {
 		final List<String> rtnList = new ArrayList<>(this.buffer.length);
-		synchronized(this.buffer) {
+		synchronized (this.buffer) {
 			final int rtnSize = Math.min(msgCount, this.count);
-			int pos = (this.start + (this.count-rtnSize))%this.buffer.length;
+			int pos = (this.start + (this.count - rtnSize)) % this.buffer.length;
 			final Formatter formatter = this.getFormatter();
-			for (int i=0; i<rtnSize; i++) {
+			for (int i = 0; i < rtnSize; i++) {
 				rtnList.add(formatter.format(this.buffer[pos++]));
 				if (pos == this.buffer.length) {
 					pos = 0;
@@ -134,14 +136,16 @@ public class MemoryHandler extends Handler {
 	/**
 	 * Store a LogRecord in the ring buffer
 	 *
-	 * @param   record              Description of the log event. A null record is
-	 *                              silently ignored and is not published
+	 * @param record
+	 *            Description of the log event. A null record is silently
+	 *            ignored and is not published
 	 */
 	@Override
 	public void publish(final LogRecord record) {
-		if ((record != null) && (record.getLevel().intValue() >= this.level.intValue()) && (this.level.intValue() != MemoryHandler.OFF_VALUE)) {
-			synchronized(this.buffer) {
-				final int ix = (this.start+this.count)%this.buffer.length;
+		if ((record != null) && (record.getLevel().intValue() >= this.level.intValue())
+				&& (this.level.intValue() != MemoryHandler.OFF_VALUE)) {
+			synchronized (this.buffer) {
+				final int ix = (this.start + this.count) % this.buffer.length;
 				this.buffer[ix] = record;
 				if (this.count < this.buffer.length) {
 					this.count++;

@@ -32,7 +32,8 @@ public final class GetAccount extends APIServlet.APIRequestHandler {
 	static final GetAccount instance = new GetAccount();
 
 	private GetAccount() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account", "includeLessors", "includeAssets", "includeCurrencies", "includeEffectiveBalance");
+		super(new APITag[] { APITag.ACCOUNTS }, "account", "includeLessors", "includeAssets", "includeCurrencies",
+				"includeEffectiveBalance");
 	}
 
 	@Override
@@ -90,7 +91,6 @@ public final class GetAccount extends APIServlet.APIRequestHandler {
 				}
 			}
 		}
-
 
 		return response;
 

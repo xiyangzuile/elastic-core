@@ -29,8 +29,7 @@ class ClearTask extends TimerTask {
 	private HashMap<Integer, ExpiringListPointer> toClear = null;
 	private ArrayList<String> events = null;
 
-	public ClearTask(final HashMap<Integer, ExpiringListPointer> h,
-			final ArrayList<String> e) {
+	public ClearTask(final HashMap<Integer, ExpiringListPointer> h, final ArrayList<String> e) {
 		this.toClear = h;
 		this.events = e;
 	}
@@ -43,12 +42,11 @@ class ClearTask extends TimerTask {
 			Iterator it = this.toClear.entrySet().iterator();
 			while (it.hasNext()) {
 				@SuppressWarnings("unchecked")
-				final
-				HashMap.Entry<Integer, ExpiringListPointer> ptr = (HashMap.Entry<Integer, ExpiringListPointer>) it
-				.next();
+				final HashMap.Entry<Integer, ExpiringListPointer> ptr = (HashMap.Entry<Integer, ExpiringListPointer>) it
+						.next();
 				if (ptr.getValue().expired()) {
-					//System.out.println("Clearing inactive listener: "
-					//		+ ptr.getKey());
+					// System.out.println("Clearing inactive listener: "
+					// + ptr.getKey());
 					it.remove(); // avoids a ConcurrentModificationException
 				} else {
 					ptr.getValue();
@@ -154,7 +152,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 	synchronized public void addEvents(final List<String> l) {
 		for (final String x : l) {
 			Longpoll.eventQueue.add(x);
-			//System.out.println("Adding: " + x);
+			// System.out.println("Adding: " + x);
 		}
 
 		synchronized (Longpoll.instance) {
@@ -168,23 +166,21 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 
 		final JSONObject response = new JSONObject();
 
-		final String randomIdStr = ParameterParser.getParameterMultipart(req,
-				"randomId");
+		final String randomIdStr = ParameterParser.getParameterMultipart(req, "randomId");
 		int randomId;
 		try {
 			randomId = Integer.parseInt(randomIdStr);
 		} catch (final NumberFormatException e) {
-			response.put("error",
-					"please provide a randomId (within the integer range)");
+			response.put("error", "please provide a randomId (within the integer range)");
 			return response;
 		}
 
 		ExpiringListPointer p = null;
 		if (Longpoll.setListings.containsKey(randomId)) {
-			//System.out.println("Reusing Linstener: " + randomId);
+			// System.out.println("Reusing Linstener: " + randomId);
 			p = Longpoll.setListings.get(randomId);
 		} else {
-			//System.out.println("Creating new Listener: " + randomId);
+			// System.out.println("Creating new Listener: " + randomId);
 			synchronized (this) {
 				p = new ExpiringListPointer(Longpoll.eventQueue.size(), Longpoll.expireTime);
 				Longpoll.setListings.put(randomId, p);
@@ -194,11 +190,12 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 		// Schedule timer if not done yet
 		if (!Longpoll.timerInitialized) {
 			// Schedule to run after every 3 second (3000 millisecond)
-			try{
+			try {
 				Longpoll.timer.scheduleAtFixedRate(Longpoll.clearTask, 0, Longpoll.garbageTimeout);
 				Longpoll.timerInitialized = true;
-			}catch(final java.lang.IllegalStateException e){
-				Longpoll.timerInitialized = true; // TODO FIXME (WHY SOMETIMES ITS ALREADY INITIALIZED)
+			} catch (final java.lang.IllegalStateException e) {
+				Longpoll.timerInitialized = true; // TODO FIXME (WHY SOMETIMES
+													// ITS ALREADY INITIALIZED)
 			}
 
 		}
@@ -218,7 +215,7 @@ public final class Longpoll extends APIServlet.APIRequestHandler {
 				for (int i = ExpiringListPointer.lastPosition; i < Longpoll.eventQueue.size(); ++i) {
 					arr.add(Longpoll.eventQueue.get(i));
 				}
-				//System.out.println(p.lastPosition);
+				// System.out.println(p.lastPosition);
 
 				p.reuse(Longpoll.eventQueue.size());
 

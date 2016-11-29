@@ -28,8 +28,10 @@ public interface AddOn {
 		return null;
 	}
 
-	default void init() {}
+	default void init() {
+	}
 
-	default void shutdown() {}
+	default void shutdown() {
+	}
 
 }

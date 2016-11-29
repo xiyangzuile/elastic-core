@@ -112,7 +112,8 @@ public class BasicDb {
 	public BasicDb(final DbProperties dbProperties) {
 		long maxCacheSize = dbProperties.maxCacheSize;
 		if (maxCacheSize == 0) {
-			maxCacheSize = Math.min(256, Math.max(16, ((Runtime.getRuntime().maxMemory() / (1024 * 1024)) - 128)/2)) * 1024;
+			maxCacheSize = Math.min(256, Math.max(16, ((Runtime.getRuntime().maxMemory() / (1024 * 1024)) - 128) / 2))
+					* 1024;
 		}
 		String dbUrl = dbProperties.dbUrl;
 		if (dbUrl == null) {
@@ -135,8 +136,7 @@ public class BasicDb {
 	}
 
 	public void analyzeTables() {
-		try (Connection con = this.cp.getConnection();
-				Statement stmt = con.createStatement()) {
+		try (Connection con = this.cp.getConnection(); Statement stmt = con.createStatement()) {
 			stmt.execute("ANALYZE SAMPLE_SIZE 0");
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -168,8 +168,7 @@ public class BasicDb {
 		this.cp = JdbcConnectionPool.create(this.dbUrl, this.dbUsername, this.dbPassword);
 		this.cp.setMaxConnections(this.maxConnections);
 		this.cp.setLoginTimeout(this.loginTimeout);
-		try (Connection con = this.cp.getConnection();
-				Statement stmt = con.createStatement()) {
+		try (Connection con = this.cp.getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate("SET DEFAULT_LOCK_TIMEOUT " + this.defaultLockTimeout);
 			stmt.executeUpdate("SET MAX_MEMORY_ROWS " + this.maxMemoryRows);
 		} catch (final SQLException e) {

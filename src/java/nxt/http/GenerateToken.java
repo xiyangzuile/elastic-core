@@ -24,13 +24,12 @@ import org.json.simple.JSONStreamAware;
 import nxt.Token;
 import nxt.util.Convert;
 
-
 public final class GenerateToken extends APIServlet.APIRequestHandler {
 
 	static final GenerateToken instance = new GenerateToken();
 
 	private GenerateToken() {
-		super(new APITag[] {APITag.TOKENS}, "website", "secretPhrase");
+		super(new APITag[] { APITag.TOKENS }, "website", "secretPhrase");
 	}
 
 	@Override

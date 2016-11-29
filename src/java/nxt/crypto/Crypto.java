@@ -44,7 +44,8 @@ public final class Crypto {
 		@Override
 		protected SecureRandom initialValue() {
 			try {
-				final SecureRandom secureRandom = Crypto.useStrongSecureRandom ? SecureRandom.getInstanceStrong() : new SecureRandom();
+				final SecureRandom secureRandom = Crypto.useStrongSecureRandom ? SecureRandom.getInstanceStrong()
+						: new SecureRandom();
 				secureRandom.nextBoolean();
 				return secureRandom;
 			} catch (final NoSuchAlgorithmException e) {
@@ -61,8 +62,7 @@ public final class Crypto {
 			}
 			final byte[] iv = Arrays.copyOfRange(ivCiphertext, 0, 16);
 			final byte[] ciphertext = Arrays.copyOfRange(ivCiphertext, 16, ivCiphertext.length);
-			final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
-					new AESEngine()));
+			final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
 			final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(key), iv);
 			aes.init(false, ivAndKey);
 			final byte[] output = new byte[aes.getOutputSize(ciphertext.length)];
@@ -80,8 +80,7 @@ public final class Crypto {
 		try {
 			final byte[] iv = new byte[16];
 			Crypto.secureRandom.get().nextBytes(iv);
-			final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(
-					new AESEngine()));
+			final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
 			final CipherParameters ivAndKey = new ParametersWithIV(new KeyParameter(key), iv);
 			aes.init(true, ivAndKey);
 			final byte[] output = new byte[aes.getOutputSize(plaintext.length)];
@@ -135,9 +134,11 @@ public final class Crypto {
 			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
+
 	public static void curve(final byte[] Z, final byte[] k, final byte[] P) {
 		Curve25519.curve(Z, k, P);
 	}
+
 	public static byte[] getKeySeed(final String secretPhrase, final byte[]... nonces) {
 		final MessageDigest digest = Crypto.sha256();
 		digest.update(Convert.toBytes(secretPhrase));
@@ -227,9 +228,9 @@ public final class Crypto {
 		rsString = rsString.toUpperCase();
 		try {
 			final long id = ReedSolomon.decode(rsString);
-			if (! rsString.equals(ReedSolomon.encode(id))) {
-				throw new RuntimeException("ERROR: Reed-Solomon decoding of " + rsString
-						+ " not reversible, decoded to " + id);
+			if (!rsString.equals(ReedSolomon.encode(id))) {
+				throw new RuntimeException(
+						"ERROR: Reed-Solomon decoding of " + rsString + " not reversible, decoded to " + id);
 			}
 			return id;
 		} catch (final ReedSolomon.DecodeException e) {
@@ -276,7 +277,8 @@ public final class Crypto {
 		return signature;
 	}
 
-	public static boolean verify(final byte[] signature, final byte[] message, final byte[] publicKey, final boolean enforceCanonical) {
+	public static boolean verify(final byte[] signature, final byte[] message, final byte[] publicKey,
+			final boolean enforceCanonical) {
 		try {
 			if (signature.length != 64) {
 				return false;
@@ -310,6 +312,7 @@ public final class Crypto {
 		}
 	}
 
-	private Crypto() {} //never
+	private Crypto() {
+	} // never
 
 }

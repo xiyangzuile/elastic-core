@@ -30,5 +30,6 @@ final class Errors {
 	final static String DOWNLOADING = "Blockchain download in progress";
 	final static String LIGHT_CLIENT = "Peer is in light mode";
 
-	private Errors() {} // never
+	private Errors() {
+	} // never
 }

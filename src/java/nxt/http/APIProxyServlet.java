@@ -65,6 +65,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			APIProxy.getInstance().blacklistHost(response.getRequest().getHost());
 		}
 	}
+
 	private static class PasswordDetectedException extends RuntimeException {
 		/**
 		 * 
@@ -76,12 +77,14 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			this.errorResponse = errorResponse;
 		}
 	}
+
 	private static class PasswordFilteringContentTransformer implements AsyncMiddleManServlet.ContentTransformer {
 
 		ByteArrayOutputStream os;
 
 		@Override
-		public void transform(final ByteBuffer input, final boolean finished, final List<ByteBuffer> output) throws IOException {
+		public void transform(final ByteBuffer input, final boolean finished, final List<ByteBuffer> output)
+				throws IOException {
 			if (finished) {
 				ByteBuffer allInput;
 				if (this.os == null) {
@@ -92,7 +95,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 					this.os.write(b);
 					allInput = ByteBuffer.wrap(this.os.toByteArray());
 				}
-				final int tokenPos = PasswordFinder.process(allInput, new String[] { "secretPhrase=", "adminPassword=", "sharedKey=" });
+				final int tokenPos = PasswordFinder.process(allInput,
+						new String[] { "secretPhrase=", "adminPassword=", "sharedKey=" });
 				if (tokenPos >= 0) {
 					final JSONStreamAware error = JSONResponses.PROXY_SECRET_DATA_DETECTED;
 					throw new PasswordDetectedException(error);
@@ -108,6 +112,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			}
 		}
 	}
+
 	static class PasswordFinder {
 
 		static int process(final ByteBuffer buffer, final String[] secrets) {
@@ -136,13 +141,15 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			}
 		}
 	}
+
 	private static final Set<String> NOT_FORWARDED_REQUESTS;
 
 	private static final Set<APITag> NOT_FORWARDED_TAGS;
 
 	private static final String REMOTE_URL = APIProxyServlet.class.getName() + ".remoteUrl";
 
-	private static final String REMOTE_SERVER_IDLE_TIMEOUT = APIProxyServlet.class.getName() + ".remoteServerIdleTimeout";
+	private static final String REMOTE_SERVER_IDLE_TIMEOUT = APIProxyServlet.class.getName()
+			+ ".remoteServerIdleTimeout";
 
 	static final int PROXY_IDLE_TIMEOUT_DELTA = 5000;
 
@@ -159,7 +166,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 		NOT_FORWARDED_TAGS = Collections.unmodifiableSet(tags);
 	}
 
-	static void initClass() {}
+	static void initClass() {
+	}
 
 	@Override
 	protected void addProxyHeaders(final HttpServletRequest clientRequest, final Request proxyRequest) {
@@ -209,7 +217,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 				return false;
 			}
 			uri = servingPeer.getPeerApiUri();
-			clientRequest.setAttribute(APIProxyServlet.REMOTE_SERVER_IDLE_TIMEOUT, servingPeer.getApiServerIdleTimeout());
+			clientRequest.setAttribute(APIProxyServlet.REMOTE_SERVER_IDLE_TIMEOUT,
+					servingPeer.getApiServerIdleTimeout());
 		}
 		uri.append("/nxt");
 		final String query = clientRequest.getQueryString();
@@ -231,7 +240,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 		if (APIProxyServlet.NOT_FORWARDED_REQUESTS.contains(requestType)) {
 			return false;
 		}
-		//noinspection RedundantIfStatement
+		// noinspection RedundantIfStatement
 		if (!Collections.disjoint(apiRequestHandler.getAPITags(), APIProxyServlet.NOT_FORWARDED_TAGS)) {
 			return false;
 		}
@@ -239,7 +248,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 	}
 
 	@Override
-	protected ContentTransformer newClientRequestContentTransformer(final HttpServletRequest clientRequest, final Request proxyRequest) {
+	protected ContentTransformer newClientRequestContentTransformer(final HttpServletRequest clientRequest,
+			final Request proxyRequest) {
 		final String contentType = clientRequest.getContentType();
 		if ((contentType != null) && contentType.contains("multipart")) {
 			return super.newClientRequestContentTransformer(clientRequest, proxyRequest);
@@ -266,7 +276,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 	}
 
 	@Override
-	protected Response.Listener newProxyResponseListener(final HttpServletRequest request, final HttpServletResponse response) {
+	protected Response.Listener newProxyResponseListener(final HttpServletRequest request,
+			final HttpServletResponse response) {
 		return new APIProxyResponseListener(request, response);
 	}
 
@@ -302,7 +313,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 	}
 
 	@Override
-	protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+	protected void service(final HttpServletRequest request, final HttpServletResponse response)
+			throws ServletException, IOException {
 		JSONStreamAware responseJson = null;
 		try {
 			if (!API.isAllowed(request.getRemoteHost())) {
@@ -312,7 +324,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			final MultiMap<String> parameters = this.getRequestParameters(request);
 			final String requestType = this.getRequestType(parameters);
 			if (APIProxy.isActivated() && this.isForwardable(requestType)) {
-				if (parameters.containsKey("secretPhrase") || parameters.containsKey("adminPassword") || parameters.containsKey("sharedKey")) {
+				if (parameters.containsKey("secretPhrase") || parameters.containsKey("adminPassword")
+						|| parameters.containsKey("sharedKey")) {
 					throw new ParameterException(JSONResponses.PROXY_SECRET_DATA_DETECTED);
 				}
 				if (!this.initRemoteRequest(request, requestType)) {
@@ -321,7 +334,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 					super.service(request, response);
 				}
 			} else {
-				final APIServlet apiServlet = (APIServlet)request.getServletContext().getAttribute("apiServlet");
+				final APIServlet apiServlet = (APIServlet) request.getServletContext().getAttribute("apiServlet");
 				apiServlet.service(request, response);
 			}
 		} catch (final ParameterException e) {
@@ -332,7 +345,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 					try (Writer writer = response.getWriter()) {
 						JSON.writeJSONString(responseJson, writer);
 					}
-				} catch(final IOException e) {
+				} catch (final IOException e) {
 					Logger.logInfoMessage("Failed to write response to client", e);
 				}
 			}

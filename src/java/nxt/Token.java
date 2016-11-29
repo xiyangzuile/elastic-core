@@ -28,10 +28,10 @@ public final class Token {
 		System.arraycopy(message, 0, data, 0, message.length);
 		System.arraycopy(Crypto.getPublicKey(secretPhrase), 0, data, message.length, 32);
 		final int timestamp = Nxt.getEpochTime();
-		data[message.length + 32] = (byte)timestamp;
-		data[message.length + 32 + 1] = (byte)(timestamp >> 8);
-		data[message.length + 32 + 2] = (byte)(timestamp >> 16);
-		data[message.length + 32 + 3] = (byte)(timestamp >> 24);
+		data[message.length + 32] = (byte) timestamp;
+		data[message.length + 32 + 1] = (byte) (timestamp >> 8);
+		data[message.length + 32 + 2] = (byte) (timestamp >> 16);
+		data[message.length + 32 + 3] = (byte) (timestamp >> 24);
 
 		final byte[] token = new byte[100];
 		System.arraycopy(data, message.length, token, 0, 32 + 4);
@@ -40,8 +40,9 @@ public final class Token {
 		final StringBuilder buf = new StringBuilder();
 		for (int ptr = 0; ptr < 100; ptr += 5) {
 
-			final long number = (token[ptr] & 0xFF) | (((long)(token[ptr + 1] & 0xFF)) << 8) | (((long)(token[ptr + 2] & 0xFF)) << 16)
-					| (((long)(token[ptr + 3] & 0xFF)) << 24) | (((long)(token[ptr + 4] & 0xFF)) << 32);
+			final long number = (token[ptr] & 0xFF) | (((long) (token[ptr + 1] & 0xFF)) << 8)
+					| (((long) (token[ptr + 2] & 0xFF)) << 16) | (((long) (token[ptr + 3] & 0xFF)) << 24)
+					| (((long) (token[ptr + 4] & 0xFF)) << 32);
 
 			if (number < 32) {
 				buf.append("0000000");
@@ -77,11 +78,11 @@ public final class Token {
 		for (; i < tokenString.length(); i += 8, j += 5) {
 
 			final long number = Long.parseLong(tokenString.substring(i, i + 8), 32);
-			tokenBytes[j] = (byte)number;
-			tokenBytes[j + 1] = (byte)(number >> 8);
-			tokenBytes[j + 2] = (byte)(number >> 16);
-			tokenBytes[j + 3] = (byte)(number >> 24);
-			tokenBytes[j + 4] = (byte)(number >> 32);
+			tokenBytes[j] = (byte) number;
+			tokenBytes[j + 1] = (byte) (number >> 8);
+			tokenBytes[j + 2] = (byte) (number >> 16);
+			tokenBytes[j + 3] = (byte) (number >> 24);
+			tokenBytes[j + 4] = (byte) (number >> 32);
 
 		}
 
@@ -90,7 +91,8 @@ public final class Token {
 		}
 		final byte[] publicKey = new byte[32];
 		System.arraycopy(tokenBytes, 0, publicKey, 0, 32);
-		final int timestamp = (tokenBytes[32] & 0xFF) | ((tokenBytes[33] & 0xFF) << 8) | ((tokenBytes[34] & 0xFF) << 16) | ((tokenBytes[35] & 0xFF) << 24);
+		final int timestamp = (tokenBytes[32] & 0xFF) | ((tokenBytes[33] & 0xFF) << 8) | ((tokenBytes[34] & 0xFF) << 16)
+				| ((tokenBytes[35] & 0xFF) << 24);
 		final byte[] signature = new byte[64];
 		System.arraycopy(tokenBytes, 36, signature, 0, 64);
 

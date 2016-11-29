@@ -43,6 +43,7 @@ public final class BlockImpl implements Block {
 	static {
 		Arrays.sort(BlockImpl.badBlocks);
 	}
+
 	public static BigInteger calculateNextMinPowTarget(final long lastBlockId) {
 
 		final BigInteger cached = BlockImpl.powDifficultyLRUCache.get(lastBlockId);
@@ -52,7 +53,7 @@ public final class BlockImpl implements Block {
 
 		BigInteger converted_new_pow = BigInteger.valueOf(0);
 
-		try(DbIterator<Work> it = Work.getLastTenClosed()){
+		try (DbIterator<Work> it = Work.getLastTenClosed()) {
 
 			if (it.hasNext() == false) {
 				converted_new_pow = Constants.least_possible_target;
@@ -68,10 +69,11 @@ public final class BlockImpl implements Block {
 
 			BlockImpl.powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
 			return converted_new_pow;
-		}catch(final Exception e){
+		} catch (final Exception e) {
 			return Constants.least_possible_target; /* FIXME TODO, check this */
 		}
 	}
+
 	static BlockImpl parseBlock(final JSONObject blockData) throws NxtException.NotValidException {
 		try {
 			final int version = ((Long) blockData.get("version")).intValue();
@@ -101,6 +103,7 @@ public final class BlockImpl implements Block {
 			throw e;
 		}
 	}
+
 	private final int version;
 	private final int timestamp;
 	private final long previousBlockId;
@@ -131,10 +134,10 @@ public final class BlockImpl implements Block {
 
 	private volatile boolean hasValidSignature = false;
 
-	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT, final long totalFeeNQT,
-			final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey, final byte[] generationSignature,
-			final byte[] blockSignature, final byte[] previousBlockHash, final List<TransactionImpl> transactions,
-			final BigInteger min_pow_target) {
+	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
+			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
+			final byte[] generationSignature, final byte[] blockSignature, final byte[] previousBlockHash,
+			final List<TransactionImpl> transactions, final BigInteger min_pow_target) {
 		this.version = version;
 		this.timestamp = timestamp;
 		this.previousBlockId = previousBlockId;
@@ -152,10 +155,10 @@ public final class BlockImpl implements Block {
 		}
 	}
 
-	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT, final long totalFeeNQT,
-			final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey, final byte[] generationSignature,
-			final byte[] previousBlockHash, final List<TransactionImpl> transactions, final String secretPhrase,
-			final BigInteger min_pow_target) {
+	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
+			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
+			final byte[] generationSignature, final byte[] previousBlockHash, final List<TransactionImpl> transactions,
+			final String secretPhrase, final BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
 		if (secretPhrase != null) {
@@ -165,9 +168,10 @@ public final class BlockImpl implements Block {
 
 	}
 
-	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT, final long totalFeeNQT,
-			final int payloadLength, final byte[] payloadHash, final long generatorId, final byte[] generationSignature, final byte[] blockSignature,
-			final byte[] previousBlockHash, final BigInteger cumulativeDifficulty, final long baseTarget, final long nextBlockId, final int height,
+	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
+			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final long generatorId,
+			final byte[] generationSignature, final byte[] blockSignature, final byte[] previousBlockHash,
+			final BigInteger cumulativeDifficulty, final long baseTarget, final long nextBlockId, final int height,
 			final long id, final List<TransactionImpl> blockTransactions, final BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash, null,
 				generationSignature, blockSignature, previousBlockHash, null, min_pow_target);
@@ -275,7 +279,6 @@ public final class BlockImpl implements Block {
 				break;
 			}
 		}
-
 
 		if (is_special_case) {
 			this.hasValidSignature = true;
@@ -471,6 +474,7 @@ public final class BlockImpl implements Block {
 	public int getTimestamp() {
 		return this.timestamp;
 	}
+
 	@Override
 	public long getTotalAmountNQT() {
 		return this.totalAmountNQT;
@@ -565,7 +569,6 @@ public final class BlockImpl implements Block {
 					return true;
 				}
 			}
-
 
 			final Account account = Account.getAccount(this.getGeneratorId());
 			final long effectiveBalance = account == null ? 0 : account.getEffectiveBalanceNXT();

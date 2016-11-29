@@ -28,7 +28,7 @@ public final class Scan extends APIServlet.APIRequestHandler {
 	static final Scan instance = new Scan();
 
 	private Scan() {
-		super(new APITag[] {APITag.DEBUG}, "numBlocks", "height", "validate");
+		super(new APITag[] { APITag.DEBUG }, "numBlocks", "height", "validate");
 	}
 
 	@Override
@@ -44,11 +44,13 @@ public final class Scan extends APIServlet.APIRequestHandler {
 			int numBlocks = 0;
 			try {
 				numBlocks = Integer.parseInt(req.getParameter("numBlocks"));
-			} catch (final NumberFormatException ignored) {}
+			} catch (final NumberFormatException ignored) {
+			}
 			int height = -1;
 			try {
 				height = Integer.parseInt(req.getParameter("height"));
-			} catch (final NumberFormatException ignore) {}
+			} catch (final NumberFormatException ignore) {
+			}
 			final long start = System.currentTimeMillis();
 			try {
 				Nxt.getBlockchainProcessor().setGetMoreBlocks(false);
@@ -64,7 +66,7 @@ public final class Scan extends APIServlet.APIRequestHandler {
 			}
 			final long end = System.currentTimeMillis();
 			response.put("done", true);
-			response.put("scanTime", (end - start)/1000);
+			response.put("scanTime", (end - start) / 1000);
 		} catch (final RuntimeException e) {
 			JSONData.putException(response, e);
 		}

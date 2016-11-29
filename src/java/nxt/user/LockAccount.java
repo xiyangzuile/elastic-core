@@ -26,7 +26,8 @@ public final class LockAccount extends UserServlet.UserRequestHandler {
 
 	static final LockAccount instance = new LockAccount();
 
-	private LockAccount() {}
+	private LockAccount() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {

@@ -34,7 +34,7 @@ public final class GetBlockchainStatus extends APIServlet.APIRequestHandler {
 	static final GetBlockchainStatus instance = new GetBlockchainStatus();
 
 	private GetBlockchainStatus() {
-		super(new APITag[] {APITag.BLOCKS, APITag.INFO});
+		super(new APITag[] { APITag.BLOCKS, APITag.INFO });
 	}
 
 	@Override
@@ -54,7 +54,8 @@ public final class GetBlockchainStatus extends APIServlet.APIRequestHandler {
 		response.put("numberOfBlocks", lastBlock.getHeight() + 1);
 		final BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
 		final Peer lastBlockchainFeeder = blockchainProcessor.getLastBlockchainFeeder();
-		response.put("lastBlockchainFeeder", lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
+		response.put("lastBlockchainFeeder",
+				lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
 		response.put("lastBlockchainFeederHeight", blockchainProcessor.getLastBlockchainFeederHeight());
 		response.put("isScanning", blockchainProcessor.isScanning());
 		response.put("isDownloading", blockchainProcessor.isDownloading());

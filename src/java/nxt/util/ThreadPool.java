@@ -30,7 +30,7 @@ import nxt.Nxt;
 public final class ThreadPool {
 
 	private static volatile ScheduledExecutorService scheduledThreadPool;
-	private static Map<Runnable,Long> backgroundJobs = new HashMap<>();
+	private static Map<Runnable, Long> backgroundJobs = new HashMap<>();
 	private static List<Runnable> beforeStartJobs = new ArrayList<>();
 	private static List<Runnable> lastBeforeStartJobs = new ArrayList<>();
 	private static List<Runnable> afterStartJobs = new ArrayList<>();
@@ -85,11 +85,12 @@ public final class ThreadPool {
 		ThreadPool.scheduleThread(name, runnable, delay, TimeUnit.SECONDS);
 	}
 
-	public static synchronized void scheduleThread(final String name, final Runnable runnable, final int delay, final TimeUnit timeUnit) {
+	public static synchronized void scheduleThread(final String name, final Runnable runnable, final int delay,
+			final TimeUnit timeUnit) {
 		if (ThreadPool.scheduledThreadPool != null) {
 			throw new IllegalStateException("Executor service already started, no new jobs accepted");
 		}
-		if (! Nxt.getBooleanProperty("nxt.disable" + name + "Thread")) {
+		if (!Nxt.getBooleanProperty("nxt.disable" + name + "Thread")) {
 			ThreadPool.backgroundJobs.put(runnable, timeUnit.toMillis(delay));
 		} else {
 			Logger.logMessage("Will not run " + name + " thread");
@@ -113,7 +114,7 @@ public final class ThreadPool {
 		} catch (final InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
-		if (! executor.isTerminated()) {
+		if (!executor.isTerminated()) {
 			Logger.logShutdownMessage("some threads in " + name + " didn't terminate, forcing shutdown");
 			executor.shutdownNow();
 		}
@@ -134,8 +135,9 @@ public final class ThreadPool {
 
 		Logger.logDebugMessage("Starting " + ThreadPool.backgroundJobs.size() + " background jobs");
 		ThreadPool.scheduledThreadPool = Executors.newScheduledThreadPool(ThreadPool.backgroundJobs.size());
-		for (final Map.Entry<Runnable,Long> entry : ThreadPool.backgroundJobs.entrySet()) {
-			ThreadPool.scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, Math.max(entry.getValue() / timeMultiplier, 1), TimeUnit.MILLISECONDS);
+		for (final Map.Entry<Runnable, Long> entry : ThreadPool.backgroundJobs.entrySet()) {
+			ThreadPool.scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0,
+					Math.max(entry.getValue() / timeMultiplier, 1), TimeUnit.MILLISECONDS);
 		}
 		ThreadPool.backgroundJobs = null;
 
@@ -151,6 +153,7 @@ public final class ThreadPool {
 		thread.start();
 	}
 
-	private ThreadPool() {} //never
+	private ThreadPool() {
+	} // never
 
 }

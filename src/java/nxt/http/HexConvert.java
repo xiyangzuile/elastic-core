@@ -29,7 +29,7 @@ public final class HexConvert extends APIServlet.APIRequestHandler {
 	static final HexConvert instance = new HexConvert();
 
 	private HexConvert() {
-		super(new APITag[] {APITag.UTILS}, "string");
+		super(new APITag[] { APITag.UTILS }, "string");
 	}
 
 	@Override
@@ -49,11 +49,13 @@ public final class HexConvert extends APIServlet.APIRequestHandler {
 			if (asHex.length > 0) {
 				response.put("text", Convert.toString(asHex));
 			}
-		} catch (final RuntimeException ignore) {}
+		} catch (final RuntimeException ignore) {
+		}
 		try {
 			final byte[] asText = Convert.toBytes(string);
 			response.put("binary", Convert.toHexString(asText));
-		} catch (final RuntimeException ignore) {}
+		} catch (final RuntimeException ignore) {
+		}
 		return response;
 	}
 

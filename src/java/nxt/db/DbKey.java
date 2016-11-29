@@ -73,12 +73,12 @@ public interface DbKey {
 		}
 
 		public long[] getId() {
-			return new long[]{this.idA, this.idB};
+			return new long[] { this.idA, this.idB };
 		}
 
 		@Override
 		public int hashCode() {
-			return (int)(this.idA ^ (this.idA >>> 32)) ^ (int)(this.idB ^ (this.idB >>> 32));
+			return (int) (this.idA ^ (this.idA >>> 32)) ^ (int) (this.idB ^ (this.idB >>> 32));
 		}
 
 		@Override
@@ -101,8 +101,7 @@ public interface DbKey {
 		private final String idColumnB;
 
 		public LinkKeyFactory(final String idColumnA, final String idColumnB) {
-			super(" WHERE " + idColumnA + " = ? AND " + idColumnB + " = ? ",
-					idColumnA + ", " + idColumnB,
+			super(" WHERE " + idColumnA + " = ? AND " + idColumnB + " = ? ", idColumnA + ", " + idColumnB,
 					" a." + idColumnA + " = b." + idColumnA + " AND a." + idColumnB + " = b." + idColumnB + " ");
 			this.idColumnA = idColumnA;
 			this.idColumnB = idColumnB;
@@ -119,7 +118,6 @@ public interface DbKey {
 
 	}
 
-
 	final class LongKey implements DbKey {
 
 		private final long id;
@@ -130,7 +128,7 @@ public interface DbKey {
 
 		@Override
 		public boolean equals(final Object o) {
-			return (o instanceof LongKey) && (((LongKey)o).id == this.id);
+			return (o instanceof LongKey) && (((LongKey) o).id == this.id);
 		}
 
 		public long getId() {
@@ -139,7 +137,7 @@ public interface DbKey {
 
 		@Override
 		public int hashCode() {
-			return (int)(this.id ^ (this.id >>> 32));
+			return (int) (this.id ^ (this.id >>> 32));
 		}
 
 		@Override
@@ -160,9 +158,7 @@ public interface DbKey {
 		private final String idColumn;
 
 		public LongKeyFactory(final String idColumn) {
-			super(" WHERE " + idColumn + " = ? ",
-					idColumn,
-					" a." + idColumn + " = b." + idColumn + " ");
+			super(" WHERE " + idColumn + " = ? ", idColumn, " a." + idColumn + " = b." + idColumn + " ");
 			this.idColumn = idColumn;
 		}
 
@@ -187,7 +183,8 @@ public interface DbKey {
 
 		@Override
 		public boolean equals(final Object o) {
-			return (o instanceof StringKey) && (this.id != null ? this.id.equals(((StringKey)o).id) : ((StringKey)o).id == null);
+			return (o instanceof StringKey)
+					&& (this.id != null ? this.id.equals(((StringKey) o).id) : ((StringKey) o).id == null);
 		}
 
 		public String getId() {
@@ -217,9 +214,7 @@ public interface DbKey {
 		private final String idColumn;
 
 		public StringKeyFactory(final String idColumn) {
-			super(" WHERE " + idColumn + " = ? ",
-					idColumn,
-					" a." + idColumn + " = b." + idColumn + " ");
+			super(" WHERE " + idColumn + " = ? ", idColumn, " a." + idColumn + " = b." + idColumn + " ");
 			this.idColumn = idColumn;
 		}
 

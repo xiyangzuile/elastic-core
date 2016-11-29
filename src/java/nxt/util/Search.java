@@ -40,7 +40,8 @@ public final class Search {
 		return tika.detect(data, filename);
 	}
 
-	public static String[] parseTags(final String tags, final int minTagLength, final int maxTagLength, final int maxTagCount) {
+	public static String[] parseTags(final String tags, final int minTagLength, final int maxTagLength,
+			final int maxTagCount) {
 		if (tags.trim().length() == 0) {
 			return Convert.EMPTY_STRING;
 		}
@@ -49,8 +50,8 @@ public final class Search {
 			final CharTermAttribute attribute = stream.addAttribute(CharTermAttribute.class);
 			String tag;
 			stream.reset();
-			while (stream.incrementToken() && (list.size() < maxTagCount) &&
-					((tag = attribute.toString()).length() <= maxTagLength) && (tag.length() >= minTagLength)) {
+			while (stream.incrementToken() && (list.size() < maxTagCount)
+					&& ((tag = attribute.toString()).length() <= maxTagLength) && (tag.length() >= minTagLength)) {
 				if (!list.contains(tag)) {
 					list.add(tag);
 				}
@@ -62,6 +63,7 @@ public final class Search {
 		return list.toArray(new String[list.size()]);
 	}
 
-	private Search() {}
+	private Search() {
+	}
 
 }

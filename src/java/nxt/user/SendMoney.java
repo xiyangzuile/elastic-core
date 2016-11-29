@@ -35,10 +35,12 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 
 	static final SendMoney instance = new SendMoney();
 
-	private SendMoney() {}
+	private SendMoney() {
+	}
 
 	@Override
-	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws NxtException.ValidationException, IOException {
+	JSONStreamAware processRequest(final HttpServletRequest req, final User user)
+			throws NxtException.ValidationException, IOException {
 		if (user.getSecretPhrase() == null) {
 			return null;
 		}
@@ -62,7 +64,7 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 			}
 			amountNQT = Convert.parseNXT(amountValue.trim());
 			feeNQT = Convert.parseNXT(feeValue.trim());
-			deadline = (short)(Double.parseDouble(deadlineValue) * 60);
+			deadline = (short) (Double.parseDouble(deadlineValue) * 60);
 
 		} catch (final RuntimeException e) {
 
@@ -77,7 +79,7 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 			return response;
 		}
 
-		if (! user.getSecretPhrase().equals(secretPhrase)) {
+		if (!user.getSecretPhrase().equals(secretPhrase)) {
 
 			final JSONObject response = new JSONObject();
 			response.put("response", "notifyOfIncorrectTransaction");
@@ -142,8 +144,8 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 
 		} else {
 
-			final Transaction transaction = Nxt.newTransactionBuilder(user.getPublicKey(),
-					amountNQT, feeNQT, deadline, Attachment.ORDINARY_PAYMENT).recipientId(recipient).build(secretPhrase);
+			final Transaction transaction = Nxt.newTransactionBuilder(user.getPublicKey(), amountNQT, feeNQT, deadline,
+					Attachment.ORDINARY_PAYMENT).recipientId(recipient).build(secretPhrase);
 
 			Nxt.getTransactionProcessor().broadcast(transaction);
 

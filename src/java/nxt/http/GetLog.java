@@ -28,17 +28,23 @@ import org.json.simple.JSONStreamAware;
 import nxt.util.MemoryHandler;
 
 /**
- * <p>The GetLog API will return log messages from the ring buffer
- * maintained by the MemoryHandler log handler.  The most recent
- * 'count' messages will be returned.  All log messages in the
- * ring buffer will be returned if 'count' is omitted.</p>
+ * <p>
+ * The GetLog API will return log messages from the ring buffer maintained by
+ * the MemoryHandler log handler. The most recent 'count' messages will be
+ * returned. All log messages in the ring buffer will be returned if 'count' is
+ * omitted.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
  * <li>count - The number of log messages to return</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
  * <li>messages - An array of log messages</li>
  * </ul>
@@ -52,7 +58,7 @@ public final class GetLog extends APIServlet.APIRequestHandler {
 	 * Create the GetLog instance
 	 */
 	private GetLog() {
-		super(new APITag[] {APITag.DEBUG}, "count");
+		super(new APITag[] { APITag.DEBUG }, "count");
 	}
 
 	@Override
@@ -63,8 +69,9 @@ public final class GetLog extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the GetLog API request
 	 *
-	 * @param   req                 API request
-	 * @return                      API response
+	 * @param req
+	 *            API request
+	 * @return API response
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
@@ -86,7 +93,7 @@ public final class GetLog extends APIServlet.APIRequestHandler {
 		final Handler[] handlers = logger.getHandlers();
 		for (final Handler handler : handlers) {
 			if (handler instanceof MemoryHandler) {
-				logJSON.addAll(((MemoryHandler)handler).getMessages(count));
+				logJSON.addAll(((MemoryHandler) handler).getMessages(count));
 				break;
 			}
 		}
@@ -106,7 +113,7 @@ public final class GetLog extends APIServlet.APIRequestHandler {
 	/**
 	 * Require the administrator password
 	 *
-	 * @return                      TRUE if the admin password is required
+	 * @return TRUE if the admin password is required
 	 */
 	@Override
 	protected boolean requirePassword() {

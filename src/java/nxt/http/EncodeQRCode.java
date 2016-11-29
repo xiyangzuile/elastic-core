@@ -42,17 +42,24 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 
 /**
- * <p>The EncodeQRCode API converts a UTF-8 string to a base64-encoded
- * jpeg image of a 2-D QR (Quick Response) code, using the ZXing library.</p>
- * 
- * <p>The output qrCodeBase64 string can be incorporated into an in-line HTML
- * image like this: &lt;img src="data:image/jpeg;base64,qrCodeBase64"&gt;
+ * <p>
+ * The EncodeQRCode API converts a UTF-8 string to a base64-encoded jpeg image
+ * of a 2-D QR (Quick Response) code, using the ZXing library.
  * </p>
  * 
- * <p>The output qrCodeBase64 can be input to the DecodeQRCode API to
- * recover the original qrCodeData.</p>
+ * <p>
+ * The output qrCodeBase64 string can be incorporated into an in-line HTML image
+ * like this: &lt;img src="data:image/jpeg;base64,qrCodeBase64"&gt;
+ * </p>
  * 
- * <p>Request parameters:</p>
+ * <p>
+ * The output qrCodeBase64 can be input to the DecodeQRCode API to recover the
+ * original qrCodeData.
+ * </p>
+ * 
+ * <p>
+ * Request parameters:
+ * </p>
  * 
  * <ul>
  * <li>qrCodeData - A UTF-8 text string.</li>
@@ -60,23 +67,26 @@ import nxt.util.Logger;
  * <li>height - The height of the output image in pixels, optional.</li>
  * </ul>
  * 
- * <p>Notes:</p>
+ * <p>
+ * Notes:
+ * </p>
  * <ul>
- * <li>The output image consists of a centrally positioned square QR code
- * with a size which is an integer multiple of the minimum size, surrounded by
+ * <li>The output image consists of a centrally positioned square QR code with a
+ * size which is an integer multiple of the minimum size, surrounded by
  * sufficient white padding to achieve the requested width/height.</li>
- * <li>The default width/height of 0 results in the minimum sized output
- * image, with one pixel per black/white region of the QR code and no
- * extra padding.</li>
+ * <li>The default width/height of 0 results in the minimum sized output image,
+ * with one pixel per black/white region of the QR code and no extra
+ * padding.</li>
  * <li>To eliminate padding, the requested width/height must be an integer
  * multiple of the minimum.</li>
  * </ul>
  * 
- * <p>Response fields:</p>
+ * <p>
+ * Response fields:
+ * </p>
  * 
  * <ul>
- * <li>qrCodeBase64 - A base64 string encoding a jpeg image of
- * the QR code.</li>
+ * <li>qrCodeBase64 - A base64 string encoding a jpeg image of the QR code.</li>
  * </ul>
  */
 
@@ -85,7 +95,7 @@ public final class EncodeQRCode extends APIServlet.APIRequestHandler {
 	static final EncodeQRCode instance = new EncodeQRCode();
 
 	private EncodeQRCode() {
-		super(new APITag[] {APITag.UTILS}, "qrCodeData", "width", "height");
+		super(new APITag[] { APITag.UTILS }, "qrCodeData", "width", "height");
 	}
 
 	@Override
@@ -94,8 +104,7 @@ public final class EncodeQRCode extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-	protected JSONStreamAware processRequest(final HttpServletRequest request)
-			throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 
 		final JSONObject response = new JSONObject();
 
@@ -106,17 +115,14 @@ public final class EncodeQRCode extends APIServlet.APIRequestHandler {
 
 		try {
 			final Map hints = new HashMap();
-			// Error correction level: L (7%), M (15%), Q (25%), H (30%) -- Default L.
+			// Error correction level: L (7%), M (15%), Q (25%), H (30%) --
+			// Default L.
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
 			hints.put(EncodeHintType.MARGIN, 0); // Default 4
 			hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
 
-			final BitMatrix matrix = new MultiFormatWriter().encode(qrCodeData,
-					BarcodeFormat.QR_CODE,
-					width,
-					height,
-					hints
-					);
+			final BitMatrix matrix = new MultiFormatWriter().encode(qrCodeData, BarcodeFormat.QR_CODE, width, height,
+					hints);
 			final BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(matrix);
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ImageIO.write(bufferedImage, "jpeg", os);
@@ -124,7 +130,7 @@ public final class EncodeQRCode extends APIServlet.APIRequestHandler {
 			os.close();
 			final String base64 = Base64.getEncoder().encodeToString(bytes);
 			response.put("qrCodeBase64", base64);
-		} catch(WriterException|IOException ex) {
+		} catch (WriterException | IOException ex) {
 			final String errorMessage = "Error creating image from qrCodeData";
 			Logger.logErrorMessage(errorMessage, ex);
 			JSONData.putException(response, ex, errorMessage);

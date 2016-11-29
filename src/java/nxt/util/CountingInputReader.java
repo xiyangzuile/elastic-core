@@ -36,8 +36,10 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Create a CountingInputReader for the supplied Reader
 	 *
-	 * @param   reader              Input reader
-	 * @param   limit               Maximum number of characters to be read
+	 * @param reader
+	 *            Input reader
+	 * @param limit
+	 *            Maximum number of characters to be read
 	 */
 	public CountingInputReader(final Reader reader, final long limit) {
 		super(reader);
@@ -47,17 +49,20 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Return the total number of characters read
 	 *
-	 * @return                      Character count
+	 * @return Character count
 	 */
 	public long getCount() {
 		return this.count;
 	}
 
 	/**
-	 * Increment the character count and check if the maximum count has been exceeded
+	 * Increment the character count and check if the maximum count has been
+	 * exceeded
 	 *
-	 * @param   c                   Number of characters read
-	 * @throws  NxtIOException      Maximum count exceeded
+	 * @param c
+	 *            Number of characters read
+	 * @throws NxtIOException
+	 *             Maximum count exceeded
 	 */
 	private void incCount(final long c) throws NxtIOException {
 		this.count += c;
@@ -69,8 +74,9 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Read a single character
 	 *
-	 * @return                      Character or -1 if end of stream reached
-	 * @throws  IOException         I/O error occurred
+	 * @return Character or -1 if end of stream reached
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public int read() throws IOException {
@@ -84,12 +90,14 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Read characters into an array
 	 *
-	 * @param   cbuf                Character array
-	 * @return                      Number of characters read or -1 if end of stream reached
-	 * @throws  IOException         I/O error occurred
+	 * @param cbuf
+	 *            Character array
+	 * @return Number of characters read or -1 if end of stream reached
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
-	public int read(final char [] cbuf) throws IOException {
+	public int read(final char[] cbuf) throws IOException {
 		final int c = super.read(cbuf);
 		if (c != -1) {
 			this.incCount(c);
@@ -100,11 +108,15 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Read characters into an arry starting at the specified offset
 	 *
-	 * @param   cbuf                Character array
-	 * @param   off                 Starting offset
-	 * @param   len                 Number of characters to be read
-	 * @return                      Number of characters read or -1 if end of stream reached
-	 * @throws  IOException         I/O error occurred
+	 * @param cbuf
+	 *            Character array
+	 * @param off
+	 *            Starting offset
+	 * @param len
+	 *            Number of characters to be read
+	 * @return Number of characters read or -1 if end of stream reached
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public int read(final char[] cbuf, final int off, final int len) throws IOException {
@@ -118,9 +130,11 @@ public class CountingInputReader extends FilterReader {
 	/**
 	 * Skip characters in the input stream
 	 *
-	 * @param   n                   Number of characters to skip
-	 * @return                      Number of characters skipped or -1 if end of stream reached
-	 * @throws  IOException         I/O error occurred
+	 * @param n
+	 *            Number of characters to skip
+	 * @return Number of characters skipped or -1 if end of stream reached
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public long skip(final long n) throws IOException {

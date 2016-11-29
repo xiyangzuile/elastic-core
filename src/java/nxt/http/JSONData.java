@@ -40,7 +40,6 @@ import nxt.util.Filter;
 
 public final class JSONData {
 
-
 	static JSONObject accountBalance(final Account account, final boolean includeEffectiveBalance) {
 		return JSONData.accountBalance(account, includeEffectiveBalance, Nxt.getBlockchain().getHeight());
 	}
@@ -61,7 +60,8 @@ public final class JSONData {
 			json.put("forgedBalanceNQT", String.valueOf(account.getForgedBalanceNQT()));
 			if (includeEffectiveBalance) {
 				json.put("effectiveBalanceNXT", account.getEffectiveBalanceNXT(height));
-				json.put("guaranteedBalanceNQT", String.valueOf(account.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
+				json.put("guaranteedBalanceNQT", String
+						.valueOf(account.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
 			}
 		}
 		return json;
@@ -146,7 +146,8 @@ public final class JSONData {
 		return json;
 	}
 
-	static void ledgerEntry(final JSONObject json, final LedgerEntry entry, final boolean includeTransactions, final boolean includeHoldingInfo) {
+	static void ledgerEntry(final JSONObject json, final LedgerEntry entry, final boolean includeTransactions,
+			final boolean includeHoldingInfo) {
 		JSONData.putAccount(json, "account", entry.getAccountId());
 		json.put("ledgerId", Long.toUnsignedString(entry.getLedgerId()));
 		json.put("block", Long.toUnsignedString(entry.getBlockId()));
@@ -230,7 +231,6 @@ public final class JSONData {
 		return json;
 	}
 
-
 	static void putAccount(final JSONObject json, final String name, final long accountId) {
 		json.put(name, Long.toUnsignedString(accountId));
 		json.put(name + "RS", Convert.rsAccount(accountId));
@@ -248,7 +248,6 @@ public final class JSONData {
 		json.put("error", e.toString());
 		json.put("errorDescription", error + e.getMessage());
 	}
-
 
 	static void putPrunableAttachment(final JSONObject json, final Transaction transaction) {
 		final JSONObject prunableAttachment = transaction.getPrunableAttachmentJSON();
@@ -284,7 +283,6 @@ public final class JSONData {
 		return JSONData.unconfirmedTransaction(transaction, null);
 	}
 
-
 	static JSONObject unconfirmedTransaction(final Transaction transaction, final Filter<Appendix> filter) {
 		final JSONObject json = new JSONObject();
 		json.put("type", transaction.getType().getType());
@@ -318,7 +316,7 @@ public final class JSONData {
 				attachmentJSON.putAll(appendage.getJSONObject());
 			}
 		}
-		if (! attachmentJSON.isEmpty()) {
+		if (!attachmentJSON.isEmpty()) {
 			for (final Map.Entry entry : (Iterable<Map.Entry>) attachmentJSON.entrySet()) {
 				if (entry.getValue() instanceof Long) {
 					entry.setValue(String.valueOf(entry.getValue()));
@@ -337,6 +335,7 @@ public final class JSONData {
 		return json;
 	}
 
-	private JSONData() {} // never
+	private JSONData() {
+	} // never
 
 }

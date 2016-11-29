@@ -34,7 +34,8 @@ public final class GetBlocks extends APIServlet.APIRequestHandler {
 	static final GetBlocks instance = new GetBlocks();
 
 	private GetBlocks() {
-		super(new APITag[] {APITag.BLOCKS}, "firstIndex", "lastIndex", "timestamp", "includeTransactions", "includeExecutedPhased");
+		super(new APITag[] { APITag.BLOCKS }, "firstIndex", "lastIndex", "timestamp", "includeTransactions",
+				"includeExecutedPhased");
 	}
 
 	@Override

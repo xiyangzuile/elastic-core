@@ -32,14 +32,14 @@ import nxt.NxtException;
 
 /**
  * <p>
- * The GetNextBlockGenerators API will return the next block generators ordered by the
- * hit time.  The list of active forgers is initialized using the block generators
- * with at least 2 blocks generated within the previous 10,000 blocks.  Accounts without
- * a public key will not be included.  The list is
- * updated as new blocks are processed.  This means the results will not be 100%
- * correct since previously active generators may no longer be running and new generators
- * won't be known until they generate a block.  This API will be replaced when transparent
- * forging is activated.
+ * The GetNextBlockGenerators API will return the next block generators ordered
+ * by the hit time. The list of active forgers is initialized using the block
+ * generators with at least 2 blocks generated within the previous 10,000
+ * blocks. Accounts without a public key will not be included. The list is
+ * updated as new blocks are processed. This means the results will not be 100%
+ * correct since previously active generators may no longer be running and new
+ * generators won't be known until they generate a block. This API will be
+ * replaced when transparent forging is activated.
  * <p>
  * Request parameters:
  * <ul>
@@ -56,7 +56,8 @@ import nxt.NxtException;
  * <ul>
  * <li>account - The account identifier
  * <li>accountRS - The account RS identifier
- * <li>deadline - The difference between the generation time and the last block timestamp
+ * <li>deadline - The difference between the generation time and the last block
+ * timestamp
  * <li>effectiveBalanceNXT - The account effective balance
  * <li>hitTime - The generation time for the account
  * </ul>
@@ -67,13 +68,13 @@ public final class GetNextBlockGeneratorsTemp extends APIServlet.APIRequestHandl
 	static final GetNextBlockGeneratorsTemp instance = new GetNextBlockGeneratorsTemp();
 
 	private GetNextBlockGeneratorsTemp() {
-		super(new APITag[] {APITag.FORGING}, "limit");
+		super(new APITag[] { APITag.FORGING }, "limit");
 	}
 
 	/**
 	 * No required block parameters
 	 *
-	 * @return                      FALSE to disable the required block parameters
+	 * @return FALSE to disable the required block parameters
 	 */
 	@Override
 	protected boolean allowRequiredBlockParameters() {
@@ -102,7 +103,7 @@ public final class GetNextBlockGeneratorsTemp extends APIServlet.APIRequestHandl
 				JSONData.putAccount(resp, "account", generator.getAccountId());
 				resp.put("effectiveBalanceNXT", generator.getEffectiveBalance());
 				resp.put("hitTime", generator.getHitTime());
-				resp.put("deadline", (int)generator.getHitTime() - lastBlock.getTimestamp());
+				resp.put("deadline", (int) generator.getHitTime() - lastBlock.getTimestamp());
 				generators.add(resp);
 				if (generators.size() == limit) {
 					break;

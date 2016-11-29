@@ -29,62 +29,81 @@ import nxt.http.EventListener.EventRegistration;
 import nxt.util.Convert;
 
 /**
- * <p>The EventRegister API will create an event listener and register
- * one or more server events.
- * The 'add' and 'remove' parameters must be omitted or must both be false
- * in order to create a new event listener.</p>
+ * <p>
+ * The EventRegister API will create an event listener and register one or more
+ * server events. The 'add' and 'remove' parameters must be omitted or must both
+ * be false in order to create a new event listener.
+ * </p>
  *
- * <p>After calling EventRegister, the application needs to call the
- * EventWait API to wait for one of the registered events to occur.
- * The events will remain registered so successive calls to EventWait can
- * be made without another call to EventRegister.</p>
+ * <p>
+ * After calling EventRegister, the application needs to call the EventWait API
+ * to wait for one of the registered events to occur. The events will remain
+ * registered so successive calls to EventWait can be made without another call
+ * to EventRegister.
+ * </p>
  *
- * <p>When the event listener is no longer needed, the application should call
- * EventRegister with an empty event list and 'remove=true'.  An outstanding
+ * <p>
+ * When the event listener is no longer needed, the application should call
+ * EventRegister with an empty event list and 'remove=true'. An outstanding
  * event wait will be completed and the event listener will be canceled.
  * </p>
  *
- * <p>An existing event list can be modified by calling EventRegister with
- * either 'add=true' or 'remove=true'.  The current event list will be replaced
- * if both parameters are omitted or are false.</p>
+ * <p>
+ * An existing event list can be modified by calling EventRegister with either
+ * 'add=true' or 'remove=true'. The current event list will be replaced if both
+ * parameters are omitted or are false.
+ * </p>
  *
- * <p>Event registration will be canceled if the application does not
- * issue an EventWait before the time interval specified by nxt.apiEventTimeout
- * expires.  The timer is reset each time an EventWait is processed.</p>
+ * <p>
+ * Event registration will be canceled if the application does not issue an
+ * EventWait before the time interval specified by nxt.apiEventTimeout expires.
+ * The timer is reset each time an EventWait is processed.
+ * </p>
  *
- * <p>An application cannot register events if the maximum number of event users
- * specified by nxt.apiMaxEventUsers has been reached.</p>
+ * <p>
+ * An application cannot register events if the maximum number of event users
+ * specified by nxt.apiMaxEventUsers has been reached.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
- * <li>event - Event name.  The 'event' parameter can be
- * repeated to specify multiple events.  All events will be included
- * if the 'event' parameter is not specified.</li>
+ * <li>event - Event name. The 'event' parameter can be repeated to specify
+ * multiple events. All events will be included if the 'event' parameter is not
+ * specified.</li>
  * <li>add - Specify 'true' to add the events to an existing event list.</li>
- * <li>remove - Specify 'true' to remove the events from an existing event list.</li>
+ * <li>remove - Specify 'true' to remove the events from an existing event
+ * list.</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
  * <li>registered - Set to 'true' if the events were processed.</li>
  * </ul>
  *
- * <p>Error Response parameters:</p>
+ * <p>
+ * Error Response parameters:
+ * </p>
  * <ul>
  * <li>errorCode - API error code</li>
  * <li>errorDescription - API error description</li>
  * </ul>
  *
- * <p>Event names:</p>
+ * <p>
+ * Event names:
+ * </p>
  * <ul>
  * <li>Block.BLOCK_GENERATED</li>
  * <li>Block.BLOCK_POPPED</li>
  * <li>Block.BLOCK_PUSHED</li>
  * <li>Ledger.ADD_ENTRY - Changes to all accounts will be reported.</li>
- * <li>Ledger.ADD_ENTRY.account - Only changes to the specified account will be reported.  'account'
- * may be the numeric identifier or the Reed-Solomon identifier
- * of the account to monitor for updates.  Specifying an account identifier of 0 is the same as
- * not specifying an account.</li>
+ * <li>Ledger.ADD_ENTRY.account - Only changes to the specified account will be
+ * reported. 'account' may be the numeric identifier or the Reed-Solomon
+ * identifier of the account to monitor for updates. Specifying an account
+ * identifier of 0 is the same as not specifying an account.</li>
  * <li>Peer.ADD_INBOUND</li>
  * <li>Peer.ADDED_ACTIVE_PEER</li>
  * <li>Peer.BLACKLIST</li>
@@ -144,13 +163,13 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 	 * Create the EventRegister instance
 	 */
 	private EventRegister() {
-		super(new APITag[] {APITag.INFO}, "event", "event", "event", "add", "remove");
+		super(new APITag[] { APITag.INFO }, "event", "event", "event", "add", "remove");
 	}
 
 	/**
 	 * No required block parameters
 	 *
-	 * @return                      FALSE to disable the required block parameters
+	 * @return FALSE to disable the required block parameters
 	 */
 	@Override
 	protected boolean allowRequiredBlockParameters() {
@@ -160,8 +179,9 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the EventRegister API request
 	 *
-	 * @param   req                 API request
-	 * @return                      API response
+	 * @param req
+	 *            API request
+	 * @return API response
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
@@ -190,7 +210,8 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 		} else {
 			for (final String param : params) {
 				//
-				// The Ledger event can have 2 or 3 parts.  All other events have 2 parts.
+				// The Ledger event can have 2 or 3 parts. All other events have
+				// 2 parts.
 				//
 				long accountId = 0;
 				final String[] parts = param.split("\\.");
@@ -264,7 +285,7 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 		} catch (final EventListenerException exc) {
 			response = new JSONObject();
 			response.put("errorCode", 7);
-			response.put("errorDescription", "Unable to register events: "+exc.getMessage());
+			response.put("errorDescription", "Unable to register events: " + exc.getMessage());
 		}
 		//
 		// Return the response

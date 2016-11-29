@@ -43,89 +43,57 @@ public class APITestServlet extends HttpServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 5596574097573110157L;
-	private static final String header1 =
-			"<!DOCTYPE html>\n" +
-					"<html>\n" +
-					"<head>\n" +
-					"    <meta charset='UTF-8'/>\n" +
-					"    <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n" +
-					"    <meta name='viewport' content='width=device-width, initial-scale=1'>\n" +
-					"    <title>Nxt http API</title>\n" +
-					"    <link href='css/bootstrap.min.css' rel='stylesheet' type='text/css' />\n" +
-					"    <link href='css/font-awesome.min.css' rel='stylesheet' type='text/css' />\n" +
-					"    <link href='css/highlight.style.css' rel='stylesheet' type='text/css' />\n" +
-					"    <style type='text/css'>\n" +
-					"        table {border-collapse: collapse;}\n" +
-					"        td {padding: 10px;}\n" +
-					"        .result {white-space: pre; font-family: monospace; overflow: auto;}\n" +
-					"    </style>\n" +
-					"</head>\n" +
-					"<body>\n" +
-					"<div class='navbar navbar-default' role='navigation'>\n" +
-					"   <div class='container' style='min-width: 90%;'>\n" +
-					"       <div class='navbar-header'>\n" +
-					"           <a class='navbar-brand' href='/test'>Nxt http API</a>\n" +
-					"       </div>\n" +
-					"       <div class='navbar-collapse collapse'>\n" +
-					"           <ul class='nav navbar-nav navbar-right'>\n" +
-					"               <li><input type='text' class='form-control' id='nodeType' " +
-					"                    readonly style='margin-top:8px;'></li>\n" +
-					"               <li><input type='text' class='form-control' id='servletPath' " +
-					"                    readonly style='margin-top:8px;'></li>\n" +
-					"               <li><input type='text' class='form-control' id='search' " +
-					"                    placeholder='Search' style='margin-top:8px;'></li>\n" +
-					"               <li><a href='https://nxtwiki.org/wiki/The_Nxt_API' target='_blank' style='margin-left:20px;'>Wiki Docs</a></li>\n" +
-					"           </ul>\n" +
-					"       </div>\n" +
-					"   </div>\n" +
-					"</div>\n" +
-					"<div class='container' style='min-width: 90%;'>\n" +
-					"<div class='row'>\n" +
-					"  <div class='col-xs-12' style='margin-bottom:10px;'>\n" +
-					"    <div class='pull-right'>\n" +
-					"      <div class='btn-group'>\n" +
-					"        <button type='button' class='btn btn-default btn-sm dropdown-toggle' data-toggle='dropdown'>\n" +
-					"          <i class='fa fa-check-circle-o'></i> <i class='fa fa-circle-o'></i>\n" +
-					"        </button>\n" +
-					"        <ul class='dropdown-menu' role='menu' style='font-size:12px;'>\n" +
-					"          <li><a href='#' id='navi-select-all-d-add-btn'>Select All Displayed (Add)</a></li>\n" +
-					"          <li><a href='#' id='navi-select-all-d-replace-btn'>Select All Displayed (Replace)</a></li>\n" +
-					"          <li><a href='#' id='navi-deselect-all-d-btn'>Deselect All Displayed</a></li>\n" +
-					"          <li><a href='#' id='navi-deselect-all-btn'>Deselect All</a></li>\n" +
-					"        </ul>\n" +
-					"      </div>\n" +
-					"      <button type='button' id='navi-show-fields' data-navi-val='ALL' class='btn btn-default btn-sm' style='width:165px;'>Show Non-Empty Fields</button>\n" +
-					"      <button type='button' id='navi-show-tabs' data-navi-val='ALL' class='btn btn-default btn-sm' style='width:130px;'>Show Open Tabs</button>\n" +
-					"    </div>\n" +
-					"  </div>\n" +
-					"</div>\n" +
-					"<div class='row' style='margin-bottom:15px;'>\n" +
-					"<div class='col-xs-4 col-sm-3 col-md-2'>\n" +
-					"<ul class='nav nav-pills nav-stacked'>\n";
-	private static final String header2 =
-			"</ul>\n" +
-					"</div> <!-- col -->" +
-					"<div  class='col-xs-8 col-sm-9 col-md-10'>\n" +
-					"<div class='panel-group' id='accordion'>\n";
+	private static final String header1 = "<!DOCTYPE html>\n" + "<html>\n" + "<head>\n"
+			+ "    <meta charset='UTF-8'/>\n" + "    <meta http-equiv='X-UA-Compatible' content='IE=edge'>\n"
+			+ "    <meta name='viewport' content='width=device-width, initial-scale=1'>\n"
+			+ "    <title>Nxt http API</title>\n"
+			+ "    <link href='css/bootstrap.min.css' rel='stylesheet' type='text/css' />\n"
+			+ "    <link href='css/font-awesome.min.css' rel='stylesheet' type='text/css' />\n"
+			+ "    <link href='css/highlight.style.css' rel='stylesheet' type='text/css' />\n"
+			+ "    <style type='text/css'>\n" + "        table {border-collapse: collapse;}\n"
+			+ "        td {padding: 10px;}\n"
+			+ "        .result {white-space: pre; font-family: monospace; overflow: auto;}\n" + "    </style>\n"
+			+ "</head>\n" + "<body>\n" + "<div class='navbar navbar-default' role='navigation'>\n"
+			+ "   <div class='container' style='min-width: 90%;'>\n" + "       <div class='navbar-header'>\n"
+			+ "           <a class='navbar-brand' href='/test'>Nxt http API</a>\n" + "       </div>\n"
+			+ "       <div class='navbar-collapse collapse'>\n"
+			+ "           <ul class='nav navbar-nav navbar-right'>\n"
+			+ "               <li><input type='text' class='form-control' id='nodeType' "
+			+ "                    readonly style='margin-top:8px;'></li>\n"
+			+ "               <li><input type='text' class='form-control' id='servletPath' "
+			+ "                    readonly style='margin-top:8px;'></li>\n"
+			+ "               <li><input type='text' class='form-control' id='search' "
+			+ "                    placeholder='Search' style='margin-top:8px;'></li>\n"
+			+ "               <li><a href='https://nxtwiki.org/wiki/The_Nxt_API' target='_blank' style='margin-left:20px;'>Wiki Docs</a></li>\n"
+			+ "           </ul>\n" + "       </div>\n" + "   </div>\n" + "</div>\n"
+			+ "<div class='container' style='min-width: 90%;'>\n" + "<div class='row'>\n"
+			+ "  <div class='col-xs-12' style='margin-bottom:10px;'>\n" + "    <div class='pull-right'>\n"
+			+ "      <div class='btn-group'>\n"
+			+ "        <button type='button' class='btn btn-default btn-sm dropdown-toggle' data-toggle='dropdown'>\n"
+			+ "          <i class='fa fa-check-circle-o'></i> <i class='fa fa-circle-o'></i>\n" + "        </button>\n"
+			+ "        <ul class='dropdown-menu' role='menu' style='font-size:12px;'>\n"
+			+ "          <li><a href='#' id='navi-select-all-d-add-btn'>Select All Displayed (Add)</a></li>\n"
+			+ "          <li><a href='#' id='navi-select-all-d-replace-btn'>Select All Displayed (Replace)</a></li>\n"
+			+ "          <li><a href='#' id='navi-deselect-all-d-btn'>Deselect All Displayed</a></li>\n"
+			+ "          <li><a href='#' id='navi-deselect-all-btn'>Deselect All</a></li>\n" + "        </ul>\n"
+			+ "      </div>\n"
+			+ "      <button type='button' id='navi-show-fields' data-navi-val='ALL' class='btn btn-default btn-sm' style='width:165px;'>Show Non-Empty Fields</button>\n"
+			+ "      <button type='button' id='navi-show-tabs' data-navi-val='ALL' class='btn btn-default btn-sm' style='width:130px;'>Show Open Tabs</button>\n"
+			+ "    </div>\n" + "  </div>\n" + "</div>\n" + "<div class='row' style='margin-bottom:15px;'>\n"
+			+ "<div class='col-xs-4 col-sm-3 col-md-2'>\n" + "<ul class='nav nav-pills nav-stacked'>\n";
+	private static final String header2 = "</ul>\n" + "</div> <!-- col -->"
+			+ "<div  class='col-xs-8 col-sm-9 col-md-10'>\n" + "<div class='panel-group' id='accordion'>\n";
 
-	private static final String footer1 =
-			"</div> <!-- panel-group -->\n" +
-					"</div> <!-- col -->\n" +
-					"</div> <!-- row -->\n" +
-					"</div> <!-- container -->\n" +
-					"<script src='js/3rdparty/jquery.js'></script>\n" +
-					"<script src='js/3rdparty/bootstrap.js' type='text/javascript'></script>\n" +
-					"<script src='js/3rdparty/highlight.pack.js' type='text/javascript'></script>\n" +
-					"<script src='js/ats.js' type='text/javascript'></script>\n" +
-					"<script src='js/ats.util.js' type='text/javascript'></script>\n" +
-					"<script>\n" +
-					"$(document).ready(function() {";
+	private static final String footer1 = "</div> <!-- panel-group -->\n" + "</div> <!-- col -->\n"
+			+ "</div> <!-- row -->\n" + "</div> <!-- container -->\n"
+			+ "<script src='js/3rdparty/jquery.js'></script>\n"
+			+ "<script src='js/3rdparty/bootstrap.js' type='text/javascript'></script>\n"
+			+ "<script src='js/3rdparty/highlight.pack.js' type='text/javascript'></script>\n"
+			+ "<script src='js/ats.js' type='text/javascript'></script>\n"
+			+ "<script src='js/ats.util.js' type='text/javascript'></script>\n" + "<script>\n"
+			+ "$(document).ready(function() {";
 
-	private static final String footer2 =
-			"});\n" +
-					"</script>\n" +
-					"</body>\n" +
-					"</html>\n";
+	private static final String footer2 = "});\n" + "</script>\n" + "</body>\n" + "</html>\n";
 
 	private static final List<String> allRequestTypes = new ArrayList<>(APIServlet.apiRequestHandlers.keySet());
 	static {
@@ -166,8 +134,7 @@ public class APITestServlet extends HttpServlet {
 		final StringBuilder buf = new StringBuilder();
 		final String requestTag = Convert.nullToEmpty(req.getParameter("requestTag"));
 		buf.append("<li");
-		if (requestTag.equals("")
-				& !req.getParameterMap().containsKey("requestType")
+		if (requestTag.equals("") & !req.getParameterMap().containsKey("requestType")
 				& !req.getParameterMap().containsKey("requestTypes")) {
 			buf.append(" class='active'");
 		}
@@ -190,7 +157,8 @@ public class APITestServlet extends HttpServlet {
 		return buf.toString();
 	}
 
-	private static String form(final HttpServletRequest req, final String requestType, final boolean singleView, final APIServlet.APIRequestHandler requestHandler) {
+	private static String form(final HttpServletRequest req, final String requestType, final boolean singleView,
+			final APIServlet.APIRequestHandler requestHandler) {
 		final String className = requestHandler.getClass().getName();
 		final List<String> parameters = requestHandler.getParameters();
 		final boolean requirePost = requestHandler.requirePost();
@@ -200,18 +168,21 @@ public class APITestServlet extends HttpServlet {
 		buf.append("id='api-call-").append(requestType).append("'>\n");
 		buf.append("<div class='panel-heading'>\n");
 		buf.append("<h4 class='panel-title'>\n");
-		buf.append("<a data-toggle='collapse' class='collapse-link' data-target='#collapse").append(requestType).append("' href='#'>");
+		buf.append("<a data-toggle='collapse' class='collapse-link' data-target='#collapse").append(requestType)
+				.append("' href='#'>");
 		buf.append(requestType);
 		buf.append("</a>\n");
 		buf.append("<span style='float:right;font-weight:normal;font-size:14px;'>\n");
 		if (!singleView) {
 			buf.append("<a href='/test?requestType=").append(requestType);
-			buf.append("' target='_blank' style='font-weight:normal;font-size:14px;color:#777;'>\n<span class='glyphicon glyphicon-new-window'></span>\n</a>");
+			buf.append(
+					"' target='_blank' style='font-weight:normal;font-size:14px;color:#777;'>\n<span class='glyphicon glyphicon-new-window'></span>\n</a>");
 			buf.append(" &nbsp;&nbsp;\n");
 		}
 		buf.append("<a style='font-weight:normal;font-size:14px;color:#777;' href='/doc/");
 		buf.append(className.replace('.', '/')).append(".html' target='_blank'>javadoc</a>&nbsp;&nbsp;\n");
-		buf.append("<a style='font-weight:normal;font-size:14px;color:#777;' href='https://nxtwiki.org/wiki/The_Nxt_API#");
+		buf.append(
+				"<a style='font-weight:normal;font-size:14px;color:#777;' href='https://nxtwiki.org/wiki/The_Nxt_API#");
 		APITestServlet.appendWikiLink(className.substring(className.lastIndexOf('.') + 1), buf);
 		buf.append("' target='_blank'>wiki</a>&nbsp;&nbsp;\n");
 		buf.append("&nbsp;&nbsp;&nbsp;\n<input type='checkbox' class='api-call-sel-ALL' ");
@@ -243,7 +214,8 @@ public class APITestServlet extends HttpServlet {
 		if (fileParameter != null) {
 			buf.append("<tr class='api-call-input-tr'>\n");
 			buf.append("<td>").append(fileParameter).append(":</td>\n");
-			buf.append("<td><input type='file' name='").append(fileParameter).append("' id='").append(fileParameter).append(requestType).append("' ");
+			buf.append("<td><input type='file' name='").append(fileParameter).append("' id='").append(fileParameter)
+					.append(requestType).append("' ");
 			buf.append("style='width:100%;min-width:200px;'/></td>\n");
 			buf.append("</tr>\n");
 		}
@@ -253,7 +225,8 @@ public class APITestServlet extends HttpServlet {
 			if (APITestServlet.isTextArea(parameter)) {
 				buf.append("<td><textarea ");
 			} else {
-				buf.append("<td><input type='").append(APITestServlet.isPassword(parameter) ? "password" : "text").append("' ");
+				buf.append("<td><input type='").append(APITestServlet.isPassword(parameter) ? "password" : "text")
+						.append("' ");
 			}
 			buf.append("name='").append(parameter).append("' ");
 			final String value = Convert.emptyToNull(req.getParameter(parameter));
@@ -295,10 +268,12 @@ public class APITestServlet extends HttpServlet {
 		return "<div class='alert alert-" + msgType + "' role='alert'>" + msg + "</div>\n";
 	}
 
-	static void initClass() {}
+	static void initClass() {
+	}
 
 	private static boolean isPassword(final String parameter) {
-		return "secretPhrase".equals(parameter) || "adminPassword".equals(parameter) || "recipientSecretPhrase".equals(parameter);
+		return "secretPhrase".equals(parameter) || "adminPassword".equals(parameter)
+				|| "recipientSecretPhrase".equals(parameter);
 	}
 
 	private static boolean isTextArea(final String parameter) {
@@ -306,14 +281,15 @@ public class APITestServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
 		resp.setHeader("Pragma", "no-cache");
 		resp.setDateHeader("Expires", 0);
 		resp.setContentType("text/html; charset=UTF-8");
 
-		if (! API.isAllowed(req.getRemoteHost())) {
+		if (!API.isAllowed(req.getRemoteHost())) {
 			resp.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
@@ -348,7 +324,7 @@ public class APITestServlet extends HttpServlet {
 				final String requestTypes = Convert.nullToEmpty(req.getParameter("requestTypes"));
 				if (!requestTypes.equals("")) {
 					final Set<String> selectedRequestTypes = new TreeSet<>(Arrays.asList(requestTypes.split("_")));
-					for (final String type: selectedRequestTypes) {
+					for (final String type : selectedRequestTypes) {
 						requestHandler = APIServlet.apiRequestHandlers.get(type);
 						writer.print(APITestServlet.form(req, type, false, requestHandler));
 						bufJSCalls.append("    ATS.apiCalls.push('").append(type).append("');\n");

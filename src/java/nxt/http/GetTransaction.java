@@ -29,7 +29,7 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
 	static final GetTransaction instance = new GetTransaction();
 
 	private GetTransaction() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "transaction", "fullHash", "includePhasingResult");
+		super(new APITag[] { APITag.TRANSACTIONS }, "transaction", "fullHash", "includePhasingResult");
 	}
 
 	@Override

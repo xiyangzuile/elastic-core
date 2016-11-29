@@ -27,16 +27,17 @@ import nxt.Nxt;
 import nxt.util.Logger;
 
 /**
- * Compact and reorganize the NRS database.  The NRS application must not be
+ * Compact and reorganize the NRS database. The NRS application must not be
  * running.
  *
  * To run the database compact tool on Linux or Mac:
  *
- *   java -cp "classes:lib/*:conf" nxt.tools.CompactDatabase
+ * java -cp "classes:lib/*:conf" nxt.tools.CompactDatabase
  *
  * To run the database compact tool on Windows:
  *
- *   java -cp "classes;lib/*;conf" -Dnxt.runtime.mode=desktop nxt.tools.CompactDatabase
+ * java -cp "classes;lib/*;conf" -Dnxt.runtime.mode=desktop
+ * nxt.tools.CompactDatabase
  */
 public class CompactDatabase {
 
@@ -67,12 +68,13 @@ public class CompactDatabase {
 		final String dbUsername = Nxt.getStringProperty(dbPrefix + "Username", "sa");
 		final String dbPassword = Nxt.getStringProperty(dbPrefix + "Password", "sa", true);
 		//
-		// Get the database path.  This is the third colon-separated operand and is
+		// Get the database path. This is the third colon-separated operand and
+		// is
 		// terminated by a semi-colon or by the end of the string.
 		//
 		int pos = dbUrl.indexOf(':');
 		if (pos >= 0) {
-			pos = dbUrl.indexOf(':', pos+1);
+			pos = dbUrl.indexOf(':', pos + 1);
 		}
 		if (pos < 0) {
 			Logger.logErrorMessage("Malformed database URL: " + dbUrl);
@@ -93,8 +95,10 @@ public class CompactDatabase {
 			dbDir = dbDir.substring(5);
 		}
 		//
-		// Remove the database prefix from the end of the database path.  The path
-		// separator can be either '/' or '\' (Windows will accept either separator
+		// Remove the database prefix from the end of the database path. The
+		// path
+		// separator can be either '/' or '\' (Windows will accept either
+		// separator
 		// so we can't rely on the system property).
 		//
 		endPos = dbDir.lastIndexOf('\\');
@@ -145,8 +149,8 @@ public class CompactDatabase {
 			//
 			Logger.logInfoMessage("Creating the new database");
 			if (!dbFile.renameTo(oldFile)) {
-				throw new IOException(String.format("Unable to rename '%s' to '%s'",
-						dbFile.getPath(), oldFile.getPath()));
+				throw new IOException(
+						String.format("Unable to rename '%s' to '%s'", dbFile.getPath(), oldFile.getPath()));
 			}
 			phase = 1;
 			try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
@@ -192,8 +196,8 @@ public class CompactDatabase {
 					}
 				}
 				if (!oldFile.renameTo(dbFile)) {
-					Logger.logErrorMessage(String.format("Unable to rename '%s' to '%s'",
-							oldFile.getPath(), dbFile.getPath()));
+					Logger.logErrorMessage(
+							String.format("Unable to rename '%s' to '%s'", oldFile.getPath(), dbFile.getPath()));
 				}
 				break;
 			case 2:
@@ -215,7 +219,8 @@ public class CompactDatabase {
 	/**
 	 * Compact the NRS database
 	 *
-	 * @param   args                Command line arguments
+	 * @param args
+	 *            Command line arguments
 	 */
 	public static void main(final String[] args) {
 		//

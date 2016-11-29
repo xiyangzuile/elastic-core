@@ -83,6 +83,7 @@ public class TransactionalDb extends BasicDb {
 			throw new UnsupportedOperationException("Use Db.beginTransaction() to start a new transaction");
 		}
 	}
+
 	private static final class DbFactory implements FilteredFactory {
 
 		@Override
@@ -95,6 +96,7 @@ public class TransactionalDb extends BasicDb {
 			return new DbStatement(stmt);
 		}
 	}
+
 	private static final class DbPreparedStatement extends FilteredPreparedStatement {
 		private DbPreparedStatement(final PreparedStatement stmt, final String sql) {
 			super(stmt, sql);
@@ -107,7 +109,7 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			}
 			return b;
 		}
@@ -119,7 +121,7 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			}
 			return r;
 		}
@@ -131,11 +133,12 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			}
 			return c;
 		}
 	}
+
 	private static final class DbStatement extends FilteredStatement {
 
 		private DbStatement(final Statement stmt) {
@@ -149,7 +152,7 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			}
 			return b;
 		}
@@ -161,7 +164,7 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			}
 			return r;
 		}
@@ -173,11 +176,12 @@ public class TransactionalDb extends BasicDb {
 			final long elapsed = System.currentTimeMillis() - start;
 			if (elapsed > TransactionalDb.stmtThreshold) {
 				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			}
 			return c;
 		}
 	}
+
 	/**
 	 * Transaction callback interface
 	 */
@@ -200,16 +204,17 @@ public class TransactionalDb extends BasicDb {
 	private static final long txInterval;
 	static {
 		long temp;
-		stmtThreshold = (temp=Nxt.getIntProperty("nxt.statementLogThreshold")) != 0 ? temp : 1000;
-		txThreshold = (temp=Nxt.getIntProperty("nxt.transactionLogThreshold")) != 0 ? temp : 5000;
-		txInterval = (temp=Nxt.getIntProperty("nxt.transactionLogInterval")) != 0 ? temp*60*1000 : 15*60*1000;
+		stmtThreshold = (temp = Nxt.getIntProperty("nxt.statementLogThreshold")) != 0 ? temp : 1000;
+		txThreshold = (temp = Nxt.getIntProperty("nxt.transactionLogThreshold")) != 0 ? temp : 5000;
+		txInterval = (temp = Nxt.getIntProperty("nxt.transactionLogInterval")) != 0 ? temp * 60 * 1000 : 15 * 60 * 1000;
 	}
+
 	private static void logThreshold(final String msg) {
 		final StringBuilder sb = new StringBuilder(512);
 		sb.append(msg).append('\n');
 		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		boolean firstLine = true;
-		for (int i=3; i<stackTrace.length; i++) {
+		for (int i = 3; i < stackTrace.length; i++) {
 			final String line = stackTrace[i].toString();
 			if (!line.startsWith("nxt.")) {
 				break;
@@ -226,7 +231,7 @@ public class TransactionalDb extends BasicDb {
 
 	private final ThreadLocal<DbConnection> localConnection = new ThreadLocal<>();
 
-	private final ThreadLocal<Map<String,Map<DbKey,Object>>> transactionCaches = new ThreadLocal<>();
+	private final ThreadLocal<Map<String, Map<DbKey, Object>>> transactionCaches = new ThreadLocal<>();
 
 	private final ThreadLocal<Set<TransactionCallback>> transactionCallback = new ThreadLocal<>();
 
@@ -248,8 +253,8 @@ public class TransactionalDb extends BasicDb {
 			Connection con = this.getPooledConnection();
 			con.setAutoCommit(false);
 			con = new DbConnection(con);
-			((DbConnection)con).txStart = System.currentTimeMillis();
-			this.localConnection.set((DbConnection)con);
+			((DbConnection) con).txStart = System.currentTimeMillis();
+			this.localConnection.set((DbConnection) con);
 			this.transactionCaches.set(new HashMap<>());
 			return con;
 		} catch (final SQLException e) {
@@ -262,7 +267,7 @@ public class TransactionalDb extends BasicDb {
 	}
 
 	void clearCache(final String tableName) {
-		final Map<DbKey,Object> cacheMap = this.transactionCaches.get().get(tableName);
+		final Map<DbKey, Object> cacheMap = this.transactionCaches.get().get(tableName);
 		if (cacheMap != null) {
 			cacheMap.clear();
 		}
@@ -293,14 +298,14 @@ public class TransactionalDb extends BasicDb {
 		this.localConnection.set(null);
 		this.transactionCaches.set(null);
 		final long now = System.currentTimeMillis();
-		final long elapsed = now - ((DbConnection)con).txStart;
+		final long elapsed = now - ((DbConnection) con).txStart;
 		if (elapsed >= TransactionalDb.txThreshold) {
 			TransactionalDb.logThreshold(String.format("Database transaction required %.3f seconds at height %d",
-					elapsed/1000.0, Nxt.getBlockchain().getHeight()));
+					elapsed / 1000.0, Nxt.getBlockchain().getHeight()));
 		} else {
 			long count, times;
 			boolean logStats = false;
-			synchronized(this) {
+			synchronized (this) {
 				count = ++this.txCount;
 				times = this.txTimes += elapsed;
 				if ((now - this.statsTime) >= TransactionalDb.txInterval) {
@@ -311,18 +316,18 @@ public class TransactionalDb extends BasicDb {
 				}
 			}
 			if (logStats) {
-				Logger.logDebugMessage(String.format("Average database transaction time is %.3f seconds",
-						times/1000.0/count));
+				Logger.logDebugMessage(
+						String.format("Average database transaction time is %.3f seconds", times / 1000.0 / count));
 			}
 		}
 		DbUtils.close(con);
 	}
 
-	Map<DbKey,Object> getCache(final String tableName) {
+	Map<DbKey, Object> getCache(final String tableName) {
 		if (!this.isInTransaction()) {
 			throw new IllegalStateException("Not in transaction");
 		}
-		Map<DbKey,Object> cacheMap = this.transactionCaches.get().get(tableName);
+		Map<DbKey, Object> cacheMap = this.transactionCaches.get().get(tableName);
 		if (cacheMap == null) {
 			cacheMap = new HashMap<>();
 			this.transactionCaches.get().put(tableName, cacheMap);

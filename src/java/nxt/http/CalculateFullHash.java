@@ -33,7 +33,8 @@ public final class CalculateFullHash extends APIServlet.APIRequestHandler {
 	static final CalculateFullHash instance = new CalculateFullHash();
 
 	private CalculateFullHash() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "unsignedTransactionJSON", "signatureHash");
+		super(new APITag[] { APITag.TRANSACTIONS }, "unsignedTransactionBytes", "unsignedTransactionJSON",
+				"signatureHash");
 	}
 
 	@Override
@@ -53,7 +54,8 @@ public final class CalculateFullHash extends APIServlet.APIRequestHandler {
 		}
 		final JSONObject response = new JSONObject();
 		try {
-			final Transaction transaction = ParameterParser.parseTransaction(unsignedTransactionJSONString, unsignedBytesString, null).build();
+			final Transaction transaction = ParameterParser
+					.parseTransaction(unsignedTransactionJSONString, unsignedBytesString, null).build();
 			final MessageDigest digest = Crypto.sha256();
 			digest.update(transaction.getUnsignedBytes());
 			final byte[] fullHash = digest.digest(Convert.parseHexString(signatureHashString));

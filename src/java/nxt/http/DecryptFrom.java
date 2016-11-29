@@ -32,7 +32,8 @@ public final class DecryptFrom extends APIServlet.APIRequestHandler {
 	static final DecryptFrom instance = new DecryptFrom();
 
 	private DecryptFrom() {
-		super(new APITag[] {APITag.MESSAGES}, "account", "data", "nonce", "decryptedMessageIsText", "uncompressDecryptedMessage", "secretPhrase");
+		super(new APITag[] { APITag.MESSAGES }, "account", "data", "nonce", "decryptedMessageIsText",
+				"uncompressDecryptedMessage", "secretPhrase");
 	}
 
 	@Override

@@ -76,6 +76,7 @@ public final class JSONResponses {
 		POST_REQUIRED = JSON.prepare(response);
 	}
 
-	private JSONResponses() {} // never
+	private JSONResponses() {
+	} // never
 
 }

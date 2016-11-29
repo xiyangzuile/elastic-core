@@ -53,7 +53,8 @@ public interface Appendix {
 			this.version = (byte) (l == null ? 0 : l);
 		}
 
-		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException;
+		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount)
+				throws NotValidException;
 
 		abstract String getAppendixName();
 
@@ -321,15 +322,14 @@ public interface Appendix {
 				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH)) {
 					throw new NxtException.NotValidException("Invalid source code length: " + src.length);
 				}
-				if ((src == null) && ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
+				if ((src == null)
+						&& ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
 
-
-
 				if (this.language == 0x01) {
 					try {
-						if(src != null) {
+						if (src != null) {
 							Executioner.checkSyntax(src);
 						} else {
 							throw new NxtException.NotValidException("Source code unavailable");
@@ -375,10 +375,10 @@ public interface Appendix {
 		}
 
 		@Override
-		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount) throws NotValidException {
-			if(recipientAccount == null){
-				throw new NxtException.NotValidException(
-						"PublicKeyAnnouncement must have a correct receipient");
+		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount)
+				throws NotValidException {
+			if (recipientAccount == null) {
+				throw new NxtException.NotValidException("PublicKeyAnnouncement must have a correct receipient");
 			}
 			if (Account.setOrVerify(recipientAccount.getId(), this.publicKey)) {
 				recipientAccount.apply(this.publicKey);

@@ -27,13 +27,12 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.Token;
 
-
 public final class GenerateFileToken extends APIServlet.APIRequestHandler {
 
 	static final GenerateFileToken instance = new GenerateFileToken();
 
 	private GenerateFileToken() {
-		super("file", new APITag[] {APITag.TOKENS}, "secretPhrase");
+		super("file", new APITag[] { APITag.TOKENS }, "secretPhrase");
 	}
 
 	@Override

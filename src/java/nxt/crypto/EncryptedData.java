@@ -26,7 +26,8 @@ public final class EncryptedData {
 
 	public static final EncryptedData EMPTY_DATA = new EncryptedData(new byte[0], new byte[0]);
 
-	public static EncryptedData encrypt(final byte[] plaintext, final String secretPhrase, final byte[] theirPublicKey) {
+	public static EncryptedData encrypt(final byte[] plaintext, final String secretPhrase,
+			final byte[] theirPublicKey) {
 		if (plaintext.length == 0) {
 			return EncryptedData.EMPTY_DATA;
 		}

@@ -21,22 +21,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <p>
- * A read or update lock allows shared access while a write lock enforces exclusive access.  Multiple
- * threads can hold the read lock but only one thread can hold the update or write lock.  If a thread
- * obtains a lock that it already holds, it must release the lock the same number of times that it
- * obtained the lock.
+ * A read or update lock allows shared access while a write lock enforces
+ * exclusive access. Multiple threads can hold the read lock but only one thread
+ * can hold the update or write lock. If a thread obtains a lock that it already
+ * holds, it must release the lock the same number of times that it obtained the
+ * lock.
  * </p>
  * <ul>
- * <li>An attempt to obtain the read lock while another thread holds the write lock will cause
- * the thread to be suspended until the write lock is released.</li>
- * <li>An attempt to obtain the update lock while another thread holds the update or write lock
- * will cause the thread to be suspended until the blocking lock is released.  A thread
- * holding the update lock can subsequently obtain the write lock to gain exclusive access.
- * An attempt to obtain the update lock while holding either the read lock or the write lock
- * will result in an exception.</li>
- * <li>An attempt to obtain the write lock while another thread holds the read, update or write lock
- * will cause the thread to be suspended until the blocking lock is released.
- * An attempt to obtain the write lock while holding the read lock will result in an exception.</li>
+ * <li>An attempt to obtain the read lock while another thread holds the write
+ * lock will cause the thread to be suspended until the write lock is
+ * released.</li>
+ * <li>An attempt to obtain the update lock while another thread holds the
+ * update or write lock will cause the thread to be suspended until the blocking
+ * lock is released. A thread holding the update lock can subsequently obtain
+ * the write lock to gain exclusive access. An attempt to obtain the update lock
+ * while holding either the read lock or the write lock will result in an
+ * exception.</li>
+ * <li>An attempt to obtain the write lock while another thread holds the read,
+ * update or write lock will cause the thread to be suspended until the blocking
+ * lock is released. An attempt to obtain the write lock while holding the read
+ * lock will result in an exception.</li>
  * </ul>
  */
 public class ReadWriteUpdateLock {
@@ -49,7 +53,7 @@ public class ReadWriteUpdateLock {
 		/**
 		 * Check if the thread holds the lock
 		 *
-		 * @return                  TRUE if the thread holds the lock
+		 * @return TRUE if the thread holds the lock
 		 */
 		boolean hasLock();
 
@@ -87,7 +91,7 @@ public class ReadWriteUpdateLock {
 		/**
 		 * Check if the thread holds the lock
 		 *
-		 * @return                  TRUE if the thread holds the lock
+		 * @return TRUE if the thread holds the lock
 		 */
 		@Override
 		public boolean hasLock() {
@@ -121,7 +125,7 @@ public class ReadWriteUpdateLock {
 		/**
 		 * Check if the thread holds the lock
 		 *
-		 * @return                  TRUE if the thread holds the lock
+		 * @return TRUE if the thread holds the lock
 		 */
 		@Override
 		public boolean hasLock() {
@@ -164,7 +168,7 @@ public class ReadWriteUpdateLock {
 		/**
 		 * Check if the thread holds the lock
 		 *
-		 * @return                  TRUE if the thread holds the lock
+		 * @return TRUE if the thread holds the lock
 		 */
 		@Override
 		public boolean hasLock() {
@@ -232,7 +236,7 @@ public class ReadWriteUpdateLock {
 	/**
 	 * Return the read lock
 	 *
-	 * @return                      Read lock
+	 * @return Read lock
 	 */
 	public Lock readLock() {
 		return this.readLock;
@@ -241,7 +245,7 @@ public class ReadWriteUpdateLock {
 	/**
 	 * Return the update lock
 	 *
-	 * @return                      Update lock
+	 * @return Update lock
 	 */
 	public Lock updateLock() {
 		return this.updateLock;
@@ -250,7 +254,7 @@ public class ReadWriteUpdateLock {
 	/**
 	 * Return the write lock
 	 *
-	 * @return                      Write lock
+	 * @return Write lock
 	 */
 	public Lock writeLock() {
 		return this.writeLock;

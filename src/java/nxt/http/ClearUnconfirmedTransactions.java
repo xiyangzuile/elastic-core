@@ -28,7 +28,7 @@ public final class ClearUnconfirmedTransactions extends APIServlet.APIRequestHan
 	static final ClearUnconfirmedTransactions instance = new ClearUnconfirmedTransactions();
 
 	private ClearUnconfirmedTransactions() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

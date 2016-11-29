@@ -38,9 +38,9 @@ import java.util.concurrent.Executor;
 /**
  * Wrapper for a SQL Connection
  *
- * The wrapper forwards all methods to the wrapped connection.  The supplied factory is
- * used to create wrappers for statements and prepared statements that are created for
- * this connection.
+ * The wrapper forwards all methods to the wrapped connection. The supplied
+ * factory is used to create wrappers for statements and prepared statements
+ * that are created for this connection.
  */
 public class FilteredConnection implements Connection {
 
@@ -108,8 +108,10 @@ public class FilteredConnection implements Connection {
 	}
 
 	@Override
-	public Statement createStatement(final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
-		return this.factory.createStatement(this.con.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+	public Statement createStatement(final int resultSetType, final int resultSetConcurrency,
+			final int resultSetHoldability) throws SQLException {
+		return this.factory
+				.createStatement(this.con.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
 	}
 
 	@Override
@@ -203,12 +205,14 @@ public class FilteredConnection implements Connection {
 	}
 
 	@Override
-	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException {
+	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency)
+			throws SQLException {
 		return this.con.prepareCall(sql, resultSetType, resultSetConcurrency);
 	}
 
 	@Override
-	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
+	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency,
+			final int resultSetHoldability) throws SQLException {
 		return this.con.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
 	}
 
@@ -223,13 +227,17 @@ public class FilteredConnection implements Connection {
 	}
 
 	@Override
-	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException {
-		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, resultSetType, resultSetConcurrency), sql);
+	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency)
+			throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, resultSetType, resultSetConcurrency),
+				sql);
 	}
 
 	@Override
-	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
-		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
+	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency,
+			final int resultSetHoldability) throws SQLException {
+		return this.factory.createPreparedStatement(
+				this.con.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
 	}
 
 	@Override

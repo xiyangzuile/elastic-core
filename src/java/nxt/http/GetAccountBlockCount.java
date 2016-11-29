@@ -29,7 +29,7 @@ public final class GetAccountBlockCount extends APIServlet.APIRequestHandler {
 	static final GetAccountBlockCount instance = new GetAccountBlockCount();
 
 	private GetAccountBlockCount() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account");
+		super(new APITag[] { APITag.ACCOUNTS }, "account");
 	}
 
 	@Override

@@ -29,8 +29,8 @@ final class GetMilestoneBlockIds extends PeerServlet.PeerRequestHandler {
 
 	static final GetMilestoneBlockIds instance = new GetMilestoneBlockIds();
 
-	private GetMilestoneBlockIds() {}
-
+	private GetMilestoneBlockIds() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
@@ -61,7 +61,8 @@ final class GetMilestoneBlockIds extends PeerServlet.PeerRequestHandler {
 			final int blockchainHeight = Nxt.getBlockchain().getHeight();
 			final String lastMilestoneBlockIdString = (String) request.get("lastMilestoneBlockId");
 			if (lastMilestoneBlockIdString != null) {
-				final Block lastMilestoneBlock = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(lastMilestoneBlockIdString));
+				final Block lastMilestoneBlock = Nxt.getBlockchain()
+						.getBlock(Convert.parseUnsignedLong(lastMilestoneBlockIdString));
 				if (lastMilestoneBlock == null) {
 					throw new IllegalStateException("Don't have block " + lastMilestoneBlockIdString);
 				}

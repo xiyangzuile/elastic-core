@@ -31,7 +31,8 @@ import nxt.util.Logger;
 public final class BaseTargetTest {
 
 	private static final long MIN_BASE_TARGET = (Constants.INITIAL_BASE_TARGET * 9) / 10;
-	private static final long MAX_BASE_TARGET = Constants.isTestnet ? Constants.MAX_BASE_TARGET : Constants.INITIAL_BASE_TARGET * 50;
+	private static final long MAX_BASE_TARGET = Constants.isTestnet ? Constants.MAX_BASE_TARGET
+			: Constants.INITIAL_BASE_TARGET * 50;
 
 	private static final int MIN_BLOCKTIME_LIMIT = 53;
 	private static final int MAX_BLOCKTIME_LIMIT = 67;
@@ -50,7 +51,8 @@ public final class BaseTargetTest {
 		if (blocktimeEMA > 60) {
 			baseTarget = (previousBaseTarget * Math.min(blocktimeEMA, BaseTargetTest.MAX_BLOCKTIME_LIMIT)) / 60;
 		} else {
-			baseTarget = previousBaseTarget - ((previousBaseTarget * BaseTargetTest.GAMMA * (60 - Math.max(blocktimeEMA, BaseTargetTest.MIN_BLOCKTIME_LIMIT))) / 6000);
+			baseTarget = previousBaseTarget - ((previousBaseTarget * BaseTargetTest.GAMMA
+					* (60 - Math.max(blocktimeEMA, BaseTargetTest.MIN_BLOCKTIME_LIMIT))) / 6000);
 		}
 		if ((baseTarget < 0) || (baseTarget > BaseTargetTest.MAX_BASE_TARGET)) {
 			baseTarget = BaseTargetTest.MAX_BASE_TARGET;
@@ -104,8 +106,10 @@ public final class BaseTargetTest {
 
 			final String dbLocation = Constants.isTestnet ? "nxt_test_db" : "nxt_db";
 
-			try (Connection con = DriverManager.getConnection("jdbc:h2:./" + dbLocation + "/nxt;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE", "sa", "sa");
-					PreparedStatement selectBlocks = con.prepareStatement("SELECT * FROM block WHERE height > " + height + " ORDER BY db_id ASC");
+			try (Connection con = DriverManager
+					.getConnection("jdbc:h2:./" + dbLocation + "/nxt;DB_CLOSE_ON_EXIT=FALSE;MVCC=TRUE", "sa", "sa");
+					PreparedStatement selectBlocks = con
+							.prepareStatement("SELECT * FROM block WHERE height > " + height + " ORDER BY db_id ASC");
 					ResultSet rs = selectBlocks.executeQuery()) {
 
 				while (rs.next()) {
@@ -128,11 +132,13 @@ public final class BaseTargetTest {
 						continue;
 					}
 
-					final int testBlocktime = (int)((previousBaseTarget * (timestamp - previousTimestamp - 1)) / previousTestBaseTarget) + 1;
+					final int testBlocktime = (int) ((previousBaseTarget * (timestamp - previousTimestamp - 1))
+							/ previousTestBaseTarget) + 1;
 					if (testBlocktimeEMA == 0) {
 						testBlocktimeEMA = testBlocktime;
 					} else {
-						testBlocktimeEMA = (testBlocktime + (testBlocktimeEMA * (BaseTargetTest.EWMA_N - 1))) / BaseTargetTest.EWMA_N;
+						testBlocktimeEMA = (testBlocktime + (testBlocktimeEMA * (BaseTargetTest.EWMA_N - 1)))
+								/ BaseTargetTest.EWMA_N;
 					}
 					testTimestamp = previousTestTimestamp + testBlocktime;
 
@@ -149,11 +155,13 @@ public final class BaseTargetTest {
 					if (testBlocktimes.size() < BaseTargetTest.SMA_N) {
 						testBaseTarget = baseTarget;
 					} else if (((height - 1) % BaseTargetTest.FREQUENCY) == 0) {
-						testBaseTarget = BaseTargetTest.calculateBaseTarget(previousTestBaseTarget, BaseTargetTest.USE_EWMA ? testBlocktimeEMA : testBlocktimeSMA);
+						testBaseTarget = BaseTargetTest.calculateBaseTarget(previousTestBaseTarget,
+								BaseTargetTest.USE_EWMA ? testBlocktimeEMA : testBlocktimeSMA);
 					} else {
 						testBaseTarget = previousTestBaseTarget;
 					}
-					testCumulativeDifficulty = previousTestCumulativeDifficulty.add(Convert.two64.divide(BigInteger.valueOf(testBaseTarget)));
+					testCumulativeDifficulty = previousTestCumulativeDifficulty
+							.add(Convert.two64.divide(BigInteger.valueOf(testBaseTarget)));
 
 					final int blocktime = timestamp - previousTimestamp;
 					if (blocktime > maxBlocktime) {
@@ -192,20 +200,21 @@ public final class BaseTargetTest {
 
 			}
 
-			if(count==0) {
+			if (count == 0) {
 				return;
 			}
 
 			Logger.logMessage("Cumulative difficulty " + cumulativeDifficulty.toString());
 			Logger.logMessage("Test cumulative difficulty " + testCumulativeDifficulty.toString());
-			Logger.logMessage("Cumulative difficulty difference " + (testCumulativeDifficulty.subtract(cumulativeDifficulty))
-					.multiply(BigInteger.valueOf(100)).divide(cumulativeDifficulty).toString());
+			Logger.logMessage(
+					"Cumulative difficulty difference " + (testCumulativeDifficulty.subtract(cumulativeDifficulty))
+							.multiply(BigInteger.valueOf(100)).divide(cumulativeDifficulty).toString());
 			Logger.logMessage("Max blocktime " + maxBlocktime);
 			Logger.logMessage("Max test blocktime " + maxTestBlocktime);
 			Logger.logMessage("Min blocktime " + minBlocktime);
 			Logger.logMessage("Min test blocktime " + minTestBlocktime);
-			Logger.logMessage("Average blocktime " + (((double)totalBlocktime) / count));
-			Logger.logMessage("Average test blocktime " + (((double)totalTestBlocktime) / count));
+			Logger.logMessage("Average blocktime " + (((double) totalBlocktime) / count));
+			Logger.logMessage("Average test blocktime " + (((double) totalTestBlocktime) / count));
 			Logger.logMessage("Standard deviation of blocktime " + Math.sqrt(S / count));
 			Logger.logMessage("Standard deviation of test blocktime " + Math.sqrt(testS / count));
 

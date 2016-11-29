@@ -15,6 +15,7 @@ final class ReedSolomon {
 		 */
 		private static final long serialVersionUID = 6664400297158871508L;
 	}
+
 	static final class CodewordTooLongException extends DecodeException {
 
 		/**
@@ -22,6 +23,7 @@ final class ReedSolomon {
 		 */
 		private static final long serialVersionUID = 7999797947417396108L;
 	}
+
 	abstract static class DecodeException extends Exception {
 
 		/**
@@ -29,11 +31,14 @@ final class ReedSolomon {
 		 */
 		private static final long serialVersionUID = -2290304771450720055L;
 	}
-	private static final int[] initial_codeword = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	private static final int[] gexp = {1, 2, 4, 8, 16, 5, 10, 20, 13, 26, 17, 7, 14, 28, 29, 31, 27, 19, 3, 6, 12, 24, 21, 15, 30, 25, 23, 11, 22, 9, 18, 1};
 
-	private static final int[] glog = {0, 0, 1, 18, 2, 5, 19, 11, 3, 29, 6, 27, 20, 8, 12, 23, 4, 10, 30, 17, 7, 22, 28, 26, 21, 25, 9, 16, 13, 14, 24, 15};
-	private static final int[] codeword_map = {3, 2, 1, 0, 7, 6, 5, 4, 13, 14, 15, 16, 12, 8, 9, 10, 11};
+	private static final int[] initial_codeword = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	private static final int[] gexp = { 1, 2, 4, 8, 16, 5, 10, 20, 13, 26, 17, 7, 14, 28, 29, 31, 27, 19, 3, 6, 12, 24,
+			21, 15, 30, 25, 23, 11, 22, 9, 18, 1 };
+
+	private static final int[] glog = { 0, 0, 1, 18, 2, 5, 19, 11, 3, 29, 6, 27, 20, 8, 12, 23, 4, 10, 30, 17, 7, 22,
+			28, 26, 21, 25, 9, 16, 13, 14, 24, 15 };
+	private static final int[] codeword_map = { 3, 2, 1, 0, 7, 6, 5, 4, 13, 14, 15, 16, 12, 8, 9, 10, 11 };
 
 	private static final String alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 
@@ -91,7 +96,7 @@ final class ReedSolomon {
 				}
 			}
 			length = new_length;
-			plain_string_builder.append((char)(digit_10 + '0'));
+			plain_string_builder.append((char) (digit_10 + '0'));
 		} while (length > 0);
 
 		return Long.parseUnsignedLong(plain_string_builder.reverse().toString());
@@ -109,15 +114,15 @@ final class ReedSolomon {
 		int codeword_length = 0;
 		final int[] codeword = new int[ReedSolomon.initial_codeword.length];
 
-		do {  // base 10 to base 32 conversion
+		do { // base 10 to base 32 conversion
 			int new_length = 0;
 			int digit_32 = 0;
 			for (int i = 0; i < length; i++) {
 				digit_32 = (digit_32 * 10) + plain_string_10[i];
 				if (digit_32 >= 32) {
 					plain_string_10[new_length] = digit_32 >> 5;
-		digit_32 &= 31;
-		new_length += 1;
+					digit_32 &= 31;
+					new_length += 1;
 				} else if (new_length > 0) {
 					plain_string_10[new_length] = 0;
 					new_length += 1;
@@ -126,18 +131,19 @@ final class ReedSolomon {
 			length = new_length;
 			codeword[codeword_length] = digit_32;
 			codeword_length += 1;
-		} while(length > 0);
+		} while (length > 0);
 
-		final int[] p = {0, 0, 0, 0};
+		final int[] p = { 0, 0, 0, 0 };
 		for (int i = ReedSolomon.base_32_length - 1; i >= 0; i--) {
 			final int fb = codeword[i] ^ p[3];
 			p[3] = p[2] ^ ReedSolomon.gmult(30, fb);
 			p[2] = p[1] ^ ReedSolomon.gmult(6, fb);
 			p[1] = p[0] ^ ReedSolomon.gmult(9, fb);
-			p[0] =        ReedSolomon.gmult(17, fb);
+			p[0] = ReedSolomon.gmult(17, fb);
 		}
 
-		System.arraycopy(p, 0, codeword, ReedSolomon.base_32_length, ReedSolomon.initial_codeword.length - ReedSolomon.base_32_length);
+		System.arraycopy(p, 0, codeword, ReedSolomon.base_32_length,
+				ReedSolomon.initial_codeword.length - ReedSolomon.base_32_length);
 
 		final StringBuilder cypher_string_builder = new StringBuilder();
 		for (int i = 0; i < 17; i++) {
@@ -187,7 +193,6 @@ final class ReedSolomon {
 		return sum == 0;
 	}
 
-	private ReedSolomon() {} // never
+	private ReedSolomon() {
+	} // never
 }
-
-

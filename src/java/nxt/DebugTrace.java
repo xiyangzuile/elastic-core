@@ -74,6 +74,7 @@ public final class DebugTrace {
 
 		return debugTrace;
 	}
+
 	static void init() {
 		final List<String> accountIdStrings = Nxt.getStringListProperty("nxt.debugTraceAccounts");
 		final String logName = Nxt.getStringProperty("nxt.debugTraceLog");
@@ -105,7 +106,8 @@ public final class DebugTrace {
 		this.resetLog();
 	}
 
-	private Map<String, String> getValues(final long accountId, final Account.AccountLease accountLease, final boolean start) {
+	private Map<String, String> getValues(final long accountId, final Account.AccountLease accountLease,
+			final boolean start) {
 		final Map<String, String> map = new HashMap<>();
 		map.put("account", Long.toUnsignedString(accountId));
 		map.put("event", start ? "lease begin" : "lease end");
@@ -169,13 +171,13 @@ public final class DebugTrace {
 		return map;
 	}
 
-	private Map<String, String> getValues(final long accountId, final Transaction transaction, final Attachment attachment,
-			final boolean isRecipient) {
+	private Map<String, String> getValues(final long accountId, final Transaction transaction,
+			final Attachment attachment, final boolean isRecipient) {
 		return Collections.emptyMap();
 	}
 
-	private Map<String, String> getValues(final long accountId, final Transaction transaction, final boolean isRecipient, final boolean logFee,
-			final boolean logAmount) {
+	private Map<String, String> getValues(final long accountId, final Transaction transaction,
+			final boolean isRecipient, final boolean logFee, final boolean logAmount) {
 		long amount = transaction.getAmountNQT();
 		long fee = transaction.getFeeNQT();
 		if (isRecipient) {
@@ -243,7 +245,8 @@ public final class DebugTrace {
 			this.log.close();
 		}
 		try {
-			this.log = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.logName)))), true);
+			this.log = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.logName)))),
+					true);
 		} catch (final IOException e) {
 			Logger.logDebugMessage("Debug tracing to " + this.logName + " not possible", e);
 			throw new RuntimeException(e);

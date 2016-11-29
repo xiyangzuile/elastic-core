@@ -57,7 +57,7 @@ public final class DbIterator<T> implements Iterator<T>, Iterable<T>, AutoClosea
 
 	@Override
 	public boolean hasNext() {
-		if (! this.hasNext) {
+		if (!this.hasNext) {
 			DbUtils.close(this.rs, this.pstmt, this.con);
 		}
 		return this.hasNext;
@@ -74,7 +74,7 @@ public final class DbIterator<T> implements Iterator<T>, Iterable<T>, AutoClosea
 
 	@Override
 	public T next() {
-		if (! this.hasNext) {
+		if (!this.hasNext) {
 			DbUtils.close(this.rs, this.pstmt, this.con);
 			throw new NoSuchElementException();
 		}

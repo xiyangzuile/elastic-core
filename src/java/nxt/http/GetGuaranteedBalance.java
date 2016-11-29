@@ -30,7 +30,7 @@ public final class GetGuaranteedBalance extends APIServlet.APIRequestHandler {
 	static final GetGuaranteedBalance instance = new GetGuaranteedBalance();
 
 	private GetGuaranteedBalance() {
-		super(new APITag[] {APITag.ACCOUNTS, APITag.FORGING}, "account", "numberOfConfirmations");
+		super(new APITag[] { APITag.ACCOUNTS, APITag.FORGING }, "account", "numberOfConfirmations");
 	}
 
 	@Override
@@ -43,7 +43,8 @@ public final class GetGuaranteedBalance extends APIServlet.APIRequestHandler {
 		if (account == null) {
 			response.put("guaranteedBalanceNQT", "0");
 		} else {
-			response.put("guaranteedBalanceNQT", String.valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
+			response.put("guaranteedBalanceNQT", String
+					.valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
 		}
 
 		return response;

@@ -18,10 +18,11 @@ package nxt;
 
 public enum HoldingType {
 
-	NXT((byte)0) {
+	NXT((byte) 0) {
 
 		@Override
-		void addToBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+		void addToBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId,
+				final long holdingId, final long amount) {
 			if (holdingId != 0) {
 				throw new IllegalArgumentException("holdingId must be 0");
 			}
@@ -29,7 +30,8 @@ public enum HoldingType {
 		}
 
 		@Override
-		void addToBalanceAndUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+		void addToBalanceAndUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event,
+				final long eventId, final long holdingId, final long amount) {
 			if (holdingId != 0) {
 				throw new IllegalArgumentException("holdingId must be 0");
 			}
@@ -37,7 +39,8 @@ public enum HoldingType {
 		}
 
 		@Override
-		void addToUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+		void addToUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId,
+				final long holdingId, final long amount) {
 			if (holdingId != 0) {
 				throw new IllegalArgumentException("holdingId must be 0");
 			}
@@ -77,11 +80,14 @@ public enum HoldingType {
 		this.code = code;
 	}
 
-	abstract void addToBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	abstract void addToBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId,
+			long amount);
 
-	abstract void addToBalanceAndUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	abstract void addToBalanceAndUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId,
+			long holdingId, long amount);
 
-	abstract void addToUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	abstract void addToUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId,
+			long holdingId, long amount);
 
 	public abstract long getBalance(Account account, long holdingId);
 

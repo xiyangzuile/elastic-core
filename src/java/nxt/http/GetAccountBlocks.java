@@ -34,7 +34,8 @@ public final class GetAccountBlocks extends APIServlet.APIRequestHandler {
 	static final GetAccountBlocks instance = new GetAccountBlocks();
 
 	private GetAccountBlocks() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex", "includeTransactions");
+		super(new APITag[] { APITag.ACCOUNTS }, "account", "timestamp", "firstIndex", "lastIndex",
+				"includeTransactions");
 	}
 
 	@Override
@@ -48,7 +49,8 @@ public final class GetAccountBlocks extends APIServlet.APIRequestHandler {
 		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
 
 		final JSONArray blocks = new JSONArray();
-		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
+		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex)
+				.iterator();
 		while (it.hasNext()) {
 			final Block block = it.next();
 			blocks.add(JSONData.block(block, includeTransactions, false));

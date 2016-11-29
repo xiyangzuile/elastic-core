@@ -25,10 +25,10 @@ public final class Constants {
 	public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
 	public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
 	public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
-	public static BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff",16);
+	public static BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff", 16);
 	public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
 	public static final int MAX_TITLE_LENGTH = 255;
-	public static final int MAX_WORK_CODE_LENGTH = 1024*1024;
+	public static final int MAX_WORK_CODE_LENGTH = 1024 * 1024;
 	public static final int POWRETARGET_N_BLOCKS = 3;
 	public static final int POWRETARGET_POW_PER_BLOCK_SCALER = 10;
 	public static final int MIN_TRANSACTION_SIZE = 176;
@@ -39,33 +39,40 @@ public final class Constants {
 	public static final long MAX_WORK_WCET_TIME = 200000L;
 	public static final long MAX_WORK_POW_REWARD = 10000000000L;
 	public static final long MIN_WORK_POW_REWARD = 0L;
-	public static final int MIN_WORK_BOUNTY_LIMIT=1;
-	public static final int PAY_FOR_AT_LEAST_X_POW=20;
+	public static final int MIN_WORK_BOUNTY_LIMIT = 1;
+	public static final int PAY_FOR_AT_LEAST_X_POW = 20;
 	public static final long ONE_NXT = 100000000;
 	public static final int EVAL_WORK_EXEC_TIME_AGE_SECONDS = 120;
-	public static final long MIN_XEL_PER_POW=(long)(0.001*Constants.ONE_NXT);
-	public static final long MIN_XEL_PER_BOUNTY=1*Constants.ONE_NXT;
-	public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION=10*Constants.ONE_NXT;
-	public static final long MAX_HASH_ANNOUNCEMENT_SIZE_BYTES=64;
-	public static final int DEPOSIT_GRACE_PERIOD = 15*60; // 15 minutes
-	public static final int MAX_WORK_BOUNTY_LIMIT=10;
+	public static final long MIN_XEL_PER_POW = (long) (0.001 * Constants.ONE_NXT);
+	public static final long MIN_XEL_PER_BOUNTY = 1 * Constants.ONE_NXT;
+	public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION = 10 * Constants.ONE_NXT;
+	public static final long MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 64;
+	public static final int DEPOSIT_GRACE_PERIOD = 15 * 60; // 15 minutes
+	public static final int MAX_WORK_BOUNTY_LIMIT = 10;
 	public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;
 	public static final int MAX_PAYLOAD_LENGTH = Constants.MAX_NUMBER_OF_TRANSACTIONS * Constants.MIN_TRANSACTION_SIZE;
 	public static final long MAX_BALANCE_NXT = 100000000;
 	public static final long MAX_BALANCE_NQT = Constants.MAX_BALANCE_NXT * Constants.ONE_NXT;
 	public static final long INITIAL_BASE_TARGET = 153722867;
 	public static final long MAX_BASE_TARGET = Constants.MAX_BALANCE_NXT * Constants.INITIAL_BASE_TARGET;
-	public static final long MAX_BASE_TARGET_2 = Constants.isTestnet ? Constants.MAX_BASE_TARGET : Constants.INITIAL_BASE_TARGET * 50;
+	public static final long MAX_BASE_TARGET_2 = Constants.isTestnet ? Constants.MAX_BASE_TARGET
+			: Constants.INITIAL_BASE_TARGET * 50;
 	public static final long MIN_BASE_TARGET = (Constants.INITIAL_BASE_TARGET * 9) / 10;
 	public static final int MIN_BLOCKTIME_LIMIT = 53;
 	public static final int MAX_BLOCKTIME_LIMIT = 67;
 	public static final int BASE_TARGET_GAMMA = 64;
 	public static final int MAX_ROLLBACK = Math.max(Nxt.getIntProperty("nxt.maxRollback"), 720);
-	public static final int GUARANTEED_BALANCE_CONFIRMATIONS = Constants.isTestnet ? Nxt.getIntProperty("nxt.testnetGuaranteedBalanceConfirmations", 1440) : 1440;
-	public static final int LEASING_DELAY = Constants.isTestnet ? Nxt.getIntProperty("nxt.testnetLeasingDelay", 1440) : 1440;
-	public static final long MIN_FORGING_BALANCE_NQT = Constants.isTestnet ? Long.parseLong(Nxt.getStringProperty("nxt.testnetMinForgingBalance", String.valueOf(1000 * Constants.ONE_NXT))) : 1000 * Constants.ONE_NXT;;
+	public static final int GUARANTEED_BALANCE_CONFIRMATIONS = Constants.isTestnet
+			? Nxt.getIntProperty("nxt.testnetGuaranteedBalanceConfirmations", 1440) : 1440;
+	public static final int LEASING_DELAY = Constants.isTestnet ? Nxt.getIntProperty("nxt.testnetLeasingDelay", 1440)
+			: 1440;
+	public static final long MIN_FORGING_BALANCE_NQT = Constants.isTestnet
+			? Long.parseLong(
+					Nxt.getStringProperty("nxt.testnetMinForgingBalance", String.valueOf(1000 * Constants.ONE_NXT)))
+			: 1000 * Constants.ONE_NXT;;
 	public static final int MAX_WORK_ROLLBACK_HEIGHT = 1441;
-	public static final int MAX_TIMEDRIFT = 15; // allow up to 15 s clock difference
+	public static final int MAX_TIMEDRIFT = 15; // allow up to 15 s clock
+												// difference
 	public static final int FORGING_DELAY = Nxt.getIntProperty("nxt.forgingDelay");
 	public static final int FORGING_SPEEDUP = Nxt.getIntProperty("nxt.forgingSpeedup");
 	public static final int MAX_REFERENCED_TRANSACTION_TIMESPAN = 60 * 1440 * 60;
@@ -85,7 +92,8 @@ public final class Constants {
 	static {
 		final int maxPrunableLifetime = Nxt.getIntProperty("nxt.maxPrunableLifetime");
 		ENABLE_PRUNING = maxPrunableLifetime >= 0;
-		MAX_PRUNABLE_LIFETIME = Constants.ENABLE_PRUNING ? Math.max(maxPrunableLifetime, Constants.MIN_PRUNABLE_LIFETIME) : Integer.MAX_VALUE;
+		MAX_PRUNABLE_LIFETIME = Constants.ENABLE_PRUNING
+				? Math.max(maxPrunableLifetime, Constants.MIN_PRUNABLE_LIFETIME) : Integer.MAX_VALUE;
 	}
 	public static final boolean INCLUDE_EXPIRED_PRUNABLE = Nxt.getBooleanProperty("nxt.includeExpiredPrunable");
 
@@ -108,13 +116,12 @@ public final class Constants {
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 
-	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] {0, 8, 0} : new int[] {1, 0, 0};
-	public static final int[] MIN_PROXY_VERSION = new int[] {0, 8, 0};
+	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 0, 8, 0 } : new int[] { 1, 0, 0 };
+	public static final int[] MIN_PROXY_VERSION = new int[] { 0, 8, 0 };
 
 	static final long UNCONFIRMED_POOL_DEPOSIT_NQT = (Constants.isTestnet ? 50 : 100) * Constants.ONE_NXT;
 
 	public static final boolean correctInvalidFees = Nxt.getBooleanProperty("nxt.correctInvalidFees");
-
 
 	public static final long EPOCH_BEGINNING;
 	static {
@@ -132,6 +139,7 @@ public final class Constants {
 	public static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
 	public static final String ALLOWED_CURRENCY_CODE_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-	private Constants() {} // never
+	private Constants() {
+	} // never
 
 }

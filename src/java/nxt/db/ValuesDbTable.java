@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class ValuesDbTable<T,V> extends DerivedDbTable {
+public abstract class ValuesDbTable<T, V> extends DerivedDbTable {
 
 	private final boolean multiversion;
 	protected final DbKey.Factory<T> dbKeyFactory;
@@ -65,8 +65,9 @@ public abstract class ValuesDbTable<T,V> extends DerivedDbTable {
 			}
 		}
 		try (Connection con = DerivedDbTable.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM " + this.table + this.dbKeyFactory.getPKClause()
-				+ (this.multiversion ? " AND latest = TRUE" : "") + " ORDER BY db_id")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT * FROM " + this.table + this.dbKeyFactory.getPKClause()
+								+ (this.multiversion ? " AND latest = TRUE" : "") + " ORDER BY db_id")) {
 			dbKey.setPK(pstmt);
 			values = this.get(con, pstmt);
 			if (DerivedDbTable.db.isInTransaction()) {
@@ -89,8 +90,8 @@ public abstract class ValuesDbTable<T,V> extends DerivedDbTable {
 		DerivedDbTable.db.getCache(this.table).put(dbKey, values);
 		try (Connection con = DerivedDbTable.db.getConnection()) {
 			if (this.multiversion) {
-				try (PreparedStatement pstmt = con.prepareStatement("UPDATE " + this.table
-						+ " SET latest = FALSE " + this.dbKeyFactory.getPKClause() + " AND latest = TRUE")) {
+				try (PreparedStatement pstmt = con.prepareStatement("UPDATE " + this.table + " SET latest = FALSE "
+						+ this.dbKeyFactory.getPKClause() + " AND latest = TRUE")) {
 					dbKey.setPK(pstmt);
 					pstmt.executeUpdate();
 				}

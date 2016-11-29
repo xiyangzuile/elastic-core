@@ -36,7 +36,7 @@ public abstract class DerivedDbTable {
 	}
 
 	public void createSearchIndex(final Connection con) throws SQLException {
-		//implemented in EntityDbTable only
+		// implemented in EntityDbTable only
 	}
 
 	public boolean isPersistent() {
@@ -48,7 +48,8 @@ public abstract class DerivedDbTable {
 			throw new IllegalStateException("Not in transaction");
 		}
 		try (Connection con = DerivedDbTable.db.getConnection();
-				PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM " + this.table + " WHERE height > ?")) {
+				PreparedStatement pstmtDelete = con
+						.prepareStatement("DELETE FROM " + this.table + " WHERE height > ?")) {
 			pstmtDelete.setInt(1, height);
 			pstmtDelete.executeUpdate();
 		} catch (final SQLException e) {
@@ -62,15 +63,14 @@ public abstract class DerivedDbTable {
 	}
 
 	public void trim(final int height) {
-		//nothing to trim
+		// nothing to trim
 	}
 
 	public void truncate() {
 		if (!DerivedDbTable.db.isInTransaction()) {
 			throw new IllegalStateException("Not in transaction");
 		}
-		try (Connection con = DerivedDbTable.db.getConnection();
-				Statement stmt = con.createStatement()) {
+		try (Connection con = DerivedDbTable.db.getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate("TRUNCATE TABLE " + this.table);
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);

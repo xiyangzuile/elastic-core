@@ -32,7 +32,7 @@ public class AddPeer extends APIRequestHandler {
 	static final AddPeer instance = new AddPeer();
 
 	private AddPeer() {
-		super(new APITag[] {APITag.NETWORK}, "peer");
+		super(new APITag[] { APITag.NETWORK }, "peer");
 	}
 
 	@Override
@@ -41,8 +41,7 @@ public class AddPeer extends APIRequestHandler {
 	}
 
 	@Override
-	protected JSONStreamAware processRequest(final HttpServletRequest request)
-			throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 		final String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
 		if (peerAddress == null) {
 			return JSONResponses.MISSING_PEER;

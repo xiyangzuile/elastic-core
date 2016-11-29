@@ -44,7 +44,6 @@ public interface Transaction {
 
 		Builder timestamp(int timestamp);
 
-
 	}
 
 	long getAmountNQT();

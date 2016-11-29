@@ -34,7 +34,7 @@ public final class GetAccountBlockIds extends APIServlet.APIRequestHandler {
 	static final GetAccountBlockIds instance = new GetAccountBlockIds();
 
 	private GetAccountBlockIds() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex");
+		super(new APITag[] { APITag.ACCOUNTS }, "account", "timestamp", "firstIndex", "lastIndex");
 	}
 
 	@Override
@@ -46,12 +46,12 @@ public final class GetAccountBlockIds extends APIServlet.APIRequestHandler {
 		final int lastIndex = ParameterParser.getLastIndex(req);
 
 		final JSONArray blockIds = new JSONArray();
-		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
+		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex)
+				.iterator();
 		while (it.hasNext()) {
 			final Block block = it.next();
 			blockIds.add(block.getStringId());
 		}
-
 
 		final JSONObject response = new JSONObject();
 		response.put("blockIds", blockIds);

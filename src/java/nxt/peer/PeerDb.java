@@ -41,7 +41,7 @@ final class PeerDb {
 
 		@Override
 		public boolean equals(final Object obj) {
-			return ((obj != null) && (obj instanceof Entry) && this.address.equals(((Entry)obj).address));
+			return ((obj != null) && (obj instanceof Entry) && this.address.equals(((Entry) obj).address));
 		}
 
 		public String getAddress() {
@@ -90,8 +90,8 @@ final class PeerDb {
 
 	static void updatePeer(final PeerImpl peer) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("MERGE INTO peer "
-						+ "(address, services, last_updated) KEY(address) VALUES(?, ?, ?)")) {
+				PreparedStatement pstmt = con.prepareStatement(
+						"MERGE INTO peer " + "(address, services, last_updated) KEY(address) VALUES(?, ?, ?)")) {
 			pstmt.setString(1, peer.getAnnouncedAddress());
 			pstmt.setLong(2, peer.getServices());
 			pstmt.setInt(3, peer.getLastUpdated());
@@ -103,8 +103,8 @@ final class PeerDb {
 
 	static void updatePeers(final Collection<Entry> peers) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("MERGE INTO peer "
-						+ "(address, services, last_updated) KEY(address) VALUES(?, ?, ?)")) {
+				PreparedStatement pstmt = con.prepareStatement(
+						"MERGE INTO peer " + "(address, services, last_updated) KEY(address) VALUES(?, ?, ?)")) {
 			for (final Entry peer : peers) {
 				pstmt.setString(1, peer.getAddress());
 				pstmt.setLong(2, peer.getServices());

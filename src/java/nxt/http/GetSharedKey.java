@@ -31,7 +31,7 @@ public final class GetSharedKey extends APIServlet.APIRequestHandler {
 	static final GetSharedKey instance = new GetSharedKey();
 
 	private GetSharedKey() {
-		super(new APITag[] {APITag.MESSAGES}, "account", "secretPhrase", "nonce");
+		super(new APITag[] { APITag.MESSAGES }, "account", "secretPhrase", "nonce");
 	}
 
 	@Override

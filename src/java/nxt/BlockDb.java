@@ -55,9 +55,9 @@ final class BlockDb {
 						it.remove();
 					}
 				}
-				block.getTransactions().forEach((tx) -> BlockDb.transactionCache.put(tx.getId(), (TransactionImpl)tx));
-				BlockDb.heightMap.put(height, (BlockImpl)block);
-				BlockDb.blockCache.put(block.getId(), (BlockImpl)block);
+				block.getTransactions().forEach((tx) -> BlockDb.transactionCache.put(tx.getId(), (TransactionImpl) tx));
+				BlockDb.heightMap.put(height, (BlockImpl) block);
+				BlockDb.blockCache.put(block.getId(), (BlockImpl) block);
 			}
 		}, BlockchainProcessor.Event.BLOCK_PUSHED);
 	}
@@ -85,8 +85,7 @@ final class BlockDb {
 			return;
 		}
 		Logger.logMessage("Deleting blockchain...");
-		try (Connection con = Db.db.getConnection();
-				Statement stmt = con.createStatement()) {
+		try (Connection con = Db.db.getConnection(); Statement stmt = con.createStatement()) {
 			try {
 				stmt.executeUpdate("SET REFERENTIAL_INTEGRITY FALSE");
 				stmt.executeUpdate("TRUNCATE TABLE transaction");
@@ -95,7 +94,8 @@ final class BlockDb {
 					if (table.isPersistent()) {
 						try {
 							stmt.executeUpdate("TRUNCATE TABLE " + table.toString());
-						} catch (final SQLException ignore) {}
+						} catch (final SQLException ignore) {
+						}
 					}
 				});
 				stmt.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
@@ -111,7 +111,8 @@ final class BlockDb {
 		}
 	}
 
-	// relying on cascade triggers in the database to delete the transactions and public keys for all deleted blocks
+	// relying on cascade triggers in the database to delete the transactions
+	// and public keys for all deleted blocks
 	static BlockImpl deleteBlocksFrom(final long blockId) {
 		if (!Db.db.isInTransaction()) {
 			BlockImpl lastBlock;
@@ -129,7 +130,8 @@ final class BlockDb {
 		}
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmtSelect = con.prepareStatement("SELECT db_id FROM block WHERE timestamp >= "
-						+ "IFNULL ((SELECT timestamp FROM block WHERE id = ?), " + Integer.MAX_VALUE + ") ORDER BY timestamp DESC");
+						+ "IFNULL ((SELECT timestamp FROM block WHERE id = ?), " + Integer.MAX_VALUE
+						+ ") ORDER BY timestamp DESC");
 				PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM block WHERE db_id = ?")) {
 			try {
 				pstmtSelect.setLong(1, blockId);
@@ -143,7 +145,8 @@ final class BlockDb {
 				}
 				final BlockImpl lastBlock = BlockDb.findLastBlock();
 				lastBlock.setNextBlockId(0);
-				try (PreparedStatement pstmt = con.prepareStatement("UPDATE block SET next_block_id = NULL WHERE id = ?")) {
+				try (PreparedStatement pstmt = con
+						.prepareStatement("UPDATE block SET next_block_id = NULL WHERE id = ?")) {
 					pstmt.setLong(1, lastBlock.getId());
 					pstmt.executeUpdate();
 				}
@@ -207,7 +210,7 @@ final class BlockDb {
 
 		BlockImpl block = null;
 
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			block = BlockDb.heightMap.get(height);
 			if (block != null) {
 				return block;
@@ -229,16 +232,16 @@ final class BlockDb {
 			throw new RuntimeException(e.toString(), e);
 		}
 
-		if(block != null){
+		if (block != null) {
 			return block;
-		}else{
+		} else {
 			throw new RuntimeException("Block at height " + height + " not found in database!");
 		}
 	}
 
 	static long findBlockIdAtHeight(final int height) {
 		// Check the cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.heightMap.get(height);
 			if (block != null) {
 				return block.getId();
@@ -276,7 +279,8 @@ final class BlockDb {
 
 	static BlockImpl findLastBlock(final int timestamp) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE timestamp <= ? ORDER BY timestamp DESC LIMIT 1")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT * FROM block WHERE timestamp <= ? ORDER BY timestamp DESC LIMIT 1")) {
 			pstmt.setInt(1, timestamp);
 			BlockImpl block = null;
 			try (ResultSet rs = pstmt.executeQuery()) {
@@ -315,7 +319,7 @@ final class BlockDb {
 
 	static boolean hasBlock(final long blockId, final int height) {
 		// Check the block cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);
 			if (block != null) {
 				return block.getHeight() <= height;
@@ -356,9 +360,10 @@ final class BlockDb {
 			final byte[] payloadHash = rs.getBytes("payload_hash");
 			final BigInteger min_pow_target = new BigInteger(rs.getString("min_pow_target"), 16);
 			final long id = rs.getLong("id");
-			return new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
-					generatorId, generationSignature, blockSignature, previousBlockHash,
-					cumulativeDifficulty, baseTarget, nextBlockId, height, id, loadTransactions ? TransactionDb.findBlockTransactions(con, id) : null, min_pow_target);
+			return new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength,
+					payloadHash, generatorId, generationSignature, blockSignature, previousBlockHash,
+					cumulativeDifficulty, baseTarget, nextBlockId, height, id,
+					loadTransactions ? TransactionDb.findBlockTransactions(con, id) : null, min_pow_target);
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
@@ -366,10 +371,11 @@ final class BlockDb {
 
 	static void saveBlock(final Connection con, final BlockImpl block) {
 		try {
-			try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO block (id, version, timestamp, previous_block_id, "
-					+ "total_amount, total_fee, payload_length, previous_block_hash, cumulative_difficulty, "
-					+ "base_target, height, generation_signature, block_signature, payload_hash, generator_id, min_pow_target) "
-					+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+			try (PreparedStatement pstmt = con
+					.prepareStatement("INSERT INTO block (id, version, timestamp, previous_block_id, "
+							+ "total_amount, total_fee, payload_length, previous_block_hash, cumulative_difficulty, "
+							+ "base_target, height, generation_signature, block_signature, payload_hash, generator_id, min_pow_target) "
+							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				int i = 0;
 				pstmt.setLong(++i, block.getId());
 				pstmt.setInt(++i, block.getVersion());
@@ -391,7 +397,8 @@ final class BlockDb {
 				TransactionDb.saveTransactions(con, block.getTransactions());
 			}
 			if (block.getPreviousBlockId() != 0) {
-				try (PreparedStatement pstmt = con.prepareStatement("UPDATE block SET next_block_id = ? WHERE id = ?")) {
+				try (PreparedStatement pstmt = con
+						.prepareStatement("UPDATE block SET next_block_id = ? WHERE id = ?")) {
 					pstmt.setLong(1, block.getId());
 					pstmt.setLong(2, block.getPreviousBlockId());
 					pstmt.executeUpdate();

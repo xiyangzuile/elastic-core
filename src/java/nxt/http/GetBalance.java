@@ -29,7 +29,7 @@ public final class GetBalance extends APIServlet.APIRequestHandler {
 	static final GetBalance instance = new GetBalance();
 
 	private GetBalance() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account", "includeEffectiveBalance", "height");
+		super(new APITag[] { APITag.ACCOUNTS }, "account", "includeEffectiveBalance", "height");
 	}
 
 	@Override

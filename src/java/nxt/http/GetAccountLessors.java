@@ -33,7 +33,7 @@ public final class GetAccountLessors extends APIServlet.APIRequestHandler {
 	static final GetAccountLessors instance = new GetAccountLessors();
 
 	private GetAccountLessors() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account", "height");
+		super(new APITag[] { APITag.ACCOUNTS }, "account", "height");
 	}
 
 	@Override
@@ -56,7 +56,8 @@ public final class GetAccountLessors extends APIServlet.APIRequestHandler {
 					final Account lessor = lessors.next();
 					final JSONObject lessorJSON = new JSONObject();
 					JSONData.putAccount(lessorJSON, "lessor", lessor.getId());
-					lessorJSON.put("guaranteedBalanceNQT", String.valueOf(lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
+					lessorJSON.put("guaranteedBalanceNQT", String.valueOf(
+							lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
 					lessorsJSON.add(lessorJSON);
 				}
 			}

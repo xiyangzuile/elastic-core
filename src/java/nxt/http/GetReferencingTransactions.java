@@ -32,7 +32,7 @@ public final class GetReferencingTransactions extends APIServlet.APIRequestHandl
 	static final GetReferencingTransactions instance = new GetReferencingTransactions();
 
 	private GetReferencingTransactions() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "transaction", "firstIndex", "lastIndex");
+		super(new APITag[] { APITag.TRANSACTIONS }, "transaction", "firstIndex", "lastIndex");
 	}
 
 	@Override
@@ -43,7 +43,8 @@ public final class GetReferencingTransactions extends APIServlet.APIRequestHandl
 		final int lastIndex = ParameterParser.getLastIndex(req);
 
 		final JSONArray transactions = new JSONArray();
-		try (DbIterator<? extends Transaction> iterator = Nxt.getBlockchain().getReferencingTransactions(transactionId, firstIndex, lastIndex)) {
+		try (DbIterator<? extends Transaction> iterator = Nxt.getBlockchain().getReferencingTransactions(transactionId,
+				firstIndex, lastIndex)) {
 			while (iterator.hasNext()) {
 				final Transaction transaction = iterator.next();
 				transactions.add(JSONData.transaction(transaction));

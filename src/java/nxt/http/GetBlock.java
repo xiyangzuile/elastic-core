@@ -29,7 +29,8 @@ public final class GetBlock extends APIServlet.APIRequestHandler {
 	static final GetBlock instance = new GetBlock();
 
 	private GetBlock() {
-		super(new APITag[] {APITag.BLOCKS}, "block", "height", "timestamp", "includeTransactions", "includeExecutedPhased");
+		super(new APITag[] { APITag.BLOCKS }, "block", "height", "timestamp", "includeTransactions",
+				"includeExecutedPhased");
 	}
 
 	@Override

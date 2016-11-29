@@ -58,7 +58,8 @@ abstract class DesktopUserDirProvider implements DirProvider {
 			this.logFileDir = new File(this.getUserHomeDir(), "logs");
 			return;
 		}
-		final Path logFilePattern = Paths.get(this.getUserHomeDir()).resolve(Paths.get(loggingProperties.getProperty(DesktopUserDirProvider.LOG_FILE_PATTERN)));
+		final Path logFilePattern = Paths.get(this.getUserHomeDir())
+				.resolve(Paths.get(loggingProperties.getProperty(DesktopUserDirProvider.LOG_FILE_PATTERN)));
 		loggingProperties.setProperty(DesktopUserDirProvider.LOG_FILE_PATTERN, logFilePattern.toString());
 
 		final Path logDirPath = logFilePattern.getParent();

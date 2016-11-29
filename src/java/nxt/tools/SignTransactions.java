@@ -33,7 +33,8 @@ public final class SignTransactions {
 	public static void main(final String[] args) {
 		try {
 			if (args.length != 2) {
-				System.out.println("Usage: SignTransactions <unsigned transaction bytes file> <signed transaction bytes file>");
+				System.out.println(
+						"Usage: SignTransactions <unsigned transaction bytes file> <signed transaction bytes file>");
 				System.exit(1);
 			}
 			final File unsigned = new File(args[0]);
@@ -59,7 +60,7 @@ public final class SignTransactions {
 					secretPhrase = new String(chararr);
 				}
 			}
-			if(secretPhrase == null){
+			if (secretPhrase == null) {
 				System.err.println("No secret phrase given!");
 				return;
 			}

@@ -26,8 +26,8 @@ final class GetCumulativeDifficulty extends PeerServlet.PeerRequestHandler {
 
 	static final GetCumulativeDifficulty instance = new GetCumulativeDifficulty();
 
-	private GetCumulativeDifficulty() {}
-
+	private GetCumulativeDifficulty() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {

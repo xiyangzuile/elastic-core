@@ -28,7 +28,7 @@ public final class FullReset extends APIServlet.APIRequestHandler {
 	static final FullReset instance = new FullReset();
 
 	private FullReset() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

@@ -91,7 +91,8 @@ public final class ParameterParser {
 		return ParameterParser.getAccount(req, true);
 	}
 
-	public static Account getAccount(final HttpServletRequest req, final boolean isMandatory) throws ParameterException {
+	public static Account getAccount(final HttpServletRequest req, final boolean isMandatory)
+			throws ParameterException {
 		final long accountId = ParameterParser.getAccountId(req, "account", isMandatory);
 		if ((accountId == 0) && !isMandatory) {
 			return null;
@@ -127,7 +128,8 @@ public final class ParameterParser {
 		}
 	}
 
-	public static long[] getAccountIds(final HttpServletRequest req, final boolean isMandatory) throws ParameterException {
+	public static long[] getAccountIds(final HttpServletRequest req, final boolean isMandatory)
+			throws ParameterException {
 		final String[] paramValues = req.getParameterValues("account");
 		if ((paramValues == null) || (paramValues.length == 0)) {
 			if (isMandatory) {
@@ -184,7 +186,8 @@ public final class ParameterParser {
 		return ParameterParser.getLong(req, "amountNQTPerQNT", 1L, Constants.MAX_BALANCE_NQT, true);
 	}
 
-	public static String getAnnouncement(final HttpServletRequest req, final boolean isMandatory) throws ParameterException {
+	public static String getAnnouncement(final HttpServletRequest req, final boolean isMandatory)
+			throws ParameterException {
 		final String secretPhrase = Convert.emptyToNull(req.getParameter("hash_announcement"));
 		if ((secretPhrase == null) && isMandatory) {
 			throw new ParameterException(JSONResponses.INCORRECT_HASH);
@@ -192,7 +195,8 @@ public final class ParameterParser {
 		return secretPhrase;
 	}
 
-	public static boolean getBoolean(final HttpServletRequest req, final String name, final boolean isMandatory) throws ParameterException {
+	public static boolean getBoolean(final HttpServletRequest req, final String name, final boolean isMandatory)
+			throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -204,12 +208,13 @@ public final class ParameterParser {
 			final boolean value = Boolean.parseBoolean(paramValue);
 			return value;
 		} catch (final RuntimeException e) {
-			throw new ParameterException(JSONResponses.incorrect(name, String.format("value %s is not boolean", paramValue)));
+			throw new ParameterException(
+					JSONResponses.incorrect(name, String.format("value %s is not boolean", paramValue)));
 		}
 	}
 
-	public static byte getByte(final HttpServletRequest req, final String name, final byte min, final byte max, final boolean isMandatory)
-			throws ParameterException {
+	public static byte getByte(final HttpServletRequest req, final String name, final byte min, final byte max,
+			final boolean isMandatory) throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -225,11 +230,13 @@ public final class ParameterParser {
 			}
 			return value;
 		} catch (final RuntimeException e) {
-			throw new ParameterException(JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
+			throw new ParameterException(
+					JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
 		}
 	}
 
-	public static byte[] getBytes(final HttpServletRequest req, final String name, final boolean isMandatory) throws ParameterException {
+	public static byte[] getBytes(final HttpServletRequest req, final String name, final boolean isMandatory)
+			throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -240,7 +247,8 @@ public final class ParameterParser {
 		return Convert.parseHexString(paramValue);
 	}
 
-	public static EncryptedData getEncryptedData(final HttpServletRequest req, final String messageType) throws ParameterException {
+	public static EncryptedData getEncryptedData(final HttpServletRequest req, final String messageType)
+			throws ParameterException {
 		final String dataString = Convert.emptyToNull(req.getParameter(messageType + "Data"));
 		final String nonceString = Convert.emptyToNull(req.getParameter(messageType + "Nonce"));
 		if (nonceString == null) {
@@ -310,8 +318,8 @@ public final class ParameterParser {
 		return -1;
 	}
 
-	public static int getInt(final HttpServletRequest req, final String name, final int min, final int max, final boolean isMandatory)
-			throws ParameterException {
+	public static int getInt(final HttpServletRequest req, final String name, final int min, final int max,
+			final boolean isMandatory) throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -327,7 +335,8 @@ public final class ParameterParser {
 			}
 			return value;
 		} catch (final RuntimeException e) {
-			throw new ParameterException(JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
+			throw new ParameterException(
+					JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
 		}
 	}
 
@@ -341,13 +350,15 @@ public final class ParameterParser {
 		} catch (final NumberFormatException ignored) {
 		}
 		if (!API.checkPassword(req)) {
-			final int firstIndex = Math.min(ParameterParser.getFirstIndex(req), (Integer.MAX_VALUE - API.maxRecords) + 1);
+			final int firstIndex = Math.min(ParameterParser.getFirstIndex(req),
+					(Integer.MAX_VALUE - API.maxRecords) + 1);
 			lastIndex = Math.min(lastIndex, (firstIndex + API.maxRecords) - 1);
 		}
 		return lastIndex;
 	}
 
-	public static long getLong(final HttpServletRequest req, final String name, final boolean isMandatory) throws ParameterException {
+	public static long getLong(final HttpServletRequest req, final String name, final boolean isMandatory)
+			throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -359,12 +370,13 @@ public final class ParameterParser {
 			final long value = Long.parseLong(paramValue);
 			return value;
 		} catch (final RuntimeException e) {
-			throw new ParameterException(JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
+			throw new ParameterException(
+					JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
 		}
 	}
 
-	public static long getLong(final HttpServletRequest req, final String name, final long min, final long max, final boolean isMandatory)
-			throws ParameterException {
+	public static long getLong(final HttpServletRequest req, final String name, final long min, final long max,
+			final boolean isMandatory) throws ParameterException {
 		final String paramValue = Convert.emptyToNull(req.getParameter(name));
 		if (paramValue == null) {
 			if (isMandatory) {
@@ -380,11 +392,13 @@ public final class ParameterParser {
 			}
 			return value;
 		} catch (final RuntimeException e) {
-			throw new ParameterException(JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
+			throw new ParameterException(
+					JSONResponses.incorrect(name, String.format("value %s is not numeric", paramValue)));
 		}
 	}
 
-	public static String getMultiplicator(final HttpServletRequest req, final boolean isMandatory) throws ParameterException {
+	public static String getMultiplicator(final HttpServletRequest req, final boolean isMandatory)
+			throws ParameterException {
 		final String secretPhrase = Convert.emptyToNull(req.getParameter("multiplicator"));
 		if ((secretPhrase == null) && isMandatory) {
 			throw new ParameterException(JSONResponses.INCORRECT_MULTIPLICATOR);
@@ -412,7 +426,8 @@ public final class ParameterParser {
 
 	public static String getParameterMultipart(final HttpServletRequest req, final String arg0) {
 		String result = req.getParameter(arg0);
-		if ((result == null) && (req.getMethod() == "POST") && req.getContentType().toLowerCase().contains("multipart")) {
+		if ((result == null) && (req.getMethod() == "POST")
+				&& req.getContentType().toLowerCase().contains("multipart")) {
 			try {
 				final MultipartConfigElement multipartConfigElement = new MultipartConfigElement((String) null);
 				req.setAttribute(Request.__MULTIPART_CONFIG_ELEMENT, multipartConfigElement);
@@ -472,7 +487,8 @@ public final class ParameterParser {
 		return query;
 	}
 
-	public static String getSecretPhrase(final HttpServletRequest req, final boolean isMandatory) throws ParameterException {
+	public static String getSecretPhrase(final HttpServletRequest req, final boolean isMandatory)
+			throws ParameterException {
 		final String secretPhrase = Convert.emptyToNull(req.getParameter("secretPhrase"));
 		if ((secretPhrase == null) && isMandatory) {
 			throw new ParameterException(JSONResponses.MISSING_SECRET_PHRASE);

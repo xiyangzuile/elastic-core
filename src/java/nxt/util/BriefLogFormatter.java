@@ -55,15 +55,17 @@ public class BriefLogFormatter extends Formatter {
 		}
 	}
 
-	private BriefLogFormatter() {}
+	private BriefLogFormatter() {
+	}
 
 	/**
 	 * Format the log record as follows:
 	 *
-	 *     Date Level Message ExceptionTrace
+	 * Date Level Message ExceptionTrace
 	 *
-	 * @param       logRecord       The log record
-	 * @return                      The formatted string
+	 * @param logRecord
+	 *            The log record
+	 * @return The formatted string
 	 */
 	@Override
 	public String format(final LogRecord logRecord) {

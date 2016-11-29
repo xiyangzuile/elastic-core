@@ -32,7 +32,8 @@ public class GetTransactions extends PeerServlet.PeerRequestHandler {
 
 	static final GetTransactions instance = new GetTransactions();
 
-	private GetTransactions() {}
+	private GetTransactions() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
@@ -41,14 +42,14 @@ public class GetTransactions extends PeerServlet.PeerRequestHandler {
 		}
 		final JSONObject response = new JSONObject();
 		final JSONArray transactionArray = new JSONArray();
-		final JSONArray transactionIds = (JSONArray)request.get("transactionIds");
+		final JSONArray transactionIds = (JSONArray) request.get("transactionIds");
 		final Blockchain blockchain = Nxt.getBlockchain();
 		//
 		// Return the transactions to the caller
 		//
 		if (transactionIds != null) {
 			transactionIds.forEach(transactionId -> {
-				final long id = Long.parseUnsignedLong((String)transactionId);
+				final long id = Long.parseUnsignedLong((String) transactionId);
 				final Transaction transaction = blockchain.getTransaction(id);
 				if (transaction != null) {
 					transaction.getAppendages(true);

@@ -30,7 +30,8 @@ public final class EncryptTo extends APIServlet.APIRequestHandler {
 	static final EncryptTo instance = new EncryptTo();
 
 	private EncryptTo() {
-		super(new APITag[] {APITag.MESSAGES}, "recipient", "messageToEncrypt", "messageToEncryptIsText", "compressMessageToEncrypt", "secretPhrase");
+		super(new APITag[] { APITag.MESSAGES }, "recipient", "messageToEncrypt", "messageToEncryptIsText",
+				"compressMessageToEncrypt", "secretPhrase");
 	}
 
 	@Override
@@ -59,7 +60,8 @@ public final class EncryptTo extends APIServlet.APIRequestHandler {
 			return JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
 		}
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-		final EncryptedData encryptedData = Account.encryptTo(recipientPublicKey, plainMessageBytes, secretPhrase, compress);
+		final EncryptedData encryptedData = Account.encryptTo(recipientPublicKey, plainMessageBytes, secretPhrase,
+				compress);
 		return JSONData.encryptedData(encryptedData);
 
 	}

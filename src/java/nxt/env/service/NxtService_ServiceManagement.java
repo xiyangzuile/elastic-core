@@ -45,8 +45,7 @@ public class NxtService_ServiceManagement {
 
 	// Invoked when registering the service
 	public static String[] serviceGetInfo() {
-		return new String[]{
-				"XEL Server", // Long name
+		return new String[] { "XEL Server", // Long name
 				"Manages the Elastic cryptographic currency protocol", // Description
 				"true", // IsAutomatic
 				"true", // IsAcceptStop
@@ -71,11 +70,14 @@ public class NxtService_ServiceManagement {
 	}
 
 	public static boolean serviceIsCreate() {
-		return JOptionPane.showConfirmDialog(null, "Do you want to install the Elastic service ?", "Create Service", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+		return JOptionPane.showConfirmDialog(null, "Do you want to install the Elastic service ?", "Create Service",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
 	}
 
 	public static boolean serviceIsDelete() {
-		return JOptionPane.showConfirmDialog(null, "This Elastic service is already installed. Do you want to delete it ?", "Delete Service", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+		return JOptionPane.showConfirmDialog(null,
+				"This Elastic service is already installed. Do you want to delete it ?", "Delete Service",
+				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
 	}
 
 	public static boolean serviceIsLaunch() {

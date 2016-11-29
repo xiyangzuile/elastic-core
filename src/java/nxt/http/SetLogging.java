@@ -26,37 +26,49 @@ import nxt.util.JSON;
 import nxt.util.Logger;
 
 /**
- * <p>The SetLogging API will set the NRS log level for all log messages.
- * It will also set the communication events that are logged.</p>
+ * <p>
+ * The SetLogging API will set the NRS log level for all log messages. It will
+ * also set the communication events that are logged.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
- * <li>logLevel - Specifies the log message level and defaults to INFO if not specified.</li>
- * <li>communicationEvent - Specifies a communication event to be logged and defaults to
- * no communication logging if not specified.
- * This parameter can be specified multiple times to log multiple communication events.</li>
+ * <li>logLevel - Specifies the log message level and defaults to INFO if not
+ * specified.</li>
+ * <li>communicationEvent - Specifies a communication event to be logged and
+ * defaults to no communication logging if not specified. This parameter can be
+ * specified multiple times to log multiple communication events.</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
  * <li>loggingUpdated - Set to 'true' if the logging was updated.</li>
  * </ul>
  *
- * <p>The following log levels can be specified:</p>
+ * <p>
+ * The following log levels can be specified:
+ * </p>
  * <ul>
- * <li>DEBUG - Debug, informational, warning and error messages will be logged.</li>
- * <li>INFO  - Informational, warning and error messages will be logged.</li>
- * <li>WARN  - Warning and error messages will be logged.</li>
+ * <li>DEBUG - Debug, informational, warning and error messages will be
+ * logged.</li>
+ * <li>INFO - Informational, warning and error messages will be logged.</li>
+ * <li>WARN - Warning and error messages will be logged.</li>
  * <li>ERROR - Error messages will be logged.</li>
  * </ul>
  *
- * <p>The following communication events can be specified.  This is a bit mask
- * so multiple events can be enabled at the same time.  The log level must be
- * DEBUG or INFO for communication events to be logged.</p>
+ * <p>
+ * The following communication events can be specified. This is a bit mask so
+ * multiple events can be enabled at the same time. The log level must be DEBUG
+ * or INFO for communication events to be logged.
+ * </p>
  * <ul>
- * <li>EXCEPTION  - Log HTTP exceptions.</li>
+ * <li>EXCEPTION - Log HTTP exceptions.</li>
  * <li>HTTP-ERROR - Log non-200 HTTP responses.</li>
- * <li>HTTP-OK    - Log HTTP 200 responses.</li>
+ * <li>HTTP-OK - Log HTTP 200 responses.</li>
  * </ul>
  */
 public class SetLogging extends APIServlet.APIRequestHandler {
@@ -73,19 +85,19 @@ public class SetLogging extends APIServlet.APIRequestHandler {
 	}
 
 	/** Incorrect log level */
-	private static final JSONStreamAware INCORRECT_LEVEL =
-			JSONResponses.incorrect("logLevel", "Log level must be DEBUG, INFO, WARN or ERROR");
+	private static final JSONStreamAware INCORRECT_LEVEL = JSONResponses.incorrect("logLevel",
+			"Log level must be DEBUG, INFO, WARN or ERROR");
 
 	/** Incorrect communication event */
-	private static final JSONStreamAware INCORRECT_EVENT =
-			JSONResponses.incorrect("communicationEvent",
-					"Communication event must be EXCEPTION, HTTP-ERROR or HTTP-OK");
+	private static final JSONStreamAware INCORRECT_EVENT = JSONResponses.incorrect("communicationEvent",
+			"Communication event must be EXCEPTION, HTTP-ERROR or HTTP-OK");
 
 	/**
 	 * Create the SetLogging instance
 	 */
 	private SetLogging() {
-		super(new APITag[] {APITag.DEBUG}, "logLevel", "communicationEvent", "communicationEvent", "communicationEvent");
+		super(new APITag[] { APITag.DEBUG }, "logLevel", "communicationEvent", "communicationEvent",
+				"communicationEvent");
 	}
 
 	@Override
@@ -96,8 +108,9 @@ public class SetLogging extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the SetLogging API request
 	 *
-	 * @param   req                 API request
-	 * @return                      API response
+	 * @param req
+	 *            API request
+	 * @return API response
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
@@ -152,7 +165,7 @@ public class SetLogging extends APIServlet.APIRequestHandler {
 	/**
 	 * Require the administrator password
 	 *
-	 * @return                      TRUE if the admin password is required
+	 * @return TRUE if the admin password is required
 	 */
 	@Override
 	protected boolean requirePassword() {

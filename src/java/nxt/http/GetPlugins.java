@@ -68,7 +68,7 @@ public final class GetPlugins extends APIServlet.APIRequestHandler {
 	private static final Path PLUGINS_HOME = Paths.get("./html/ui/plugins");
 
 	private GetPlugins() {
-		super(new APITag[] {APITag.INFO});
+		super(new APITag[] { APITag.INFO });
 	}
 
 	@Override
@@ -90,7 +90,8 @@ public final class GetPlugins extends APIServlet.APIRequestHandler {
 			return JSONResponses.fileNotFound(e.getMessage());
 		}
 		final JSONArray plugins = new JSONArray();
-		pluginDirListing.getDirectories().forEach(dir -> plugins.add(Paths.get(dir.toString()).getFileName().toString()));
+		pluginDirListing.getDirectories()
+				.forEach(dir -> plugins.add(Paths.get(dir.toString()).getFileName().toString()));
 		response.put("plugins", plugins);
 		return response;
 	}

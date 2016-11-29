@@ -50,7 +50,8 @@ public interface Attachment extends Appendix {
 		}
 
 		@Override
-		final void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount) throws NotValidException {
+		final void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount)
+				throws NotValidException {
 
 			this.getTransactionType().apply((TransactionImpl) transaction, senderAccount, recipientAccount);
 		}
@@ -167,7 +168,8 @@ public interface Attachment extends Appendix {
 		private final String name;
 		private final String description;
 
-		MessagingAccountInfo(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
+		MessagingAccountInfo(final ByteBuffer buffer, final byte transactionVersion)
+				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.name = Convert.readString(buffer, buffer.get(), Constants.MAX_ACCOUNT_NAME_LENGTH);
 			this.description = Convert.readString(buffer, buffer.getShort(), Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH);
@@ -225,7 +227,8 @@ public interface Attachment extends Appendix {
 		private final long minFeePerByteNQT;
 		private final String[] uris;
 
-		MessagingHubAnnouncement(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
+		MessagingHubAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
+				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.minFeePerByteNQT = buffer.getLong();
 			final int numberOfUris = buffer.get();
@@ -315,7 +318,9 @@ public interface Attachment extends Appendix {
 		private final byte[] multiplicator;
 
 		public MessageDigest dig = Crypto.md5();
-		PiggybackedProofOfBounty(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
+
+		PiggybackedProofOfBounty(final ByteBuffer buffer, final byte transactionVersion)
+				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
 
@@ -324,6 +329,7 @@ public interface Attachment extends Appendix {
 				this.multiplicator[i] = buffer.get();
 			}
 		}
+
 		PiggybackedProofOfBounty(final JSONObject attachmentData) {
 			super(attachmentData);
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
@@ -346,6 +352,7 @@ public interface Attachment extends Appendix {
 				}
 			}
 		}
+
 		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator) {
 			this.workId = workId;
 			if (multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES) {
@@ -401,10 +408,8 @@ public interface Attachment extends Appendix {
 		}
 
 		@Override
-		public int[] personalizedIntStream(final byte[] publicKey, final long blockId){
+		public int[] personalizedIntStream(final byte[] publicKey, final long blockId) {
 			final int[] stream = new int[12];
-
-
 
 			this.dig.reset();
 			this.dig.update(this.multiplicator);
@@ -416,25 +421,25 @@ public interface Attachment extends Appendix {
 			}
 
 			for (int i = 0; i < 8; ++i) {
-				b1[i+8] = (byte) (blockId >> ((8 - i - 1) << 3));
+				b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
 			}
 
 			this.dig.update(b1);
 
 			byte[] digest = this.dig.digest();
 			int ln = digest.length;
-			if(ln==0){
-				digest=new byte[4];
-				digest[0]=0x01;
-				digest[1]=0x01;
-				digest[2]=0x01;
-				digest[3]=0x01;
-				ln=4;
+			if (ln == 0) {
+				digest = new byte[4];
+				digest[0] = 0x01;
+				digest[1] = 0x01;
+				digest[2] = 0x01;
+				digest[3] = 0x01;
+				ln = 4;
 			}
-			for(int i=0;i<12;++i){
-				int got = PiggybackedProofOfBounty.toInt(digest,(i*4) % ln) ;
-				if(i>4){
-					got = got ^ stream[i-3];
+			for (int i = 0; i < 12; ++i) {
+				int got = PiggybackedProofOfBounty.toInt(digest, (i * 4) % ln);
+				if (i > 4) {
+					got = got ^ stream[i - 3];
 				}
 				stream[i] = got;
 			}
@@ -465,6 +470,7 @@ public interface Attachment extends Appendix {
 		private final long workId;
 
 		private final byte[] hashAnnounced;
+
 		PiggybackedProofOfBountyAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
@@ -509,14 +515,13 @@ public interface Attachment extends Appendix {
 			this.hashAnnounced = hash_assigned;
 		}
 
-
 		public byte[] getHashAnnounced() {
 			return this.hashAnnounced;
 		}
 
 		@Override
 		int getMySize() {
-			if(this.hashAnnounced != null) {
+			if (this.hashAnnounced != null) {
 				return 8 + 2 + this.hashAnnounced.length;
 			} else {
 				return 8 + 2;
@@ -535,12 +540,11 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
-			if(this.hashAnnounced != null)
-			{
+			if (this.hashAnnounced != null) {
 				buffer.putShort((new Integer(this.hashAnnounced.length)).shortValue());
 				buffer.put(this.hashAnnounced);
 			} else {
-				buffer.putShort((short)0);
+				buffer.putShort((short) 0);
 			}
 		}
 
@@ -553,7 +557,6 @@ public interface Attachment extends Appendix {
 			attachment.put("hash_announced", hex_string);
 		}
 	}
-
 
 	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
@@ -570,9 +573,12 @@ public interface Attachment extends Appendix {
 			}
 			return new String(hexChars);
 		}
+
 		private final long workId;
 		private final byte[] multiplicator;
-		PiggybackedProofOfWork(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
+
+		PiggybackedProofOfWork(final ByteBuffer buffer, final byte transactionVersion)
+				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
 
@@ -581,6 +587,7 @@ public interface Attachment extends Appendix {
 				this.multiplicator[i] = buffer.get();
 			}
 		}
+
 		PiggybackedProofOfWork(final JSONObject attachmentData) {
 			super(attachmentData);
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
@@ -659,10 +666,8 @@ public interface Attachment extends Appendix {
 		}
 
 		@Override
-		public int[] personalizedIntStream(final byte[] publicKey, final long blockId){
+		public int[] personalizedIntStream(final byte[] publicKey, final long blockId) {
 			final int[] stream = new int[12];
-
-
 
 			PiggybackedProofOfWork.dig.reset();
 			PiggybackedProofOfWork.dig.update(this.multiplicator);
@@ -674,25 +679,25 @@ public interface Attachment extends Appendix {
 			}
 
 			for (int i = 0; i < 8; ++i) {
-				b1[i+8] = (byte) (blockId >> ((8 - i - 1) << 3));
+				b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
 			}
 
 			PiggybackedProofOfWork.dig.update(b1);
 
 			byte[] digest = PiggybackedProofOfWork.dig.digest();
 			int ln = digest.length;
-			if(ln==0){
-				digest=new byte[4];
-				digest[0]=0x01;
-				digest[1]=0x01;
-				digest[2]=0x01;
-				digest[3]=0x01;
-				ln=4;
+			if (ln == 0) {
+				digest = new byte[4];
+				digest[0] = 0x01;
+				digest[1] = 0x01;
+				digest[2] = 0x01;
+				digest[3] = 0x01;
+				ln = 4;
 			}
-			for(int i=0;i<12;++i){
-				int got = this.toInt(digest,(i*4) % ln) ;
-				if(i>4){
-					got = got ^ stream[i-3];
+			for (int i = 0; i < 12; ++i) {
+				int got = this.toInt(digest, (i * 4) % ln);
+				if (i > 4) {
+					got = got ^ stream[i - 3];
 				}
 				stream[i] = got;
 
@@ -734,8 +739,7 @@ public interface Attachment extends Appendix {
 		private final String address;
 		private final String secp_signatures;
 
-		RedeemAttachment(final ByteBuffer buffer, final byte transactionVersion)
-				throws NxtException.NotValidException {
+		RedeemAttachment(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.address_length = buffer.getShort();
 			this.address = Convert.readString(buffer, this.address_length, 4096);
@@ -775,8 +779,6 @@ public interface Attachment extends Appendix {
 		public TransactionType getTransactionType() {
 			return TransactionType.Payment.REDEEM;
 		}
-
-
 
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
@@ -823,8 +825,8 @@ public interface Attachment extends Appendix {
 
 		}
 
-		public WorkCreation(final String workTitle, final byte workLanguage, final byte[] programmCode, final int deadline, final int bountyLimit,
-				final long xel_per_pow, final long xel_per_bounty) {
+		public WorkCreation(final String workTitle, final byte workLanguage, final byte[] programmCode,
+				final int deadline, final int bountyLimit, final long xel_per_pow, final long xel_per_bounty) {
 			this.workTitle = workTitle;
 			this.deadline = deadline;
 			this.bountyLimit = bountyLimit;

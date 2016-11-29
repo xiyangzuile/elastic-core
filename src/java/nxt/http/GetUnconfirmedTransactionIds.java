@@ -35,29 +35,31 @@ public final class GetUnconfirmedTransactionIds extends APIServlet.APIRequestHan
 	static final GetUnconfirmedTransactionIds instance = new GetUnconfirmedTransactionIds();
 
 	private GetUnconfirmedTransactionIds() {
-		super(new APITag[] {APITag.TRANSACTIONS, APITag.ACCOUNTS}, "account", "account", "account");
+		super(new APITag[] { APITag.TRANSACTIONS, APITag.ACCOUNTS }, "account", "account", "account");
 	}
 
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
 		final Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
-		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
-			transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
+		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true
+				: transaction -> accountIds.contains(transaction.getSenderId())
+						|| accountIds.contains(transaction.getRecipientId());
 
-			final JSONArray transactionIds = new JSONArray();
-			try (DbIterator<? extends Transaction> transactionsIterator = Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
-				while (transactionsIterator.hasNext()) {
-					final Transaction transaction = transactionsIterator.next();
-					if (filter.ok(transaction)) {
-						transactionIds.add(transaction.getStringId());
-					}
+		final JSONArray transactionIds = new JSONArray();
+		try (DbIterator<? extends Transaction> transactionsIterator = Nxt.getTransactionProcessor()
+				.getAllUnconfirmedTransactions()) {
+			while (transactionsIterator.hasNext()) {
+				final Transaction transaction = transactionsIterator.next();
+				if (filter.ok(transaction)) {
+					transactionIds.add(transaction.getStringId());
 				}
 			}
+		}
 
-			final JSONObject response = new JSONObject();
-			response.put("unconfirmedTransactionIds", transactionIds);
-			return response;
+		final JSONObject response = new JSONObject();
+		response.put("unconfirmedTransactionIds", transactionIds);
+		return response;
 	}
 
 }

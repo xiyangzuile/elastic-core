@@ -28,7 +28,7 @@ public final class GetTime extends APIServlet.APIRequestHandler {
 	static final GetTime instance = new GetTime();
 
 	private GetTime() {
-		super(new APITag[] {APITag.INFO});
+		super(new APITag[] { APITag.INFO });
 	}
 
 	@Override

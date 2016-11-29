@@ -40,7 +40,7 @@ public final class DumpPeers extends APIServlet.APIRequestHandler {
 	static final DumpPeers instance = new DumpPeers();
 
 	private DumpPeers() {
-		super(new APITag[] {APITag.DEBUG}, "version", "weight", "connect", "adminPassword");
+		super(new APITag[] { APITag.DEBUG }, "version", "weight", "connect", "adminPassword");
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public final class DumpPeers extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
 		final String version = Convert.nullToEmpty(req.getParameter("version"));
-		final int weight = ParameterParser.getInt(req, "weight", 0, (int)Constants.MAX_BALANCE_NXT, false);
+		final int weight = ParameterParser.getInt(req, "weight", 0, (int) Constants.MAX_BALANCE_NXT, false);
 		final boolean connect = "true".equalsIgnoreCase(req.getParameter("connect")) && API.checkPassword(req);
 		if (connect) {
 			final List<Callable<Object>> connects = new ArrayList<>();
@@ -69,9 +69,7 @@ public final class DumpPeers extends APIServlet.APIRequestHandler {
 		}
 		final Set<String> addresses = new HashSet<>();
 		Peers.getAllPeers().forEach(peer -> {
-			if ((peer.getState() == Peer.State.CONNECTED)
-					&& peer.shareAddress()
-					&& !peer.isBlacklisted()
+			if ((peer.getState() == Peer.State.CONNECTED) && peer.shareAddress() && !peer.isBlacklisted()
 					&& (peer.getVersion() != null) && peer.getVersion().startsWith(version)
 					&& ((weight == 0) || (peer.getWeight() > weight))) {
 				addresses.add(peer.getAnnouncedAddress());

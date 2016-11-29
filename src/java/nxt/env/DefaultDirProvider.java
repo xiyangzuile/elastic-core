@@ -48,6 +48,7 @@ public class DefaultDirProvider implements DirProvider {
 	}
 
 	@Override
-	public void updateLogFileHandler(final Properties loggingProperties) {}
+	public void updateLogFileHandler(final Properties loggingProperties) {
+	}
 
 }

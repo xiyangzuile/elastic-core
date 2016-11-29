@@ -44,7 +44,8 @@ class UnconfirmedTransaction implements Transaction {
 			if (prunableJSON != null) {
 				prunableAttachments = (JSONObject) JSONValue.parse(prunableJSON);
 			}
-			final TransactionImpl.BuilderImpl builder = TransactionImpl.newTransactionBuilder(transactionBytes, prunableAttachments);
+			final TransactionImpl.BuilderImpl builder = TransactionImpl.newTransactionBuilder(transactionBytes,
+					prunableAttachments);
 			this.transaction = builder.build();
 			this.transaction.setHeight(rs.getInt("transaction_height"));
 			this.arrivalTimestamp = rs.getLong("arrival_timestamp");
@@ -62,7 +63,8 @@ class UnconfirmedTransaction implements Transaction {
 
 	@Override
 	public boolean equals(final Object o) {
-		return (o instanceof UnconfirmedTransaction) && this.transaction.equals(((UnconfirmedTransaction)o).getTransaction());
+		return (o instanceof UnconfirmedTransaction)
+				&& this.transaction.equals(((UnconfirmedTransaction) o).getTransaction());
 	}
 
 	@Override
@@ -227,13 +229,9 @@ class UnconfirmedTransaction implements Transaction {
 		return this.transaction.getTimestamp();
 	}
 
-
-
 	TransactionImpl getTransaction() {
 		return this.transaction;
 	}
-
-
 
 	@Override
 	public TransactionType getType() {
@@ -256,9 +254,10 @@ class UnconfirmedTransaction implements Transaction {
 	}
 
 	void save(final Connection con) throws SQLException {
-		try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO unconfirmed_transaction (id, transaction_height, "
-				+ "fee_per_byte, expiration, transaction_bytes, prunable_json, arrival_timestamp, height) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+		try (PreparedStatement pstmt = con
+				.prepareStatement("INSERT INTO unconfirmed_transaction (id, transaction_height, "
+						+ "fee_per_byte, expiration, transaction_bytes, prunable_json, arrival_timestamp, height) "
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.transaction.getId());
 			pstmt.setInt(++i, this.transaction.getHeight());
@@ -281,7 +280,6 @@ class UnconfirmedTransaction implements Transaction {
 	public void setExtraInfo(final String extraInfo) {
 		this.extraInfo = extraInfo;
 	}
-
 
 	@Override
 	public void validate() throws NxtException.ValidationException {

@@ -38,14 +38,16 @@ public class TrustAllSSLProvider {
 			@Override
 			public void checkClientTrusted(final X509Certificate[] certs, final String authType) {
 			}
+
 			@Override
 			public void checkServerTrusted(final X509Certificate[] certs, final String authType) {
 			}
+
 			@Override
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 				return null;
 			}
-		}};
+		} };
 		SSLContext sc;
 		try {
 			sc = SSLContext.getInstance("TLS");

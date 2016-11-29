@@ -10,13 +10,9 @@ import nxt.NxtException;
 import nxt.Work;
 import nxt.db.DbIterator;
 
-
-
 public final class GetMineableWork extends APIServlet.APIRequestHandler {
 
 	static final GetMineableWork instance = new GetMineableWork();
-
-
 
 	private GetMineableWork() {
 		super(new APITag[] { APITag.ACCOUNTS, APITag.WC });
@@ -34,8 +30,11 @@ public final class GetMineableWork extends APIServlet.APIRequestHandler {
 		final JSONArray work_packages = new JSONArray();
 
 		try (DbIterator<? extends Work> iterator = Work.getActiveWorks(0, -1)) {
-			while (iterator.hasNext()) { final Work transaction = iterator.next(); work_packages.add(transaction.toJsonObjectWithSource());
-			} }
+			while (iterator.hasNext()) {
+				final Work transaction = iterator.next();
+				work_packages.add(transaction.toJsonObjectWithSource());
+			}
+		}
 
 		final JSONObject response = new JSONObject();
 		response.put("work_packages", work_packages);

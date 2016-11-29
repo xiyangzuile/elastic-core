@@ -31,7 +31,7 @@ public final class GetAccountPublicKey extends APIServlet.APIRequestHandler {
 	static final GetAccountPublicKey instance = new GetAccountPublicKey();
 
 	private GetAccountPublicKey() {
-		super(new APITag[] {APITag.ACCOUNTS}, "account");
+		super(new APITag[] { APITag.ACCOUNTS }, "account");
 	}
 
 	@Override

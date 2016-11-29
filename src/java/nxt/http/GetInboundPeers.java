@@ -28,22 +28,30 @@ import nxt.peer.Peer;
 import nxt.peer.Peers;
 
 /**
- * <p>The GetInboundPeers API will return a list of inbound peers.
- * An inbound peer is a peer that has sent a request to this peer
- * within the previous 30 minutes.</p>
+ * <p>
+ * The GetInboundPeers API will return a list of inbound peers. An inbound peer
+ * is a peer that has sent a request to this peer within the previous 30
+ * minutes.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
- * <li>includePeerInfo - Specify 'true' to include the peer information
- * or 'false' to include just the peer address.  The default is 'false'.</li>
+ * <li>includePeerInfo - Specify 'true' to include the peer information or
+ * 'false' to include just the peer address. The default is 'false'.</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
  * <li>peers - An array of peers</li>
  * </ul>
  *
- * <p>Error Response parameters:</p>
+ * <p>
+ * Error Response parameters:
+ * </p>
  * <ul>
  * <li>errorCode - API error code</li>
  * <li>errorDescription - API error description</li>
@@ -58,7 +66,7 @@ public final class GetInboundPeers extends APIServlet.APIRequestHandler {
 	 * Create the GetInboundPeers instance
 	 */
 	private GetInboundPeers() {
-		super(new APITag[] {APITag.NETWORK}, "includePeerInfo");
+		super(new APITag[] { APITag.NETWORK }, "includePeerInfo");
 	}
 
 	@Override
@@ -69,8 +77,9 @@ public final class GetInboundPeers extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the GetInboundPeers API request
 	 *
-	 * @param   req                 API request
-	 * @return                      API response or null
+	 * @param req
+	 *            API request
+	 * @return API response or null
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {

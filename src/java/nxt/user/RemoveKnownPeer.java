@@ -29,11 +29,12 @@ public final class RemoveKnownPeer extends UserServlet.UserRequestHandler {
 
 	static final RemoveKnownPeer instance = new RemoveKnownPeer();
 
-	private RemoveKnownPeer() {}
+	private RemoveKnownPeer() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
-		if ((Users.allowedUserHosts == null) && ! InetAddress.getByName(req.getRemoteAddr()).isLoopbackAddress()) {
+		if ((Users.allowedUserHosts == null) && !InetAddress.getByName(req.getRemoteAddr()).isLoopbackAddress()) {
 			return JSONResponses.LOCAL_USERS_ONLY;
 		} else {
 			final int index = Integer.parseInt(req.getParameter("peer"));

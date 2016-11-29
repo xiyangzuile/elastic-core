@@ -31,7 +31,7 @@ public final class LongConvert extends APIServlet.APIRequestHandler {
 	static final LongConvert instance = new LongConvert();
 
 	private LongConvert() {
-		super(new APITag[] {APITag.UTILS}, "id");
+		super(new APITag[] { APITag.UTILS }, "id");
 	}
 
 	@Override

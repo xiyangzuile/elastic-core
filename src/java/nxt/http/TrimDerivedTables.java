@@ -28,7 +28,7 @@ public final class TrimDerivedTables extends APIServlet.APIRequestHandler {
 	static final TrimDerivedTables instance = new TrimDerivedTables();
 
 	private TrimDerivedTables() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

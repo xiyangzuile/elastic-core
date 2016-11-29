@@ -37,8 +37,9 @@ final class TransactionDb {
 		private final TransactionType transactionType;
 		private final boolean prunableSourceCode;
 
-		public PrunableTransaction(final long id, final TransactionType transactionType, final boolean prunableAttachment,
-				final boolean prunablePlainMessage, final boolean prunableEncryptedMessage, final boolean prunableSourceCode) {
+		public PrunableTransaction(final long id, final TransactionType transactionType,
+				final boolean prunableAttachment, final boolean prunablePlainMessage,
+				final boolean prunableEncryptedMessage, final boolean prunableSourceCode) {
 			this.id = id;
 			this.transactionType = transactionType;
 			this.prunableSourceCode = prunableSourceCode;
@@ -58,7 +59,8 @@ final class TransactionDb {
 	}
 
 	static List<TransactionImpl> findBlockTransactions(final Connection con, final long blockId) {
-		try (PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE block_id = ? ORDER BY transaction_index")) {
+		try (PreparedStatement pstmt = con
+				.prepareStatement("SELECT * FROM transaction WHERE block_id = ? ORDER BY transaction_index")) {
 			pstmt.setLong(1, blockId);
 			pstmt.setFetchSize(50);
 			try (ResultSet rs = pstmt.executeQuery()) {
@@ -71,14 +73,14 @@ final class TransactionDb {
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		} catch (final NxtException.ValidationException e) {
-			throw new RuntimeException("Transaction already in database for block_id = " + Long.toUnsignedString(blockId)
-			+ " does not pass validation!", e);
+			throw new RuntimeException("Transaction already in database for block_id = "
+					+ Long.toUnsignedString(blockId) + " does not pass validation!", e);
 		}
 	}
 
 	static List<TransactionImpl> findBlockTransactions(final long blockId) {
 		// Check the block cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);
 			if (block != null) {
 				return block.getTransactions();
@@ -92,7 +94,8 @@ final class TransactionDb {
 		}
 	}
 
-	static List<PrunableTransaction> findPrunableTransactions(final Connection con, final int minTimestamp, final int maxTimestamp) {
+	static List<PrunableTransaction> findPrunableTransactions(final Connection con, final int minTimestamp,
+			final int maxTimestamp) {
 		final List<PrunableTransaction> result = new ArrayList<>();
 		try (PreparedStatement pstmt = con.prepareStatement("SELECT id, type, subtype, "
 				+ "has_prunable_attachment AS prunable_attachment, "
@@ -110,10 +113,9 @@ final class TransactionDb {
 					final byte type = rs.getByte("type");
 					final byte subtype = rs.getByte("subtype");
 					final TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-					result.add(new PrunableTransaction(id, transactionType,
-							rs.getBoolean("prunable_attachment"),
-							rs.getBoolean("prunable_plain_message"),
-							rs.getBoolean("prunable_encrypted_message"),rs.getBoolean("prunable_source_code")));
+					result.add(new PrunableTransaction(id, transactionType, rs.getBoolean("prunable_attachment"),
+							rs.getBoolean("prunable_plain_message"), rs.getBoolean("prunable_encrypted_message"),
+							rs.getBoolean("prunable_source_code")));
 				}
 			}
 		} catch (final SQLException e) {
@@ -147,7 +149,8 @@ final class TransactionDb {
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		} catch (final NxtException.ValidationException e) {
-			throw new RuntimeException("Transaction already in database, id = " + transactionId + ", does not pass validation!", e);
+			throw new RuntimeException(
+					"Transaction already in database, id = " + transactionId + ", does not pass validation!", e);
 		}
 	}
 
@@ -158,11 +161,11 @@ final class TransactionDb {
 	static TransactionImpl findTransactionByFullHash(final byte[] fullHash, final int height) {
 		final long transactionId = Convert.fullHashToId(fullHash);
 		// Check the cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
 			if (transaction != null) {
-				return ((transaction.getHeight() <= height) &&
-						Arrays.equals(transaction.fullHash(), fullHash) ? transaction : null);
+				return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash)
+						? transaction : null);
 			}
 		}
 		// Search the database
@@ -179,13 +182,13 @@ final class TransactionDb {
 			throw new RuntimeException(e.toString(), e);
 		} catch (final NxtException.ValidationException e) {
 			throw new RuntimeException("Transaction already in database, full_hash = " + Convert.toHexString(fullHash)
-			+ ", does not pass validation!", e);
+					+ ", does not pass validation!", e);
 		}
 	}
 
 	static byte[] getFullHash(final long transactionId) {
 		// Check the block cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
 			if (transaction != null) {
 				return transaction.fullHash();
@@ -209,7 +212,7 @@ final class TransactionDb {
 
 	static boolean hasTransaction(final long transactionId, final int height) {
 		// Check the block cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
 			if (transaction != null) {
 				return (transaction.getHeight() <= height);
@@ -234,26 +237,28 @@ final class TransactionDb {
 	static boolean hasTransactionByFullHash(final byte[] fullHash, final int height) {
 		final long transactionId = Convert.fullHashToId(fullHash);
 		// Check the block cache
-		synchronized(BlockDb.blockCache) {
+		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
 			if (transaction != null) {
-				return ((transaction.getHeight() <= height) &&
-						Arrays.equals(transaction.fullHash(), fullHash));
+				return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash));
 			}
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT full_hash, height FROM transaction WHERE id = ?")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT full_hash, height FROM transaction WHERE id = ?")) {
 			pstmt.setLong(1, transactionId);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				return rs.next() && Arrays.equals(rs.getBytes("full_hash"), fullHash) && (rs.getInt("height") <= height);
+				return rs.next() && Arrays.equals(rs.getBytes("full_hash"), fullHash)
+						&& (rs.getInt("height") <= height);
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
 	}
 
-	static TransactionImpl loadTransaction(final Connection con, final ResultSet rs) throws NxtException.NotValidException {
+	static TransactionImpl loadTransaction(final Connection con, final ResultSet rs)
+			throws NxtException.NotValidException {
 		try {
 
 			final byte type = rs.getByte("type");
@@ -283,23 +288,15 @@ final class TransactionDb {
 			}
 
 			final TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-			final TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, null,
-					amountNQT, feeNQT, deadline, transactionType.parseAttachment(buffer, version))
-					.timestamp(timestamp)
-					.referencedTransactionFullHash(referencedTransactionFullHash)
-					.signature(signature)
-					.blockId(blockId)
-					.height(height)
-					.id(id)
-					.senderId(senderId)
-					.blockTimestamp(blockTimestamp)
-					.fullHash(fullHash)
-					.ecBlockHeight(ecBlockHeight)
-					.ecBlockId(ecBlockId)
-					.index(transactionIndex);
+			final TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, null, amountNQT,
+					feeNQT, deadline, transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
+							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
+							.blockId(blockId).height(height).id(id).senderId(senderId).blockTimestamp(blockTimestamp)
+							.fullHash(fullHash).ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId)
+							.index(transactionIndex);
 			if (transactionType.canHaveRecipient()) {
 				final long recipientId = rs.getLong("recipient_id");
-				if (! rs.wasNull()) {
+				if (!rs.wasNull()) {
 					builder.recipientId(recipientId);
 				}
 			}

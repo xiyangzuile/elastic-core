@@ -38,8 +38,9 @@ import nxt.crypto.Crypto;
 
 public final class Convert {
 
-	private static final char[] hexChars = { '0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f' };
-	private static final long[] multipliers = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
+	private static final char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+			'f' };
+	private static final long[] multipliers = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
 
 	public static final BigInteger two64 = new BigInteger("18446744073709551616");
 	public static final long[] EMPTY_LONG = new long[0];
@@ -71,7 +72,6 @@ public final class Convert {
 		}
 	}
 
-
 	public static byte[] emptyToNull(final byte[] bytes) {
 		if (bytes == null) {
 			return null;
@@ -96,7 +96,8 @@ public final class Convert {
 		if ((hash == null) || (hash.length < 8)) {
 			throw new IllegalArgumentException("Invalid hash: " + Arrays.toString(hash));
 		}
-		final BigInteger bigInteger = new BigInteger(1, new byte[] {hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0]});
+		final BigInteger bigInteger = new BigInteger(1,
+				new byte[] { hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0] });
 		return bigInteger.longValue();
 	}
 
@@ -141,7 +142,7 @@ public final class Convert {
 			if ((char1 < 0) || (char2 < 0) || (char1 > 15) || (char2 > 15)) {
 				throw new NumberFormatException("Invalid hex number: " + hex);
 			}
-			bytes[i] = (byte)((char1 << 4) + char2);
+			bytes[i] = (byte) ((char1 << 4) + char2);
 		}
 		return bytes;
 	}
@@ -150,9 +151,9 @@ public final class Convert {
 		if (o == null) {
 			return 0;
 		} else if (o instanceof Long) {
-			return ((Long)o);
+			return ((Long) o);
 		} else if (o instanceof String) {
-			return Long.parseLong((String)o);
+			return Long.parseLong((String) o);
 		} else {
 			throw new IllegalArgumentException("Not a long: " + o);
 		}
@@ -191,7 +192,8 @@ public final class Convert {
 		return Long.parseUnsignedLong(number);
 	}
 
-	public static String readString(final ByteBuffer buffer, final int numBytes, final int maxLength) throws NxtException.NotValidException {
+	public static String readString(final ByteBuffer buffer, final int numBytes, final int maxLength)
+			throws NxtException.NotValidException {
 		if (numBytes > (3 * maxLength)) {
 			throw new NxtException.NotValidException("Max parameter length exceeded");
 		}
@@ -204,10 +206,8 @@ public final class Convert {
 		return "XEL-" + Crypto.rsEncode(accountId);
 	}
 
-	public static long safeAdd(final long left, final long right)
-			throws ArithmeticException {
-		if (right > 0 ? left > (Long.MAX_VALUE - right)
-				: left < (Long.MIN_VALUE - right)) {
+	public static long safeAdd(final long left, final long right) throws ArithmeticException {
+		if (right > 0 ? left > (Long.MAX_VALUE - right) : left < (Long.MIN_VALUE - right)) {
 			throw new ArithmeticException("Integer overflow");
 		}
 		return left + right;
@@ -240,7 +240,7 @@ public final class Convert {
 	public static byte[] toBytes(final long n) {
 		final byte[] bytes = new byte[8];
 		for (int i = 0; i < 8; i++) {
-			bytes[i] = (byte)(n >> (8 * i));
+			bytes[i] = (byte) (n >> (8 * i));
 		}
 		return bytes;
 	}
@@ -258,7 +258,7 @@ public final class Convert {
 	}
 
 	public static int toEpochTime(final long currentTime) {
-		return (int)(((currentTime - Constants.EPOCH_BEGINNING) + 500) / 1000);
+		return (int) (((currentTime - Constants.EPOCH_BEGINNING) + 500) / 1000);
 	}
 
 	public static String toHexString(final byte[] bytes) {
@@ -282,7 +282,7 @@ public final class Convert {
 	}
 
 	public static Set<Long> toSet(final long[] array) {
-		if ((array == null) || (array.length ==0)) {
+		if ((array == null) || (array.length == 0)) {
 			return Collections.emptySet();
 		}
 		final Set<Long> set = new HashSet<>(array.length);
@@ -313,7 +313,8 @@ public final class Convert {
 	}
 
 	public static String truncate(final String s, final String replaceNull, final int limit, final boolean dots) {
-		return s == null ? replaceNull : s.length() > limit ? (s.substring(0, dots ? limit - 3 : limit) + (dots ? "..." : "")) : s;
+		return s == null ? replaceNull
+				: s.length() > limit ? (s.substring(0, dots ? limit - 3 : limit) + (dots ? "..." : "")) : s;
 	}
 
 	public static byte[] uncompress(final byte[] bytes) {
@@ -332,6 +333,7 @@ public final class Convert {
 		}
 	}
 
-	private Convert() {} //never
+	private Convert() {
+	} // never
 
 }

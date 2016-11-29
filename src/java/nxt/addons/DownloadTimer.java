@@ -37,7 +37,8 @@ public final class DownloadTimer implements AddOn {
 
 		try {
 
-			this.writer = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream("downloadtime.csv")))), true);
+			this.writer = new PrintWriter(
+					(new BufferedWriter(new OutputStreamWriter(new FileOutputStream("downloadtime.csv")))), true);
 			this.writer.println("height,time,dtime,bps,transations,dtransactions,tps");
 			Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
 
@@ -57,18 +58,18 @@ public final class DownloadTimer implements AddOn {
 						final long time = System.currentTimeMillis() - this.startTime;
 						DownloadTimer.this.writer.print(height);
 						DownloadTimer.this.writer.print(',');
-						DownloadTimer.this.writer.print(time/1000);
+						DownloadTimer.this.writer.print(time / 1000);
 						DownloadTimer.this.writer.print(',');
-						final long dtime = (time - this.previousTime)/1000;
+						final long dtime = (time - this.previousTime) / 1000;
 						DownloadTimer.this.writer.print(dtime);
 						DownloadTimer.this.writer.print(',');
-						DownloadTimer.this.writer.print(this.interval/dtime);
+						DownloadTimer.this.writer.print(this.interval / dtime);
 						DownloadTimer.this.writer.print(',');
 						DownloadTimer.this.writer.print(this.transactions);
 						DownloadTimer.this.writer.print(',');
 						DownloadTimer.this.writer.print(this.dtransactions);
 						DownloadTimer.this.writer.print(',');
-						final long tps = this.dtransactions/dtime;
+						final long tps = this.dtransactions / dtime;
 						DownloadTimer.this.writer.println(tps);
 						this.previousTime = time;
 						this.dtransactions = 0;

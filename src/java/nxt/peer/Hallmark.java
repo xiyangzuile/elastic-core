@@ -33,10 +33,12 @@ public final class Hallmark {
 		final int year = date / 10000;
 		final int month = (date % 10000) / 100;
 		final int day = date % 100;
-		return (year < 10 ? "000" : (year < 100 ? "00" : (year < 1000 ? "0" : ""))) + year + "-" + (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day;
+		return (year < 10 ? "000" : (year < 100 ? "00" : (year < 1000 ? "0" : ""))) + year + "-"
+				+ (month < 10 ? "0" : "") + month + "-" + (day < 10 ? "0" : "") + day;
 	}
 
-	public static String generateHallmark(final String secretPhrase, final String host, final int weight, final int date) {
+	public static String generateHallmark(final String secretPhrase, final String host, final int weight,
+			final int date) {
 
 		if ((host.length() == 0) || (host.length() > 100)) {
 			throw new IllegalArgumentException("Hostname length should be between 1 and 100");
@@ -51,7 +53,7 @@ public final class Hallmark {
 		final ByteBuffer buffer = ByteBuffer.allocate(32 + 2 + hostBytes.length + 4 + 4 + 1);
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
 		buffer.put(publicKey);
-		buffer.putShort((short)hostBytes.length);
+		buffer.putShort((short) hostBytes.length);
 		buffer.put(hostBytes);
 		buffer.putInt(weight);
 		buffer.putInt(date);
@@ -66,8 +68,7 @@ public final class Hallmark {
 
 	public static int parseDate(final String dateValue) {
 		return (Integer.parseInt(dateValue.substring(0, 4)) * 10000)
-				+ (Integer.parseInt(dateValue.substring(5, 7)) * 100)
-				+ Integer.parseInt(dateValue.substring(8, 10));
+				+ (Integer.parseInt(dateValue.substring(5, 7)) * 100) + Integer.parseInt(dateValue.substring(8, 10));
 	}
 
 	public static Hallmark parseHallmark(String hallmarkString) {
@@ -120,8 +121,8 @@ public final class Hallmark {
 	private final byte[] signature;
 	private final boolean isValid;
 
-	private Hallmark(final String hallmarkString, final byte[] publicKey, final byte[] signature, final String host, final int weight, final int date, final boolean isValid)
-			throws URISyntaxException {
+	private Hallmark(final String hallmarkString, final byte[] publicKey, final byte[] signature, final String host,
+			final int weight, final int date, final boolean isValid) throws URISyntaxException {
 		this.hallmarkString = hallmarkString;
 		final URI uri = new URI("http://" + host);
 		this.host = uri.getHost();

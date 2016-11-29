@@ -41,20 +41,21 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 	static final UnlockAccount instance = new UnlockAccount();
 
 	private static final Comparator<JSONObject> myTransactionsComparator = (o1, o2) -> {
-		final int t1 = ((Number)o1.get("timestamp")).intValue();
-		final int t2 = ((Number)o2.get("timestamp")).intValue();
+		final int t1 = ((Number) o1.get("timestamp")).intValue();
+		final int t2 = ((Number) o2.get("timestamp")).intValue();
 		if (t1 < t2) {
 			return 1;
 		}
 		if (t1 > t2) {
 			return -1;
 		}
-		final String id1 = (String)o1.get("id");
-		final String id2 = (String)o2.get("id");
+		final String id1 = (String) o1.get("id");
+		final String id2 = (String) o2.get("id");
 		return id2.compareTo(id1);
 	};
 
-	private UnlockAccount() {}
+	private UnlockAccount() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
@@ -63,7 +64,7 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 		Users.getAllUsers().forEach(u -> {
 			if (secretPhrase.equals(u.getSecretPhrase())) {
 				u.lockAccount();
-				if (! u.isInactive()) {
+				if (!u.isInactive()) {
 					u.enqueue(JSONResponses.LOCK_ACCOUNT);
 				}
 			}
@@ -96,7 +97,8 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 
 			final JSONArray myTransactions = new JSONArray();
 			final byte[] accountPublicKey = Account.getPublicKey(accountId);
-			try (DbIterator<? extends Transaction> transactions = Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
+			try (DbIterator<? extends Transaction> transactions = Nxt.getTransactionProcessor()
+					.getAllUnconfirmedTransactions()) {
 				while (transactions.hasNext()) {
 					final Transaction transaction = transactions.next();
 					if (Arrays.equals(transaction.getSenderPublicKey(), accountPublicKey)) {
@@ -154,7 +156,8 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 
 			}
 
-			try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId, (byte) -1, (byte) -1, 0, false)) {
+			try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId,
+					(byte) -1, (byte) -1, 0, false)) {
 				while (transactionIterator.hasNext()) {
 					final Transaction transaction = transactionIterator.next();
 					if (transaction.getSenderId() == accountId) {

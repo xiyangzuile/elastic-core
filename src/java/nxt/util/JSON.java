@@ -35,14 +35,16 @@ public final class JSON {
 	public final static JSONStreamAware emptyJSON = JSON.prepare(new JSONObject());
 
 	/** String escape pattern */
-	private static final Pattern pattern = Pattern.compile(
-			"[\"\\\\\\u0008\\f\\n\\r\\t/\\u0000-\\u001f\\u007f-\\u009f\\u2000-\\u20ff\\ud800-\\udbff]");
+	private static final Pattern pattern = Pattern
+			.compile("[\"\\\\\\u0008\\f\\n\\r\\t/\\u0000-\\u001f\\u007f-\\u009f\\u2000-\\u20ff\\ud800-\\udbff]");
 
 	/**
 	 * Create a formatted string from a list
 	 *
-	 * @param   list                            List
-	 * @param   sb                              String builder
+	 * @param list
+	 *            List
+	 * @param sb
+	 *            String builder
 	 */
 	private static void encodeArray(final List<?> list, final StringBuilder sb) {
 		if (list == null) {
@@ -65,15 +67,17 @@ public final class JSON {
 	/**
 	 * Create a formatted string from a map
 	 *
-	 * @param   map                             Map
-	 * @param   sb                              String builder
+	 * @param map
+	 *            Map
+	 * @param sb
+	 *            String builder
 	 */
 	public static void encodeObject(final Map<?, ?> map, final StringBuilder sb) {
 		if (map == null) {
 			sb.append("null");
 			return;
 		}
-		final Set<Map.Entry<Object, Object>> entries = (Set)map.entrySet();
+		final Set<Map.Entry<Object, Object>> entries = (Set) map.entrySet();
 		final Iterator<Map.Entry<Object, Object>> it = entries.iterator();
 		boolean firstElement = true;
 		sb.append('{');
@@ -98,20 +102,22 @@ public final class JSON {
 	/**
 	 * Encode a JSON value
 	 *
-	 * @param   value                           JSON value
-	 * @param   sb                              String builder
+	 * @param value
+	 *            JSON value
+	 * @param sb
+	 *            String builder
 	 */
 	public static void encodeValue(final Object value, final StringBuilder sb) {
 		if (value == null) {
 			sb.append("null");
 		} else if (value instanceof Double) {
-			if (((Double)value).isInfinite() || ((Double)value).isNaN()) {
+			if (((Double) value).isInfinite() || ((Double) value).isNaN()) {
 				sb.append("null");
 			} else {
 				sb.append(value.toString());
 			}
 		} else if (value instanceof Float) {
-			if (((Float)value).isInfinite() || ((Float)value).isNaN()) {
+			if (((Float) value).isInfinite() || ((Float) value).isNaN()) {
 				sb.append("null");
 			} else {
 				sb.append(value.toString());
@@ -121,9 +127,9 @@ public final class JSON {
 		} else if (value instanceof Boolean) {
 			sb.append(value.toString());
 		} else if (value instanceof Map) {
-			JSON.encodeObject((Map<Object, Object>)value, sb);
+			JSON.encodeObject((Map<Object, Object>) value, sb);
 		} else if (value instanceof List) {
-			JSON.encodeArray((List<Object>)value, sb);
+			JSON.encodeArray((List<Object>) value, sb);
 		} else {
 			sb.append('\"');
 			JSON.escapeString(value.toString(), sb);
@@ -132,10 +138,13 @@ public final class JSON {
 	}
 
 	/**
-	 * Escape control characters in a string and append them to the string buffer
+	 * Escape control characters in a string and append them to the string
+	 * buffer
 	 *
-	 * @param   string                      String to be written
-	 * @param   sb                          String builder
+	 * @param string
+	 *            String to be written
+	 * @param sb
+	 *            String builder
 	 */
 	private static void escapeString(final String string, final StringBuilder sb) {
 		if (string.length() == 0) {
@@ -182,8 +191,9 @@ public final class JSON {
 				sb.append("\\/");
 				break;
 			default:
-				if(((c>='\u0000') && (c<='\u001F')) || ((c>='\u007F') && (c<='\u009F')) || ((c>='\u2000') && (c<='\u20FF'))){
-					sb.append("\\u").append(String.format("%04X", (int)c));
+				if (((c >= '\u0000') && (c <= '\u001F')) || ((c >= '\u007F') && (c <= '\u009F'))
+						|| ((c >= '\u2000') && (c <= '\u20FF'))) {
+					sb.append("\\u").append(String.format("%04X", (int) c));
 				} else {
 					sb.append(c);
 				}
@@ -202,6 +212,7 @@ public final class JSON {
 	public static JSONStreamAware prepare(final JSONObject json) {
 		return new JSONStreamAware() {
 			private final char[] jsonChars = JSON.toJSONString(json).toCharArray();
+
 			@Override
 			public void writeJSONString(final Writer out) throws IOException {
 				out.write(this.jsonChars);
@@ -217,8 +228,9 @@ public final class JSON {
 	/**
 	 * Create a formatted JSON string
 	 *
-	 * @param   json                            JSON list or map
-	 * @return                                  Formatted string
+	 * @param json
+	 *            JSON list or map
+	 * @return Formatted string
 	 */
 	public static String toJSONString(final JSONAware json) {
 		if (json == null) {
@@ -226,12 +238,12 @@ public final class JSON {
 		}
 		if (json instanceof Map) {
 			final StringBuilder sb = new StringBuilder(1024);
-			JSON.encodeObject((Map)json, sb);
+			JSON.encodeObject((Map) json, sb);
 			return sb.toString();
 		}
 		if (json instanceof List) {
 			final StringBuilder sb = new StringBuilder(1024);
-			JSON.encodeArray((List)json, sb);
+			JSON.encodeArray((List) json, sb);
 			return sb.toString();
 		}
 		return json.toJSONString();
@@ -241,16 +253,20 @@ public final class JSON {
 		final StringWriter stringWriter = new StringWriter();
 		try {
 			JSON.writeJSONString(jsonStreamAware, stringWriter);
-		} catch (final IOException ignore) {}
+		} catch (final IOException ignore) {
+		}
 		return stringWriter.toString();
 	}
 
 	/**
 	 * Write a formatted JSON string
 	 *
-	 * @param   json                            JSON list or map
-	 * @param   writer                          Writer
-	 * @throws  IOException                     I/O error occurred
+	 * @param json
+	 *            JSON list or map
+	 * @param writer
+	 *            Writer
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	public static void writeJSONString(final JSONStreamAware json, final Writer writer) throws IOException {
 		if (json == null) {
@@ -259,18 +275,19 @@ public final class JSON {
 		}
 		if (json instanceof Map) {
 			final StringBuilder sb = new StringBuilder(1024);
-			JSON.encodeObject((Map)json, sb);
+			JSON.encodeObject((Map) json, sb);
 			writer.write(sb.toString());
 			return;
 		}
 		if (json instanceof List) {
 			final StringBuilder sb = new StringBuilder(1024);
-			JSON.encodeArray((List)json, sb);
+			JSON.encodeArray((List) json, sb);
 			writer.write(sb.toString());
 			return;
 		}
 		json.writeJSONString(writer);
 	}
 
-	private JSON() {} //never
+	private JSON() {
+	} // never
 }

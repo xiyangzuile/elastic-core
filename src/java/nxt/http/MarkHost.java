@@ -25,13 +25,12 @@ import nxt.Constants;
 import nxt.peer.Hallmark;
 import nxt.util.Convert;
 
-
 public final class MarkHost extends APIServlet.APIRequestHandler {
 
 	static final MarkHost instance = new MarkHost();
 
 	private MarkHost() {
-		super(new APITag[] {APITag.TOKENS}, "secretPhrase", "host", "weight", "date");
+		super(new APITag[] { APITag.TOKENS }, "secretPhrase", "host", "weight", "date");
 	}
 
 	@Override
@@ -70,7 +69,8 @@ public final class MarkHost extends APIServlet.APIRequestHandler {
 
 		try {
 
-			final String hallmark = Hallmark.generateHallmark(secretPhrase, host, weight, Hallmark.parseDate(dateValue));
+			final String hallmark = Hallmark.generateHallmark(secretPhrase, host, weight,
+					Hallmark.parseDate(dateValue));
 
 			final JSONObject response = new JSONObject();
 			response.put("hallmark", hallmark);

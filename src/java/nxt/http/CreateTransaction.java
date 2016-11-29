@@ -38,35 +38,37 @@ import nxt.util.Convert;
 
 abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 
-	private static final String[] commonParameters = new String[]{"secretPhrase", "publicKey", "feeNQT",
-			"deadline", "referencedTransactionFullHash", "broadcast",
-			"message", "messageIsText", "messageIsPrunable",
-			"messageToEncrypt", "messageToEncryptIsText", "encryptedMessageData", "encryptedMessageNonce", "encryptedMessageIsPrunable", "compressMessageToEncrypt",
-			"messageToEncryptToSelf", "messageToEncryptToSelfIsText", "encryptToSelfMessageData", "encryptToSelfMessageNonce", "compressMessageToEncryptToSelf",
-			"phased", "phasingFinishHeight", "phasingVotingModel", "phasingQuorum", "phasingMinBalance", "phasingHolding", "phasingMinBalanceModel",
-			"phasingWhitelisted", "phasingWhitelisted", "phasingWhitelisted",
-			"phasingLinkedFullHash", "phasingLinkedFullHash", "phasingLinkedFullHash",
-			"phasingHashedSecret", "phasingHashedSecretAlgorithm",
-			"recipientPublicKey",
-			"ecBlockId", "ecBlockHeight"};
+	private static final String[] commonParameters = new String[] { "secretPhrase", "publicKey", "feeNQT", "deadline",
+			"referencedTransactionFullHash", "broadcast", "message", "messageIsText", "messageIsPrunable",
+			"messageToEncrypt", "messageToEncryptIsText", "encryptedMessageData", "encryptedMessageNonce",
+			"encryptedMessageIsPrunable", "compressMessageToEncrypt", "messageToEncryptToSelf",
+			"messageToEncryptToSelfIsText", "encryptToSelfMessageData", "encryptToSelfMessageNonce",
+			"compressMessageToEncryptToSelf", "phased", "phasingFinishHeight", "phasingVotingModel", "phasingQuorum",
+			"phasingMinBalance", "phasingHolding", "phasingMinBalanceModel", "phasingWhitelisted", "phasingWhitelisted",
+			"phasingWhitelisted", "phasingLinkedFullHash", "phasingLinkedFullHash", "phasingLinkedFullHash",
+			"phasingHashedSecret", "phasingHashedSecretAlgorithm", "recipientPublicKey", "ecBlockId", "ecBlockHeight" };
 
 	private static String[] addCommonParameters(final String[] parameters) {
-		final String[] result = Arrays.copyOf(parameters, parameters.length + CreateTransaction.commonParameters.length);
-		System.arraycopy(CreateTransaction.commonParameters, 0, result, parameters.length, CreateTransaction.commonParameters.length);
+		final String[] result = Arrays.copyOf(parameters,
+				parameters.length + CreateTransaction.commonParameters.length);
+		System.arraycopy(CreateTransaction.commonParameters, 0, result, parameters.length,
+				CreateTransaction.commonParameters.length);
 		return result;
 	}
 
 	CreateTransaction(final APITag[] apiTags, final String... parameters) {
 		super(apiTags, CreateTransaction.addCommonParameters(parameters));
 		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) {
-			throw new RuntimeException("CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
+			throw new RuntimeException(
+					"CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
 		}
 	}
 
 	CreateTransaction(final String fileParameter, final APITag[] apiTags, final String... parameters) {
 		super(fileParameter, apiTags, CreateTransaction.addCommonParameters(parameters));
 		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) {
-			throw new RuntimeException("CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
+			throw new RuntimeException(
+					"CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
 		}
 	}
 
@@ -75,25 +77,24 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 		return false;
 	}
 
-	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount, final Attachment attachment)
-			throws NxtException {
+	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount,
+			final Attachment attachment) throws NxtException {
 		return this.createTransaction(req, senderAccount, 0, 0, attachment);
 	}
 
-
-	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount, final long recipientId, final long amountNQT)
-			throws NxtException {
+	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount,
+			final long recipientId, final long amountNQT) throws NxtException {
 		return this.createTransaction(req, senderAccount, recipientId, amountNQT, Attachment.ORDINARY_PAYMENT);
 	}
 
-	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount, final long recipientId,
-			final long amountNQT, final Attachment attachment) throws NxtException {
+	final JSONStreamAware createTransaction(final HttpServletRequest req, final Account senderAccount,
+			final long recipientId, final long amountNQT, final Attachment attachment) throws NxtException {
 		final String deadlineValue = req.getParameter("deadline");
-		final String referencedTransactionFullHash = Convert.emptyToNull(req.getParameter("referencedTransactionFullHash"));
+		final String referencedTransactionFullHash = Convert
+				.emptyToNull(req.getParameter("referencedTransactionFullHash"));
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, false);
 		final String publicKeyValue = Convert.emptyToNull(req.getParameter("publicKey"));
 		final boolean broadcast = !"false".equalsIgnoreCase(req.getParameter("broadcast")) && (secretPhrase != null);
-
 
 		Appendix.PrunableSourceCode prunableSourceCode = null;
 		if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK) {
@@ -133,17 +134,20 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 
 		final JSONObject response = new JSONObject();
 
-		// shouldn't try to get publicKey from senderAccount as it may have not been set yet
+		// shouldn't try to get publicKey from senderAccount as it may have not
+		// been set yet
 		byte[] publicKey = null;
-		if(attachment instanceof Attachment.RedeemAttachment){
+		if (attachment instanceof Attachment.RedeemAttachment) {
 			publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
-		}else{
-			publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase) : Convert.parseHexString(publicKeyValue);
+		} else {
+			publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
+					: Convert.parseHexString(publicKeyValue);
 		}
 
 		try {
-			final Transaction.Builder builder = Nxt.newTransactionBuilder(publicKey, amountNQT, feeNQT,
-					deadline, attachment).referencedTransactionFullHash(referencedTransactionFullHash);
+			final Transaction.Builder builder = Nxt
+					.newTransactionBuilder(publicKey, amountNQT, feeNQT, deadline, attachment)
+					.referencedTransactionFullHash(referencedTransactionFullHash);
 			if (attachment.getTransactionType().canHaveRecipient()) {
 				builder.recipientId(recipientId);
 			}
@@ -167,7 +171,8 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 			response.put("transactionJSON", transactionJSON);
 			try {
 				response.put("unsignedTransactionBytes", Convert.toHexString(transaction.getUnsignedBytes()));
-			} catch (final NxtException.NotYetEncryptedException ignore) {}
+			} catch (final NxtException.NotYetEncryptedException ignore) {
+			}
 			if (secretPhrase != null) {
 				response.put("transaction", transaction.getStringId());
 				response.put("fullHash", transactionJSON.get("fullHash"));
@@ -177,12 +182,14 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 			if (broadcast) {
 				Nxt.getTransactionProcessor().broadcast(transaction);
 
-				// Now, if transaction was my redeem transaction, try to forge a block right away
-				if((secretPhrase != null) && (transaction.getType() == Payment.REDEEM)){
-					try{
+				// Now, if transaction was my redeem transaction, try to forge a
+				// block right away
+				if ((secretPhrase != null) && (transaction.getType() == Payment.REDEEM)) {
+					try {
 
-						BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase), Nxt.getEpochTime());
-					}catch(final Exception e){
+						BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase),
+								Nxt.getEpochTime());
+					} catch (final Exception e) {
 						// fall through
 					}
 				}

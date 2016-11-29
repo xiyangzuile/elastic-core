@@ -16,4 +16,5 @@
 
 package nxt.env;
 
-public class MacUserDirProvider extends UnixUserDirProvider {}
+public class MacUserDirProvider extends UnixUserDirProvider {
+}

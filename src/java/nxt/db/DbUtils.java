@@ -33,16 +33,19 @@ public final class DbUtils {
 			if (closeable != null) {
 				try {
 					closeable.close();
-				} catch (final Exception ignore) {}
+				} catch (final Exception ignore) {
+				}
 			}
 		}
 	}
 
-	public static <T> T[] getArray(final ResultSet rs, final String columnName, final Class<? extends T[]> cls) throws SQLException {
+	public static <T> T[] getArray(final ResultSet rs, final String columnName, final Class<? extends T[]> cls)
+			throws SQLException {
 		return DbUtils.getArray(rs, columnName, cls, null);
 	}
 
-	public static <T> T[] getArray(final ResultSet rs, final String columnName, final Class<? extends T[]> cls, final T[] ifNull) throws SQLException {
+	public static <T> T[] getArray(final ResultSet rs, final String columnName, final Class<? extends T[]> cls,
+			final T[] ifNull) throws SQLException {
 		final Array array = rs.getArray(columnName);
 		if (array != null) {
 			final Object[] objects = (Object[]) array.getArray();
@@ -53,7 +56,7 @@ public final class DbUtils {
 	}
 
 	public static String limitsClause(final int from, final int to) {
-		final int limit = (to >=0) && (to >= from) && (to < Integer.MAX_VALUE) ? (to - from) + 1 : 0;
+		final int limit = (to >= 0) && (to >= from) && (to < Integer.MAX_VALUE) ? (to - from) + 1 : 0;
 		if ((limit > 0) && (from > 0)) {
 			return " LIMIT ? OFFSET ? ";
 		} else if (limit > 0) {
@@ -76,7 +79,8 @@ public final class DbUtils {
 
 	}
 
-	public static <T> void setArray(final PreparedStatement pstmt, final int index, final T[] array) throws SQLException {
+	public static <T> void setArray(final PreparedStatement pstmt, final int index, final T[] array)
+			throws SQLException {
 		if (array != null) {
 			pstmt.setObject(index, array);
 		} else {
@@ -84,7 +88,8 @@ public final class DbUtils {
 		}
 	}
 
-	public static <T> void setArrayEmptyToNull(final PreparedStatement pstmt, final int index, final T[] array) throws SQLException {
+	public static <T> void setArrayEmptyToNull(final PreparedStatement pstmt, final int index, final T[] array)
+			throws SQLException {
 		if ((array != null) && (array.length > 0)) {
 			pstmt.setObject(index, array);
 		} else {
@@ -92,7 +97,8 @@ public final class DbUtils {
 		}
 	}
 
-	public static void setBytes(final PreparedStatement pstmt, final int index, final byte[] bytes) throws SQLException {
+	public static void setBytes(final PreparedStatement pstmt, final int index, final byte[] bytes)
+			throws SQLException {
 		if (bytes != null) {
 			pstmt.setBytes(index, bytes);
 		} else {
@@ -100,7 +106,8 @@ public final class DbUtils {
 		}
 	}
 
-	public static void setIntZeroToNull(final PreparedStatement pstmt, final int index, final int n) throws SQLException {
+	public static void setIntZeroToNull(final PreparedStatement pstmt, final int index, final int n)
+			throws SQLException {
 		if (n != 0) {
 			pstmt.setInt(index, n);
 		} else {
@@ -108,8 +115,9 @@ public final class DbUtils {
 		}
 	}
 
-	public static int setLimits(int index, final PreparedStatement pstmt, final int from, final int to) throws SQLException {
-		final int limit = (to >=0) && (to >= from) && (to < Integer.MAX_VALUE) ? (to - from) + 1 : 0;
+	public static int setLimits(int index, final PreparedStatement pstmt, final int from, final int to)
+			throws SQLException {
+		final int limit = (to >= 0) && (to >= from) && (to < Integer.MAX_VALUE) ? (to - from) + 1 : 0;
 		if (limit > 0) {
 			pstmt.setInt(index++, limit);
 		}
@@ -127,7 +135,8 @@ public final class DbUtils {
 		}
 	}
 
-	public static void setLongZeroToNull(final PreparedStatement pstmt, final int index, final long l) throws SQLException {
+	public static void setLongZeroToNull(final PreparedStatement pstmt, final int index, final long l)
+			throws SQLException {
 		if (l != 0) {
 			pstmt.setLong(index, l);
 		} else {
@@ -135,7 +144,8 @@ public final class DbUtils {
 		}
 	}
 
-	public static void setShortZeroToNull(final PreparedStatement pstmt, final int index, final short s) throws SQLException {
+	public static void setShortZeroToNull(final PreparedStatement pstmt, final int index, final short s)
+			throws SQLException {
 		if (s != 0) {
 			pstmt.setShort(index, s);
 		} else {
@@ -151,6 +161,7 @@ public final class DbUtils {
 		}
 	}
 
-	private DbUtils() {} // never
+	private DbUtils() {
+	} // never
 
 }

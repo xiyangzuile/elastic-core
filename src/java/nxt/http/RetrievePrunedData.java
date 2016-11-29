@@ -24,10 +24,11 @@ import org.json.simple.JSONStreamAware;
 import nxt.Nxt;
 
 /**
- * <p>RetrievePrunedData will schedule a background task to retrieve data which
- * has been pruned.  The nxt.maxPrunableLifetime property determines the
- * data that will be retrieved.  Data is retrieved from a random peer with
- * the PRUNABLE service.
+ * <p>
+ * RetrievePrunedData will schedule a background task to retrieve data which has
+ * been pruned. The nxt.maxPrunableLifetime property determines the data that
+ * will be retrieved. Data is retrieved from a random peer with the PRUNABLE
+ * service.
  * </p>
  */
 public class RetrievePrunedData extends APIServlet.APIRequestHandler {
@@ -35,7 +36,7 @@ public class RetrievePrunedData extends APIServlet.APIRequestHandler {
 	static final RetrievePrunedData instance = new RetrievePrunedData();
 
 	private RetrievePrunedData() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

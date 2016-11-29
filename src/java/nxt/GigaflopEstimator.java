@@ -84,8 +84,7 @@ public class GigaflopEstimator {
 							counter = counter + 1;
 							PastBlocksMass += b.countNumberPOWPerWorkId(next.getId());
 							seconds_passed = currentBlock.getTimestamp() - b.getTimestamp();
-							if (seconds_passed < 0)
-							{
+							if (seconds_passed < 0) {
 								seconds_passed = 60 * counter; // Crippled
 							}
 							// timestamps,
@@ -118,18 +117,22 @@ public class GigaflopEstimator {
 						final BigDecimal workTarget = new BigDecimal(next.getWork_min_pow_target_bigint());
 						final BigDecimal minTarget = new BigDecimal(Constants.least_possible_target);
 						double factor = 0;
-						try{
+						try {
 							final BigDecimal quot = workTarget.divide(minTarget);
 							factor = quot.doubleValue();
-						}catch(final Exception e){
-							factor = 1; // FIXME TODO, make this more precise maybe?
+						} catch (final Exception e) {
+							factor = 1; // FIXME TODO, make this more precise
+										// maybe?
 						}
 
 						// scale number
-						pows_per_360_seconds = pows_per_360_seconds*factor*GigaflopEstimator.stretch_factor_map.get(next.getWork_id());
+						pows_per_360_seconds = pows_per_360_seconds * factor
+								* GigaflopEstimator.stretch_factor_map.get(next.getWork_id());
 
 						// Estimate flops on this job
-						totalGigaFlops += (pows_per_360_seconds/GigaflopEstimator.average_pow_per_360s_on_6700hq_simplest_program) * GigaflopEstimator.gigaflops_6700hq_i7_per_core;
+						totalGigaFlops += (pows_per_360_seconds
+								/ GigaflopEstimator.average_pow_per_360s_on_6700hq_simplest_program)
+								* GigaflopEstimator.gigaflops_6700hq_i7_per_core;
 					}
 					GigaflopEstimator.estimation = totalGigaFlops;
 					// break if limit of evaluations reached
@@ -143,22 +146,21 @@ public class GigaflopEstimator {
 		return GigaflopEstimator.estimation;
 	}
 
-	public static String estimateText(){
+	public static String estimateText() {
 		String ret = "";
 		final double gflops = GigaflopEstimator.estimateGigaflops();
-		if(gflops > 1000000) {
-			ret = GigaflopEstimator.round(gflops/1000000,2) + " Pflops";
-		} else if(gflops > 1000) {
-			ret = GigaflopEstimator.round(gflops/1000,2) + " Tflops";
+		if (gflops > 1000000) {
+			ret = GigaflopEstimator.round(gflops / 1000000, 2) + " Pflops";
+		} else if (gflops > 1000) {
+			ret = GigaflopEstimator.round(gflops / 1000, 2) + " Tflops";
 		} else {
-			ret = GigaflopEstimator.round(gflops,2) + " Gflops";
+			ret = GigaflopEstimator.round(gflops, 2) + " Gflops";
 		}
 		return ret;
 	}
 
 	public static int get_repetitions(final long firstTime) {
-		if (firstTime == 0)
-		{
+		if (firstTime == 0) {
 			return 25; // arbitrary
 		}
 
@@ -185,8 +187,7 @@ public class GigaflopEstimator {
 		try {
 			final double dur = GigaflopEstimator.measure_source(src, false);
 
-			if (dur == 0)
-			{
+			if (dur == 0) {
 				return; // Impossible, ignore this crap
 			}
 
@@ -209,11 +210,13 @@ public class GigaflopEstimator {
 	}
 
 	public static void measure_baseline() {
-		if (!GigaflopEstimator.has_already_measured_baseline() && (!GigaflopEstimator.failed || (GigaflopEstimator.last_failed < (System.currentTimeMillis() - (10 * 1000))))) {
+		if (!GigaflopEstimator.has_already_measured_baseline() && (!GigaflopEstimator.failed
+				|| (GigaflopEstimator.last_failed < (System.currentTimeMillis() - (10 * 1000))))) {
 			try {
-				GigaflopEstimator.baseline_duration_mseconds = GigaflopEstimator.measure_source(GigaflopEstimator.simple_source, true);
-				Logger.logInfoMessage("We measured, that the simplest program executed in " + GigaflopEstimator.baseline_duration_mseconds
-						+ " MILLISECONDS on this machine ...");
+				GigaflopEstimator.baseline_duration_mseconds = GigaflopEstimator
+						.measure_source(GigaflopEstimator.simple_source, true);
+				Logger.logInfoMessage("We measured, that the simplest program executed in "
+						+ GigaflopEstimator.baseline_duration_mseconds + " MILLISECONDS on this machine ...");
 			} catch (final ParseException e) {
 				GigaflopEstimator.failed = true;
 				GigaflopEstimator.last_failed = System.currentTimeMillis();
@@ -228,7 +231,8 @@ public class GigaflopEstimator {
 		double dur = 0;
 
 		long startTime = System.currentTimeMillis();
-		Executioner.executeProofOfWork(src, GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY, 12345678, 87654321),
+		Executioner.executeProofOfWork(src,
+				GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY, 12345678, 87654321),
 				Constants.least_possible_target, Constants.least_possible_target);
 		long estimatedTime = System.currentTimeMillis() - startTime;
 		if (debug) {
@@ -241,9 +245,11 @@ public class GigaflopEstimator {
 			int rept = GigaflopEstimator.get_repetitions(estimatedTime);
 			startTime = System.currentTimeMillis();
 			for (int i = 1; i <= rept; ++i) {
-				Executioner.executeProofOfWork(src,
-						GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY, 12345678 + i, 87654321 + i),
-						Constants.least_possible_target, Constants.least_possible_target);
+				Executioner
+						.executeProofOfWork(src,
+								GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY, 12345678 + i,
+										87654321 + i),
+								Constants.least_possible_target, Constants.least_possible_target);
 			}
 			estimatedTime = (System.currentTimeMillis() - startTime);
 			if (debug) {
@@ -260,9 +266,11 @@ public class GigaflopEstimator {
 				}
 				startTime = System.currentTimeMillis();
 				for (int i = 1; i <= rept; ++i) {
-					Executioner.executeProofOfWork(src,
-							GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY, 12345678 + i, 87654321 + i),
-							Constants.least_possible_target, Constants.least_possible_target);
+					Executioner
+							.executeProofOfWork(src,
+									GigaflopEstimator.personalizedIntStreamPseudo(Genesis.CREATOR_PUBLIC_KEY,
+											12345678 + i, 87654321 + i),
+									Constants.least_possible_target, Constants.least_possible_target);
 				}
 				estimatedTime = (System.currentTimeMillis() - startTime);
 				if (debug) {
@@ -283,7 +291,8 @@ public class GigaflopEstimator {
 	public static int[] personalizedIntStreamPseudo(final byte[] publicKey, final long blockId, final long workId) {
 		final int[] stream = new int[12];
 		GigaflopEstimator.dig.reset();
-		GigaflopEstimator.dig.update(publicKey); // do public key instead of multiplicator! Just
+		GigaflopEstimator.dig.update(publicKey); // do public key instead of
+													// multiplicator! Just
 		// to have the same amount of "hashing
 		// overhead".
 		GigaflopEstimator.dig.update(publicKey);
@@ -325,6 +334,7 @@ public class GigaflopEstimator {
 		GigaflopEstimator.durations_map.remove(workId);
 		GigaflopEstimator.stretch_factor_map.remove(workId);
 	}
+
 	public static double round(double value, final int places) {
 		if (places < 0) {
 			throw new IllegalArgumentException();
@@ -335,6 +345,7 @@ public class GigaflopEstimator {
 		final long tmp = Math.round(value);
 		return (double) tmp / factor;
 	}
+
 	public static int toInt(final byte[] bytes, final int offset) {
 		int ret = 0;
 		for (int i = 0; (i < 4) && ((i + offset) < bytes.length); i++) {

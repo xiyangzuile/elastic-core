@@ -30,7 +30,7 @@ public final class GetAllWaitingTransactions extends APIServlet.APIRequestHandle
 	static final GetAllWaitingTransactions instance = new GetAllWaitingTransactions();
 
 	private GetAllWaitingTransactions() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

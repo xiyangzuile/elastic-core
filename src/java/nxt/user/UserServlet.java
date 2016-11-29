@@ -33,7 +33,7 @@ import nxt.Nxt;
 import nxt.NxtException;
 import nxt.util.Logger;
 
-public final class UserServlet extends HttpServlet  {
+public final class UserServlet extends HttpServlet {
 
 	/**
 	 * 
@@ -42,6 +42,7 @@ public final class UserServlet extends HttpServlet  {
 
 	abstract static class UserRequestHandler {
 		abstract JSONStreamAware processRequest(HttpServletRequest request, User user) throws NxtException, IOException;
+
 		boolean requirePost() {
 			return false;
 		}
@@ -49,10 +50,10 @@ public final class UserServlet extends HttpServlet  {
 
 	private static final boolean enforcePost = Nxt.getBooleanProperty("nxt.uiServerEnforcePOST");
 
-	private static final Map<String,UserRequestHandler> userRequestHandlers;
+	private static final Map<String, UserRequestHandler> userRequestHandlers;
 
 	static {
-		final Map<String,UserRequestHandler> map = new HashMap<>();
+		final Map<String, UserRequestHandler> map = new HashMap<>();
 		map.put("generateAuthorizationToken", GenerateAuthorizationToken.instance);
 		map.put("getInitialData", GetInitialData.instance);
 		map.put("getNewData", GetNewData.instance);
@@ -66,12 +67,14 @@ public final class UserServlet extends HttpServlet  {
 	}
 
 	@Override
-	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+			throws ServletException, IOException {
 		this.process(req, resp);
 	}
 
 	@Override
-	protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+	protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
+			throws ServletException, IOException {
 		this.process(req, resp);
 	}
 
@@ -91,7 +94,7 @@ public final class UserServlet extends HttpServlet  {
 			}
 			user = Users.getUser(userPasscode);
 
-			if ((Users.allowedUserHosts != null) && ! Users.allowedUserHosts.contains(req.getRemoteHost())) {
+			if ((Users.allowedUserHosts != null) && !Users.allowedUserHosts.contains(req.getRemoteHost())) {
 				user.enqueue(JSONResponses.DENY_ACCESS);
 				return;
 			}
@@ -108,7 +111,7 @@ public final class UserServlet extends HttpServlet  {
 				return;
 			}
 
-			if (UserServlet.enforcePost && userRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
+			if (UserServlet.enforcePost && userRequestHandler.requirePost() && !"POST".equals(req.getMethod())) {
 				user.enqueue(JSONResponses.POST_REQUIRED);
 				return;
 			}
@@ -118,7 +121,7 @@ public final class UserServlet extends HttpServlet  {
 				user.enqueue(response);
 			}
 
-		} catch (RuntimeException|NxtException e) {
+		} catch (RuntimeException | NxtException e) {
 
 			Logger.logMessage("Error processing GET request", e);
 			if (user != null) {

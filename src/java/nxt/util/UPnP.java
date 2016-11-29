@@ -44,7 +44,8 @@ public class UPnP {
 	/**
 	 * Add a port to the UPnP mapping
 	 *
-	 * @param   port                Port to add
+	 * @param port
+	 *            Port to add
 	 */
 	public static synchronized void addPort(final int port) {
 		if (!UPnP.initDone) {
@@ -74,7 +75,8 @@ public class UPnP {
 	/**
 	 * Delete a port from the UPnP mapping
 	 *
-	 * @param   port                Port to delete
+	 * @param port
+	 *            Port to delete
 	 */
 	public static synchronized void deletePort(final int port) {
 		if (!UPnP.initDone || (UPnP.gateway == null)) {
@@ -97,7 +99,7 @@ public class UPnP {
 	/**
 	 * Return the external address
 	 *
-	 * @return                      External address or null if the address is not available
+	 * @return External address or null if the address is not available
 	 */
 	public static synchronized InetAddress getExternalAddress() {
 		if (!UPnP.initDone) {
@@ -109,7 +111,7 @@ public class UPnP {
 	/**
 	 * Return the local address
 	 *
-	 * @return                      Local address or null if the address is not available
+	 * @return Local address or null if the address is not available
 	 */
 	public static synchronized InetAddress getLocalAddress() {
 		if (!UPnP.initDone) {
@@ -128,15 +130,16 @@ public class UPnP {
 		//
 		try {
 			Logger.logInfoMessage("Looking for UPnP gateway device...");
-			GatewayDevice.setHttpReadTimeout(Nxt.getIntProperty("nxt.upnpGatewayTimeout", GatewayDevice.getHttpReadTimeout()));
+			GatewayDevice.setHttpReadTimeout(
+					Nxt.getIntProperty("nxt.upnpGatewayTimeout", GatewayDevice.getHttpReadTimeout()));
 			final GatewayDiscover discover = new GatewayDiscover();
 			discover.setTimeout(Nxt.getIntProperty("nxt.upnpDiscoverTimeout", discover.getTimeout()));
 			final Map<InetAddress, GatewayDevice> gatewayMap = discover.discover();
 			if ((gatewayMap == null) || gatewayMap.isEmpty()) {
 				Logger.logDebugMessage("There are no UPnP gateway devices");
 			} else {
-				gatewayMap.forEach((addr, device) ->
-				Logger.logDebugMessage("UPnP gateway device found on " + addr.getHostAddress()));
+				gatewayMap.forEach((addr, device) -> Logger
+						.logDebugMessage("UPnP gateway device found on " + addr.getHostAddress()));
 				UPnP.gateway = discover.getValidGateway();
 				if (UPnP.gateway == null) {
 					Logger.logDebugMessage("There is no connected UPnP gateway device");

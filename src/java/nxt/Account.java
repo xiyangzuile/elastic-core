@@ -194,7 +194,8 @@ public final class Account {
 		 */
 		private static final long serialVersionUID = -5542609852432703140L;
 
-		DoubleSpendingException(final String message, final long accountId, final long confirmed, final long unconfirmed) {
+		DoubleSpendingException(final String message, final long accountId, final long confirmed,
+				final long unconfirmed) {
 			super(message + " account: " + Long.toUnsignedString(accountId) + " confirmed: " + confirmed
 					+ " unconfirmed: " + unconfirmed);
 		}
@@ -380,712 +381,713 @@ public final class Account {
 
 	};
 
-
 	private static final ConcurrentMap<DbKey, byte[]> publicKeyCache = Nxt
 			.getBooleanProperty("nxt.enablePublicKeyCache") ? new ConcurrentHashMap<>() : null;
 
-			private static final Listeners<Account, Event> listeners = new Listeners<>();
+	private static final Listeners<Account, Event> listeners = new Listeners<>();
 
-			private static final Listeners<AccountLease, Event> leaseListeners = new Listeners<>();
+	private static final Listeners<AccountLease, Event> leaseListeners = new Listeners<>();
 
-			static {
+	static {
 
-				Nxt.getBlockchainProcessor().addListener(block -> {
-					final int height = block.getHeight();
+		Nxt.getBlockchainProcessor().addListener(block -> {
+			final int height = block.getHeight();
 
-					final List<AccountLease> changingLeases = new ArrayList<>();
-					try (DbIterator<AccountLease> leases = Account.getLeaseChangingAccounts(height)) {
-						while (leases.hasNext()) {
-							changingLeases.add(leases.next());
-						}
-					}
-					for (final AccountLease lease : changingLeases) {
-						final Account lessor = Account.getAccount(lease.lessorId);
+			final List<AccountLease> changingLeases = new ArrayList<>();
+			try (DbIterator<AccountLease> leases = Account.getLeaseChangingAccounts(height)) {
+				while (leases.hasNext()) {
+					changingLeases.add(leases.next());
+				}
+			}
+			for (final AccountLease lease : changingLeases) {
+				final Account lessor = Account.getAccount(lease.lessorId);
+				if (height == lease.currentLeasingHeightFrom) {
+					lessor.activeLesseeId = lease.currentLesseeId;
+					Account.leaseListeners.notify(lease, Event.LEASE_STARTED);
+				} else if (height == lease.currentLeasingHeightTo) {
+					Account.leaseListeners.notify(lease, Event.LEASE_ENDED);
+					lessor.activeLesseeId = 0;
+					if (lease.nextLeasingHeightFrom == 0) {
+						lease.currentLeasingHeightFrom = 0;
+						lease.currentLeasingHeightTo = 0;
+						lease.currentLesseeId = 0;
+						Account.accountLeaseTable.delete(lease);
+					} else {
+						lease.currentLeasingHeightFrom = lease.nextLeasingHeightFrom;
+						lease.currentLeasingHeightTo = lease.nextLeasingHeightTo;
+						lease.currentLesseeId = lease.nextLesseeId;
+						lease.nextLeasingHeightFrom = 0;
+						lease.nextLeasingHeightTo = 0;
+						lease.nextLesseeId = 0;
+						Account.accountLeaseTable.insert(lease);
 						if (height == lease.currentLeasingHeightFrom) {
 							lessor.activeLesseeId = lease.currentLesseeId;
 							Account.leaseListeners.notify(lease, Event.LEASE_STARTED);
-						} else if (height == lease.currentLeasingHeightTo) {
-							Account.leaseListeners.notify(lease, Event.LEASE_ENDED);
-							lessor.activeLesseeId = 0;
-							if (lease.nextLeasingHeightFrom == 0) {
-								lease.currentLeasingHeightFrom = 0;
-								lease.currentLeasingHeightTo = 0;
-								lease.currentLesseeId = 0;
-								Account.accountLeaseTable.delete(lease);
-							} else {
-								lease.currentLeasingHeightFrom = lease.nextLeasingHeightFrom;
-								lease.currentLeasingHeightTo = lease.nextLeasingHeightTo;
-								lease.currentLesseeId = lease.nextLesseeId;
-								lease.nextLeasingHeightFrom = 0;
-								lease.nextLeasingHeightTo = 0;
-								lease.nextLesseeId = 0;
-								Account.accountLeaseTable.insert(lease);
-								if (height == lease.currentLeasingHeightFrom) {
-									lessor.activeLesseeId = lease.currentLesseeId;
-									Account.leaseListeners.notify(lease, Event.LEASE_STARTED);
-								}
-							}
-						}
-						lessor.save();
-					}
-				}, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
-
-				if (Account.publicKeyCache != null) {
-
-					Nxt.getBlockchainProcessor().addListener(block -> {
-						Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(block.getGeneratorId()));
-						block.getTransactions().forEach(transaction -> {
-							Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(transaction.getSenderId()));
-							if (!transaction
-									.getAppendages(appendix -> (appendix instanceof Appendix.PublicKeyAnnouncement), false)
-									.isEmpty()) {
-								Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(transaction.getRecipientId()));
-							}
-
-						});
-					}, BlockchainProcessor.Event.BLOCK_POPPED);
-
-					Nxt.getBlockchainProcessor().addListener(block -> Account.publicKeyCache.clear(),
-							BlockchainProcessor.Event.RESCAN_BEGIN);
-
-				}
-
-			}
-
-			public static boolean addLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
-				return Account.leaseListeners.addListener(listener, eventType);
-			}
-
-			public static boolean addListener(final Listener<Account> listener, final Event eventType) {
-				return Account.listeners.addListener(listener, eventType);
-			}
-
-			public static Account addOrGetAccount(final byte[] pubkey) {
-				final long id = Account.getId(pubkey);
-				if (id == 0) {
-					throw new IllegalArgumentException("Invalid accountId 0");
-				}
-				final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
-				Account account = Account.accountTable.get(dbKey);
-				if (account == null) {
-					account = Account.accountTable.newEntity(dbKey);
-					PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-					if (publicKey == null) {
-						publicKey = Account.publicKeyTable.newEntity(dbKey);
-						Account.publicKeyTable.insert(publicKey);
-					}
-					account.publicKey = publicKey;
-				}
-				return account;
-			}
-
-			public static Account addOrGetAccount(final long id) {
-				if (id == 0) {
-					throw new IllegalArgumentException("Invalid accountId 0");
-				}
-				final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
-				Account account = Account.accountTable.get(dbKey);
-				if (account == null) {
-					account = Account.accountTable.newEntity(dbKey);
-					PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-					if (publicKey == null) {
-						publicKey = Account.publicKeyTable.newEntity(dbKey);
-						Account.publicKeyTable.insert(publicKey);
-					}
-					account.publicKey = publicKey;
-				}
-				return account;
-			}
-
-			private static void checkBalance(final long accountId, final long confirmed, final long unconfirmed) {
-				if (accountId == Genesis.CREATOR_ID) {
-					return;
-				}
-				if (confirmed < 0) {
-					throw new DoubleSpendingException("Negative balance or quantity: ", accountId, confirmed, unconfirmed);
-				}
-				if (unconfirmed < 0) {
-					throw new DoubleSpendingException("Negative unconfirmed balance or quantity: ", accountId, confirmed,
-							unconfirmed);
-				}
-				if (unconfirmed > confirmed) {
-					throw new DoubleSpendingException("Unconfirmed exceeds confirmed balance or quantity: ", accountId,
-							confirmed, unconfirmed);
-				}
-			}
-
-			public static byte[] decryptFrom(final byte[] publicKey, final EncryptedData encryptedData, final String recipientSecretPhrase,
-					final boolean uncompress) {
-				byte[] decrypted = encryptedData.decrypt(recipientSecretPhrase, publicKey);
-				if (uncompress && (decrypted.length > 0)) {
-					decrypted = Convert.uncompress(decrypted);
-				}
-				return decrypted;
-			}
-
-
-
-			public static EncryptedData encryptTo(final byte[] publicKey, byte[] data, final String senderSecretPhrase, final boolean compress) {
-				if (compress && (data.length > 0)) {
-					data = Convert.compress(data);
-				}
-				return EncryptedData.encrypt(data, senderSecretPhrase, publicKey);
-			}
-
-			public static Account getAccount(final byte[] publicKey) {
-				final long accountId = Account.getId(publicKey);
-				final Account account = Account.getAccount(accountId);
-				if (account == null) {
-					return null;
-				}
-				if (account.publicKey == null) {
-					account.publicKey = Account.publicKeyTable.get(Account.accountDbKeyFactory.newKey(account));
-				}
-				if ((account.publicKey == null) || (account.publicKey.publicKey == null)
-						|| Arrays.equals(account.publicKey.publicKey, publicKey)) {
-					return account;
-				}
-				throw new RuntimeException("DUPLICATE KEY for account " + Long.toUnsignedString(accountId) + " existing key "
-						+ Convert.toHexString(account.publicKey.publicKey) + " new key " + Convert.toHexString(publicKey));
-			}
-
-			public static Account getAccount(final long id) {
-				final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
-				Account account = Account.accountTable.get(dbKey);
-				if (account == null) {
-					final PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-					if (publicKey != null) {
-						account = Account.accountTable.newEntity(dbKey);
-						account.publicKey = publicKey;
-					}
-				}
-				return account;
-			}
-
-			public static Account getAccount(final long id, final int height) {
-				final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
-				Account account = Account.accountTable.get(dbKey, height);
-				if (account == null) {
-					final PublicKey publicKey = Account.publicKeyTable.get(dbKey, height);
-					if (publicKey != null) {
-						account = Account.accountTable.newEntity(dbKey);
-						account.publicKey = publicKey;
-					}
-				}
-				return account;
-			}
-
-			public static int getAccountLeaseCount() {
-				return Account.accountLeaseTable.getCount();
-			}
-
-			public static int getActiveLeaseCount() {
-				return Account.accountTable.getCount(new DbClause.NotNullClause("active_lessee_id"));
-			}
-
-			public static int getCount() {
-				return Account.publicKeyTable.getCount();
-			}
-
-			public static long getId(final byte[] publicKey) {
-				final byte[] publicKeyHash = Crypto.sha256().digest(publicKey);
-				return Convert.fullHashToId(publicKeyHash);
-			}
-
-
-			private static DbIterator<AccountLease> getLeaseChangingAccounts(final int height) {
-				Connection con = null;
-				try {
-					con = Db.db.getConnection();
-					final PreparedStatement pstmt = con.prepareStatement(
-							"SELECT * FROM account_lease WHERE current_leasing_height_from = ? AND latest = TRUE "
-									+ "UNION ALL SELECT * FROM account_lease WHERE current_leasing_height_to = ? AND latest = TRUE "
-									+ "ORDER BY current_lessee_id, lessor_id");
-					int i = 0;
-					pstmt.setInt(++i, height);
-					pstmt.setInt(++i, height);
-					return Account.accountLeaseTable.getManyBy(con, pstmt, true);
-				} catch (final SQLException e) {
-					DbUtils.close(con);
-					throw new RuntimeException(e.toString(), e);
-				}
-			}
-
-			public static byte[] getPublicKey(final long id) {
-				final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(id);
-				byte[] key = null;
-				if (Account.publicKeyCache != null) {
-					key = Account.publicKeyCache.get(dbKey);
-				}
-				if (key == null) {
-					final PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-					if ((publicKey == null) || ((key = publicKey.publicKey) == null)) {
-						return null;
-					}
-					if (Account.publicKeyCache != null) {
-						Account.publicKeyCache.put(dbKey, key);
-					}
-				}
-				return key;
-			}
-
-			static void init() {
-			}
-
-			public static boolean removeLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
-				return Account.leaseListeners.removeListener(listener, eventType);
-			}
-			public static boolean removeListener(final Listener<Account> listener, final Event eventType) {
-				return Account.listeners.removeListener(listener, eventType);
-			}
-			public static DbIterator<AccountInfo> searchAccounts(final String query, final int from, final int to) {
-				return Account.accountInfoTable.search(query, DbClause.EMPTY_CLAUSE, from, to);
-			}
-			static boolean setOrVerify(final long accountId, final byte[] key) {
-				final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(accountId);
-				PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-				if (publicKey == null) {
-					publicKey = Account.publicKeyTable.newEntity(dbKey);
-				}
-				if (publicKey.publicKey == null) {
-					publicKey.publicKey = key;
-					publicKey.height = Nxt.getBlockchain().getHeight();
-					return true;
-				}
-				return Arrays.equals(publicKey.publicKey, key);
-			}
-			private final long id;
-			private final DbKey dbKey;
-			private PublicKey publicKey;
-			private long balanceNQT;
-
-			private long unconfirmedBalanceNQT;
-
-			private long forgedBalanceNQT;
-
-			private long activeLesseeId;
-
-			private Set<ControlType> controls;
-
-			private Account(final long id) {
-				if (id != Crypto.rsDecode(Crypto.rsEncode(id))) {
-					Logger.logMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
-				}
-				this.id = id;
-				this.dbKey = Account.accountDbKeyFactory.newKey(this.id);
-				this.controls = Collections.emptySet();
-			}
-
-			private Account(final ResultSet rs, final DbKey dbKey) throws SQLException {
-				this.id = rs.getLong("id");
-				this.dbKey = dbKey;
-				this.balanceNQT = rs.getLong("balance");
-				this.unconfirmedBalanceNQT = rs.getLong("unconfirmed_balance");
-				this.forgedBalanceNQT = rs.getLong("forged_balance");
-				this.activeLesseeId = rs.getLong("active_lessee_id");
-				if (rs.getBoolean("has_control_phasing")) {
-					this.controls = Collections.unmodifiableSet(EnumSet.of(ControlType.PHASING_ONLY));
-				} else {
-					this.controls = Collections.emptySet();
-				}
-			}
-
-			void addControl(final ControlType control) {
-				if (this.controls.contains(control)) {
-					return;
-				}
-				final EnumSet<ControlType> newControls = EnumSet.of(control);
-				newControls.addAll(this.controls);
-				this.controls = Collections.unmodifiableSet(newControls);
-				Account.accountTable.insert(this);
-			}
-
-			void addToBalanceAndUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
-				this.addToBalanceAndUnconfirmedBalanceNQT(event, eventId, amountNQT, 0);
-			}
-
-			void addToBalanceAndUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT, final long feeNQT) {
-				if ((amountNQT == 0) && (feeNQT == 0)) {
-					return;
-				}
-				final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
-				this.balanceNQT = Math.addExact(this.balanceNQT, totalAmountNQT);
-				this.unconfirmedBalanceNQT = Math.addExact(this.unconfirmedBalanceNQT, totalAmountNQT);
-				this.addToGuaranteedBalanceNQT(totalAmountNQT);
-				Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
-				this.save();
-				Account.listeners.notify(this, Event.BALANCE);
-				Account.listeners.notify(this, Event.UNCONFIRMED_BALANCE);
-				if (AccountLedger.mustLogEntry(this.id, true)) {
-					if (feeNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
-								LedgerHolding.UNCONFIRMED_NXT_BALANCE, null, feeNQT, this.unconfirmedBalanceNQT - amountNQT));
-					}
-					if (amountNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.UNCONFIRMED_NXT_BALANCE,
-								null, amountNQT, this.unconfirmedBalanceNQT));
-					}
-				}
-				if (AccountLedger.mustLogEntry(this.id, false)) {
-					if (feeNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
-								LedgerHolding.NXT_BALANCE, null, feeNQT, this.balanceNQT - amountNQT));
-					}
-					if (amountNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.NXT_BALANCE, null,
-								amountNQT, this.balanceNQT));
-					}
-				}
-			}
-
-			void addToBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
-				this.addToBalanceNQT(event, eventId, amountNQT, 0);
-			}
-
-			void addToBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT, final long feeNQT) {
-				if ((amountNQT == 0) && (feeNQT == 0)) {
-					return;
-				}
-				final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
-				this.balanceNQT = Math.addExact(this.balanceNQT, totalAmountNQT);
-				this.addToGuaranteedBalanceNQT(totalAmountNQT);
-				Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
-				this.save();
-				Account.listeners.notify(this, Event.BALANCE);
-				if (AccountLedger.mustLogEntry(this.id, false)) {
-					if (feeNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
-								LedgerHolding.NXT_BALANCE, null, feeNQT, this.balanceNQT - amountNQT));
-					}
-					if (amountNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.NXT_BALANCE, null,
-								amountNQT, this.balanceNQT));
-					}
-				}
-			}
-
-			void addToForgedBalanceNQT(final long amountNQT) {
-				if (amountNQT == 0) {
-					return;
-				}
-				this.forgedBalanceNQT = Math.addExact(this.forgedBalanceNQT, amountNQT);
-				this.save();
-			}
-
-			private void addToGuaranteedBalanceNQT(final long amountNQT) {
-				if (amountNQT <= 0) {
-					return;
-				}
-				final int blockchainHeight = Nxt.getBlockchain().getHeight();
-				try (Connection con = Db.db.getConnection();
-						PreparedStatement pstmtSelect = con.prepareStatement(
-								"SELECT additions FROM account_guaranteed_balance " + "WHERE account_id = ? and height = ?");
-						PreparedStatement pstmtUpdate = con
-								.prepareStatement("MERGE INTO account_guaranteed_balance (account_id, "
-										+ " additions, height) KEY (account_id, height) VALUES(?, ?, ?)")) {
-					pstmtSelect.setLong(1, this.id);
-					pstmtSelect.setInt(2, blockchainHeight);
-					try (ResultSet rs = pstmtSelect.executeQuery()) {
-						long additions = amountNQT;
-						if (rs.next()) {
-							additions = Math.addExact(additions, rs.getLong("additions"));
-						}
-						pstmtUpdate.setLong(1, this.id);
-						pstmtUpdate.setLong(2, additions);
-						pstmtUpdate.setInt(3, blockchainHeight);
-						pstmtUpdate.executeUpdate();
-					}
-				} catch (final SQLException e) {
-					throw new RuntimeException(e.toString(), e);
-				}
-			}
-
-			void addToUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
-				this.addToUnconfirmedBalanceNQT(event, eventId, amountNQT, 0);
-			}
-
-			void addToUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT, final long feeNQT) {
-				if ((amountNQT == 0) && (feeNQT == 0)) {
-					return;
-				}
-				final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
-				this.unconfirmedBalanceNQT = Math.addExact(this.unconfirmedBalanceNQT, totalAmountNQT);
-				Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
-				this.save();
-				Account.listeners.notify(this, Event.UNCONFIRMED_BALANCE);
-				if (AccountLedger.mustLogEntry(this.id, true)) {
-					if (feeNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
-								LedgerHolding.UNCONFIRMED_NXT_BALANCE, null, feeNQT, this.unconfirmedBalanceNQT - amountNQT));
-					}
-					if (amountNQT != 0) {
-						AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.UNCONFIRMED_NXT_BALANCE,
-								null, amountNQT, this.unconfirmedBalanceNQT));
-					}
-				}
-			}
-
-			void apply(final byte[] key) {
-				PublicKey publicKey = Account.publicKeyTable.get(this.dbKey);
-				if (publicKey == null) {
-					publicKey = Account.publicKeyTable.newEntity(this.dbKey);
-				}
-				if (publicKey.publicKey == null) {
-					publicKey.publicKey = key;
-					Account.publicKeyTable.insert(publicKey);
-				} else if (!Arrays.equals(publicKey.publicKey, key)) {
-					throw new IllegalStateException("Public key mismatch");
-				} else if (publicKey.height >= (Nxt.getBlockchain().getHeight() - 1)) {
-					final PublicKey dbPublicKey = Account.publicKeyTable.get(this.dbKey, false);
-					if ((dbPublicKey == null) || (dbPublicKey.publicKey == null)) {
-						Account.publicKeyTable.insert(publicKey);
-					}
-				}
-				if (Account.publicKeyCache != null) {
-					Account.publicKeyCache.put(this.dbKey, key);
-				}
-				this.publicKey = publicKey;
-			}
-
-			public byte[] decryptFrom(final EncryptedData encryptedData, final String recipientSecretPhrase, final boolean uncompress) {
-				final byte[] key = Account.getPublicKey(this.id);
-				if (key == null) {
-					throw new IllegalArgumentException("Sender account doesn't have a public key set");
-				}
-				return Account.decryptFrom(key, encryptedData, recipientSecretPhrase, uncompress);
-			}
-
-			public EncryptedData encryptTo(final byte[] data, final String senderSecretPhrase, final boolean compress) {
-				final byte[] key = Account.getPublicKey(this.id);
-				if (key == null) {
-					throw new IllegalArgumentException("Recipient account doesn't have a public key set");
-				}
-				return Account.encryptTo(key, data, senderSecretPhrase, compress);
-			}
-
-			public AccountInfo getAccountInfo() {
-				return Account.accountInfoTable.get(Account.accountDbKeyFactory.newKey(this));
-			}
-
-			public AccountLease getAccountLease() {
-				return Account.accountLeaseTable.get(Account.accountDbKeyFactory.newKey(this));
-			}
-
-			public long getBalanceNQT() {
-				return this.balanceNQT;
-			}
-
-			public Set<ControlType> getControls() {
-				return this.controls;
-			}
-
-
-
-			public long getEffectiveBalanceNXT() {
-				return this.getEffectiveBalanceNXT(Nxt.getBlockchain().getHeight());
-			}
-
-			public long getEffectiveBalanceNXT(final int height) {
-
-				if (this.publicKey == null) {
-					this.publicKey = Account.publicKeyTable.get(Account.accountDbKeyFactory.newKey(this));
-				}
-
-				/* STRIPPED
-				|| height - this.publicKey.height <= 1440) {
-			return 0; // cfb: Accounts with the public key revealed less than
-						// 1440 blocks ago are not allowed to generate blocks
-		}*/
-
-				Nxt.getBlockchain().readLock();
-				try {
-					long effectiveBalanceNQT = this.getLessorsGuaranteedBalanceNQT(height);
-					if (this.activeLesseeId == 0) {
-						effectiveBalanceNQT += this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height);
-					}
-					return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0 : effectiveBalanceNQT / Constants.ONE_NXT;
-				} finally {
-					Nxt.getBlockchain().readUnlock();
-				}
-			}
-
-			public long getForgedBalanceNQT() {
-				return this.forgedBalanceNQT;
-			}
-
-			public long getGuaranteedBalanceNQT() {
-				return this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, Nxt.getBlockchain().getHeight());
-			}
-
-
-
-			public long getGuaranteedBalanceNQT(final int numberOfConfirmations, final int currentHeight) {
-				Nxt.getBlockchain().readLock();
-				try {
-					final int height = currentHeight - numberOfConfirmations;
-					if (((height + Constants.GUARANTEED_BALANCE_CONFIRMATIONS) < Nxt.getBlockchainProcessor()
-							.getMinRollbackHeight()) || (height > Nxt.getBlockchain().getHeight())) {
-						throw new IllegalArgumentException(
-								"Height " + height + " not available for guaranteed balance calculation");
-					}
-					try (Connection con = Db.db.getConnection();
-							PreparedStatement pstmt = con.prepareStatement("SELECT SUM (additions) AS additions "
-									+ "FROM account_guaranteed_balance WHERE account_id = ? AND height > ? AND height <= ?")) {
-						pstmt.setLong(1, this.id);
-						pstmt.setInt(2, height);
-						pstmt.setInt(3, currentHeight);
-						try (ResultSet rs = pstmt.executeQuery()) {
-							if (!rs.next()) {
-								return this.balanceNQT;
-							}
-							return Math.max(Math.subtractExact(this.balanceNQT, rs.getLong("additions")), 0);
-						}
-					} catch (final SQLException e) {
-						throw new RuntimeException(e.toString(), e);
-					}
-				} finally {
-					Nxt.getBlockchain().readUnlock();
-				}
-			}
-
-			public long getId() {
-				return this.id;
-			}
-
-
-			public DbIterator<Account> getLessors() {
-				return Account.accountTable.getManyBy(new DbClause.LongClause("active_lessee_id", this.id), 0, -1, " ORDER BY id ASC ");
-			}
-
-			public DbIterator<Account> getLessors(final int height) {
-				return Account.accountTable.getManyBy(new DbClause.LongClause("active_lessee_id", this.id), height, 0, -1,
-						" ORDER BY id ASC ");
-			}
-
-			private long getLessorsGuaranteedBalanceNQT(final int height) {
-				final List<Account> lessors = new ArrayList<>();
-				try (DbIterator<Account> iterator = this.getLessors(height)) {
-					while (iterator.hasNext()) {
-						lessors.add(iterator.next());
-					}
-				}
-				final Long[] lessorIds = new Long[lessors.size()];
-				final long[] balances = new long[lessors.size()];
-				for (int i = 0; i < lessors.size(); i++) {
-					lessorIds[i] = lessors.get(i).getId();
-					balances[i] = lessors.get(i).getBalanceNQT();
-				}
-				final int blockchainHeight = Nxt.getBlockchain().getHeight();
-				try (Connection con = Db.db.getConnection();
-						PreparedStatement pstmt = con.prepareStatement("SELECT account_id, SUM (additions) AS additions "
-								+ "FROM account_guaranteed_balance, TABLE (id BIGINT=?) T WHERE account_id = T.id AND height > ? "
-								+ (height < blockchainHeight ? " AND height <= ? " : "")
-								+ " GROUP BY account_id ORDER BY account_id")) {
-					pstmt.setObject(1, lessorIds);
-					pstmt.setInt(2, height - Constants.GUARANTEED_BALANCE_CONFIRMATIONS);
-					if (height < blockchainHeight) {
-						pstmt.setInt(3, height);
-					}
-					long total = 0;
-					int i = 0;
-					try (ResultSet rs = pstmt.executeQuery()) {
-						while (rs.next()) {
-							final long accountId = rs.getLong("account_id");
-							while ((lessorIds[i] < accountId) && (i < lessorIds.length)) {
-								total += balances[i++];
-							}
-							if (lessorIds[i] == accountId) {
-								total += Math.max(balances[i++] - rs.getLong("additions"), 0);
-							}
 						}
 					}
-					while (i < balances.length) {
+				}
+				lessor.save();
+			}
+		}, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
+
+		if (Account.publicKeyCache != null) {
+
+			Nxt.getBlockchainProcessor().addListener(block -> {
+				Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(block.getGeneratorId()));
+				block.getTransactions().forEach(transaction -> {
+					Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(transaction.getSenderId()));
+					if (!transaction
+							.getAppendages(appendix -> (appendix instanceof Appendix.PublicKeyAnnouncement), false)
+							.isEmpty()) {
+						Account.publicKeyCache.remove(Account.accountDbKeyFactory.newKey(transaction.getRecipientId()));
+					}
+
+				});
+			}, BlockchainProcessor.Event.BLOCK_POPPED);
+
+			Nxt.getBlockchainProcessor().addListener(block -> Account.publicKeyCache.clear(),
+					BlockchainProcessor.Event.RESCAN_BEGIN);
+
+		}
+
+	}
+
+	public static boolean addLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
+		return Account.leaseListeners.addListener(listener, eventType);
+	}
+
+	public static boolean addListener(final Listener<Account> listener, final Event eventType) {
+		return Account.listeners.addListener(listener, eventType);
+	}
+
+	public static Account addOrGetAccount(final byte[] pubkey) {
+		final long id = Account.getId(pubkey);
+		if (id == 0) {
+			throw new IllegalArgumentException("Invalid accountId 0");
+		}
+		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
+		Account account = Account.accountTable.get(dbKey);
+		if (account == null) {
+			account = Account.accountTable.newEntity(dbKey);
+			PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+			if (publicKey == null) {
+				publicKey = Account.publicKeyTable.newEntity(dbKey);
+				Account.publicKeyTable.insert(publicKey);
+			}
+			account.publicKey = publicKey;
+		}
+		return account;
+	}
+
+	public static Account addOrGetAccount(final long id) {
+		if (id == 0) {
+			throw new IllegalArgumentException("Invalid accountId 0");
+		}
+		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
+		Account account = Account.accountTable.get(dbKey);
+		if (account == null) {
+			account = Account.accountTable.newEntity(dbKey);
+			PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+			if (publicKey == null) {
+				publicKey = Account.publicKeyTable.newEntity(dbKey);
+				Account.publicKeyTable.insert(publicKey);
+			}
+			account.publicKey = publicKey;
+		}
+		return account;
+	}
+
+	private static void checkBalance(final long accountId, final long confirmed, final long unconfirmed) {
+		if (accountId == Genesis.CREATOR_ID) {
+			return;
+		}
+		if (confirmed < 0) {
+			throw new DoubleSpendingException("Negative balance or quantity: ", accountId, confirmed, unconfirmed);
+		}
+		if (unconfirmed < 0) {
+			throw new DoubleSpendingException("Negative unconfirmed balance or quantity: ", accountId, confirmed,
+					unconfirmed);
+		}
+		if (unconfirmed > confirmed) {
+			throw new DoubleSpendingException("Unconfirmed exceeds confirmed balance or quantity: ", accountId,
+					confirmed, unconfirmed);
+		}
+	}
+
+	public static byte[] decryptFrom(final byte[] publicKey, final EncryptedData encryptedData,
+			final String recipientSecretPhrase, final boolean uncompress) {
+		byte[] decrypted = encryptedData.decrypt(recipientSecretPhrase, publicKey);
+		if (uncompress && (decrypted.length > 0)) {
+			decrypted = Convert.uncompress(decrypted);
+		}
+		return decrypted;
+	}
+
+	public static EncryptedData encryptTo(final byte[] publicKey, byte[] data, final String senderSecretPhrase,
+			final boolean compress) {
+		if (compress && (data.length > 0)) {
+			data = Convert.compress(data);
+		}
+		return EncryptedData.encrypt(data, senderSecretPhrase, publicKey);
+	}
+
+	public static Account getAccount(final byte[] publicKey) {
+		final long accountId = Account.getId(publicKey);
+		final Account account = Account.getAccount(accountId);
+		if (account == null) {
+			return null;
+		}
+		if (account.publicKey == null) {
+			account.publicKey = Account.publicKeyTable.get(Account.accountDbKeyFactory.newKey(account));
+		}
+		if ((account.publicKey == null) || (account.publicKey.publicKey == null)
+				|| Arrays.equals(account.publicKey.publicKey, publicKey)) {
+			return account;
+		}
+		throw new RuntimeException("DUPLICATE KEY for account " + Long.toUnsignedString(accountId) + " existing key "
+				+ Convert.toHexString(account.publicKey.publicKey) + " new key " + Convert.toHexString(publicKey));
+	}
+
+	public static Account getAccount(final long id) {
+		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
+		Account account = Account.accountTable.get(dbKey);
+		if (account == null) {
+			final PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+			if (publicKey != null) {
+				account = Account.accountTable.newEntity(dbKey);
+				account.publicKey = publicKey;
+			}
+		}
+		return account;
+	}
+
+	public static Account getAccount(final long id, final int height) {
+		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
+		Account account = Account.accountTable.get(dbKey, height);
+		if (account == null) {
+			final PublicKey publicKey = Account.publicKeyTable.get(dbKey, height);
+			if (publicKey != null) {
+				account = Account.accountTable.newEntity(dbKey);
+				account.publicKey = publicKey;
+			}
+		}
+		return account;
+	}
+
+	public static int getAccountLeaseCount() {
+		return Account.accountLeaseTable.getCount();
+	}
+
+	public static int getActiveLeaseCount() {
+		return Account.accountTable.getCount(new DbClause.NotNullClause("active_lessee_id"));
+	}
+
+	public static int getCount() {
+		return Account.publicKeyTable.getCount();
+	}
+
+	public static long getId(final byte[] publicKey) {
+		final byte[] publicKeyHash = Crypto.sha256().digest(publicKey);
+		return Convert.fullHashToId(publicKeyHash);
+	}
+
+	private static DbIterator<AccountLease> getLeaseChangingAccounts(final int height) {
+		Connection con = null;
+		try {
+			con = Db.db.getConnection();
+			final PreparedStatement pstmt = con.prepareStatement(
+					"SELECT * FROM account_lease WHERE current_leasing_height_from = ? AND latest = TRUE "
+							+ "UNION ALL SELECT * FROM account_lease WHERE current_leasing_height_to = ? AND latest = TRUE "
+							+ "ORDER BY current_lessee_id, lessor_id");
+			int i = 0;
+			pstmt.setInt(++i, height);
+			pstmt.setInt(++i, height);
+			return Account.accountLeaseTable.getManyBy(con, pstmt, true);
+		} catch (final SQLException e) {
+			DbUtils.close(con);
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
+	public static byte[] getPublicKey(final long id) {
+		final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(id);
+		byte[] key = null;
+		if (Account.publicKeyCache != null) {
+			key = Account.publicKeyCache.get(dbKey);
+		}
+		if (key == null) {
+			final PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+			if ((publicKey == null) || ((key = publicKey.publicKey) == null)) {
+				return null;
+			}
+			if (Account.publicKeyCache != null) {
+				Account.publicKeyCache.put(dbKey, key);
+			}
+		}
+		return key;
+	}
+
+	static void init() {
+	}
+
+	public static boolean removeLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
+		return Account.leaseListeners.removeListener(listener, eventType);
+	}
+
+	public static boolean removeListener(final Listener<Account> listener, final Event eventType) {
+		return Account.listeners.removeListener(listener, eventType);
+	}
+
+	public static DbIterator<AccountInfo> searchAccounts(final String query, final int from, final int to) {
+		return Account.accountInfoTable.search(query, DbClause.EMPTY_CLAUSE, from, to);
+	}
+
+	static boolean setOrVerify(final long accountId, final byte[] key) {
+		final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(accountId);
+		PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+		if (publicKey == null) {
+			publicKey = Account.publicKeyTable.newEntity(dbKey);
+		}
+		if (publicKey.publicKey == null) {
+			publicKey.publicKey = key;
+			publicKey.height = Nxt.getBlockchain().getHeight();
+			return true;
+		}
+		return Arrays.equals(publicKey.publicKey, key);
+	}
+
+	private final long id;
+	private final DbKey dbKey;
+	private PublicKey publicKey;
+	private long balanceNQT;
+
+	private long unconfirmedBalanceNQT;
+
+	private long forgedBalanceNQT;
+
+	private long activeLesseeId;
+
+	private Set<ControlType> controls;
+
+	private Account(final long id) {
+		if (id != Crypto.rsDecode(Crypto.rsEncode(id))) {
+			Logger.logMessage("CRITICAL ERROR: Reed-Solomon encoding fails for " + id);
+		}
+		this.id = id;
+		this.dbKey = Account.accountDbKeyFactory.newKey(this.id);
+		this.controls = Collections.emptySet();
+	}
+
+	private Account(final ResultSet rs, final DbKey dbKey) throws SQLException {
+		this.id = rs.getLong("id");
+		this.dbKey = dbKey;
+		this.balanceNQT = rs.getLong("balance");
+		this.unconfirmedBalanceNQT = rs.getLong("unconfirmed_balance");
+		this.forgedBalanceNQT = rs.getLong("forged_balance");
+		this.activeLesseeId = rs.getLong("active_lessee_id");
+		if (rs.getBoolean("has_control_phasing")) {
+			this.controls = Collections.unmodifiableSet(EnumSet.of(ControlType.PHASING_ONLY));
+		} else {
+			this.controls = Collections.emptySet();
+		}
+	}
+
+	void addControl(final ControlType control) {
+		if (this.controls.contains(control)) {
+			return;
+		}
+		final EnumSet<ControlType> newControls = EnumSet.of(control);
+		newControls.addAll(this.controls);
+		this.controls = Collections.unmodifiableSet(newControls);
+		Account.accountTable.insert(this);
+	}
+
+	void addToBalanceAndUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
+		this.addToBalanceAndUnconfirmedBalanceNQT(event, eventId, amountNQT, 0);
+	}
+
+	void addToBalanceAndUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT,
+			final long feeNQT) {
+		if ((amountNQT == 0) && (feeNQT == 0)) {
+			return;
+		}
+		final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
+		this.balanceNQT = Math.addExact(this.balanceNQT, totalAmountNQT);
+		this.unconfirmedBalanceNQT = Math.addExact(this.unconfirmedBalanceNQT, totalAmountNQT);
+		this.addToGuaranteedBalanceNQT(totalAmountNQT);
+		Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
+		this.save();
+		Account.listeners.notify(this, Event.BALANCE);
+		Account.listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+		if (AccountLedger.mustLogEntry(this.id, true)) {
+			if (feeNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
+						LedgerHolding.UNCONFIRMED_NXT_BALANCE, null, feeNQT, this.unconfirmedBalanceNQT - amountNQT));
+			}
+			if (amountNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.UNCONFIRMED_NXT_BALANCE,
+						null, amountNQT, this.unconfirmedBalanceNQT));
+			}
+		}
+		if (AccountLedger.mustLogEntry(this.id, false)) {
+			if (feeNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
+						LedgerHolding.NXT_BALANCE, null, feeNQT, this.balanceNQT - amountNQT));
+			}
+			if (amountNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.NXT_BALANCE, null,
+						amountNQT, this.balanceNQT));
+			}
+		}
+	}
+
+	void addToBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
+		this.addToBalanceNQT(event, eventId, amountNQT, 0);
+	}
+
+	void addToBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT, final long feeNQT) {
+		if ((amountNQT == 0) && (feeNQT == 0)) {
+			return;
+		}
+		final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
+		this.balanceNQT = Math.addExact(this.balanceNQT, totalAmountNQT);
+		this.addToGuaranteedBalanceNQT(totalAmountNQT);
+		Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
+		this.save();
+		Account.listeners.notify(this, Event.BALANCE);
+		if (AccountLedger.mustLogEntry(this.id, false)) {
+			if (feeNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
+						LedgerHolding.NXT_BALANCE, null, feeNQT, this.balanceNQT - amountNQT));
+			}
+			if (amountNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.NXT_BALANCE, null,
+						amountNQT, this.balanceNQT));
+			}
+		}
+	}
+
+	void addToForgedBalanceNQT(final long amountNQT) {
+		if (amountNQT == 0) {
+			return;
+		}
+		this.forgedBalanceNQT = Math.addExact(this.forgedBalanceNQT, amountNQT);
+		this.save();
+	}
+
+	private void addToGuaranteedBalanceNQT(final long amountNQT) {
+		if (amountNQT <= 0) {
+			return;
+		}
+		final int blockchainHeight = Nxt.getBlockchain().getHeight();
+		try (Connection con = Db.db.getConnection();
+				PreparedStatement pstmtSelect = con.prepareStatement(
+						"SELECT additions FROM account_guaranteed_balance " + "WHERE account_id = ? and height = ?");
+				PreparedStatement pstmtUpdate = con
+						.prepareStatement("MERGE INTO account_guaranteed_balance (account_id, "
+								+ " additions, height) KEY (account_id, height) VALUES(?, ?, ?)")) {
+			pstmtSelect.setLong(1, this.id);
+			pstmtSelect.setInt(2, blockchainHeight);
+			try (ResultSet rs = pstmtSelect.executeQuery()) {
+				long additions = amountNQT;
+				if (rs.next()) {
+					additions = Math.addExact(additions, rs.getLong("additions"));
+				}
+				pstmtUpdate.setLong(1, this.id);
+				pstmtUpdate.setLong(2, additions);
+				pstmtUpdate.setInt(3, blockchainHeight);
+				pstmtUpdate.executeUpdate();
+			}
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
+	void addToUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT) {
+		this.addToUnconfirmedBalanceNQT(event, eventId, amountNQT, 0);
+	}
+
+	void addToUnconfirmedBalanceNQT(final LedgerEvent event, final long eventId, final long amountNQT,
+			final long feeNQT) {
+		if ((amountNQT == 0) && (feeNQT == 0)) {
+			return;
+		}
+		final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
+		this.unconfirmedBalanceNQT = Math.addExact(this.unconfirmedBalanceNQT, totalAmountNQT);
+		Account.checkBalance(this.id, this.balanceNQT, this.unconfirmedBalanceNQT);
+		this.save();
+		Account.listeners.notify(this, Event.UNCONFIRMED_BALANCE);
+		if (AccountLedger.mustLogEntry(this.id, true)) {
+			if (feeNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(LedgerEvent.TRANSACTION_FEE, eventId, this.id,
+						LedgerHolding.UNCONFIRMED_NXT_BALANCE, null, feeNQT, this.unconfirmedBalanceNQT - amountNQT));
+			}
+			if (amountNQT != 0) {
+				AccountLedger.logEntry(new LedgerEntry(event, eventId, this.id, LedgerHolding.UNCONFIRMED_NXT_BALANCE,
+						null, amountNQT, this.unconfirmedBalanceNQT));
+			}
+		}
+	}
+
+	void apply(final byte[] key) {
+		PublicKey publicKey = Account.publicKeyTable.get(this.dbKey);
+		if (publicKey == null) {
+			publicKey = Account.publicKeyTable.newEntity(this.dbKey);
+		}
+		if (publicKey.publicKey == null) {
+			publicKey.publicKey = key;
+			Account.publicKeyTable.insert(publicKey);
+		} else if (!Arrays.equals(publicKey.publicKey, key)) {
+			throw new IllegalStateException("Public key mismatch");
+		} else if (publicKey.height >= (Nxt.getBlockchain().getHeight() - 1)) {
+			final PublicKey dbPublicKey = Account.publicKeyTable.get(this.dbKey, false);
+			if ((dbPublicKey == null) || (dbPublicKey.publicKey == null)) {
+				Account.publicKeyTable.insert(publicKey);
+			}
+		}
+		if (Account.publicKeyCache != null) {
+			Account.publicKeyCache.put(this.dbKey, key);
+		}
+		this.publicKey = publicKey;
+	}
+
+	public byte[] decryptFrom(final EncryptedData encryptedData, final String recipientSecretPhrase,
+			final boolean uncompress) {
+		final byte[] key = Account.getPublicKey(this.id);
+		if (key == null) {
+			throw new IllegalArgumentException("Sender account doesn't have a public key set");
+		}
+		return Account.decryptFrom(key, encryptedData, recipientSecretPhrase, uncompress);
+	}
+
+	public EncryptedData encryptTo(final byte[] data, final String senderSecretPhrase, final boolean compress) {
+		final byte[] key = Account.getPublicKey(this.id);
+		if (key == null) {
+			throw new IllegalArgumentException("Recipient account doesn't have a public key set");
+		}
+		return Account.encryptTo(key, data, senderSecretPhrase, compress);
+	}
+
+	public AccountInfo getAccountInfo() {
+		return Account.accountInfoTable.get(Account.accountDbKeyFactory.newKey(this));
+	}
+
+	public AccountLease getAccountLease() {
+		return Account.accountLeaseTable.get(Account.accountDbKeyFactory.newKey(this));
+	}
+
+	public long getBalanceNQT() {
+		return this.balanceNQT;
+	}
+
+	public Set<ControlType> getControls() {
+		return this.controls;
+	}
+
+	public long getEffectiveBalanceNXT() {
+		return this.getEffectiveBalanceNXT(Nxt.getBlockchain().getHeight());
+	}
+
+	public long getEffectiveBalanceNXT(final int height) {
+
+		if (this.publicKey == null) {
+			this.publicKey = Account.publicKeyTable.get(Account.accountDbKeyFactory.newKey(this));
+		}
+
+		/*
+		 * STRIPPED || height - this.publicKey.height <= 1440) { return 0; //
+		 * cfb: Accounts with the public key revealed less than // 1440 blocks
+		 * ago are not allowed to generate blocks }
+		 */
+
+		Nxt.getBlockchain().readLock();
+		try {
+			long effectiveBalanceNQT = this.getLessorsGuaranteedBalanceNQT(height);
+			if (this.activeLesseeId == 0) {
+				effectiveBalanceNQT += this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height);
+			}
+			return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0
+					: effectiveBalanceNQT / Constants.ONE_NXT;
+		} finally {
+			Nxt.getBlockchain().readUnlock();
+		}
+	}
+
+	public long getForgedBalanceNQT() {
+		return this.forgedBalanceNQT;
+	}
+
+	public long getGuaranteedBalanceNQT() {
+		return this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS,
+				Nxt.getBlockchain().getHeight());
+	}
+
+	public long getGuaranteedBalanceNQT(final int numberOfConfirmations, final int currentHeight) {
+		Nxt.getBlockchain().readLock();
+		try {
+			final int height = currentHeight - numberOfConfirmations;
+			if (((height + Constants.GUARANTEED_BALANCE_CONFIRMATIONS) < Nxt.getBlockchainProcessor()
+					.getMinRollbackHeight()) || (height > Nxt.getBlockchain().getHeight())) {
+				throw new IllegalArgumentException(
+						"Height " + height + " not available for guaranteed balance calculation");
+			}
+			try (Connection con = Db.db.getConnection();
+					PreparedStatement pstmt = con.prepareStatement("SELECT SUM (additions) AS additions "
+							+ "FROM account_guaranteed_balance WHERE account_id = ? AND height > ? AND height <= ?")) {
+				pstmt.setLong(1, this.id);
+				pstmt.setInt(2, height);
+				pstmt.setInt(3, currentHeight);
+				try (ResultSet rs = pstmt.executeQuery()) {
+					if (!rs.next()) {
+						return this.balanceNQT;
+					}
+					return Math.max(Math.subtractExact(this.balanceNQT, rs.getLong("additions")), 0);
+				}
+			} catch (final SQLException e) {
+				throw new RuntimeException(e.toString(), e);
+			}
+		} finally {
+			Nxt.getBlockchain().readUnlock();
+		}
+	}
+
+	public long getId() {
+		return this.id;
+	}
+
+	public DbIterator<Account> getLessors() {
+		return Account.accountTable.getManyBy(new DbClause.LongClause("active_lessee_id", this.id), 0, -1,
+				" ORDER BY id ASC ");
+	}
+
+	public DbIterator<Account> getLessors(final int height) {
+		return Account.accountTable.getManyBy(new DbClause.LongClause("active_lessee_id", this.id), height, 0, -1,
+				" ORDER BY id ASC ");
+	}
+
+	private long getLessorsGuaranteedBalanceNQT(final int height) {
+		final List<Account> lessors = new ArrayList<>();
+		try (DbIterator<Account> iterator = this.getLessors(height)) {
+			while (iterator.hasNext()) {
+				lessors.add(iterator.next());
+			}
+		}
+		final Long[] lessorIds = new Long[lessors.size()];
+		final long[] balances = new long[lessors.size()];
+		for (int i = 0; i < lessors.size(); i++) {
+			lessorIds[i] = lessors.get(i).getId();
+			balances[i] = lessors.get(i).getBalanceNQT();
+		}
+		final int blockchainHeight = Nxt.getBlockchain().getHeight();
+		try (Connection con = Db.db.getConnection();
+				PreparedStatement pstmt = con.prepareStatement("SELECT account_id, SUM (additions) AS additions "
+						+ "FROM account_guaranteed_balance, TABLE (id BIGINT=?) T WHERE account_id = T.id AND height > ? "
+						+ (height < blockchainHeight ? " AND height <= ? " : "")
+						+ " GROUP BY account_id ORDER BY account_id")) {
+			pstmt.setObject(1, lessorIds);
+			pstmt.setInt(2, height - Constants.GUARANTEED_BALANCE_CONFIRMATIONS);
+			if (height < blockchainHeight) {
+				pstmt.setInt(3, height);
+			}
+			long total = 0;
+			int i = 0;
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					final long accountId = rs.getLong("account_id");
+					while ((lessorIds[i] < accountId) && (i < lessorIds.length)) {
 						total += balances[i++];
 					}
-					return total;
-				} catch (final SQLException e) {
-					throw new RuntimeException(e.toString(), e);
-				}
-			}
-
-			public long getUnconfirmedBalanceNQT() {
-				return this.unconfirmedBalanceNQT;
-			}
-
-			void leaseEffectiveBalance(final long lesseeId, final int period) {
-				final int height = Nxt.getBlockchain().getHeight();
-				AccountLease accountLease = Account.accountLeaseTable.get(Account.accountDbKeyFactory.newKey(this));
-				if (accountLease == null) {
-					accountLease = new AccountLease(this.id, height + Constants.LEASING_DELAY,
-							height + Constants.LEASING_DELAY + period, lesseeId);
-				} else if (accountLease.currentLesseeId == 0) {
-					accountLease.currentLeasingHeightFrom = height + Constants.LEASING_DELAY;
-					accountLease.currentLeasingHeightTo = height + Constants.LEASING_DELAY + period;
-					accountLease.currentLesseeId = lesseeId;
-				} else {
-					accountLease.nextLeasingHeightFrom = height + Constants.LEASING_DELAY;
-					if (accountLease.nextLeasingHeightFrom < accountLease.currentLeasingHeightTo) {
-						accountLease.nextLeasingHeightFrom = accountLease.currentLeasingHeightTo;
+					if (lessorIds[i] == accountId) {
+						total += Math.max(balances[i++] - rs.getLong("additions"), 0);
 					}
-					accountLease.nextLeasingHeightTo = accountLease.nextLeasingHeightFrom + period;
-					accountLease.nextLesseeId = lesseeId;
-				}
-				Account.accountLeaseTable.insert(accountLease);
-				Account.leaseListeners.notify(accountLease, Event.LEASE_SCHEDULED);
-			}
-
-			void removeControl(final ControlType control) {
-				if (!this.controls.contains(control)) {
-					return;
-				}
-				final EnumSet<ControlType> newControls = EnumSet.copyOf(this.controls);
-				newControls.remove(control);
-				this.controls = Collections.unmodifiableSet(newControls);
-				Account.accountTable.insert(this);
-			}
-
-			private void save() {
-				if ((this.balanceNQT == 0) && (this.unconfirmedBalanceNQT == 0) && (this.forgedBalanceNQT == 0) && (this.activeLesseeId == 0)
-						&& this.controls.isEmpty()) {
-					Account.accountTable.delete(this, true);
-				} else {
-					Account.accountTable.insert(this);
 				}
 			}
-
-			private void save(final Connection con) throws SQLException {
-				try (PreparedStatement pstmt = con
-						.prepareStatement("MERGE INTO account (id, " + "balance, unconfirmed_balance, forged_balance, "
-								+ "active_lessee_id, has_control_phasing, height, latest) "
-								+ "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)")) {
-					int i = 0;
-					pstmt.setLong(++i, this.id);
-					pstmt.setLong(++i, this.balanceNQT);
-					pstmt.setLong(++i, this.unconfirmedBalanceNQT);
-					pstmt.setLong(++i, this.forgedBalanceNQT);
-					DbUtils.setLongZeroToNull(pstmt, ++i, this.activeLesseeId);
-					pstmt.setBoolean(++i, this.controls.contains(ControlType.PHASING_ONLY));
-					pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
-					pstmt.executeUpdate();
-				}
+			while (i < balances.length) {
+				total += balances[i++];
 			}
+			return total;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-			void setAccountInfo(String name, String description) {
-				name = Convert.emptyToNull(name.trim());
-				description = Convert.emptyToNull(description.trim());
-				AccountInfo accountInfo = this.getAccountInfo();
-				if (accountInfo == null) {
-					accountInfo = new AccountInfo(this.id, name, description);
-				} else {
-					accountInfo.name = name;
-					accountInfo.description = description;
-				}
-				accountInfo.save();
+	public long getUnconfirmedBalanceNQT() {
+		return this.unconfirmedBalanceNQT;
+	}
+
+	void leaseEffectiveBalance(final long lesseeId, final int period) {
+		final int height = Nxt.getBlockchain().getHeight();
+		AccountLease accountLease = Account.accountLeaseTable.get(Account.accountDbKeyFactory.newKey(this));
+		if (accountLease == null) {
+			accountLease = new AccountLease(this.id, height + Constants.LEASING_DELAY,
+					height + Constants.LEASING_DELAY + period, lesseeId);
+		} else if (accountLease.currentLesseeId == 0) {
+			accountLease.currentLeasingHeightFrom = height + Constants.LEASING_DELAY;
+			accountLease.currentLeasingHeightTo = height + Constants.LEASING_DELAY + period;
+			accountLease.currentLesseeId = lesseeId;
+		} else {
+			accountLease.nextLeasingHeightFrom = height + Constants.LEASING_DELAY;
+			if (accountLease.nextLeasingHeightFrom < accountLease.currentLeasingHeightTo) {
+				accountLease.nextLeasingHeightFrom = accountLease.currentLeasingHeightTo;
 			}
+			accountLease.nextLeasingHeightTo = accountLease.nextLeasingHeightFrom + period;
+			accountLease.nextLesseeId = lesseeId;
+		}
+		Account.accountLeaseTable.insert(accountLease);
+		Account.leaseListeners.notify(accountLease, Event.LEASE_SCHEDULED);
+	}
 
+	void removeControl(final ControlType control) {
+		if (!this.controls.contains(control)) {
+			return;
+		}
+		final EnumSet<ControlType> newControls = EnumSet.copyOf(this.controls);
+		newControls.remove(control);
+		this.controls = Collections.unmodifiableSet(newControls);
+		Account.accountTable.insert(this);
+	}
 
-			@Override
-			public String toString() {
-				return "Account " + Long.toUnsignedString(this.getId());
-			}
+	private void save() {
+		if ((this.balanceNQT == 0) && (this.unconfirmedBalanceNQT == 0) && (this.forgedBalanceNQT == 0)
+				&& (this.activeLesseeId == 0) && this.controls.isEmpty()) {
+			Account.accountTable.delete(this, true);
+		} else {
+			Account.accountTable.insert(this);
+		}
+	}
+
+	private void save(final Connection con) throws SQLException {
+		try (PreparedStatement pstmt = con
+				.prepareStatement("MERGE INTO account (id, " + "balance, unconfirmed_balance, forged_balance, "
+						+ "active_lessee_id, has_control_phasing, height, latest) "
+						+ "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+			int i = 0;
+			pstmt.setLong(++i, this.id);
+			pstmt.setLong(++i, this.balanceNQT);
+			pstmt.setLong(++i, this.unconfirmedBalanceNQT);
+			pstmt.setLong(++i, this.forgedBalanceNQT);
+			DbUtils.setLongZeroToNull(pstmt, ++i, this.activeLesseeId);
+			pstmt.setBoolean(++i, this.controls.contains(ControlType.PHASING_ONLY));
+			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
+			pstmt.executeUpdate();
+		}
+	}
+
+	void setAccountInfo(String name, String description) {
+		name = Convert.emptyToNull(name.trim());
+		description = Convert.emptyToNull(description.trim());
+		AccountInfo accountInfo = this.getAccountInfo();
+		if (accountInfo == null) {
+			accountInfo = new AccountInfo(this.id, name, description);
+		} else {
+			accountInfo.name = name;
+			accountInfo.description = description;
+		}
+		accountInfo.save();
+	}
+
+	@Override
+	public String toString() {
+		return "Account " + Long.toUnsignedString(this.getId());
+	}
 }

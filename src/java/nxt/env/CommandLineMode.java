@@ -22,17 +22,22 @@ import java.net.URI;
 public class CommandLineMode implements RuntimeMode {
 
 	@Override
-	public void alert(final String message) {}
+	public void alert(final String message) {
+	}
 
 	@Override
-	public void init() {}
+	public void init() {
+	}
 
 	@Override
-	public void launchDesktopApplication() {}
+	public void launchDesktopApplication() {
+	}
 
 	@Override
-	public void setServerStatus(final ServerStatus status, final URI wallet, final File logFileDir) {}
+	public void setServerStatus(final ServerStatus status, final URI wallet, final File logFileDir) {
+	}
 
 	@Override
-	public void shutdown() {}
+	public void shutdown() {
+	}
 }

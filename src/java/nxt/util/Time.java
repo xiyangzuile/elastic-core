@@ -76,7 +76,7 @@ public interface Time {
 
 		@Override
 		public int getTime() {
-			return this.time + (int)((System.currentTimeMillis() - this.systemStartTime) / (1000 / this.multiplier));
+			return this.time + (int) ((System.currentTimeMillis() - this.systemStartTime) / (1000 / this.multiplier));
 		}
 
 	}

@@ -66,7 +66,8 @@ public final class CompareTraceFiles {
 			}
 			if ((defaultLine = defaultReader.readLine()) != null) {
 				if (CompareTraceFiles.parseHeight(defaultLine) <= endHeight) {
-					System.out.println("default height: " + CompareTraceFiles.parseHeight(defaultLine) + " end height: " + endHeight);
+					System.out.println("default height: " + CompareTraceFiles.parseHeight(defaultLine) + " end height: "
+							+ endHeight);
 				}
 			}
 			System.out.println("Comparison with default trace file done from height " + height + " to " + endHeight);

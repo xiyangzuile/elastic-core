@@ -22,11 +22,13 @@ public abstract class VersionedPersistentDbTable<T> extends VersionedPrunableDbT
 		super(table, dbKeyFactory);
 	}
 
-	protected VersionedPersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final String fullTextSearchColumns) {
+	protected VersionedPersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
+			final String fullTextSearchColumns) {
 		super(table, dbKeyFactory, fullTextSearchColumns);
 	}
 
 	@Override
-	protected final void prune() {}
+	protected final void prune() {
+	}
 
 }

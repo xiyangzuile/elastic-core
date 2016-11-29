@@ -52,46 +52,39 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
 
 				final JSONObject transactionJSON = new JSONObject();
 				final JSONObject transactionSubTypesJSON = new JSONObject();
-				outer:
-					for (int type = 0; ; type++) {
-						final JSONObject typeJSON = new JSONObject();
-						final JSONObject subtypesJSON = new JSONObject();
-						for (int subtype = 0; ; subtype++) {
-							final TransactionType transactionType = TransactionType.findTransactionType((byte) type, (byte) subtype);
-							if (transactionType == null) {
-								if (subtype == 0) {
-									break outer;
-								} else {
-									break;
-								}
+				outer: for (int type = 0;; type++) {
+					final JSONObject typeJSON = new JSONObject();
+					final JSONObject subtypesJSON = new JSONObject();
+					for (int subtype = 0;; subtype++) {
+						final TransactionType transactionType = TransactionType.findTransactionType((byte) type,
+								(byte) subtype);
+						if (transactionType == null) {
+							if (subtype == 0) {
+								break outer;
+							} else {
+								break;
 							}
-							final JSONObject subtypeJSON = new JSONObject();
-							subtypeJSON.put("name", transactionType.getName());
-							subtypeJSON.put("canHaveRecipient", transactionType.canHaveRecipient());
-							subtypeJSON.put("mustHaveRecipient", transactionType.mustHaveRecipient());
-							subtypeJSON.put("type", type);
-							subtypeJSON.put("subtype", subtype);
-							subtypesJSON.put(subtype, subtypeJSON);
-							transactionSubTypesJSON.put(transactionType.getName(), subtypeJSON);
 						}
-						typeJSON.put("subtypes", subtypesJSON);
-						transactionJSON.put(type, typeJSON);
+						final JSONObject subtypeJSON = new JSONObject();
+						subtypeJSON.put("name", transactionType.getName());
+						subtypeJSON.put("canHaveRecipient", transactionType.canHaveRecipient());
+						subtypeJSON.put("mustHaveRecipient", transactionType.mustHaveRecipient());
+						subtypeJSON.put("type", type);
+						subtypeJSON.put("subtype", subtype);
+						subtypesJSON.put(subtype, subtypeJSON);
+						transactionSubTypesJSON.put(transactionType.getName(), subtypeJSON);
 					}
+					typeJSON.put("subtypes", subtypesJSON);
+					transactionJSON.put(type, typeJSON);
+				}
 				response.put("transactionTypes", transactionJSON);
 				response.put("transactionSubTypes", transactionSubTypesJSON);
-
-
-
-
-
 
 				final JSONObject hashFunctions = new JSONObject();
 				for (final HashFunction hashFunction : HashFunction.values()) {
 					hashFunctions.put(hashFunction.toString(), hashFunction.getId());
 				}
 				response.put("hashAlgorithms", hashFunctions);
-
-
 
 				final JSONObject peerStates = new JSONObject();
 				for (final Peer.State peerState : Peer.State.values()) {
@@ -101,19 +94,19 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
 				response.put("maxTaggedDataDataLength", Constants.MAX_TAGGED_DATA_DATA_LENGTH);
 
 				final JSONObject requestTypes = new JSONObject();
-				for (final Map.Entry<String, APIServlet.APIRequestHandler> handlerEntry : APIServlet.apiRequestHandlers.entrySet()) {
+				for (final Map.Entry<String, APIServlet.APIRequestHandler> handlerEntry : APIServlet.apiRequestHandlers
+						.entrySet()) {
 					final JSONObject handlerJSON = JSONData.apiRequestHandler(handlerEntry.getValue());
 					handlerJSON.put("enabled", true);
 					requestTypes.put(handlerEntry.getKey(), handlerJSON);
 				}
-				for (final Map.Entry<String, APIServlet.APIRequestHandler> handlerEntry : APIServlet.disabledRequestHandlers.entrySet()) {
+				for (final Map.Entry<String, APIServlet.APIRequestHandler> handlerEntry : APIServlet.disabledRequestHandlers
+						.entrySet()) {
 					final JSONObject handlerJSON = JSONData.apiRequestHandler(handlerEntry.getValue());
 					handlerJSON.put("enabled", false);
 					requestTypes.put(handlerEntry.getKey(), handlerJSON);
 				}
 				response.put("requestTypes", requestTypes);
-
-
 
 				final JSONObject apiTags = new JSONObject();
 				for (final APITag apiTag : APITag.values()) {
@@ -143,7 +136,7 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
 	static final GetConstants instance = new GetConstants();
 
 	private GetConstants() {
-		super(new APITag[] {APITag.INFO});
+		super(new APITag[] { APITag.INFO });
 	}
 
 	@Override

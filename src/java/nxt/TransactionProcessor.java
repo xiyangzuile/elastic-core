@@ -26,15 +26,10 @@ import org.json.simple.JSONObject;
 import nxt.db.DbIterator;
 import nxt.util.Observable;
 
-public interface TransactionProcessor extends Observable<List<? extends Transaction>,TransactionProcessor.Event> {
+public interface TransactionProcessor extends Observable<List<? extends Transaction>, TransactionProcessor.Event> {
 
 	enum Event {
-		REMOVED_UNCONFIRMED_TRANSACTIONS,
-		ADDED_UNCONFIRMED_TRANSACTIONS,
-		ADDED_CONFIRMED_TRANSACTIONS,
-		RELEASE_PHASED_TRANSACTION,
-		REJECT_PHASED_TRANSACTION,
-		BROADCASTED_OWN_TRANSACTION,
+		REMOVED_UNCONFIRMED_TRANSACTIONS, ADDED_UNCONFIRMED_TRANSACTIONS, ADDED_CONFIRMED_TRANSACTIONS, RELEASE_PHASED_TRANSACTION, REJECT_PHASED_TRANSACTION, BROADCASTED_OWN_TRANSACTION,
 	}
 
 	void broadcast(Transaction transaction) throws NxtException.ValidationException;

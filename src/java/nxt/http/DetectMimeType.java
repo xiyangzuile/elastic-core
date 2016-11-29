@@ -35,7 +35,7 @@ public final class DetectMimeType extends APIServlet.APIRequestHandler {
 	static final DetectMimeType instance = new DetectMimeType();
 
 	private DetectMimeType() {
-		super("file", new APITag[] {APITag.DATA, APITag.UTILS}, "data", "filename", "isText");
+		super("file", new APITag[] { APITag.DATA, APITag.UTILS }, "data", "filename", "isText");
 	}
 
 	@Override
@@ -56,8 +56,10 @@ public final class DetectMimeType extends APIServlet.APIRequestHandler {
 				}
 				final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
 				data = fileData.getData();
-				// Depending on how the client submits the form, the filename, can be a regular parameter
-				// or encoded in the multipart form. If its not a parameter we take from the form
+				// Depending on how the client submits the form, the filename,
+				// can be a regular parameter
+				// or encoded in the multipart form. If its not a parameter we
+				// take from the form
 				if (filename.isEmpty() && (fileData.getFilename() != null)) {
 					filename = fileData.getFilename();
 				}

@@ -26,7 +26,8 @@ public final class GetNewData extends UserServlet.UserRequestHandler {
 
 	static final GetNewData instance = new GetNewData();
 
-	private GetNewData() {}
+	private GetNewData() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {

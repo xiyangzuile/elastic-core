@@ -140,7 +140,6 @@ public abstract class NxtException extends Exception {
 
 	}
 
-
 	public static final class NotYetEncryptedException extends IllegalStateException {
 
 		/**
@@ -157,7 +156,6 @@ public abstract class NxtException extends Exception {
 		}
 
 	}
-
 
 	public static final class NxtIOException extends IOException {
 

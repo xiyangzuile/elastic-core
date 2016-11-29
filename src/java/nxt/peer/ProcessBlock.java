@@ -29,14 +29,15 @@ final class ProcessBlock extends PeerServlet.PeerRequestHandler {
 
 	static final ProcessBlock instance = new ProcessBlock();
 
-	private ProcessBlock() {}
+	private ProcessBlock() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
-		final String previousBlockId = (String)request.get("previousBlock");
+		final String previousBlockId = (String) request.get("previousBlock");
 		final Block lastBlock = Nxt.getBlockchain().getLastBlock();
-		if (lastBlock.getStringId().equals(previousBlockId) ||
-				((Convert.parseUnsignedLong(previousBlockId) == lastBlock.getPreviousBlockId())
+		if (lastBlock.getStringId().equals(previousBlockId)
+				|| ((Convert.parseUnsignedLong(previousBlockId) == lastBlock.getPreviousBlockId())
 						&& (lastBlock.getTimestamp() > Convert.parseLong(request.get("timestamp"))))) {
 			Peers.peersService.submit(() -> {
 				try {

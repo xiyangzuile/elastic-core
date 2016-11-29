@@ -84,9 +84,7 @@ public final class API {
 				this.netAddress = new BigInteger(1, srcBytes);
 				final int maskBitLength = Integer.valueOf(addressParts[1]);
 				final int addressBitLength = (targetHostAddress instanceof Inet4Address) ? 32 : 128;
-				this.netMask = BigInteger.ZERO
-						.setBit(addressBitLength)
-						.subtract(BigInteger.ONE)
+				this.netMask = BigInteger.ZERO.setBit(addressBitLength).subtract(BigInteger.ONE)
 						.subtract(BigInteger.ZERO.setBit(addressBitLength - maskBitLength).subtract(BigInteger.ONE));
 			} else {
 				throw new IllegalArgumentException("Invalid address: " + address);
@@ -98,6 +96,7 @@ public final class API {
 		}
 
 	}
+
 	private static class PasswordCount {
 		private int count;
 		private int time;
@@ -110,7 +109,8 @@ public final class API {
 		}
 
 		@Override
-		public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException {
+		public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain)
+				throws IOException, ServletException {
 			((HttpServletResponse) response).setHeader("X-FRAME-OPTIONS", "SAMEORIGIN");
 			chain.doFilter(request, response);
 		}
@@ -120,6 +120,7 @@ public final class API {
 		}
 
 	}
+
 	public static final int TESTNET_API_PORT = 6876;
 
 	public static final int TESTNET_API_SSLPORT = 6877;
@@ -155,7 +156,7 @@ public final class API {
 		disabled.forEach(tagName -> apiTags.add(APITag.fromDisplayName(tagName)));
 		disabledAPITags = Collections.unmodifiableList(apiTags);
 		final List<String> allowedBotHostsList = Nxt.getStringListProperty("nxt.allowedBotHosts");
-		if (! allowedBotHostsList.contains("*")) {
+		if (!allowedBotHostsList.contains("*")) {
 			final Set<String> hosts = new HashSet<>();
 			final List<NetworkAddress> nets = new ArrayList<>();
 			for (final String host : allowedBotHostsList) {
@@ -180,9 +181,11 @@ public final class API {
 		final boolean enableAPIServer = Nxt.getBooleanProperty("nxt.enableAPIServer");
 		if (enableAPIServer) {
 			final int port = Constants.isTestnet ? API.TESTNET_API_PORT : Nxt.getIntProperty("nxt.apiServerPort");
-			final int sslPort = Constants.isTestnet ? API.TESTNET_API_SSLPORT : Nxt.getIntProperty("nxt.apiServerSSLPort");
+			final int sslPort = Constants.isTestnet ? API.TESTNET_API_SSLPORT
+					: Nxt.getIntProperty("nxt.apiServerSSLPort");
 			final String host = Nxt.getStringProperty("nxt.apiServerHost");
-			disableAdminPassword = Nxt.getBooleanProperty("nxt.disableAdminPassword") || ("127.0.0.1".equals(host) && API.adminPassword.isEmpty());
+			disableAdminPassword = Nxt.getBooleanProperty("nxt.disableAdminPassword")
+					|| ("127.0.0.1".equals(host) && API.adminPassword.isEmpty());
 
 			apiServer = new Server();
 			ServerConnector connector;
@@ -215,13 +218,15 @@ public final class API {
 				https_config.setSecurePort(sslPort);
 				https_config.addCustomizer(new SecureRequestCustomizer());
 				sslContextFactory = new SslContextFactory();
-				final String keyStorePath = Paths.get(Nxt.getUserHomeDir()).resolve(Paths.get(Nxt.getStringProperty("nxt.keyStorePath"))).toString();
+				final String keyStorePath = Paths.get(Nxt.getUserHomeDir())
+						.resolve(Paths.get(Nxt.getStringProperty("nxt.keyStorePath"))).toString();
 				Logger.logInfoMessage("Using keystore: " + keyStorePath);
 				sslContextFactory.setKeyStorePath(keyStorePath);
 				sslContextFactory.setKeyStorePassword(Nxt.getStringProperty("nxt.keyStorePassword", null, true));
 				sslContextFactory.addExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA",
-						"SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_RC4_40_MD5", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
-						"SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+						"SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_RC4_40_MD5",
+						"SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
+						"SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
 				sslContextFactory.addExcludeProtocols("SSLv3");
 				final List<String> ciphers = Nxt.getStringListProperty("nxt.apiSSLCiphers");
 				if (!ciphers.isEmpty()) {
@@ -240,13 +245,17 @@ public final class API {
 			}
 			final String localhost = "0.0.0.0".equals(host) || "127.0.0.1".equals(host) ? "localhost" : host;
 			try {
-				API.welcomePageUri = new URI(enableSSL ? "https" : "http", null, localhost, enableSSL ? sslPort : port, "/index.html", null, null);
-				API.serverRootUri = new URI(enableSSL ? "https" : "http", null, localhost, enableSSL ? sslPort : port, "", null, null);
+				API.welcomePageUri = new URI(enableSSL ? "https" : "http", null, localhost, enableSSL ? sslPort : port,
+						"/index.html", null, null);
+				API.serverRootUri = new URI(enableSSL ? "https" : "http", null, localhost, enableSSL ? sslPort : port,
+						"", null, null);
 			} catch (final URISyntaxException e) {
 				Logger.logInfoMessage("Cannot resolve browser URI", e);
 			}
-			openAPIPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null) && (!enableSSL || (port != sslPort)) ? port : 0;
-			openAPISSLPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null) && enableSSL ? sslPort : 0;
+			openAPIPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null)
+					&& (!enableSSL || (port != sslPort)) ? port : 0;
+			openAPISSLPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null)
+					&& enableSSL ? sslPort : 0;
 
 			final HandlerList apiHandlers = new HandlerList();
 
@@ -261,7 +270,7 @@ public final class API {
 				defaultServletHolder.setInitParameter("gzip", "true");
 				defaultServletHolder.setInitParameter("etags", "true");
 				apiHandler.addServlet(defaultServletHolder, "/*");
-				apiHandler.setWelcomeFiles(new String[]{Nxt.getStringProperty("nxt.apiWelcomeFile")});
+				apiHandler.setWelcomeFiles(new String[] { Nxt.getStringProperty("nxt.apiWelcomeFile") });
 			}
 
 			final String javadocResourceBase = Nxt.getStringProperty("nxt.javadocResourceBase");
@@ -269,21 +278,23 @@ public final class API {
 				final ContextHandler contextHandler = new ContextHandler("/doc");
 				final ResourceHandler docFileHandler = new ResourceHandler();
 				docFileHandler.setDirectoriesListed(false);
-				docFileHandler.setWelcomeFiles(new String[]{"index.html"});
+				docFileHandler.setWelcomeFiles(new String[] { "index.html" });
 				docFileHandler.setResourceBase(javadocResourceBase);
 				contextHandler.setHandler(docFileHandler);
 				apiHandlers.addHandler(contextHandler);
 			}
 
 			ServletHolder servletHolder = apiHandler.addServlet(APIServlet.class, "/nxt");
-			servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(
-					null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L, 0));
+			servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(null,
+					Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L,
+					0));
 
 			servletHolder = apiHandler.addServlet(APIProxyServlet.class, "/nxt-proxy");
 			servletHolder.setInitParameters(Collections.singletonMap("idleTimeout",
 					"" + Math.max(API.apiServerIdleTimeout - APIProxyServlet.PROXY_IDLE_TIMEOUT_DELTA, 0)));
-			servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(
-					null, Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L, 0));
+			servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(null,
+					Math.max(Nxt.getIntProperty("nxt.maxUploadFileSize"), Constants.MAX_TAGGED_DATA_DATA_LENGTH), -1L,
+					0));
 
 			final GzipHandler gzipHandler = new GzipHandler();
 			if (!Nxt.getBooleanProperty("nxt.enableAPIServerGZIPFilter")) {
@@ -295,7 +306,6 @@ public final class API {
 
 			apiHandler.addServlet(APITestServlet.class, "/test");
 			apiHandler.addServlet(APITestServlet.class, "/test-proxy");
-
 
 			if (API.apiServerCORS) {
 				final FilterHolder filterHolder = apiHandler.addFilter(CrossOriginFilter.class, "/*", null);
@@ -320,7 +330,7 @@ public final class API {
 						final Connector[] apiConnectors = API.apiServer.getConnectors();
 						for (final Connector apiConnector : apiConnectors) {
 							if (apiConnector instanceof ServerConnector) {
-								UPnP.addPort(((ServerConnector)apiConnector).getPort());
+								UPnP.addPort(((ServerConnector) apiConnector).getPort());
 							}
 						}
 					}
@@ -329,10 +339,13 @@ public final class API {
 					APITestServlet.initClass();
 					API.apiServer.start();
 					if (sslContextFactory != null) {
-						Logger.logDebugMessage("API SSL Protocols: " + Arrays.toString(sslContextFactory.getSelectedProtocols()));
-						Logger.logDebugMessage("API SSL Ciphers: " + Arrays.toString(sslContextFactory.getSelectedCipherSuites()));
+						Logger.logDebugMessage(
+								"API SSL Protocols: " + Arrays.toString(sslContextFactory.getSelectedProtocols()));
+						Logger.logDebugMessage(
+								"API SSL Ciphers: " + Arrays.toString(sslContextFactory.getSelectedCipherSuites()));
 					}
-					Logger.logMessage("Started API server at " + host + ":" + port + (enableSSL && (port != sslPort) ? ", " + host + ":" + sslPort : ""));
+					Logger.logMessage("Started API server at " + host + ":" + port
+							+ (enableSSL && (port != sslPort) ? ", " + host + ":" + sslPort : ""));
 				} catch (final Exception e) {
 					Logger.logErrorMessage("Failed to start API server", e);
 					throw new RuntimeException(e.toString(), e);
@@ -353,9 +366,9 @@ public final class API {
 	private static void checkOrLockPassword(final HttpServletRequest req) throws ParameterException {
 		final int now = Nxt.getEpochTime();
 		final String remoteHost = req.getRemoteHost();
-		synchronized(API.incorrectPasswords) {
+		synchronized (API.incorrectPasswords) {
 			PasswordCount passwordCount = API.incorrectPasswords.get(remoteHost);
-			if ((passwordCount != null) && (passwordCount.count >= 3) && ((now - passwordCount.time) < (60*60))) {
+			if ((passwordCount != null) && (passwordCount.count >= 3) && ((now - passwordCount.time) < (60 * 60))) {
 				Logger.logWarningMessage("Too many incorrect admin password attempts from " + remoteHost);
 				throw new ParameterException(JSONResponses.LOCKED_ADMIN_PASSWORD);
 			}
@@ -374,7 +387,6 @@ public final class API {
 			}
 		}
 	}
-
 
 	public static boolean checkPassword(final HttpServletRequest req) {
 		if (API.disableAdminPassword) {
@@ -402,7 +414,8 @@ public final class API {
 		return API.welcomePageUri;
 	}
 
-	public static void init() {}
+	public static void init() {
+	}
 
 	static boolean isAllowed(final String remoteHost) {
 		if ((API.allowedBotHosts == null) || API.allowedBotHosts.contains(remoteHost)) {
@@ -431,7 +444,7 @@ public final class API {
 					final Connector[] apiConnectors = API.apiServer.getConnectors();
 					for (final Connector apiConnector : apiConnectors) {
 						if (apiConnector instanceof ServerConnector) {
-							UPnP.deletePort(((ServerConnector)apiConnector).getPort());
+							UPnP.deletePort(((ServerConnector) apiConnector).getPort());
 						}
 					}
 				}
@@ -451,6 +464,7 @@ public final class API {
 		API.checkOrLockPassword(req);
 	}
 
-	private API() {} // never
+	private API() {
+	} // never
 
 }

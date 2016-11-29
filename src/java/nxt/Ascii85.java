@@ -6,21 +6,17 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
- * A very simple class that helps encode/decode for Ascii85 / base85
- * The version that is likely most similar that is implemented here would be the Adobe version.
+ * A very simple class that helps encode/decode for Ascii85 / base85 The version
+ * that is likely most similar that is implemented here would be the Adobe
+ * version.
+ * 
  * @see <a href="https://en.wikipedia.org/wiki/Ascii85">Ascii85</a>
  */
 public class Ascii85 {
 
 	private final static int ASCII_SHIFT = 33;
 
-	private static int[] BASE85_POW = {
-			1,
-			85,
-			85 * 85,
-			85 * 85 * 85,
-			85 * 85 * 85 *85
-	};
+	private static int[] BASE85_POW = { 1, 85, 85 * 85, 85 * 85 * 85, 85 * 85 * 85 * 85 };
 
 	private static Pattern REMOVE_WHITESPACE = Pattern.compile("\\s+");
 
@@ -32,26 +28,33 @@ public class Ascii85 {
 	}
 
 	/**
-	 * This is a very simple base85 decoder. It respects the 'z' optimization for empty chunks, &
-	 * strips whitespace between characters to respect line limits.
+	 * This is a very simple base85 decoder. It respects the 'z' optimization
+	 * for empty chunks, & strips whitespace between characters to respect line
+	 * limits.
+	 * 
 	 * @see <a href="https://en.wikipedia.org/wiki/Ascii85">Ascii85</a>
-	 * @param chars The input characters that are base85 encoded.
+	 * @param chars
+	 *            The input characters that are base85 encoded.
 	 * @return The binary data decoded from the input
 	 */
 	static byte[] decode(String chars) {
 		if ((chars == null) || (chars.length() == 0)) {
 			throw new IllegalArgumentException("You must provide a non-zero length input");
 		}
-		final ByteBuffer bytebuff = ByteBuffer.allocate( ((chars.length() * 4)/5) );
-		//1. Whitespace characters may occur anywhere to accommodate line length limitations. So lets strip it.
+		final ByteBuffer bytebuff = ByteBuffer.allocate(((chars.length() * 4) / 5));
+		// 1. Whitespace characters may occur anywhere to accommodate line
+		// length limitations. So lets strip it.
 		chars = Ascii85.REMOVE_WHITESPACE.matcher(chars).replaceAll("");
-		//Since Base85 is an ascii encoder, we don't need to get the bytes as UTF-8.
+		// Since Base85 is an ascii encoder, we don't need to get the bytes as
+		// UTF-8.
 		final byte[] payload = chars.getBytes(StandardCharsets.US_ASCII);
 		final byte[] chunk = new byte[5];
 		int chunkIndex = 0;
 		for (final byte currByte : payload) {
-			//Because all-zero data is quite common, an exception is made for the sake of data compression,
-			//and an all-zero group is encoded as a single character "z" instead of "!!!!!".
+			// Because all-zero data is quite common, an exception is made for
+			// the sake of data compression,
+			// and an all-zero group is encoded as a single character "z"
+			// instead of "!!!!!".
 			if (currByte == 'z') {
 				if (chunkIndex > 0) {
 					throw new IllegalArgumentException("The payload is not base 85 encoded.");
@@ -72,18 +75,18 @@ public class Ascii85 {
 			}
 		}
 
-		//If we didn't end on 0, then we need some padding
+		// If we didn't end on 0, then we need some padding
 		if (chunkIndex > 0) {
 			final int numPadded = chunk.length - chunkIndex;
-			Arrays.fill(chunk, chunkIndex, chunk.length, (byte)'u');
+			Arrays.fill(chunk, chunkIndex, chunk.length, (byte) 'u');
 			final byte[] paddedDecode = Ascii85.decodeChunk(chunk);
-			for(int i = 0 ; i < (paddedDecode.length - numPadded); i++) {
+			for (int i = 0; i < (paddedDecode.length - numPadded); i++) {
 				bytebuff.put(paddedDecode[i]);
 			}
 		}
 
 		bytebuff.flip();
-		return Arrays.copyOf(bytebuff.array(),bytebuff.limit());
+		return Arrays.copyOf(bytebuff.array(), bytebuff.limit());
 	}
 
 	private static byte[] decodeChunk(final byte[] chunk) {
@@ -104,8 +107,8 @@ public class Ascii85 {
 		if ((payload == null) || (payload.length == 0)) {
 			throw new IllegalArgumentException("You must provide a non-zero length input");
 		}
-		final StringBuilder stringBuff = new StringBuilder((payload.length * 5)/4);
-		//We break the payload into int (4 bytes)
+		final StringBuilder stringBuff = new StringBuilder((payload.length * 5) / 4);
+		// We break the payload into int (4 bytes)
 		final byte[] chunk = new byte[4];
 		int chunkIndex = 0;
 		for (final byte currByte : payload) {
@@ -113,8 +116,10 @@ public class Ascii85 {
 
 			if (chunkIndex == 4) {
 				final int value = Ascii85.byteToInt(chunk);
-				//Because all-zero data is quite common, an exception is made for the sake of data compression,
-				//and an all-zero group is encoded as a single character "z" instead of "!!!!!".
+				// Because all-zero data is quite common, an exception is made
+				// for the sake of data compression,
+				// and an all-zero group is encoded as a single character "z"
+				// instead of "!!!!!".
 				if (value == 0) {
 					stringBuff.append('z');
 				} else {
@@ -125,13 +130,13 @@ public class Ascii85 {
 			}
 		}
 
-		//If we didn't end on 0, then we need some padding
+		// If we didn't end on 0, then we need some padding
 		if (chunkIndex > 0) {
 			final int numPadded = chunk.length - chunkIndex;
-			Arrays.fill(chunk, chunkIndex, chunk.length, (byte)0);
+			Arrays.fill(chunk, chunkIndex, chunk.length, (byte) 0);
 			final int value = Ascii85.byteToInt(chunk);
 			final char[] encodedChunk = Ascii85.encodeChunk(value);
-			for(int i = 0 ; i < (encodedChunk.length - numPadded); i++) {
+			for (int i = 0; i < (encodedChunk.length - numPadded); i++) {
 				stringBuff.append(encodedChunk[i]);
 			}
 		}
@@ -141,7 +146,7 @@ public class Ascii85 {
 
 	private static char[] encodeChunk(int value) {
 		final char[] encodedChunk = new char[5];
-		for(int i = 0 ; i < encodedChunk.length; i++) {
+		for (int i = 0; i < encodedChunk.length; i++) {
 			encodedChunk[i] = (char) ((value / Ascii85.BASE85_POW[4 - i]) + Ascii85.ASCII_SHIFT);
 			value = value % Ascii85.BASE85_POW[4 - i];
 		}
@@ -149,17 +154,10 @@ public class Ascii85 {
 	}
 
 	private static byte[] intToByte(final int value) {
-		return new byte[] {
-				(byte) (value >>> 24),
-				(byte) (value >>> 16),
-				(byte) (value >>> 8),
-				(byte) (value)
-		};
+		return new byte[] { (byte) (value >>> 24), (byte) (value >>> 16), (byte) (value >>> 8), (byte) (value) };
 	}
 
 	private Ascii85() {
 	}
-
-
 
 }

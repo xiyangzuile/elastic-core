@@ -68,9 +68,10 @@ public class DesktopSystemTray {
 			return bytes + " B";
 		}
 		final int exp = (int) (Math.log(bytes) / Math.log(unit));
-		final String pre = "" + ("KMGTPE").charAt(exp-1);
+		final String pre = "" + ("KMGTPE").charAt(exp - 1);
 		return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
+
 	private SystemTray tray;
 	private final JFrame wrapper = new JFrame();
 	private JDialog statusDialog;
@@ -81,7 +82,8 @@ public class DesktopSystemTray {
 	private MenuItem viewLog;
 	private SystemTrayDataProvider dataProvider;
 
-	private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.MEDIUM, Locale.getDefault());
+	private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM,
+			Locale.getDefault());
 
 	private void addDataRow(final JPanel parent, String text, final String value) {
 		final JPanel rowPanel = new JPanel();
@@ -199,12 +201,12 @@ public class DesktopSystemTray {
 		status.addActionListener(e -> this.displayStatus());
 
 		shutdown.addActionListener(e -> {
-			if(JOptionPane.showConfirmDialog (null,
+			if (JOptionPane.showConfirmDialog(null,
 					"Sure you want to shutdown NXT?\n\nIf you do, this will stop forging, shufflers and account monitors.\n\n",
-					"Shutdown",
-					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+					"Shutdown", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 				Logger.logInfoMessage("Shutdown requested by System Tray");
-				System.exit(0); // Implicitly invokes shutdown using the shutdown hook
+				System.exit(0); // Implicitly invokes shutdown using the
+								// shutdown hook
 			}
 		});
 
@@ -246,8 +248,10 @@ public class DesktopSystemTray {
 		this.addDataRow(this.statusPanel, "Working offline", "" + Constants.isOffline);
 		this.addDataRow(this.statusPanel, "Wallet", String.valueOf(API.getWelcomePageUri()));
 		this.addDataRow(this.statusPanel, "Peer port", String.valueOf(Peers.getDefaultPeerPort()));
-		this.addDataRow(this.statusPanel, "Program folder", String.valueOf(Paths.get(".").toAbsolutePath().getParent()));
-		this.addDataRow(this.statusPanel, "User folder", String.valueOf(Paths.get(Nxt.getUserHomeDir()).toAbsolutePath()));
+		this.addDataRow(this.statusPanel, "Program folder",
+				String.valueOf(Paths.get(".").toAbsolutePath().getParent()));
+		this.addDataRow(this.statusPanel, "User folder",
+				String.valueOf(Paths.get(Nxt.getUserHomeDir()).toAbsolutePath()));
 		this.addDataRow(this.statusPanel, "Database URL", Db.db == null ? "unavailable" : Db.db.getUrl());
 		this.addEmptyRow(this.statusPanel);
 
@@ -255,8 +259,10 @@ public class DesktopSystemTray {
 			this.addLabelRow(this.statusPanel, "Last Block");
 			this.addDataRow(this.statusPanel, "Height", String.valueOf(lastBlock.getHeight()));
 			this.addDataRow(this.statusPanel, "Timestamp", String.valueOf(lastBlock.getTimestamp()));
-			this.addDataRow(this.statusPanel, "Time", String.valueOf(new Date(Convert.fromEpochTime(lastBlock.getTimestamp()))));
-			this.addDataRow(this.statusPanel, "Seconds passed", String.valueOf(Nxt.getEpochTime() - lastBlock.getTimestamp()));
+			this.addDataRow(this.statusPanel, "Time",
+					String.valueOf(new Date(Convert.fromEpochTime(lastBlock.getTimestamp()))));
+			this.addDataRow(this.statusPanel, "Seconds passed",
+					String.valueOf(Nxt.getEpochTime() - lastBlock.getTimestamp()));
 			this.addDataRow(this.statusPanel, "Forging", String.valueOf(allGenerators.size() > 0));
 			if (allGenerators.size() > 0) {
 				this.addDataRow(this.statusPanel, "Forging accounts", generators.toString());
@@ -266,15 +272,20 @@ public class DesktopSystemTray {
 		this.addEmptyRow(this.statusPanel);
 		this.addLabelRow(this.statusPanel, "Environment");
 		this.addDataRow(this.statusPanel, "Number of peers", String.valueOf(Peers.getAllPeers().size()));
-		this.addDataRow(this.statusPanel, "Available processors", String.valueOf(Runtime.getRuntime().availableProcessors()));
-		this.addDataRow(this.statusPanel, "Max memory", DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().maxMemory()));
-		this.addDataRow(this.statusPanel, "Total memory", DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().totalMemory()));
-		this.addDataRow(this.statusPanel, "Free memory", DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().freeMemory()));
+		this.addDataRow(this.statusPanel, "Available processors",
+				String.valueOf(Runtime.getRuntime().availableProcessors()));
+		this.addDataRow(this.statusPanel, "Max memory",
+				DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().maxMemory()));
+		this.addDataRow(this.statusPanel, "Total memory",
+				DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().totalMemory()));
+		this.addDataRow(this.statusPanel, "Free memory",
+				DesktopSystemTray.humanReadableByteCount(Runtime.getRuntime().freeMemory()));
 		this.addDataRow(this.statusPanel, "Process id", Nxt.getProcessId());
 		this.addEmptyRow(this.statusPanel);
 		this.addDataRow(this.statusPanel, "Updated", this.dateFormat.format(new Date()));
 		if ((this.statusDialog == null) || !this.statusDialog.isVisible()) {
-			final JOptionPane pane = new JOptionPane(this.statusPanel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, this.imageIcon);
+			final JOptionPane pane = new JOptionPane(this.statusPanel, JOptionPane.PLAIN_MESSAGE,
+					JOptionPane.DEFAULT_OPTION, this.imageIcon);
 			this.statusDialog = pane.createDialog(this.wrapper, "XEL Server Status");
 			this.statusDialog.setVisible(true);
 			this.statusDialog.dispose();
@@ -295,7 +306,8 @@ public class DesktopSystemTray {
 	void setToolTip(final SystemTrayDataProvider dataProvider) {
 		SwingUtilities.invokeLater(() -> {
 			this.trayIcon.setToolTip(dataProvider.getToolTip());
-			this.openWalletInBrowser.setEnabled((dataProvider.getWallet() != null) && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
+			this.openWalletInBrowser.setEnabled(
+					(dataProvider.getWallet() != null) && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE));
 			this.viewLog.setEnabled(dataProvider.getWallet() != null);
 			DesktopSystemTray.this.dataProvider = dataProvider;
 		});

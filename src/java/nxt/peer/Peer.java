@@ -26,20 +26,17 @@ import nxt.http.APIEnum;
 public interface Peer extends Comparable<Peer> {
 
 	enum BlockchainState {
-		UP_TO_DATE,
-		DOWNLOADING,
-		LIGHT_CLIENT,
-		FORK
+		UP_TO_DATE, DOWNLOADING, LIGHT_CLIENT, FORK
 	}
 
 	enum Service {
-		HALLMARK(1),                    // Hallmarked node
-		PRUNABLE(2),                    // Stores expired prunable messages
-		API(4),                         // Provides open API access over http
-		API_SSL(8),                     // Provides open API access over https
-		CORS(16);                       // API CORS enabled
+		HALLMARK(1), // Hallmarked node
+		PRUNABLE(2), // Stores expired prunable messages
+		API(4), // Provides open API access over http
+		API_SSL(8), // Provides open API access over https
+		CORS(16); // API CORS enabled
 
-		private final long code;        // Service code - must be a power of 2
+		private final long code; // Service code - must be a power of 2
 
 		Service(final int code) {
 			this.code = code;

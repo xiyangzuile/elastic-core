@@ -31,7 +31,7 @@ public class BlacklistAPIProxyPeer extends APIServlet.APIRequestHandler {
 	static final BlacklistAPIProxyPeer instance = new BlacklistAPIProxyPeer();
 
 	private BlacklistAPIProxyPeer() {
-		super(new APITag[] {APITag.NETWORK}, "peer");
+		super(new APITag[] { APITag.NETWORK }, "peer");
 	}
 
 	@Override

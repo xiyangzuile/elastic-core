@@ -31,7 +31,7 @@ public class BlacklistPeer extends APIRequestHandler {
 	static final BlacklistPeer instance = new BlacklistPeer();
 
 	private BlacklistPeer() {
-		super(new APITag[] {APITag.NETWORK}, "peer");
+		super(new APITag[] { APITag.NETWORK }, "peer");
 	}
 
 	@Override
@@ -40,8 +40,7 @@ public class BlacklistPeer extends APIRequestHandler {
 	}
 
 	@Override
-	protected JSONStreamAware processRequest(final HttpServletRequest request)
-			throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 		final JSONObject response = new JSONObject();
 
 		final String peerAddress = request.getParameter("peer");

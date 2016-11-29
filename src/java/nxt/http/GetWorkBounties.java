@@ -12,23 +12,17 @@ import nxt.NxtException;
 import nxt.PowAndBounty;
 import nxt.db.DbIterator;
 
-
-
 public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 
 	static final GetWorkBounties instance = new GetWorkBounties();
 
-
-
 	private GetWorkBounties() {
-		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
-				"timestamp", "type", "subtype", "firstIndex", "lastIndex",
-				"numberOfConfirmations", "withMessage");
+		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account", "timestamp", "type", "subtype", "firstIndex",
+				"lastIndex", "numberOfConfirmations", "withMessage");
 	}
 
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
-
 
 		long wid = 0;
 		try {
@@ -39,14 +33,16 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 			wid = 0;
 		}
 
-
 		final JSONArray bounties = new JSONArray();
 
 		ParameterParser.getFirstIndex(req);
 		ParameterParser.getLastIndex(req);
 		try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
-			while (iterator.hasNext()) { final PowAndBounty b = iterator.next(); bounties.add(b.toJsonObject());
-			} }
+			while (iterator.hasNext()) {
+				final PowAndBounty b = iterator.next();
+				bounties.add(b.toJsonObject());
+			}
+		}
 
 		final JSONObject response = new JSONObject();
 		response.put("bounties", bounties);

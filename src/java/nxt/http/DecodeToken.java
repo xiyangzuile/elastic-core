@@ -27,7 +27,7 @@ public final class DecodeToken extends APIServlet.APIRequestHandler {
 	static final DecodeToken instance = new DecodeToken();
 
 	private DecodeToken() {
-		super(new APITag[] {APITag.TOKENS}, "website", "token");
+		super(new APITag[] { APITag.TOKENS }, "website", "token");
 	}
 
 	@Override

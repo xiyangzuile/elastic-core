@@ -30,7 +30,7 @@ public final class GetAllBroadcastedTransactions extends APIServlet.APIRequestHa
 	static final GetAllBroadcastedTransactions instance = new GetAllBroadcastedTransactions();
 
 	private GetAllBroadcastedTransactions() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

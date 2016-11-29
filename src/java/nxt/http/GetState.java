@@ -38,7 +38,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 	static final GetState instance = new GetState();
 
 	private GetState() {
-		super(new APITag[] {APITag.INFO}, "includeCounts", "adminPassword");
+		super(new APITag[] { APITag.INFO }, "includeCounts", "adminPassword");
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 		response.put("numberOfPeers", Peers.getAllPeers().size());
 		response.put("numberOfActivePeers", Peers.getActivePeers().size());
 		response.put("numberOpenWorks", Work.getActiveCount());
-		response.put("numberClosedWorks", Work.getCount()-Work.getActiveCount());
+		response.put("numberClosedWorks", Work.getCount() - Work.getActiveCount());
 		response.put("estimatedComputationPower", GigaflopEstimator.estimateText());
 		response.put("openWorkMoney", Work.getActiveMoney());
 

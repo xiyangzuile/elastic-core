@@ -59,10 +59,8 @@ public class Scrypt {
 			}
 
 			for (j = 0; j < 8; j++) {
-				this.X[(i * 8) + j] = ((this.H[(j * 4) + 0] & 0xff) << 0)
-						| ((this.H[(j * 4) + 1] & 0xff) << 8)
-						| ((this.H[(j * 4) + 2] & 0xff) << 16)
-						| ((this.H[(j * 4) + 3] & 0xff) << 24);
+				this.X[(i * 8) + j] = ((this.H[(j * 4) + 0] & 0xff) << 0) | ((this.H[(j * 4) + 1] & 0xff) << 8)
+						| ((this.H[(j * 4) + 2] & 0xff) << 16) | ((this.H[(j * 4) + 3] & 0xff) << 24);
 			}
 		}
 

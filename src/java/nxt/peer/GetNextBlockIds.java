@@ -29,8 +29,8 @@ final class GetNextBlockIds extends PeerServlet.PeerRequestHandler {
 
 	static final GetNextBlockIds instance = new GetNextBlockIds();
 
-	private GetNextBlockIds() {}
-
+	private GetNextBlockIds() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
@@ -39,7 +39,7 @@ final class GetNextBlockIds extends PeerServlet.PeerRequestHandler {
 
 		final JSONArray nextBlockIds = new JSONArray();
 		final long blockId = Convert.parseUnsignedLong((String) request.get("blockId"));
-		final int limit = (int)Convert.parseLong(request.get("limit"));
+		final int limit = (int) Convert.parseLong(request.get("limit"));
 		if (limit > 1440) {
 			return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
 		}

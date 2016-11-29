@@ -33,28 +33,21 @@ public final class GetNextBlockGenerators extends APIServlet.APIRequestHandler {
 	static final GetNextBlockGenerators instance = new GetNextBlockGenerators();
 
 	private GetNextBlockGenerators() {
-		super(new APITag[] {APITag.FORGING});
+		super(new APITag[] { APITag.FORGING });
 	}
 
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-		/* implement later, if needed
-        Block curBlock;
-
-        String block = req.getParameter("block");
-        if (block == null) {
-            curBlock = Nxt.getBlockchain().getLastBlock();
-        } else {
-            try {
-                curBlock = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(block));
-                if (curBlock == null) {
-                    return UNKNOWN_BLOCK;
-                }
-            } catch (RuntimeException e) {
-                return INCORRECT_BLOCK;
-            }
-        }
+		/*
+		 * implement later, if needed Block curBlock;
+		 * 
+		 * String block = req.getParameter("block"); if (block == null) {
+		 * curBlock = Nxt.getBlockchain().getLastBlock(); } else { try {
+		 * curBlock =
+		 * Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(block)); if
+		 * (curBlock == null) { return UNKNOWN_BLOCK; } } catch
+		 * (RuntimeException e) { return INCORRECT_BLOCK; } }
 		 */
 
 		final Block curBlock = Nxt.getBlockchain().getLastBlock();

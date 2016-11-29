@@ -52,13 +52,14 @@ public class Hub {
 
 	}
 
-	//private static final DbKey.LongKeyFactory<Hub> hubDbKeyFactory = null;
+	// private static final DbKey.LongKeyFactory<Hub> hubDbKeyFactory = null;
 
 	private static final VersionedEntityDbTable<Hub> hubTable = null;
 
 	private static long lastBlockId;
 
 	private static List<Hit> lastHits;
+
 	static void addOrUpdateHub(final Transaction transaction, final Attachment.MessagingHubAnnouncement attachment) {
 		Hub.hubTable.insert(new Hub(transaction, attachment));
 	}
@@ -103,24 +104,24 @@ public class Hub {
 
 	}
 
-	static void init() {}
-
+	static void init() {
+	}
 
 	private final long accountId;
-	//private final DbKey dbKey;
+	// private final DbKey dbKey;
 	private final long minFeePerByteNQT;
 	private final List<String> uris;
 
 	private Hub(final ResultSet rs) throws SQLException {
 		this.accountId = rs.getLong("account_id");
-		//this.dbKey = Hub.hubDbKeyFactory.newKey(this.accountId);
+		// this.dbKey = Hub.hubDbKeyFactory.newKey(this.accountId);
 		this.minFeePerByteNQT = rs.getLong("min_fee_per_byte");
-		this.uris = Collections.unmodifiableList(Arrays.asList((String[])rs.getObject("uris")));
+		this.uris = Collections.unmodifiableList(Arrays.asList((String[]) rs.getObject("uris")));
 	}
 
 	private Hub(final Transaction transaction, final Attachment.MessagingHubAnnouncement attachment) {
 		this.accountId = transaction.getSenderId();
-		//this.dbKey = Hub.hubDbKeyFactory.newKey(this.accountId);
+		// this.dbKey = Hub.hubDbKeyFactory.newKey(this.accountId);
 		this.minFeePerByteNQT = attachment.getMinFeePerByteNQT();
 		this.uris = Collections.unmodifiableList(Arrays.asList(attachment.getUris()));
 	}

@@ -28,7 +28,8 @@ import nxt.db.PrunableDbTable;
 
 public final class PrunableSourceCode {
 
-	private static final DbKey.LongKeyFactory<PrunableSourceCode> prunableSourceCodeKeyFactory = new DbKey.LongKeyFactory<PrunableSourceCode>("id") {
+	private static final DbKey.LongKeyFactory<PrunableSourceCode> prunableSourceCodeKeyFactory = new DbKey.LongKeyFactory<PrunableSourceCode>(
+			"id") {
 
 		@Override
 		public DbKey newKey(final PrunableSourceCode prunableSourceCode) {
@@ -37,7 +38,8 @@ public final class PrunableSourceCode {
 
 	};
 
-	private static final PrunableDbTable<PrunableSourceCode> prunableSourceCodeTable = new PrunableDbTable<PrunableSourceCode>("prunable_source_code", PrunableSourceCode.prunableSourceCodeKeyFactory) {
+	private static final PrunableDbTable<PrunableSourceCode> prunableSourceCodeTable = new PrunableDbTable<PrunableSourceCode>(
+			"prunable_source_code", PrunableSourceCode.prunableSourceCodeKeyFactory) {
 
 		@Override
 		protected String defaultSort() {
@@ -45,7 +47,8 @@ public final class PrunableSourceCode {
 		}
 
 		@Override
-		protected PrunableSourceCode load(final Connection con, final ResultSet rs, final DbKey dbKey) throws SQLException {
+		protected PrunableSourceCode load(final Connection con, final ResultSet rs, final DbKey dbKey)
+				throws SQLException {
 			return new PrunableSourceCode(rs, dbKey);
 		}
 
@@ -57,16 +60,20 @@ public final class PrunableSourceCode {
 	};
 
 	static void add(final TransactionImpl transaction, final Appendix.PrunableSourceCode appendix) {
-		PrunableSourceCode.add(transaction, appendix, Nxt.getBlockchain().getLastBlockTimestamp(), Nxt.getBlockchain().getHeight());
+		PrunableSourceCode.add(transaction, appendix, Nxt.getBlockchain().getLastBlockTimestamp(),
+				Nxt.getBlockchain().getHeight());
 	}
 
-	static void add(final TransactionImpl transaction, final Appendix.PrunableSourceCode appendix, final int blockTimestamp, final int height) {
+	static void add(final TransactionImpl transaction, final Appendix.PrunableSourceCode appendix,
+			final int blockTimestamp, final int height) {
 		if (appendix.getSource() != null) {
-			PrunableSourceCode prunableSourceCode = PrunableSourceCode.prunableSourceCodeTable.get(transaction.getDbKey());
+			PrunableSourceCode prunableSourceCode = PrunableSourceCode.prunableSourceCodeTable
+					.get(transaction.getDbKey());
 			if (prunableSourceCode == null) {
 				prunableSourceCode = new PrunableSourceCode(transaction, blockTimestamp, height);
 			} else if (prunableSourceCode.height != height) {
-				throw new RuntimeException("Attempt to modify prunable source code from height " + prunableSourceCode.height + " at height " + height);
+				throw new RuntimeException("Attempt to modify prunable source code from height "
+						+ prunableSourceCode.height + " at height " + height);
 			}
 			if (prunableSourceCode.getSource() == null) {
 				prunableSourceCode.setPlain(appendix);
@@ -79,24 +86,26 @@ public final class PrunableSourceCode {
 		return PrunableSourceCode.prunableSourceCodeTable.getAll(from, to);
 	}
 
-
 	public static int getCount() {
 		return PrunableSourceCode.prunableSourceCodeTable.getCount();
 	}
 
 	public static PrunableSourceCode getPrunableSourceCode(final long transactionId) {
-		return PrunableSourceCode.prunableSourceCodeTable.get(PrunableSourceCode.prunableSourceCodeKeyFactory.newKey(transactionId));
+		return PrunableSourceCode.prunableSourceCodeTable
+				.get(PrunableSourceCode.prunableSourceCodeKeyFactory.newKey(transactionId));
 	}
 
 	public static PrunableSourceCode getPrunableSourceCodeByWorkId(final long work_id) {
 
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM prunable_source_code WHERE work_id = ?")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT * FROM prunable_source_code WHERE work_id = ?")) {
 			int i = 0;
 			pstmt.setLong(++i, work_id);
-			final DbIterator<PrunableSourceCode> it =  PrunableSourceCode.prunableSourceCodeTable.getManyBy(con, pstmt, false);
+			final DbIterator<PrunableSourceCode> it = PrunableSourceCode.prunableSourceCodeTable.getManyBy(con, pstmt,
+					false);
 			PrunableSourceCode s = null;
-			if(it.hasNext()) {
+			if (it.hasNext()) {
 				s = it.next();
 			}
 			it.close();
@@ -106,13 +115,17 @@ public final class PrunableSourceCode {
 		}
 
 	}
-	static void init() {}
+
+	static void init() {
+	}
+
 	static boolean isPruned(final long transactionId, final boolean hasPrunableSourceCode) {
 		if (!hasPrunableSourceCode) {
 			return false;
 		}
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT source FROM prunable_source_code WHERE id = ?")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT source FROM prunable_source_code WHERE id = ?")) {
 			pstmt.setLong(1, transactionId);
 			try (ResultSet rs = pstmt.executeQuery()) {
 				return !rs.next() || (hasPrunableSourceCode && (rs.getBytes("source") == null));
@@ -121,9 +134,11 @@ public final class PrunableSourceCode {
 			throw new RuntimeException(e.toString(), e);
 		}
 	}
+
 	static boolean isPrunedByWorkId(final long work_id) {
 		try (Connection con = Db.db.getConnection();
-				PreparedStatement pstmt = con.prepareStatement("SELECT source FROM prunable_source_code WHERE work_id = ?")) {
+				PreparedStatement pstmt = con
+						.prepareStatement("SELECT source FROM prunable_source_code WHERE work_id = ?")) {
 			pstmt.setLong(1, work_id);
 			try (ResultSet rs = pstmt.executeQuery()) {
 				return !rs.next() || (rs.getBytes("source") == null);
@@ -132,6 +147,7 @@ public final class PrunableSourceCode {
 			throw new RuntimeException(e.toString(), e);
 		}
 	}
+
 	private final long id;
 	private final DbKey dbKey;
 	private final long work_id;
@@ -193,15 +209,12 @@ public final class PrunableSourceCode {
 		return this.work_id;
 	}
 
-
-
 	private void save(final Connection con) throws SQLException {
 		if (this.source == null) {
 			throw new IllegalStateException("Prunable source code not fully initialized");
 		}
 		try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO prunable_source_code (id, work_id, "
-				+ "source, block_timestamp, transaction_timestamp, height, language) "
-				+ "KEY (id) "
+				+ "source, block_timestamp, transaction_timestamp, height, language) " + "KEY (id) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);

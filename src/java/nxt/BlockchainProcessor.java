@@ -24,7 +24,7 @@ import nxt.db.DerivedDbTable;
 import nxt.peer.Peer;
 import nxt.util.Observable;
 
-public interface BlockchainProcessor extends Observable<Block,BlockchainProcessor.Event> {
+public interface BlockchainProcessor extends Observable<Block, BlockchainProcessor.Event> {
 
 	class BlockNotAcceptedException extends NxtException {
 
@@ -46,7 +46,9 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
 
 		@Override
 		public String getMessage() {
-			return this.block == null ? super.getMessage() : super.getMessage() + ", block " + this.block.getStringId() + " " + this.block.getJSONObject().toJSONString();
+			return this.block == null ? super.getMessage()
+					: super.getMessage() + ", block " + this.block.getStringId() + " "
+							+ this.block.getJSONObject().toJSONString();
 		}
 
 	}
@@ -65,10 +67,7 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
 	}
 
 	enum Event {
-		BLOCK_PUSHED, BLOCK_POPPED, BLOCK_GENERATED, BLOCK_SCANNED,
-		RESCAN_BEGIN, RESCAN_END,
-		BEFORE_BLOCK_ACCEPT, AFTER_BLOCK_ACCEPT,
-		BEFORE_BLOCK_APPLY, AFTER_BLOCK_APPLY
+		BLOCK_PUSHED, BLOCK_POPPED, BLOCK_GENERATED, BLOCK_SCANNED, RESCAN_BEGIN, RESCAN_END, BEFORE_BLOCK_ACCEPT, AFTER_BLOCK_ACCEPT, BEFORE_BLOCK_APPLY, AFTER_BLOCK_APPLY
 	}
 
 	class TransactionNotAcceptedException extends BlockNotAcceptedException {
@@ -91,7 +90,8 @@ public interface BlockchainProcessor extends Observable<Block,BlockchainProcesso
 
 		@Override
 		public String getMessage() {
-			return super.getMessage() + ", transaction " + this.transaction.getStringId() + " " + this.transaction.getJSONObject().toJSONString();
+			return super.getMessage() + ", transaction " + this.transaction.getStringId() + " "
+					+ this.transaction.getJSONObject().toJSONString();
 		}
 
 		public TransactionImpl getTransaction() {

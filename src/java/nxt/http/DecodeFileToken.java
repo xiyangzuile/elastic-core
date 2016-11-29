@@ -31,7 +31,7 @@ public final class DecodeFileToken extends APIServlet.APIRequestHandler {
 	static final DecodeFileToken instance = new DecodeFileToken();
 
 	private DecodeFileToken() {
-		super("file", new APITag[] {APITag.TOKENS}, "token");
+		super("file", new APITag[] { APITag.TOKENS }, "token");
 	}
 
 	@Override

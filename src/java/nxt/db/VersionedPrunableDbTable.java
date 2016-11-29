@@ -26,7 +26,8 @@ public abstract class VersionedPrunableDbTable<T> extends PrunableDbTable<T> {
 		super(table, dbKeyFactory, true, null);
 	}
 
-	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final String fullTextSearchColumns) {
+	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
+			final String fullTextSearchColumns) {
 		super(table, dbKeyFactory, true, fullTextSearchColumns);
 	}
 
@@ -40,9 +41,10 @@ public abstract class VersionedPrunableDbTable<T> extends PrunableDbTable<T> {
 			throw new IllegalStateException("Not in transaction");
 		}
 		try (Connection con = DerivedDbTable.db.getConnection();
-				PreparedStatement pstmtSetLatest = con.prepareStatement("UPDATE " + this.table
-						+ " AS a SET a.latest = TRUE WHERE a.latest = FALSE AND a.height = "
-						+ " (SELECT MAX(height) FROM " + this.table + " AS b WHERE " + this.dbKeyFactory.getSelfJoinClause() + ")")) {
+				PreparedStatement pstmtSetLatest = con.prepareStatement(
+						"UPDATE " + this.table + " AS a SET a.latest = TRUE WHERE a.latest = FALSE AND a.height = "
+								+ " (SELECT MAX(height) FROM " + this.table + " AS b WHERE "
+								+ this.dbKeyFactory.getSelfJoinClause() + ")")) {
 			pstmtSetLatest.executeUpdate();
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);

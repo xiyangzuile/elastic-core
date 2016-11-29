@@ -33,14 +33,15 @@ public final class AddOns {
 		final List<AddOn> addOnsList = new ArrayList<>();
 		Nxt.getStringListProperty("nxt.addOns").forEach(addOn -> {
 			try {
-				addOnsList.add((AddOn)Class.forName(addOn).newInstance());
+				addOnsList.add((AddOn) Class.forName(addOn).newInstance());
 			} catch (final ReflectiveOperationException e) {
 				Logger.logErrorMessage(e.getMessage(), e);
 			}
 		});
 		addOns = Collections.unmodifiableList(addOnsList);
 		if (!AddOns.addOns.isEmpty()) {
-			System.setProperty("java.security.policy", Nxt.isDesktopApplicationEnabled() ? "nxtdesktop.policy" : "nxt.policy");
+			System.setProperty("java.security.policy",
+					Nxt.isDesktopApplicationEnabled() ? "nxtdesktop.policy" : "nxt.policy");
 			Logger.logMessage("Setting security manager with policy " + System.getProperty("java.security.policy"));
 			System.setSecurityManager(new SecurityManager());
 		}
@@ -50,9 +51,10 @@ public final class AddOns {
 		});
 	}
 
-	public static void init() {}
+	public static void init() {
+	}
 
-	public static void registerAPIRequestHandlers(final Map<String,APIServlet.APIRequestHandler> map) {
+	public static void registerAPIRequestHandlers(final Map<String, APIServlet.APIRequestHandler> map) {
 		for (final AddOn addOn : AddOns.addOns) {
 			final APIServlet.APIRequestHandler requestHandler = addOn.getAPIRequestHandler();
 			if (requestHandler != null) {
@@ -67,7 +69,8 @@ public final class AddOns {
 					continue;
 				}
 				if (map.get(requestType) != null) {
-					Logger.logErrorMessage("Add-on " + addOn.getClass().getName() + " attempted to override requestType " + requestType + ", skipping");
+					Logger.logErrorMessage("Add-on " + addOn.getClass().getName()
+							+ " attempted to override requestType " + requestType + ", skipping");
 					continue;
 				}
 				Logger.logMessage("Add-on " + addOn.getClass().getName() + " registered new API: " + requestType);
@@ -83,6 +86,7 @@ public final class AddOns {
 		});
 	}
 
-	private AddOns() {}
+	private AddOns() {
+	}
 
 }

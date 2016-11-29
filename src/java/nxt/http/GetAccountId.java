@@ -29,7 +29,7 @@ public final class GetAccountId extends APIServlet.APIRequestHandler {
 	static final GetAccountId instance = new GetAccountId();
 
 	private GetAccountId() {
-		super(new APITag[] {APITag.ACCOUNTS}, "secretPhrase", "publicKey");
+		super(new APITag[] { APITag.ACCOUNTS }, "secretPhrase", "publicKey");
 	}
 
 	@Override

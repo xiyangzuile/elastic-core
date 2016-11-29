@@ -39,7 +39,8 @@ public final class SignTransactionJSON {
 		try {
 			Logger.setLevel(Logger.Level.ERROR);
 			if ((args.length == 0) || (args.length > 2)) {
-				System.out.println("Usage: SignTransactionJSON <unsigned transaction json file> <signed transaction json file>");
+				System.out.println(
+						"Usage: SignTransactionJSON <unsigned transaction json file> <signed transaction json file>");
 				System.exit(1);
 			}
 			final File unsigned = new File(args[0]);
@@ -62,9 +63,10 @@ public final class SignTransactionJSON {
 			try (BufferedReader reader = new BufferedReader(new FileReader(unsigned));
 					BufferedWriter writer = new BufferedWriter(new FileWriter(signed))) {
 				final JSONObject json = (JSONObject) JSONValue.parseWithException(reader);
-				final byte[] publicKeyHash = Crypto.sha256().digest(Convert.parseHexString((String) json.get("senderPublicKey")));
+				final byte[] publicKeyHash = Crypto.sha256()
+						.digest(Convert.parseHexString((String) json.get("senderPublicKey")));
 				final String senderRS = Convert.rsAccount(Convert.fullHashToId(publicKeyHash));
-				String secretPhrase=null;
+				String secretPhrase = null;
 				final Console console = System.console();
 				if (console == null) {
 					try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in))) {
@@ -73,11 +75,11 @@ public final class SignTransactionJSON {
 				} else {
 					char[] r = null;
 					r = console.readPassword("Secret phrase for account " + senderRS + ": ");
-					if(r!=null) {
+					if (r != null) {
 						secretPhrase = new String();
 					}
 				}
-				if(secretPhrase==null) {
+				if (secretPhrase == null) {
 					return;
 				}
 

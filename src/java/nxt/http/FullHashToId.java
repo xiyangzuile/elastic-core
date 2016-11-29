@@ -28,7 +28,7 @@ public final class FullHashToId extends APIServlet.APIRequestHandler {
 	static final FullHashToId instance = new FullHashToId();
 
 	private FullHashToId() {
-		super(new APITag[] {APITag.UTILS}, "fullHash");
+		super(new APITag[] { APITag.UTILS }, "fullHash");
 	}
 
 	@Override

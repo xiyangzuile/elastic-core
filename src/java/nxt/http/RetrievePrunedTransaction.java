@@ -28,7 +28,7 @@ public class RetrievePrunedTransaction extends APIServlet.APIRequestHandler {
 	static final RetrievePrunedTransaction instance = new RetrievePrunedTransaction();
 
 	private RetrievePrunedTransaction() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "transaction");
+		super(new APITag[] { APITag.TRANSACTIONS }, "transaction");
 	}
 
 	@Override

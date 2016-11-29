@@ -31,7 +31,8 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Create the CountingOutputWriter for the specified writer
 	 *
-	 * @param   writer              Output writer
+	 * @param writer
+	 *            Output writer
 	 */
 	public CountingOutputWriter(final Writer writer) {
 		super(writer);
@@ -40,7 +41,7 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Return the number of characters written
 	 *
-	 * @return                      Character count
+	 * @return Character count
 	 */
 	public long getCount() {
 		return this.count;
@@ -49,8 +50,10 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Write an array of characters
 	 *
-	 * @param   cbuf                Characters to be written
-	 * @throws  IOException         I/O error occurred
+	 * @param cbuf
+	 *            Characters to be written
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public void write(final char[] cbuf) throws IOException {
@@ -61,10 +64,14 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Write an array of characters starting at the specified offset
 	 *
-	 * @param   cbuf                Characters to be written
-	 * @param   off                 Starting offset
-	 * @param   len                 Number of characters to write
-	 * @throws  IOException         I/O error occurred
+	 * @param cbuf
+	 *            Characters to be written
+	 * @param off
+	 *            Starting offset
+	 * @param len
+	 *            Number of characters to write
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public void write(final char[] cbuf, final int off, final int len) throws IOException {
@@ -75,8 +82,10 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Write a single character
 	 *
-	 * @param   c                   Character to be written
-	 * @throws  IOException         I/O error occurred
+	 * @param c
+	 *            Character to be written
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public void write(final int c) throws IOException {
@@ -87,8 +96,10 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Write a string
 	 *
-	 * @param   s                   String to be written
-	 * @throws  IOException         I/O error occurred
+	 * @param s
+	 *            String to be written
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public void write(final String s) throws IOException {
@@ -99,10 +110,14 @@ public class CountingOutputWriter extends FilterWriter {
 	/**
 	 * Write a substring
 	 *
-	 * @param   s                   String to be written
-	 * @param   off                 Starting offset
-	 * @param   len                 Number of characters to write
-	 * @throws  IOException         I/O error occurred
+	 * @param s
+	 *            String to be written
+	 * @param off
+	 *            Starting offset
+	 * @param len
+	 *            Number of characters to write
+	 * @throws IOException
+	 *             I/O error occurred
 	 */
 	@Override
 	public void write(final String s, final int off, final int len) throws IOException {

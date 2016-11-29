@@ -23,13 +23,12 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.Generator;
 
-
 public final class StartForging extends APIServlet.APIRequestHandler {
 
 	static final StartForging instance = new StartForging();
 
 	private StartForging() {
-		super(new APITag[] {APITag.FORGING}, "secretPhrase");
+		super(new APITag[] { APITag.FORGING }, "secretPhrase");
 	}
 
 	@Override

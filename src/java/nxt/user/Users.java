@@ -63,7 +63,7 @@ import nxt.util.ThreadPool;
 
 public final class Users {
 
-	private static final int TESTNET_UI_PORT=2875;
+	private static final int TESTNET_UI_PORT = 2875;
 
 	private static final ConcurrentMap<String, User> users = new ConcurrentHashMap<>();
 	private static final Collection<User> allUsers = Collections.unmodifiableCollection(Users.users.values());
@@ -85,7 +85,7 @@ public final class Users {
 	static {
 
 		final List<String> allowedUserHostsList = Nxt.getStringListProperty("nxt.allowedUserHosts");
-		if (! allowedUserHostsList.contains("*")) {
+		if (!allowedUserHostsList.contains("*")) {
 			allowedUserHosts = Collections.unmodifiableSet(new HashSet<>(allowedUserHostsList));
 		} else {
 			allowedUserHosts = null;
@@ -109,10 +109,12 @@ public final class Users {
 				sslContextFactory.setKeyStorePath(Nxt.getStringProperty("nxt.keyStorePath"));
 				sslContextFactory.setKeyStorePassword(Nxt.getStringProperty("nxt.keyStorePassword", null, true));
 				sslContextFactory.addExcludeCipherSuites("SSL_RSA_WITH_DES_CBC_SHA", "SSL_DHE_RSA_WITH_DES_CBC_SHA",
-						"SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_RC4_40_MD5", "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
-						"SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+						"SSL_DHE_DSS_WITH_DES_CBC_SHA", "SSL_RSA_EXPORT_WITH_RC4_40_MD5",
+						"SSL_RSA_EXPORT_WITH_DES40_CBC_SHA", "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
+						"SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
 				sslContextFactory.addExcludeProtocols("SSLv3");
-				connector = new ServerConnector(Users.userServer, new SslConnectionFactory(sslContextFactory, "http/1.1"),
+				connector = new ServerConnector(Users.userServer,
+						new SslConnectionFactory(sslContextFactory, "http/1.1"),
 						new HttpConnectionFactory(https_config));
 			} else {
 				connector = new ServerConnector(Users.userServer);
@@ -124,12 +126,11 @@ public final class Users {
 			connector.setReuseAddress(true);
 			Users.userServer.addConnector(connector);
 
-
 			final HandlerList userHandlers = new HandlerList();
 
 			final ResourceHandler userFileHandler = new ResourceHandler();
 			userFileHandler.setDirectoriesListed(false);
-			userFileHandler.setWelcomeFiles(new String[]{"index.html"});
+			userFileHandler.setWelcomeFiles(new String[] { "index.html" });
 			userFileHandler.setResourceBase(Nxt.getStringProperty("nxt.uiResourceBase"));
 
 			userHandlers.addHandler(userFileHandler);
@@ -139,7 +140,7 @@ public final class Users {
 				final ContextHandler contextHandler = new ContextHandler("/doc");
 				final ResourceHandler docFileHandler = new ResourceHandler();
 				docFileHandler.setDirectoriesListed(false);
-				docFileHandler.setWelcomeFiles(new String[]{"index.html"});
+				docFileHandler.setWelcomeFiles(new String[] { "index.html" });
 				docFileHandler.setResourceBase(javadocResourceBase);
 				contextHandler.setHandler(docFileHandler);
 				userHandlers.addHandler(contextHandler);
@@ -150,7 +151,8 @@ public final class Users {
 			userHolder.setAsyncSupported(true);
 
 			if (Nxt.getBooleanProperty("nxt.uiServerCORS")) {
-				final FilterHolder filterHolder = userHandler.addFilterWithMapping(CrossOriginFilter.class, "/*", FilterMapping.DEFAULT);
+				final FilterHolder filterHolder = userHandler.addFilterWithMapping(CrossOriginFilter.class, "/*",
+						FilterMapping.DEFAULT);
 				filterHolder.setInitParameter("allowedHeaders", "*");
 				filterHolder.setAsyncSupported(true);
 			}
@@ -209,7 +211,8 @@ public final class Users {
 				final JSONObject addedBlacklistedPeer = new JSONObject();
 				addedBlacklistedPeer.put("index", Users.getIndex(peer));
 				addedBlacklistedPeer.put("address", peer.getHost());
-				addedBlacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+				addedBlacklistedPeer.put("announcedAddress",
+						Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
 				addedBlacklistedPeer.put("software", peer.getSoftware());
 				addedBlacklistedPeers.add(addedBlacklistedPeer);
 				response.put("addedBlacklistedPeers", addedBlacklistedPeers);
@@ -408,7 +411,9 @@ public final class Users {
 				addedOrphanedBlock.put("height", block.getHeight());
 				addedOrphanedBlock.put("version", block.getVersion());
 				addedOrphanedBlock.put("block", block.getStringId());
-				addedOrphanedBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000)).divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
+				addedOrphanedBlock.put("baseTarget",
+						BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
+								.divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
 				addedOrphanedBlocks.add(addedOrphanedBlock);
 				response.put("addedOrphanedBlocks", addedOrphanedBlocks);
 				Users.sendNewDataToAll(response);
@@ -428,7 +433,9 @@ public final class Users {
 				addedRecentBlock.put("height", block.getHeight());
 				addedRecentBlock.put("version", block.getVersion());
 				addedRecentBlock.put("block", block.getStringId());
-				addedRecentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000)).divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
+				addedRecentBlock.put("baseTarget",
+						BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
+								.divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
 				addedRecentBlocks.add(addedRecentBlock);
 				response.put("addedRecentBlocks", addedRecentBlocks);
 				Users.sendNewDataToAll(response);
@@ -447,7 +454,6 @@ public final class Users {
 		}
 
 	}
-
 
 	static Collection<User> getAllUsers() {
 		return Users.allUsers;
@@ -504,7 +510,8 @@ public final class Users {
 		return user;
 	}
 
-	public static void init() {}
+	public static void init() {
+	}
 
 	static User remove(final User user) {
 		return Users.users.remove(user.getUserId());
@@ -531,6 +538,7 @@ public final class Users {
 		}
 	}
 
-	private Users() {} // never
+	private Users() {
+	} // never
 
 }

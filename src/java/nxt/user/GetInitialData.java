@@ -39,7 +39,8 @@ public final class GetInitialData extends UserServlet.UserRequestHandler {
 
 	static final GetInitialData instance = new GetInitialData();
 
-	private GetInitialData() {}
+	private GetInitialData() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
@@ -48,7 +49,8 @@ public final class GetInitialData extends UserServlet.UserRequestHandler {
 		final JSONArray activePeers = new JSONArray(), knownPeers = new JSONArray(), blacklistedPeers = new JSONArray();
 		final JSONArray recentBlocks = new JSONArray();
 
-		try (DbIterator<? extends Transaction> transactions = Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
+		try (DbIterator<? extends Transaction> transactions = Nxt.getTransactionProcessor()
+				.getAllUnconfirmedTransactions()) {
 			while (transactions.hasNext()) {
 				final Transaction transaction = transactions.next();
 

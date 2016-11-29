@@ -41,16 +41,14 @@ import nxt.util.Listeners;
 
 public final class PowAndBounty {
 
-
 	public enum Event {
 		POW_SUBMITTED, BOUNTY_SUBMITTED
 	}
 
-
-
 	private static final Listeners<PowAndBounty, Event> listeners = new Listeners<>();
 
-	private static final DbKey.LongKeyFactory<PowAndBounty> powAndBountyDbKeyFactory = new DbKey.LongKeyFactory<PowAndBounty>("id") {
+	private static final DbKey.LongKeyFactory<PowAndBounty> powAndBountyDbKeyFactory = new DbKey.LongKeyFactory<PowAndBounty>(
+			"id") {
 
 		@Override
 		public DbKey newKey(final PowAndBounty participant) {
@@ -59,7 +57,8 @@ public final class PowAndBounty {
 
 	};
 
-	private static final VersionedEntityDbTable<PowAndBounty> powAndBountyTable = new VersionedEntityDbTable<PowAndBounty>("pow_and_bounty", PowAndBounty.powAndBountyDbKeyFactory) {
+	private static final VersionedEntityDbTable<PowAndBounty> powAndBountyTable = new VersionedEntityDbTable<PowAndBounty>(
+			"pow_and_bounty", PowAndBounty.powAndBountyDbKeyFactory) {
 
 		@Override
 		protected PowAndBounty load(final Connection con, final ResultSet rs, final DbKey dbKey) throws SQLException {
@@ -89,77 +88,85 @@ public final class PowAndBounty {
 		final PowAndBounty shuffling = new PowAndBounty(transaction, attachment);
 		PowAndBounty.powAndBountyTable.insert(shuffling);
 
-
 		PowAndBounty.listeners.notify(shuffling, Event.POW_SUBMITTED);
 	}
+
 	public static String bytesToHex(final byte[] bytes) {
 		final char[] hexChars = new char[bytes.length * 2];
-		for ( int j = 0; j < bytes.length; j++ ) {
+		for (int j = 0; j < bytes.length; j++) {
 			final int v = bytes[j] & 0xFF;
 			hexChars[j * 2] = PowAndBounty.hexArray[v >>> 4];
 			hexChars[(j * 2) + 1] = PowAndBounty.hexArray[v & 0x0F];
 		}
 		return new String(hexChars);
 	}
-	static Map<Long, Integer> GetAccountBountyMap(final long wid){
+
+	static Map<Long, Integer> GetAccountBountyMap(final long wid) {
 		final DbIterator<PowAndBounty> it = PowAndBounty.getBounties(wid);
 		final Map<Long, Integer> map = new HashMap<>();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			final PowAndBounty p = it.next();
-			if(map.containsKey(p.getAccountId())==false){
+			if (map.containsKey(p.getAccountId()) == false) {
 				map.put(p.getAccountId(), 1);
-			}else{
+			} else {
 				final int ik = map.get(p.getAccountId());
-				map.put(p.getAccountId(), ik+1);
+				map.put(p.getAccountId(), ik + 1);
 			}
 		}
 		it.close();
 		return map;
 	}
+
 	public static DbIterator<PowAndBounty> getBounties(final long wid) {
-		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", false)).and(
-						new DbClause.BooleanClause("latest", true)), 0, -1, "");
+		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
+				.and(new DbClause.BooleanClause("is_pow", false)).and(new DbClause.BooleanClause("latest", true)), 0,
+				-1, "");
 	}
 
 	public static DbIterator<PowAndBounty> getBounties(final long wid, final long aid) {
-		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", false)).and(
-						new DbClause.LongClause("account_id", aid)).and(
-								new DbClause.BooleanClause("latest", true)), 0, -1, "");
+		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
+				.and(new DbClause.BooleanClause("is_pow", false)).and(new DbClause.LongClause("account_id", aid))
+				.and(new DbClause.BooleanClause("latest", true)), 0, -1, "");
 	}
 
 	static int getBountyCount(final long wid) {
-		return PowAndBounty.powAndBountyTable.getCount(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", false)));
+		return PowAndBounty.powAndBountyTable
+				.getCount(new DbClause.LongClause("work_id", wid).and(new DbClause.BooleanClause("is_pow", false)));
 	}
+
 	static int getPowCount(final long wid) {
-		return PowAndBounty.powAndBountyTable.getCount(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", true)));
+		return PowAndBounty.powAndBountyTable
+				.getCount(new DbClause.LongClause("work_id", wid).and(new DbClause.BooleanClause("is_pow", true)));
 	}
+
 	public static PowAndBounty getPowOrBountyById(final long id) {
 		return PowAndBounty.powAndBountyTable.get(PowAndBounty.powAndBountyDbKeyFactory.newKey(id));
 	}
 
 	public static DbIterator<PowAndBounty> getPows(final long wid) {
-		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", true)).and(
-						new DbClause.BooleanClause("latest", true)), 0, -1, "");
+		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
+				.and(new DbClause.BooleanClause("is_pow", true)).and(new DbClause.BooleanClause("latest", true)), 0, -1,
+				"");
 	}
 
 	public static DbIterator<PowAndBounty> getPows(final long wid, final long aid) {
-		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid).and(
-				new DbClause.BooleanClause("is_pow", true)).and(
-						new DbClause.LongClause("account_id", aid)).and(
-								new DbClause.BooleanClause("latest", true)), 0, -1, "");
+		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
+				.and(new DbClause.BooleanClause("is_pow", true)).and(new DbClause.LongClause("account_id", aid))
+				.and(new DbClause.BooleanClause("latest", true)), 0, -1, "");
 	}
+
 	static boolean hasHash(final long workId, final byte[] hash) {
-		return PowAndBounty.powAndBountyTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", workId)))>0;
+		return PowAndBounty.powAndBountyTable
+				.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", workId))) > 0;
 	}
-	static void init() {}
+
+	static void init() {
+	}
+
 	public static boolean removeListener(final Listener<PowAndBounty> listener, final Event eventType) {
 		return PowAndBounty.listeners.removeListener(listener, eventType);
 	}
+
 	private final long id;
 	private final boolean is_pow;
 	private boolean too_late;
@@ -169,6 +176,7 @@ public final class PowAndBounty {
 
 	private final byte[] multiplicator;
 	private final byte[] hash;
+
 	private PowAndBounty(final ResultSet rs, final DbKey dbKey) throws SQLException {
 		this.id = rs.getLong("id");
 		this.work_id = rs.getLong("work_id");
@@ -201,42 +209,44 @@ public final class PowAndBounty {
 		this.hash = attachment.getHash(); // FIXME TODO
 		this.too_late = false;
 	}
-	public void applyBounty(final Block bl) throws IOException{
+
+	public void applyBounty(final Block bl) throws IOException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
-		if(w==null) {
+		if (w == null) {
 			throw new IOException("No such work found");
 		}
-		if(w.isClosed() == false){
+		if (w.isClosed() == false) {
 			// Immediate payout incl. the bounty deposit
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
 			final Account participantAccount = Account.getAccount(this.accountId);
-			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+					w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			// Reduce bounty fund entirely
 			w.kill_bounty_fund(bl);
-		}else{
+		} else {
 			this.too_late = true;
 			PowAndBounty.powAndBountyTable.insert(this);
 		}
 	}
-	public void applyPowPayment(final Block bl) throws IOException{
+
+	public void applyPowPayment(final Block bl) throws IOException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 
-		if(w==null){
+		if (w == null) {
 			throw new IOException("Work not found");
 		}
 
-		if((w.isClosed() == false) && (w.isClose_pending() == false)){
+		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
 			final Account participantAccount = Account.getAccount(this.accountId);
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_pow());
 			// Reduce work remaining xel
 			w.reduce_one_pow_submission(bl);
-		}else{
+		} else {
 			this.too_late = true;
 			PowAndBounty.powAndBountyTable.insert(this);
 		}
-
 
 	}
 
@@ -249,9 +259,9 @@ public final class PowAndBounty {
 	}
 
 	private void save(final Connection con) throws SQLException {
-		try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow,"
-				+ " height) " + "KEY (id, height) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+		try (PreparedStatement pstmt = con.prepareStatement(
+				"MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow,"
+						+ " height) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setBoolean(++i, this.too_late);
@@ -267,13 +277,13 @@ public final class PowAndBounty {
 
 	public JSONObject toJsonObject() {
 		final JSONObject response = new JSONObject();
-		response.put("id",Convert.toUnsignedLong(this.id));
+		response.put("id", Convert.toUnsignedLong(this.id));
 		final Transaction t = TransactionDb.findTransaction(this.id);
-		if(t != null){
-			response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
-			response.put("multiplicator",Arrays.toString(this.multiplicator));
-		}else{
-			response.put("error","Transaction not found");
+		if (t != null) {
+			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
+			response.put("multiplicator", Arrays.toString(this.multiplicator));
+		} else {
+			response.put("error", "Transaction not found");
 		}
 		return response;
 	}

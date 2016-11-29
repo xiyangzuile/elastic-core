@@ -25,7 +25,8 @@ import nxt.util.Convert;
 
 public final class AnonymouslyEncryptedData {
 
-	public static AnonymouslyEncryptedData encrypt(final byte[] plaintext, final String secretPhrase, final byte[] theirPublicKey, final byte[] nonce) {
+	public static AnonymouslyEncryptedData encrypt(final byte[] plaintext, final String secretPhrase,
+			final byte[] theirPublicKey, final byte[] nonce) {
 		final byte[] keySeed = Crypto.getKeySeed(secretPhrase, theirPublicKey, nonce);
 		final byte[] myPrivateKey = Crypto.getPrivateKey(keySeed);
 		final byte[] myPublicKey = Crypto.getPublicKey(keySeed);
@@ -44,8 +45,8 @@ public final class AnonymouslyEncryptedData {
 		}
 	}
 
-	public static AnonymouslyEncryptedData readEncryptedData(final ByteBuffer buffer, final int length, final int maxLength)
-			throws NxtException.NotValidException {
+	public static AnonymouslyEncryptedData readEncryptedData(final ByteBuffer buffer, final int length,
+			final int maxLength) throws NxtException.NotValidException {
 		if (length > maxLength) {
 			throw new NxtException.NotValidException("Max encrypted data length exceeded: " + length);
 		}

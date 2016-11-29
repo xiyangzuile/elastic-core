@@ -28,49 +28,62 @@ import nxt.http.EventListener.EventListenerException;
 import nxt.http.EventListener.PendingEvent;
 
 /**
- * <p>The EventWait API will wait for one of the server events
- * registered by EventRegister.  EventWait will return immediately
- * if one or more events have occurred since the last time EventWait
- * was called.  All pending events will be returned in a single response.
- * The events remain registered so successive calls to EventWait can
- * be made without another call to EventRegister.</p>
+ * <p>
+ * The EventWait API will wait for one of the server events registered by
+ * EventRegister. EventWait will return immediately if one or more events have
+ * occurred since the last time EventWait was called. All pending events will be
+ * returned in a single response. The events remain registered so successive
+ * calls to EventWait can be made without another call to EventRegister.
+ * </p>
  *
- * <p>Only one EventWait can be outstanding for the same network address.
- * If a second EventWait is issued, the current EventWait will be replaced
- * by the new EventWait.</p>
+ * <p>
+ * Only one EventWait can be outstanding for the same network address. If a
+ * second EventWait is issued, the current EventWait will be replaced by the new
+ * EventWait.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
- * <li>timeout - Number of seconds to wait for an event.  The EventWait
- * will complete normally if no event is received within the timeout interval.
- * nxt.apiEventTimeout will be used if no timeout value is specified or
- * if the requested timeout is greater than nxt.apiEventTimeout.</li>
+ * <li>timeout - Number of seconds to wait for an event. The EventWait will
+ * complete normally if no event is received within the timeout interval.
+ * nxt.apiEventTimeout will be used if no timeout value is specified or if the
+ * requested timeout is greater than nxt.apiEventTimeout.</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
  * <li>events - An array of event objects</li>
  * </ul>
  *
- * <p>Error Response parameters:</p>
+ * <p>
+ * Error Response parameters:
+ * </p>
  * <ul>
  * <li>errorCode - API error code</li>
  * <li>errorDescription - API error description</li>
  * </ul>
  *
- * <p>Event object:</p>
+ * <p>
+ * Event object:
+ * </p>
  * <ul>
  * <li>name - The event name</li>
  * <li>ids - An array of event object identifiers</li>
  * </ul>
  *
- * <p>Event names:</p>
+ * <p>
+ * Event names:
+ * </p>
  * <ul>
  * <li>Block.BLOCK_GENERATED</li>
  * <li>Block.BLOCK_POPPED</li>
  * <li>Block.BLOCK_PUSHED</li>
- * <li>Ledger.ADD_ENTRY.account - The account suffix will be Reed-Solomon identifier
- * of the account associated with the ledger entry.</li>
+ * <li>Ledger.ADD_ENTRY.account - The account suffix will be Reed-Solomon
+ * identifier of the account associated with the ledger entry.</li>
  * <li>Peer.ADD_INBOUND</li>
  * <li>Peer.ADDED_ACTIVE_PEER</li>
  * <li>Peer.BLACKLIST</li>
@@ -87,7 +100,9 @@ import nxt.http.EventListener.PendingEvent;
  * <li>Transaction.REMOVE_UNCONFIRMED_TRANSACTIONS</li>
  * </ul>
  *
- * <p>Event object identifiers:</p>
+ * <p>
+ * Event object identifiers:
+ * </p>
  * <ul>
  * <li>Block string identifier for a Block event</li>
  * <li>Peer network address for a Peer event</li>
@@ -116,8 +131,9 @@ public class EventWait extends APIServlet.APIRequestHandler {
 	/**
 	 * Format the EventWait response
 	 *
-	 * @param   events              Event list
-	 * @return                      JSON stream
+	 * @param events
+	 *            Event list
+	 * @return JSON stream
 	 */
 	static JSONObject formatResponse(final List<PendingEvent> events) {
 		final JSONArray eventsJSON = new JSONArray();
@@ -142,13 +158,13 @@ public class EventWait extends APIServlet.APIRequestHandler {
 	 * Create the EventWait instance
 	 */
 	private EventWait() {
-		super(new APITag[] {APITag.INFO}, "timeout");
+		super(new APITag[] { APITag.INFO }, "timeout");
 	}
 
 	/**
 	 * No required block parameters
 	 *
-	 * @return                      FALSE to disable the required block parameters
+	 * @return FALSE to disable the required block parameters
 	 */
 	@Override
 	protected boolean allowRequiredBlockParameters() {
@@ -158,14 +174,15 @@ public class EventWait extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the EventWait API request
 	 *
-	 * The response will be returned immediately if there are any
-	 * pending events.  Otherwise, an asynchronous context will
-	 * be created and the response will be returned after the wait
-	 * has completed.  By using an asynchronous context, we avoid
-	 * tying up the Jetty servlet thread while waiting for an event.
+	 * The response will be returned immediately if there are any pending
+	 * events. Otherwise, an asynchronous context will be created and the
+	 * response will be returned after the wait has completed. By using an
+	 * asynchronous context, we avoid tying up the Jetty servlet thread while
+	 * waiting for an event.
 	 *
-	 * @param   req                 API request
-	 * @return                      API response or null
+	 * @param req
+	 *            API request
+	 * @return API response or null
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
@@ -198,7 +215,7 @@ public class EventWait extends APIServlet.APIRequestHandler {
 				} catch (final EventListenerException exc) {
 					response = new JSONObject();
 					response.put("errorCode", 7);
-					response.put("errorDescription", "Unable to wait for an event: "+exc.getMessage());
+					response.put("errorDescription", "Unable to wait for an event: " + exc.getMessage());
 				}
 			}
 		}

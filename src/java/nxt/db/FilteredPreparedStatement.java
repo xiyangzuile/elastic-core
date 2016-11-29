@@ -95,7 +95,7 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setArray (final int parameterIndex, final Array x) throws SQLException {
+	public void setArray(final int parameterIndex, final Array x) throws SQLException {
 		this.stmt.setArray(parameterIndex, x);
 	}
 
@@ -105,12 +105,14 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setAsciiStream(final int parameterIndex, final java.io.InputStream x, final int length) throws SQLException {
+	public void setAsciiStream(final int parameterIndex, final java.io.InputStream x, final int length)
+			throws SQLException {
 		this.stmt.setAsciiStream(parameterIndex, x, length);
 	}
 
 	@Override
-	public void setAsciiStream(final int parameterIndex, final java.io.InputStream x, final long length) throws SQLException {
+	public void setAsciiStream(final int parameterIndex, final java.io.InputStream x, final long length)
+			throws SQLException {
 		this.stmt.setAsciiStream(parameterIndex, x, length);
 	}
 
@@ -125,17 +127,19 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setBinaryStream(final int parameterIndex, final java.io.InputStream x, final int length) throws SQLException {
+	public void setBinaryStream(final int parameterIndex, final java.io.InputStream x, final int length)
+			throws SQLException {
 		this.stmt.setBinaryStream(parameterIndex, x, length);
 	}
 
 	@Override
-	public void setBinaryStream(final int parameterIndex, final java.io.InputStream x, final long length) throws SQLException {
+	public void setBinaryStream(final int parameterIndex, final java.io.InputStream x, final long length)
+			throws SQLException {
 		this.stmt.setBinaryStream(parameterIndex, x, length);
 	}
 
 	@Override
-	public void setBlob (final int parameterIndex, final Blob x) throws SQLException {
+	public void setBlob(final int parameterIndex, final Blob x) throws SQLException {
 		this.stmt.setBlob(parameterIndex, x);
 	}
 
@@ -145,7 +149,8 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setBlob(final int parameterIndex, final InputStream inputStream, final long length) throws SQLException {
+	public void setBlob(final int parameterIndex, final InputStream inputStream, final long length)
+			throws SQLException {
 		this.stmt.setBlob(parameterIndex, inputStream, length);
 	}
 
@@ -170,17 +175,19 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setCharacterStream(final int parameterIndex, final java.io.Reader reader, final int length) throws SQLException {
+	public void setCharacterStream(final int parameterIndex, final java.io.Reader reader, final int length)
+			throws SQLException {
 		this.stmt.setCharacterStream(parameterIndex, reader, length);
 	}
 
 	@Override
-	public void setCharacterStream(final int parameterIndex, final java.io.Reader reader, final long length) throws SQLException {
+	public void setCharacterStream(final int parameterIndex, final java.io.Reader reader, final long length)
+			throws SQLException {
 		this.stmt.setCharacterStream(parameterIndex, reader, length);
 	}
 
 	@Override
-	public void setClob (final int parameterIndex, final Clob x) throws SQLException {
+	public void setClob(final int parameterIndex, final Clob x) throws SQLException {
 		this.stmt.setClob(parameterIndex, x);
 	}
 
@@ -230,7 +237,8 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setNCharacterStream(final int parameterIndex, final Reader value, final long length) throws SQLException {
+	public void setNCharacterStream(final int parameterIndex, final Reader value, final long length)
+			throws SQLException {
 		this.stmt.setNCharacterStream(parameterIndex, value, length);
 	}
 
@@ -260,7 +268,7 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setNull (final int parameterIndex, final int sqlType, final String typeName) throws SQLException {
+	public void setNull(final int parameterIndex, final int sqlType, final String typeName) throws SQLException {
 		this.stmt.setNull(parameterIndex, sqlType, typeName);
 	}
 
@@ -275,7 +283,8 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setObject(final int parameterIndex, final Object x, final int targetSqlType, final int scaleOrLength) throws SQLException {
+	public void setObject(final int parameterIndex, final Object x, final int targetSqlType, final int scaleOrLength)
+			throws SQLException {
 		this.stmt.setObject(parameterIndex, x, targetSqlType, scaleOrLength);
 	}
 
@@ -285,12 +294,13 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setObject(final int parameterIndex, final Object x, final SQLType targetSqlType, final int scaleOrLength) throws SQLException {
+	public void setObject(final int parameterIndex, final Object x, final SQLType targetSqlType,
+			final int scaleOrLength) throws SQLException {
 		this.stmt.setObject(parameterIndex, x, targetSqlType);
 	}
 
 	@Override
-	public void setRef (final int parameterIndex, final Ref x) throws SQLException {
+	public void setRef(final int parameterIndex, final Ref x) throws SQLException {
 		this.stmt.setRef(parameterIndex, x);
 	}
 
@@ -330,7 +340,8 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setTimestamp(final int parameterIndex, final java.sql.Timestamp x, final Calendar cal) throws SQLException {
+	public void setTimestamp(final int parameterIndex, final java.sql.Timestamp x, final Calendar cal)
+			throws SQLException {
 		this.stmt.setTimestamp(parameterIndex, x, cal);
 	}
 

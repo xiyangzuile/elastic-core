@@ -28,7 +28,7 @@ public final class RebroadcastUnconfirmedTransactions extends APIServlet.APIRequ
 	static final RebroadcastUnconfirmedTransactions instance = new RebroadcastUnconfirmedTransactions();
 
 	private RebroadcastUnconfirmedTransactions() {
-		super(new APITag[] {APITag.DEBUG});
+		super(new APITag[] { APITag.DEBUG });
 	}
 
 	@Override

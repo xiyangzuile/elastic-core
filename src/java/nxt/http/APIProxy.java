@@ -33,8 +33,8 @@ import nxt.util.ThreadPool;
 public class APIProxy {
 	private static final APIProxy instance = new APIProxy();
 
-	static final boolean enableAPIProxy = Constants.isLightClient ||
-			(Nxt.getBooleanProperty("nxt.enableAPIProxy") && (API.openAPIPort == 0) && (API.openAPISSLPort == 0));
+	static final boolean enableAPIProxy = Constants.isLightClient
+			|| (Nxt.getBooleanProperty("nxt.enableAPIProxy") && (API.openAPIPort == 0) && (API.openAPISSLPort == 0));
 	private static final int blacklistingPeriod = Nxt.getIntProperty("nxt.apiProxyBlacklistingPeriod") / 1000;
 	static final String forcedServerURL = Nxt.getStringProperty("nxt.forceAPIProxyServerURL", "");
 
@@ -62,11 +62,13 @@ public class APIProxy {
 			ThreadPool.scheduleThread("APIProxyPeersUpdate", APIProxy.peersUpdateThread, 60);
 		}
 	}
+
 	public static APIProxy getInstance() {
 		return APIProxy.instance;
 	}
 
-	public static void init() {}
+	public static void init() {
+	}
 
 	static boolean isActivated() {
 		return Constants.isLightClient || (APIProxy.enableAPIProxy && Nxt.getBlockchainProcessor().isDownloading());
@@ -128,13 +130,17 @@ public class APIProxy {
 			}
 		}
 
-		final List<Peer> connectablePeers = Peers.getPeers(p -> p.isApiConnectable() && !this.blacklistedPeers.containsKey(p.getHost()));
+		final List<Peer> connectablePeers = Peers
+				.getPeers(p -> p.isApiConnectable() && !this.blacklistedPeers.containsKey(p.getHost()));
 		if (connectablePeers.isEmpty()) {
 			return null;
 		}
-		// subset of connectable peers that have at least one new API enabled, which was disabled for the
-		// The first peer (element 0 of peersHosts) is chosen at random. Next peers are chosen randomly from a
-		// previously chosen peers. In worst case the size of peersHosts will be the number of APIs
+		// subset of connectable peers that have at least one new API enabled,
+		// which was disabled for the
+		// The first peer (element 0 of peersHosts) is chosen at random. Next
+		// peers are chosen randomly from a
+		// previously chosen peers. In worst case the size of peersHosts will be
+		// the number of APIs
 		Peer peer = this.getRandomAPIPeer(connectablePeers);
 		if (peer == null) {
 			return null;

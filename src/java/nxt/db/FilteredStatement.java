@@ -36,7 +36,7 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public void addBatch( final String sql ) throws SQLException {
+	public void addBatch(final String sql) throws SQLException {
 		this.stmt.addBatch(sql);
 	}
 
@@ -141,7 +141,7 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public Connection getConnection()  throws SQLException {
+	public Connection getConnection() throws SQLException {
 		return this.stmt.getConnection();
 	}
 
@@ -211,7 +211,7 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public int getResultSetType()  throws SQLException {
+	public int getResultSetType() throws SQLException {
 		return this.stmt.getResultSetType();
 	}
 

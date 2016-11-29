@@ -40,7 +40,8 @@ final class User {
 	private final class UserAsyncListener implements AsyncListener {
 
 		@Override
-		public void onComplete(final AsyncEvent asyncEvent) throws IOException { }
+		public void onComplete(final AsyncEvent asyncEvent) throws IOException {
+		}
 
 		@Override
 		public void onError(final AsyncEvent asyncEvent) throws IOException {
@@ -59,7 +60,8 @@ final class User {
 		}
 
 		@Override
-		public void onStartAsync(final AsyncEvent asyncEvent) throws IOException { }
+		public void onStartAsync(final AsyncEvent asyncEvent) throws IOException {
+		}
 
 		@Override
 		public void onTimeout(final AsyncEvent asyncEvent) throws IOException {
@@ -78,6 +80,7 @@ final class User {
 		}
 
 	}
+
 	private volatile String secretPhrase;
 	private volatile byte[] publicKey;
 	private volatile boolean isInactive;
@@ -115,7 +118,8 @@ final class User {
 		this.secretPhrase = null;
 	}
 
-	synchronized void processPendingResponses(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+	synchronized void processPendingResponses(final HttpServletRequest req, final HttpServletResponse resp)
+			throws IOException {
 		final JSONArray responses = new JSONArray();
 		JSONStreamAware pendingResponse;
 		while ((pendingResponse = this.pendingResponses.poll()) != null) {
@@ -165,7 +169,8 @@ final class User {
 				// stop collecting responses for this user
 				this.isInactive = true;
 				if (this.secretPhrase == null) {
-					// but only completely remove users that don't have unlocked accounts
+					// but only completely remove users that don't have unlocked
+					// accounts
 					Users.remove(this);
 				}
 				return;
@@ -205,7 +210,6 @@ final class User {
 	void setInactive(final boolean inactive) {
 		this.isInactive = inactive;
 	}
-
 
 	long unlockAccount(final String secretPhrase) {
 		this.publicKey = Crypto.getPublicKey(secretPhrase);

@@ -36,24 +36,25 @@ public final class GetExpectedTransactions extends APIServlet.APIRequestHandler 
 	static final GetExpectedTransactions instance = new GetExpectedTransactions();
 
 	private GetExpectedTransactions() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "account", "account", "account");
+		super(new APITag[] { APITag.TRANSACTIONS }, "account", "account", "account");
 	}
 
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
-		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
-			transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
+		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true
+				: transaction -> accountIds.contains(transaction.getSenderId())
+						|| accountIds.contains(transaction.getRecipientId());
 
-			final List<? extends Transaction> transactions = Nxt.getBlockchain().getExpectedTransactions(filter);
+		final List<? extends Transaction> transactions = Nxt.getBlockchain().getExpectedTransactions(filter);
 
-			final JSONObject response = new JSONObject();
-			final JSONArray jsonArray = new JSONArray();
-			transactions.forEach(transaction -> jsonArray.add(JSONData.unconfirmedTransaction(transaction)));
-			response.put("expectedTransactions", jsonArray);
+		final JSONObject response = new JSONObject();
+		final JSONArray jsonArray = new JSONArray();
+		transactions.forEach(transaction -> jsonArray.add(JSONData.unconfirmedTransaction(transaction)));
+		response.put("expectedTransactions", jsonArray);
 
-			return response;
+		return response;
 	}
 
 }

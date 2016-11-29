@@ -29,12 +29,13 @@ public final class GenerateAuthorizationToken extends UserServlet.UserRequestHan
 
 	static final GenerateAuthorizationToken instance = new GenerateAuthorizationToken();
 
-	private GenerateAuthorizationToken() {}
+	private GenerateAuthorizationToken() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
 		final String secretPhrase = req.getParameter("secretPhrase");
-		if (! user.getSecretPhrase().equals(secretPhrase)) {
+		if (!user.getSecretPhrase().equals(secretPhrase)) {
 			return JSONResponses.INVALID_SECRET_PHRASE;
 		}
 

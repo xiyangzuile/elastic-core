@@ -29,43 +29,55 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 /**
- * <p>The GetStackTraces API will return the current stack trace for
- * each Nxt thread.</p>
+ * <p>
+ * The GetStackTraces API will return the current stack trace for each Nxt
+ * thread.
+ * </p>
  *
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * <ul>
  * <li>depth - Stack trace depth (minimum 1, defaults to full trace)</li>
  * </ul>
  *
- * <p>Response parameters:</p>
+ * <p>
+ * Response parameters:
+ * </p>
  * <ul>
- * <li>locks   - An array of lock objects for locks with waiters</li>
+ * <li>locks - An array of lock objects for locks with waiters</li>
  * <li>threads - An array of thread objects</li>
  * </ul>
  *
- * <p>Lock object:</p>
+ * <p>
+ * Lock object:
+ * </p>
  * <ul>
- * <li>name   - Lock class name</li>
- * <li>hash   - Lock identity hash code</li>
+ * <li>name - Lock class name</li>
+ * <li>hash - Lock identity hash code</li>
  * <li>thread - Identifier of thread holding the lock</li>
  * </ul>
  *
- * <p>Monitor object:</p>
+ * <p>
+ * Monitor object:
+ * </p>
  * <ul>
- * <li>name    - Monitor class name</li>
- * <li>hash    - Monitor identity hash</li>
- * <li>depth   - Stack depth where monitor locked</li>
- * <li>trace   - Stack element where monitor locked</li>
+ * <li>name - Monitor class name</li>
+ * <li>hash - Monitor identity hash</li>
+ * <li>depth - Stack depth where monitor locked</li>
+ * <li>trace - Stack element where monitor locked</li>
  * </ul>
  *
- * <p>Thread object:</p>
+ * <p>
+ * Thread object:
+ * </p>
  * <ul>
  * <li>blocked - Lock object if thread is waiting on a lock</li>
- * <li>id      - Thread identifier</li>
- * <li>locks   - Array of monitor objects for locks held by this thread</li>
- * <li>name    - Thread name</li>
- * <li>state   - Thread state</li>
- * <li>  trace   - Array of stack trace elements</li>
+ * <li>id - Thread identifier</li>
+ * <li>locks - Array of monitor objects for locks held by this thread</li>
+ * <li>name - Thread name</li>
+ * <li>state - Thread state</li>
+ * <li>trace - Array of stack trace elements</li>
  * </ul>
  */
 public class GetStackTraces extends APIServlet.APIRequestHandler {
@@ -77,7 +89,7 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 	 * Create the GetStackTraces instance
 	 */
 	private GetStackTraces() {
-		super(new APITag[] {APITag.DEBUG}, "depth");
+		super(new APITag[] { APITag.DEBUG }, "depth");
 	}
 
 	@Override
@@ -88,8 +100,9 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 	/**
 	 * Process the GetStackTraces API request
 	 *
-	 * @param   req                 API request
-	 * @return                      API response
+	 * @param req
+	 *            API request
+	 * @return API response
 	 */
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
@@ -149,8 +162,8 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 						lockJSON.put("thread", tInfo.getLockOwnerId());
 						threadJSON.put("blocked", lockJSON);
 						boolean addLock = true;
-						for (final Object lock : locksJSON){
-							if (((JSONObject)lock).get("name").equals(lInfo.getClassName())) {
+						for (final Object lock : locksJSON) {
+							if (((JSONObject) lock).get("name").equals(lInfo.getClassName())) {
 								addLock = false;
 								break;
 							}
@@ -196,7 +209,7 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 	/**
 	 * Require the administrator password
 	 *
-	 * @return                      TRUE if the admin password is required
+	 * @return TRUE if the admin password is required
 	 */
 	@Override
 	protected boolean requirePassword() {

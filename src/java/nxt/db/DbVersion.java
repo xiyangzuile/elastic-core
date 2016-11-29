@@ -61,15 +61,16 @@ public abstract class DbVersion {
 			int nextUpdate = 1;
 			try {
 				final ResultSet rs = stmt.executeQuery("SELECT next_update FROM version");
-				if (! rs.next()) {
+				if (!rs.next()) {
 					throw new RuntimeException("Invalid version table");
 				}
 				nextUpdate = rs.getInt("next_update");
-				if (! rs.isLast()) {
+				if (!rs.isLast()) {
 					throw new RuntimeException("Invalid version table");
 				}
 				rs.close();
-				Logger.logMessage("Database update may take a while if needed, current db version " + (nextUpdate - 1) + "...");
+				Logger.logMessage(
+						"Database update may take a while if needed, current db version " + (nextUpdate - 1) + "...");
 			} catch (final SQLException e) {
 				Logger.logMessage("Initializing an empty database");
 				stmt.executeUpdate("CREATE TABLE version (next_update INT NOT NULL)");

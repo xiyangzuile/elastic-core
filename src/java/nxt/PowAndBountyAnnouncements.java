@@ -38,16 +38,14 @@ import nxt.util.Listeners;
 
 public final class PowAndBountyAnnouncements {
 
-
 	public enum Event {
 		BOUNTY_ANNOUNCEMENT_SUBMITTED
 	}
 
-
-
 	private static final Listeners<PowAndBountyAnnouncements, Event> listeners = new Listeners<>();
 
-	private static final DbKey.LongKeyFactory<PowAndBountyAnnouncements> powAndBountyAnnouncementDbKeyFactory = new DbKey.LongKeyFactory<PowAndBountyAnnouncements>("id") {
+	private static final DbKey.LongKeyFactory<PowAndBountyAnnouncements> powAndBountyAnnouncementDbKeyFactory = new DbKey.LongKeyFactory<PowAndBountyAnnouncements>(
+			"id") {
 
 		@Override
 		public DbKey newKey(final PowAndBountyAnnouncements participant) {
@@ -56,10 +54,12 @@ public final class PowAndBountyAnnouncements {
 
 	};
 
-	private static final VersionedEntityDbTable<PowAndBountyAnnouncements> powAndBountyAnnouncementTable = new VersionedEntityDbTable<PowAndBountyAnnouncements>("pow_and_bounty_announcements", PowAndBountyAnnouncements.powAndBountyAnnouncementDbKeyFactory) {
+	private static final VersionedEntityDbTable<PowAndBountyAnnouncements> powAndBountyAnnouncementTable = new VersionedEntityDbTable<PowAndBountyAnnouncements>(
+			"pow_and_bounty_announcements", PowAndBountyAnnouncements.powAndBountyAnnouncementDbKeyFactory) {
 
 		@Override
-		protected PowAndBountyAnnouncements load(final Connection con, final ResultSet rs, final DbKey dbKey) throws SQLException {
+		protected PowAndBountyAnnouncements load(final Connection con, final ResultSet rs, final DbKey dbKey)
+				throws SQLException {
 			return new PowAndBountyAnnouncements(rs, dbKey);
 		}
 
@@ -70,7 +70,8 @@ public final class PowAndBountyAnnouncements {
 
 	};
 
-	static PowAndBountyAnnouncements addBountyAnnouncement(final Transaction transaction, final Attachment.PiggybackedProofOfBountyAnnouncement attachment) {
+	static PowAndBountyAnnouncements addBountyAnnouncement(final Transaction transaction,
+			final Attachment.PiggybackedProofOfBountyAnnouncement attachment) {
 		final PowAndBountyAnnouncements shuffling = new PowAndBountyAnnouncements(transaction, attachment);
 		PowAndBountyAnnouncements.powAndBountyAnnouncementTable.insert(shuffling);
 		PowAndBountyAnnouncements.listeners.notify(shuffling, Event.BOUNTY_ANNOUNCEMENT_SUBMITTED);
@@ -82,27 +83,28 @@ public final class PowAndBountyAnnouncements {
 	}
 
 	public static PowAndBountyAnnouncements getPowOrBountyById(final long id) {
-		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable.get(PowAndBountyAnnouncements.powAndBountyAnnouncementDbKeyFactory.newKey(id));
+		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable
+				.get(PowAndBountyAnnouncements.powAndBountyAnnouncementDbKeyFactory.newKey(id));
 	}
-
-
 
 	public static boolean hasHash(final long work_id, final byte[] hash) {
-		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)))>0;
+		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable
+				.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id))) > 0;
 	}
-
 
 	public static boolean hasValidHash(final long work_id, final byte[] hash) {
-		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id)).and(new DbClause.BooleanClause("too_late", false)))>0;
+		return PowAndBountyAnnouncements.powAndBountyAnnouncementTable
+				.getCount(new DbClause.BytesClause("hash", hash).and(new DbClause.LongClause("work_id", work_id))
+						.and(new DbClause.BooleanClause("too_late", false))) > 0;
 	}
 
-	static void init() {}
-
-
+	static void init() {
+	}
 
 	public static boolean removeListener(final Listener<PowAndBountyAnnouncements> listener, final Event eventType) {
 		return PowAndBountyAnnouncements.listeners.removeListener(listener, eventType);
 	}
+
 	private final long id;
 	private boolean too_late;
 	private final long work_id;
@@ -119,7 +121,8 @@ public final class PowAndBountyAnnouncements {
 		this.hash = rs.getBytes("hash");
 	}
 
-	private PowAndBountyAnnouncements(final Transaction transaction, final Attachment.PiggybackedProofOfBountyAnnouncement attachment) {
+	private PowAndBountyAnnouncements(final Transaction transaction,
+			final Attachment.PiggybackedProofOfBountyAnnouncement attachment) {
 		this.id = transaction.getId();
 		this.work_id = attachment.getWorkId();
 		this.accountId = transaction.getSenderId();
@@ -127,33 +130,34 @@ public final class PowAndBountyAnnouncements {
 		this.hash = attachment.getHashAnnounced(); // FIXME TODO
 		this.too_late = false;
 	}
-	public void applyBountyAnnouncement(final Block bl) throws IOException{
+
+	public void applyBountyAnnouncement(final Block bl) throws IOException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
-		if(w == null) {
+		if (w == null) {
 			throw new IOException("Unknown work id!");
 		}
-		if((w.isClosed() == false) && (w.isClose_pending() == false)){
+		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
 			final Account participantAccount = Account.getAccount(this.accountId);
-			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, -1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+					-1 * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			w.register_bounty_announcement(bl);
-		}else{
+		} else {
 			this.too_late = true;
 			PowAndBountyAnnouncements.powAndBountyAnnouncementTable.insert(this);
 		}
 
 	}
 
-
 	public long getAccountId() {
 		return this.accountId;
 	}
 
 	private void save(final Connection con) throws SQLException {
-		try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO pow_and_bounty_announcements (id, too_late, work_id, hash, account_id, "
-				+ " height) " + "KEY (id, height) "
-				+ "VALUES (?,  ?, ?, ?, ?, ?)")) {
+		try (PreparedStatement pstmt = con
+				.prepareStatement("MERGE INTO pow_and_bounty_announcements (id, too_late, work_id, hash, account_id, "
+						+ " height) " + "KEY (id, height) " + "VALUES (?,  ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setBoolean(++i, this.too_late);
@@ -167,13 +171,13 @@ public final class PowAndBountyAnnouncements {
 
 	public JSONObject toJsonObject() {
 		final JSONObject response = new JSONObject();
-		response.put("id",Convert.toUnsignedLong(this.id));
+		response.put("id", Convert.toUnsignedLong(this.id));
 		final Transaction t = TransactionDb.findTransaction(this.id);
-		if(t != null){
-			response.put("date",Convert.toUnsignedLong(t.getTimestamp()));
-			response.put("hash_announcement",Arrays.toString(this.hash));
-		}else{
-			response.put("error","Transaction not found");
+		if (t != null) {
+			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
+			response.put("hash_announcement", Arrays.toString(this.hash));
+		} else {
+			response.put("error", "Transaction not found");
 		}
 
 		return response;

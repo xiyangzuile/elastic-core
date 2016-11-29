@@ -36,7 +36,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_WORK_NAME_LENGTH = JSONResponses.incorrect("work title");
 	public static final JSONStreamAware INCORRECT_MULTIPLICATOR = JSONResponses.incorrect("multiplicator");
 
-	public static final JSONStreamAware INCORRECT_VARIABLES_NUM = JSONResponses.incorrect("number of input or output variables");
+	public static final JSONStreamAware INCORRECT_VARIABLES_NUM = JSONResponses
+			.incorrect("number of input or output variables");
 	public static final JSONStreamAware INCORRECT_WORK_LANGUAGE = JSONResponses.incorrect("work language");
 	public static final JSONStreamAware INCORRECT_INPUT_NUMBER = JSONResponses.incorrect("number of inputs");
 	public static final JSONStreamAware INCORRECT_AMOUNT = JSONResponses.incorrect("attached amount");
@@ -92,7 +93,8 @@ public final class JSONResponses {
 	public static final JSONStreamAware MISSING_HOST = JSONResponses.missing("host");
 	public static final JSONStreamAware MISSING_DATE = JSONResponses.missing("date");
 	public static final JSONStreamAware MISSING_WEIGHT = JSONResponses.missing("weight");
-	public static final JSONStreamAware INCORRECT_HOST = JSONResponses.incorrect("host", "(the length exceeds 100 chars limit)");
+	public static final JSONStreamAware INCORRECT_HOST = JSONResponses.incorrect("host",
+			"(the length exceeds 100 chars limit)");
 	public static final JSONStreamAware INCORRECT_WEIGHT = JSONResponses.incorrect("weight");
 	public static final JSONStreamAware INCORRECT_DATE = JSONResponses.incorrect("date");
 	public static final JSONStreamAware INCORRECT_RECIPIENT = JSONResponses.incorrect("recipient");
@@ -134,12 +136,15 @@ public final class JSONResponses {
 			"(length must be not longer than " + Constants.MAX_TAGGED_DATA_TYPE_LENGTH + " characters)");
 	public static final JSONStreamAware INCORRECT_TAGGED_DATA_CHANNEL = JSONResponses.incorrect("channel",
 			"(length must be not longer than " + Constants.MAX_TAGGED_DATA_CHANNEL_LENGTH + " characters)");
-	public static final JSONStreamAware INCORRECT_TAGGED_DATA_FILE = JSONResponses.incorrect("data", "cannot read file data");
+	public static final JSONStreamAware INCORRECT_TAGGED_DATA_FILE = JSONResponses.incorrect("data",
+			"cannot read file data");
 	public static final JSONStreamAware INCORRECT_FILE = JSONResponses.incorrect("file", "cannot read file data");
 	public static final JSONStreamAware INCORRECT_DATA = JSONResponses.incorrect("data",
 			"(length must be not longer than " + Constants.MAX_TAGGED_DATA_DATA_LENGTH + " bytes)");
-	public static final JSONStreamAware MISSING_MESSAGE_ENCRYPTED_MESSAGE = JSONResponses.missing("message", "encryptedMessageData");
-	public static final JSONStreamAware EITHER_MESSAGE_ENCRYPTED_MESSAGE = JSONResponses.either("message", "encryptedMessageData");
+	public static final JSONStreamAware MISSING_MESSAGE_ENCRYPTED_MESSAGE = JSONResponses.missing("message",
+			"encryptedMessageData");
+	public static final JSONStreamAware EITHER_MESSAGE_ENCRYPTED_MESSAGE = JSONResponses.either("message",
+			"encryptedMessageData");
 	public static final JSONStreamAware INCORRECT_HASH_ALGORITHM = JSONResponses.incorrect("hashAlgorithm");
 	public static final JSONStreamAware MISSING_SECRET = JSONResponses.missing("secret");
 	public static final JSONStreamAware INCORRECT_SECRET = JSONResponses.incorrect("secret");
@@ -424,6 +429,7 @@ public final class JSONResponses {
 			throw new RuntimeException();
 		}
 	}
+
 	private static JSONStreamAware responseError(final String error) {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 12);
@@ -437,6 +443,7 @@ public final class JSONResponses {
 		response.put("errorDescription", "Unknown " + objectName);
 		return JSON.prepare(response);
 	}
+
 	static JSONStreamAware unknownAccount(final long id) {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 5);

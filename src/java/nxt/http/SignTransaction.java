@@ -30,7 +30,8 @@ public final class SignTransaction extends APIServlet.APIRequestHandler {
 	static final SignTransaction instance = new SignTransaction();
 
 	private SignTransaction() {
-		super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionJSON", "unsignedTransactionBytes", "prunableAttachmentJSON", "secretPhrase", "validate");
+		super(new APITag[] { APITag.TRANSACTIONS }, "unsignedTransactionJSON", "unsignedTransactionBytes",
+				"prunableAttachmentJSON", "secretPhrase", "validate");
 	}
 
 	@Override
@@ -40,7 +41,8 @@ public final class SignTransaction extends APIServlet.APIRequestHandler {
 		final String transactionBytes = Convert.emptyToNull(req.getParameter("unsignedTransactionBytes"));
 		final String prunableAttachmentJSON = Convert.emptyToNull(req.getParameter("prunableAttachmentJSON"));
 
-		final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
+		final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes,
+				prunableAttachmentJSON);
 
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
 		final boolean validate = !"false".equalsIgnoreCase(req.getParameter("validate"));
@@ -59,7 +61,7 @@ public final class SignTransaction extends APIServlet.APIRequestHandler {
 			response.put("transaction", transaction.getStringId());
 			response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
 			JSONData.putPrunableAttachment(response, transaction);
-		} catch (NxtException.ValidationException|RuntimeException e) {
+		} catch (NxtException.ValidationException | RuntimeException e) {
 			JSONData.putException(response, e, "Incorrect unsigned transaction json or bytes");
 		}
 		return response;

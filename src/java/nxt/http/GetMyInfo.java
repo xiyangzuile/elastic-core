@@ -26,7 +26,7 @@ public final class GetMyInfo extends APIServlet.APIRequestHandler {
 	static final GetMyInfo instance = new GetMyInfo();
 
 	private GetMyInfo() {
-		super(new APITag[] {APITag.NETWORK});
+		super(new APITag[] { APITag.NETWORK });
 	}
 
 	@Override

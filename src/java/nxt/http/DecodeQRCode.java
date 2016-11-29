@@ -44,22 +44,28 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 
 /**
- * <p>The DecodeQRCode API converts a base64-encoded image of a
- * 2-D QR (Quick Response) code to a UTF-8 string, using the ZXing library.
+ * <p>
+ * The DecodeQRCode API converts a base64-encoded image of a 2-D QR (Quick
+ * Response) code to a UTF-8 string, using the ZXing library.
  * </p>
  * 
- * <p>The input qrCodeBase64 can be the output of the DecodeQRCode API.</p>
+ * <p>
+ * The input qrCodeBase64 can be the output of the DecodeQRCode API.
+ * </p>
  * 
- * <p>Request parameters:</p>
+ * <p>
+ * Request parameters:
+ * </p>
  * 
  * <ul>
- * <li>qrCodeBase64 - A base64 string encoded from an image of a QR code.
- * The length of the string must be less than the jetty server maximum allowed
- * parameter length, currently 200,000 bytes.
- * </li>
+ * <li>qrCodeBase64 - A base64 string encoded from an image of a QR code. The
+ * length of the string must be less than the jetty server maximum allowed
+ * parameter length, currently 200,000 bytes.</li>
  * </ul>
  * 
- * <p>Response fields:</p>
+ * <p>
+ * Response fields:
+ * </p>
  * 
  * <ul>
  * <li>qrCodeData - A UTF-8 string decoded from the QR code.</li>
@@ -71,7 +77,7 @@ public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 	static final DecodeQRCode instance = new DecodeQRCode();
 
 	private DecodeQRCode() {
-		super(new APITag[] {APITag.UTILS}, "qrCodeBase64");
+		super(new APITag[] { APITag.UTILS }, "qrCodeBase64");
 	}
 
 	@Override
@@ -80,24 +86,19 @@ public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-	protected JSONStreamAware processRequest(final HttpServletRequest request)
-			throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 
 		final String qrCodeBase64 = Convert.nullToEmpty(request.getParameter("qrCodeBase64"));
 
 		final JSONObject response = new JSONObject();
 		try {
-			final BufferedImage bImage = ImageIO.read(new ByteArrayInputStream(
-					Base64.getDecoder().decode(qrCodeBase64)
-					));
-			if(bImage==null) {
+			final BufferedImage bImage = ImageIO
+					.read(new ByteArrayInputStream(Base64.getDecoder().decode(qrCodeBase64)));
+			if (bImage == null) {
 				throw new IOException("Cannot get binary buffered image!");
 			}
 			final BinaryBitmap binaryBitmap = new BinaryBitmap(
-					new HybridBinarizer(new BufferedImageLuminanceSource(
-							bImage)
-							)
-					);
+					new HybridBinarizer(new BufferedImageLuminanceSource(bImage)));
 
 			final Map hints = new HashMap();
 			hints.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
@@ -105,15 +106,15 @@ public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 
 			final Result qrCodeData = new MultiFormatReader().decode(binaryBitmap, hints);
 			response.put("qrCodeData", qrCodeData.getText());
-		} catch(final IOException ex) {
+		} catch (final IOException ex) {
 			final String errorMessage = "Error reading base64 byte stream";
 			Logger.logErrorMessage(errorMessage, ex);
 			JSONData.putException(response, ex, errorMessage);
-		} catch(final NullPointerException ex) {
+		} catch (final NullPointerException ex) {
 			final String errorMessage = "Invalid base64 image";
 			Logger.logErrorMessage(errorMessage, ex);
 			JSONData.putException(response, ex, errorMessage);
-		} catch(final NotFoundException ex) {
+		} catch (final NotFoundException ex) {
 			response.put("qrCodeData", "");
 		}
 		return response;

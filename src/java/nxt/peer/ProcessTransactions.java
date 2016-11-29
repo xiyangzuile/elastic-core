@@ -27,8 +27,8 @@ final class ProcessTransactions extends PeerServlet.PeerRequestHandler {
 
 	static final ProcessTransactions instance = new ProcessTransactions();
 
-	private ProcessTransactions() {}
-
+	private ProcessTransactions() {
+	}
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
@@ -37,7 +37,8 @@ final class ProcessTransactions extends PeerServlet.PeerRequestHandler {
 			Nxt.getTransactionProcessor().processPeerTransactions(request);
 			return JSON.emptyJSON;
 		} catch (RuntimeException | NxtException.ValidationException e) {
-			//Logger.logDebugMessage("Failed to parse peer transactions: " + request.toJSONString());
+			// Logger.logDebugMessage("Failed to parse peer transactions: " +
+			// request.toJSONString());
 			peer.blacklist(e);
 			return PeerServlet.error(e);
 		}

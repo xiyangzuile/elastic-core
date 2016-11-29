@@ -21,11 +21,14 @@ import java.util.Map;
 
 public enum APITag {
 
-	ACCOUNTS("Accounts"), ACCOUNT_CONTROL("Account Control"), ALIASES("Aliases"), AE("Asset Exchange"), BLOCKS("Blocks"),
-	CREATE_TRANSACTION("Create Transaction"), DGS("Digital Goods Store"), FORGING("Forging"), MESSAGES("Messages"),
-	MS("Monetary System"), NETWORK("Networking"), PHASING("Phasing"), SEARCH("Search"), INFO("Server Info"),
-	SHUFFLING("Shuffling"), DATA("Tagged Data"), TOKENS("Tokens"), TRANSACTIONS("Transactions"), VS("Voting System"),
-	UTILS("Utils"), DEBUG("Debug"), ADDONS("Add-ons"), WC("Work Control"), POX("Proof-of-X"), CANCEL_TRANSACTION("Cancel Transaction"), BOUNTY("Bounty"), POW("Pow");
+	ACCOUNTS("Accounts"), ACCOUNT_CONTROL("Account Control"), ALIASES("Aliases"), AE("Asset Exchange"), BLOCKS(
+			"Blocks"), CREATE_TRANSACTION("Create Transaction"), DGS("Digital Goods Store"), FORGING(
+					"Forging"), MESSAGES("Messages"), MS("Monetary System"), NETWORK("Networking"), PHASING(
+							"Phasing"), SEARCH("Search"), INFO("Server Info"), SHUFFLING("Shuffling"), DATA(
+									"Tagged Data"), TOKENS("Tokens"), TRANSACTIONS("Transactions"), VS(
+											"Voting System"), UTILS("Utils"), DEBUG("Debug"), ADDONS("Add-ons"), WC(
+													"Work Control"), POX("Proof-of-X"), CANCEL_TRANSACTION(
+															"Cancel Transaction"), BOUNTY("Bounty"), POW("Pow");
 
 	private static final Map<String, APITag> apiTags = new HashMap<>();
 	static {

@@ -27,13 +27,12 @@ import nxt.Generator;
 import nxt.Nxt;
 import nxt.crypto.Crypto;
 
-
 public final class GetForging extends APIServlet.APIRequestHandler {
 
 	static final GetForging instance = new GetForging();
 
 	private GetForging() {
-		super(new APITag[] {APITag.FORGING}, "secretPhrase", "adminPassword");
+		super(new APITag[] { APITag.FORGING }, "secretPhrase", "adminPassword");
 	}
 
 	@Override
@@ -60,7 +59,8 @@ public final class GetForging extends APIServlet.APIRequestHandler {
 			API.verifyPassword(req);
 			final JSONObject response = new JSONObject();
 			final JSONArray generators = new JSONArray();
-			Generator.getSortedForgers().forEach(generator -> generators.add(JSONData.generator(generator, elapsedTime)));
+			Generator.getSortedForgers()
+					.forEach(generator -> generators.add(JSONData.generator(generator, elapsedTime)));
 			response.put("generators", generators);
 			return response;
 		}

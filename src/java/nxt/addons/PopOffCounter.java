@@ -33,11 +33,12 @@ public final class PopOffCounter implements AddOn {
 
 	@Override
 	public APIServlet.APIRequestHandler getAPIRequestHandler() {
-		return new APIServlet.APIRequestHandler(new APITag[]{APITag.ADDONS, APITag.BLOCKS}) {
+		return new APIServlet.APIRequestHandler(new APITag[] { APITag.ADDONS, APITag.BLOCKS }) {
 			@Override
 			protected boolean allowRequiredBlockParameters() {
 				return false;
 			}
+
 			@Override
 			protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 				final JSONObject response = new JSONObject();
@@ -54,7 +55,8 @@ public final class PopOffCounter implements AddOn {
 
 	@Override
 	public void init() {
-		Nxt.getBlockchainProcessor().addListener(block -> this.numberOfPopOffs += 1, BlockchainProcessor.Event.BLOCK_POPPED);
+		Nxt.getBlockchainProcessor().addListener(block -> this.numberOfPopOffs += 1,
+				BlockchainProcessor.Event.BLOCK_POPPED);
 	}
 
 }

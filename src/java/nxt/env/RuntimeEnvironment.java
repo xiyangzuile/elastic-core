@@ -30,11 +30,13 @@ public class RuntimeEnvironment {
 	static {
 		boolean b;
 		try {
-			// Load by reflection to prevent exception in case java.awt does not exist
+			// Load by reflection to prevent exception in case java.awt does not
+			// exist
 			final Class<?> graphicsEnvironmentClass = Class.forName("java.awt.GraphicsEnvironment");
 			final Method isHeadlessMethod = graphicsEnvironmentClass.getMethod("isHeadless");
-			b = (Boolean)isHeadlessMethod.invoke(null);
-		} catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			b = (Boolean) isHeadlessMethod.invoke(null);
+		} catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+				| IllegalAccessException e) {
 			b = true;
 		}
 		isHeadless = b;
@@ -52,7 +54,7 @@ public class RuntimeEnvironment {
 		final String dirProvider = System.getProperty(RuntimeEnvironment.DIRPROVIDER_ARG);
 		if (dirProvider != null) {
 			try {
-				return (DirProvider)Class.forName(dirProvider).newInstance();
+				return (DirProvider) Class.forName(dirProvider).newInstance();
 			} catch (final ReflectiveOperationException e) {
 				System.out.println("Failed to instantiate dirProvider " + dirProvider);
 				throw new RuntimeException(e.getMessage(), e);
@@ -88,7 +90,8 @@ public class RuntimeEnvironment {
 	}
 
 	private static boolean isDesktopEnabled() {
-		return "desktop".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG)) && !RuntimeEnvironment.isHeadless();
+		return "desktop".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG))
+				&& !RuntimeEnvironment.isHeadless();
 	}
 
 	private static boolean isHeadless() {
@@ -100,7 +103,9 @@ public class RuntimeEnvironment {
 	}
 
 	private static boolean isUnixRuntime() {
-		return RuntimeEnvironment.osname.contains("nux") || RuntimeEnvironment.osname.contains("nix") || RuntimeEnvironment.osname.contains("aix") || RuntimeEnvironment.osname.contains("bsd") || RuntimeEnvironment.osname.contains("sunos");
+		return RuntimeEnvironment.osname.contains("nux") || RuntimeEnvironment.osname.contains("nix")
+				|| RuntimeEnvironment.osname.contains("aix") || RuntimeEnvironment.osname.contains("bsd")
+				|| RuntimeEnvironment.osname.contains("sunos");
 	}
 
 	private static boolean isWindowsRuntime() {
@@ -108,6 +113,7 @@ public class RuntimeEnvironment {
 	}
 
 	private static boolean isWindowsService() {
-		return "service".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG)) && RuntimeEnvironment.isWindowsRuntime();
+		return "service".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG))
+				&& RuntimeEnvironment.isWindowsRuntime();
 	}
 }
