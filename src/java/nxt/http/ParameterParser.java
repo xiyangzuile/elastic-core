@@ -18,13 +18,10 @@ package nxt.http;
 
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
 import static nxt.http.JSONResponses.INCORRECT_ARBITRARY_MESSAGE;
+import static nxt.http.JSONResponses.INCORRECT_HASH;
 import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
-import static nxt.http.JSONResponses.INCORRECT_MESSAGE_TO_ENCRYPT;
 import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 import static nxt.http.JSONResponses.MISSING_ACCOUNT;
-import static nxt.http.JSONResponses.INCORRECT_HASH;
-
-import static nxt.http.JSONResponses.MISSING_RECIPIENT_PUBLIC_KEY;
 import static nxt.http.JSONResponses.MISSING_SECRET_PHRASE;
 import static nxt.http.JSONResponses.MISSING_TRANSACTION_BYTES_OR_JSON;
 import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
@@ -36,7 +33,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 

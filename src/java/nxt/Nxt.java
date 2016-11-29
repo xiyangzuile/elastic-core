@@ -49,7 +49,6 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 import nxt.util.ThreadPool;
 import nxt.util.Time;
-import nxt.util.Logger.Level;
 
 
 public final class Nxt {

@@ -1,7 +1,6 @@
 package nxt.http;
 
 import static nxt.http.JSONResponses.INCORRECT_ACCOUNT;
-import static nxt.http.JSONResponses.INCORRECT_MULTIPLICATOR;
 
 import java.math.BigInteger;
 
@@ -11,7 +10,6 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.Account;
 import nxt.Attachment;
-import nxt.Constants;
 import nxt.Db;
 import nxt.NxtException;
 import nxt.util.Logger;

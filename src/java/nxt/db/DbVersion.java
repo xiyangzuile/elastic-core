@@ -16,12 +16,12 @@
 
 package nxt.db;
 
-import nxt.util.Logger;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import nxt.util.Logger;
 
 public abstract class DbVersion {
 

@@ -26,7 +26,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import nxt.Block;
 import nxt.BlockImpl;
 import nxt.Constants;
 import nxt.Nxt;

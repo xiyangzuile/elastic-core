@@ -16,13 +16,14 @@
 
 package nxt.db;
 
-import nxt.Nxt;
-import nxt.util.Logger;
-import org.h2.jdbcx.JdbcConnectionPool;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.h2.jdbcx.JdbcConnectionPool;
+
+import nxt.Nxt;
+import nxt.util.Logger;
 
 public class BasicDb {
 

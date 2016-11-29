@@ -21,11 +21,9 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import nxt.BlockchainProcessorImpl;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
-import nxt.TransactionType.Payment;
 import nxt.util.Convert;
 
 /**

@@ -28,7 +28,6 @@ import nxt.Block;
 import nxt.BlockImpl;
 import nxt.Nxt;
 import nxt.NxtException;
-import nxt.db.DbIterator;
 
 public final class GetAccountBlockIds extends APIServlet.APIRequestHandler {
 

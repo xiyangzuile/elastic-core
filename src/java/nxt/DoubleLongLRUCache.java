@@ -1,6 +1,5 @@
 package nxt;
 
-import java.math.BigInteger;
 import java.util.HashMap;
 
 class DoubleLongNode{

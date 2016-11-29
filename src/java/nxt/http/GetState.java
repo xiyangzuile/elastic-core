@@ -17,7 +17,6 @@
 package nxt.http;
 
 import java.net.InetAddress;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 

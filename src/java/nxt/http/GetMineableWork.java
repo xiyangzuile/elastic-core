@@ -6,7 +6,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
-import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Work;
 import nxt.db.DbIterator;

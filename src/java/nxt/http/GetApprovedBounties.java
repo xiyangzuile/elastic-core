@@ -4,15 +4,12 @@ import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import nxt.NxtException;
-import nxt.PowAndBounty;
 import nxt.PowAndBountyAnnouncements;
 import nxt.Work;
-import nxt.db.DbIterator;
 
 
 

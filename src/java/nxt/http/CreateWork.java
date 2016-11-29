@@ -1,20 +1,20 @@
 package nxt.http;
 
 import static java.lang.Integer.parseInt;
+import static nxt.http.JSONResponses.INCORRECT_AST_RECURSION;
 import static nxt.http.JSONResponses.INCORRECT_DEADLINE;
 import static nxt.http.JSONResponses.INCORRECT_EXECUTION_TIME;
 import static nxt.http.JSONResponses.INCORRECT_SYNTAX;
 import static nxt.http.JSONResponses.INCORRECT_WORK_NAME_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_XEL_PER_POW;
 import static nxt.http.JSONResponses.INCORRECT_XEL_PER_BOUNTY;
-import static nxt.http.JSONResponses.MISSING_XEL_PER_POW;
-import static nxt.http.JSONResponses.MISSING_XEL_PER_BOUNTY;
+import static nxt.http.JSONResponses.INCORRECT_XEL_PER_POW;
 import static nxt.http.JSONResponses.MISSING_BOUNTYLIMIT;
 import static nxt.http.JSONResponses.MISSING_DEADLINE;
 import static nxt.http.JSONResponses.MISSING_LANGUAGE;
 import static nxt.http.JSONResponses.MISSING_NAME;
 import static nxt.http.JSONResponses.MISSING_PROGAMCODE;
-import static nxt.http.JSONResponses.INCORRECT_AST_RECURSION;
+import static nxt.http.JSONResponses.MISSING_XEL_PER_BOUNTY;
+import static nxt.http.JSONResponses.MISSING_XEL_PER_POW;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

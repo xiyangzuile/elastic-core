@@ -21,13 +21,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import nxt.db.DbIterator;
 import nxt.db.DbKey;
-import nxt.db.DbUtils;
-import nxt.db.PrunableDbTable;
 import nxt.db.VersionedEntityDbTable;
 
 public final class Redeem {

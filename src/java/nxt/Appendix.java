@@ -26,7 +26,6 @@ import org.json.simple.JSONObject;
 
 import nxt.NxtException.NotValidException;
 import nxt.crypto.Crypto;
-import nxt.crypto.EncryptedData;
 import nxt.util.Convert;
 
 public interface Appendix {

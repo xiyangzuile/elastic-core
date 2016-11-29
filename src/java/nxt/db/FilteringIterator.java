@@ -16,10 +16,10 @@
 
 package nxt.db;
 
-import nxt.util.Filter;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import nxt.util.Filter;
 
 public final class FilteringIterator<T> implements Iterator<T>, Iterable<T>, AutoCloseable {
 

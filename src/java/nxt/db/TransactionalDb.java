@@ -16,9 +16,6 @@
 
 package nxt.db;
 
-import nxt.Nxt;
-import nxt.util.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,6 +25,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import nxt.Nxt;
+import nxt.util.Logger;
 
 public class TransactionalDb extends BasicDb {
 

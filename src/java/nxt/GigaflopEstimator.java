@@ -9,7 +9,6 @@ import elastic.pl.interpreter.ParseException;
 import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
 import nxt.util.Logger;
-import nxt.util.Time;
 
 public class GigaflopEstimator {
 

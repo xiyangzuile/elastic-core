@@ -31,7 +31,7 @@ public class RuntimeEnvironment {
         boolean b;
         try {
             // Load by reflection to prevent exception in case java.awt does not exist
-            Class graphicsEnvironmentClass = Class.forName("java.awt.GraphicsEnvironment");
+            Class<?> graphicsEnvironmentClass = Class.forName("java.awt.GraphicsEnvironment");
             Method isHeadlessMethod = graphicsEnvironmentClass.getMethod("isHeadless");
             b = (Boolean)isHeadlessMethod.invoke(null);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {

@@ -1,7 +1,6 @@
 package nxt.http;
 
 import java.math.BigInteger;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +12,6 @@ import org.json.simple.JSONStreamAware;
 import nxt.Account;
 import nxt.NxtException;
 import nxt.Work;
-import nxt.db.DbIterator;
 
 
 

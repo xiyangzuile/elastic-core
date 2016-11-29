@@ -16,13 +16,13 @@
 
 package nxt.db;
 
-import nxt.Constants;
-import nxt.Nxt;
-import nxt.util.Logger;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import nxt.Constants;
+import nxt.Nxt;
+import nxt.util.Logger;
 
 public abstract class PrunableDbTable<T> extends PersistentDbTable<T> {
 
