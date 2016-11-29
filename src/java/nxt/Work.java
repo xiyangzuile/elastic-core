@@ -694,7 +694,7 @@ public final class Work {
 													// smoothly! Should not
 													// happen anyway!
 				}
-				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max)) {
+				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max) || (seconds_passed >= 120)) {
 					break;
 				}
 				b = b.getPreviousBlock();
@@ -729,11 +729,11 @@ public final class Work {
 				System.out.println("Wanted # per 360s: " + (10 * 6));
 				factor = (10 * 6) / pows_per_360_seconds;
 				// round the factor to change the diff max 20% per block!
-				if (factor < 0.80) {
-					factor = 0.80;
+				if (factor < 0.90) {
+					factor = 0.90;
 				}
-				if (factor > 1.20) {
-					factor = 1.20;
+				if (factor > 1.10) {
+					factor = 1.10;
 				}
 
 				System.out.println("Scalingfactor: " + factor);

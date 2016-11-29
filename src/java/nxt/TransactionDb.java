@@ -288,6 +288,8 @@ final class TransactionDb {
 			}
 
 			final TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
+			
+			if(transactionType == null) throw new NxtException.NotValidException("Unknown TX Type");
 			final TransactionImpl.BuilderImpl builder = new TransactionImpl.BuilderImpl(version, null, amountNQT,
 					feeNQT, deadline, transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
 							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
