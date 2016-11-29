@@ -49,11 +49,11 @@ public interface Blockchain {
 
     DbIterator<? extends Block> getAllBlocks();
 
-    DbIterator<? extends Block> getBlocks(int from, int to);
+    List<BlockImpl> getBlocks(int from, int to);
 
-    DbIterator<? extends Block> getBlocks(long accountId, int timestamp);
+    List<BlockImpl> getBlocks(long accountId, int timestamp);
 
-    DbIterator<? extends Block> getBlocks(long accountId, int timestamp, int from, int to);
+    List<BlockImpl> getBlocks(long accountId, int timestamp, int from, int to);
 
     int getBlockCount(long accountId);
 

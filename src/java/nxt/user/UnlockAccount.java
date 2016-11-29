@@ -33,6 +33,7 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.Account;
 import nxt.Block;
+import nxt.BlockImpl;
 import nxt.Nxt;
 import nxt.Transaction;
 import nxt.db.DbIterator;
@@ -138,9 +139,9 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
             SortedSet<JSONObject> myTransactionsSet = new TreeSet<>(myTransactionsComparator);
 
             int blockchainHeight = Nxt.getBlockchain().getLastBlock().getHeight();
-            try (DbIterator<? extends Block> blockIterator = Nxt.getBlockchain().getBlocks(accountId, 0)) {
-                while (blockIterator.hasNext()) {
-                    Block block = blockIterator.next();
+            Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, 0).iterator();
+            while (it.hasNext()) {
+                    Block block = it.next();
                     if (block.getTotalFeeNQT() > 0) {
                         JSONObject myTransaction = new JSONObject();
                         myTransaction.put("index", "block" + Users.getIndex(block));
@@ -152,7 +153,7 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
                         myTransaction.put("timestamp", block.getTimestamp());
                         myTransactionsSet.add(myTransaction);
                     }
-                }
+                
             }
 
             try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId, (byte) -1, (byte) -1, 0, false)) {

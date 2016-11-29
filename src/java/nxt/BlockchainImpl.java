@@ -133,45 +133,56 @@ final class BlockchainImpl implements Blockchain {
     }
 
     @Override
-    public DbIterator<BlockImpl> getBlocks(int from, int to) {
-        Connection con = null;
-        try {
-            con = Db.db.getConnection();
-            PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE height <= ? AND height >= ? ORDER BY height DESC");
+    public List<BlockImpl> getBlocks(int from, int to) {
+    	List<BlockImpl> result = new ArrayList<>();
+        try (
+        	Connection con = Db.db.getConnection();
+            PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE height <= ? AND height >= ? ORDER BY height DESC");){
             int blockchainHeight = getHeight();
             pstmt.setInt(1, blockchainHeight - from);
             pstmt.setInt(2, blockchainHeight - to);
-            return getBlocks(con, pstmt);
+            DbIterator<BlockImpl> idb = getBlocks(con, pstmt);
+            if(idb != null){
+                    while (idb.hasNext()) {
+                        result.add(idb.next());
+                    }
+            }
         } catch (SQLException e) {
-            DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
         }
+        return result;
     }
 
     @Override
-    public DbIterator<BlockImpl> getBlocks(long accountId, int timestamp) {
+    public List<BlockImpl> getBlocks(long accountId, int timestamp) {
         return getBlocks(accountId, timestamp, 0, -1);
     }
 
     @Override
-    public DbIterator<BlockImpl> getBlocks(long accountId, int timestamp, int from, int to) {
-        Connection con = null;
-        try {
-            con = Db.db.getConnection();
+    public List<BlockImpl> getBlocks(long accountId, int timestamp, int from, int to) {
+    	List<BlockImpl> result = new ArrayList<>();
+        try (
+        	 Connection con =  Db.db.getConnection();
             PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE generator_id = ? "
                     + (timestamp > 0 ? " AND timestamp >= ? " : " ") + "ORDER BY height DESC"
-                    + DbUtils.limitsClause(from, to));
+                    + DbUtils.limitsClause(from, to));){
             int i = 0;
             pstmt.setLong(++i, accountId);
             if (timestamp > 0) {
                 pstmt.setInt(++i, timestamp);
             }
             DbUtils.setLimits(++i, pstmt, from, to);
-            return getBlocks(con, pstmt);
+            DbIterator<BlockImpl> idb = getBlocks(con, pstmt);
+            if(idb != null){
+                    while (idb.hasNext()) {
+                        result.add(idb.next());
+                    }
+            }
         } catch (SQLException e) {
-            DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
         }
+        
+        return result;
     }
 
     @Override

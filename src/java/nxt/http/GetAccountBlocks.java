@@ -16,6 +16,8 @@
 
 package nxt.http;
 
+import java.util.Iterator;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONArray;
@@ -23,6 +25,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import nxt.Block;
+import nxt.BlockImpl;
 import nxt.Nxt;
 import nxt.NxtException;
 import nxt.db.DbIterator;
@@ -46,11 +49,11 @@ public final class GetAccountBlocks extends APIServlet.APIRequestHandler {
         boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
 
         JSONArray blocks = new JSONArray();
-        try (DbIterator<? extends Block> iterator = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex)) {
-            while (iterator.hasNext()) {
-                Block block = iterator.next();
+        Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
+        while (it.hasNext()) {
+                Block block = it.next();
                 blocks.add(JSONData.block(block, includeTransactions, false));
-            }
+            
         }
 
         JSONObject response = new JSONObject();

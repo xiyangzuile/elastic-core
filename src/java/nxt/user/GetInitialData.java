@@ -18,6 +18,7 @@ package nxt.user;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -26,6 +27,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import nxt.Block;
+import nxt.BlockImpl;
 import nxt.Constants;
 import nxt.Nxt;
 import nxt.Transaction;
@@ -102,8 +104,9 @@ public final class GetInitialData extends UserServlet.UserRequestHandler {
             }
         }
 
-        try (DbIterator<? extends Block> lastBlocks = Nxt.getBlockchain().getBlocks(0, 59)) {
-            for (Block block : lastBlocks) {
+        Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(0, 59).iterator();
+        while (it.hasNext()) {
+        	BlockImpl block = it.next();
                 JSONObject recentBlock = new JSONObject();
                 recentBlock.put("index", Users.getIndex(block));
                 recentBlock.put("timestamp", block.getTimestamp());
@@ -119,7 +122,7 @@ public final class GetInitialData extends UserServlet.UserRequestHandler {
                         .divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
 
                 recentBlocks.add(recentBlock);
-            }
+            
         }
 
         JSONObject response = new JSONObject();
