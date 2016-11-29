@@ -223,73 +223,73 @@ import nxt.util.Convert;
  */
 public class GetAccountLedger extends APIServlet.APIRequestHandler {
 
-    /** GetAccountLedger instance */
-    static final GetAccountLedger instance = new GetAccountLedger();
+	/** GetAccountLedger instance */
+	static final GetAccountLedger instance = new GetAccountLedger();
 
-    /**
-     * Create the GetAccountLedger instance
-     */
-    private GetAccountLedger() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account", "firstIndex", "lastIndex",
-                "eventType", "event", "holdingType", "holding", "includeTransactions", "includeHoldingInfo");
-    }
+	/**
+	 * Create the GetAccountLedger instance
+	 */
+	private GetAccountLedger() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account", "firstIndex", "lastIndex",
+				"eventType", "event", "holdingType", "holding", "includeTransactions", "includeHoldingInfo");
+	}
 
-    /**
-     * Process the GetAccountLedger API request
-     *
-     * @param   req                 API request
-     * @return                      API response
-     * @throws  NxtException        Invalid request
-     */
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        //
-        // Process the request parameters
-        //
-        long accountId = ParameterParser.getAccountId(req, "account", false);
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
-        String eventType = Convert.emptyToNull(req.getParameter("eventType"));
-        LedgerEvent event = null;
-        long eventId = 0;
-        if (eventType != null) {
-            try {
-                event = LedgerEvent.valueOf(eventType);
-                eventId = ParameterParser.getUnsignedLong(req, "event", false);
-            } catch (RuntimeException e) {
-                throw new ParameterException(JSONResponses.incorrect("eventType"));
-            }
-        }
-        String holdingType = Convert.emptyToNull(req.getParameter("holdingType"));
-        LedgerHolding holding = null;
-        long holdingId = 0;
-        if (holdingType != null) {
-            try {
-                holding = LedgerHolding.valueOf(holdingType);
-                holdingId = ParameterParser.getUnsignedLong(req, "holding", false);
-            } catch (RuntimeException e) {
-                throw new ParameterException(JSONResponses.incorrect("holdingType"));
-            }
-        }
-        boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
-        boolean includeHoldingInfo = "true".equalsIgnoreCase(req.getParameter("includeHoldingInfo"));
+	/**
+	 * Process the GetAccountLedger API request
+	 *
+	 * @param   req                 API request
+	 * @return                      API response
+	 * @throws  NxtException        Invalid request
+	 */
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		//
+		// Process the request parameters
+		//
+		final long accountId = ParameterParser.getAccountId(req, "account", false);
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
+		final String eventType = Convert.emptyToNull(req.getParameter("eventType"));
+		LedgerEvent event = null;
+		long eventId = 0;
+		if (eventType != null) {
+			try {
+				event = LedgerEvent.valueOf(eventType);
+				eventId = ParameterParser.getUnsignedLong(req, "event", false);
+			} catch (final RuntimeException e) {
+				throw new ParameterException(JSONResponses.incorrect("eventType"));
+			}
+		}
+		final String holdingType = Convert.emptyToNull(req.getParameter("holdingType"));
+		LedgerHolding holding = null;
+		long holdingId = 0;
+		if (holdingType != null) {
+			try {
+				holding = LedgerHolding.valueOf(holdingType);
+				holdingId = ParameterParser.getUnsignedLong(req, "holding", false);
+			} catch (final RuntimeException e) {
+				throw new ParameterException(JSONResponses.incorrect("holdingType"));
+			}
+		}
+		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
+		final boolean includeHoldingInfo = "true".equalsIgnoreCase(req.getParameter("includeHoldingInfo"));
 
-        //
-        // Get the ledger entries
-        //
-        List<LedgerEntry> ledgerEntries = AccountLedger.getEntries(accountId, event, eventId,
-                                                                   holding, holdingId, firstIndex, lastIndex);
-        //
-        // Return the response
-        //
-        JSONArray responseEntries = new JSONArray();
-        ledgerEntries.forEach((entry) -> {
-            JSONObject responseEntry = new JSONObject();
-            JSONData.ledgerEntry(responseEntry, entry, includeTransactions, includeHoldingInfo);
-            responseEntries.add(responseEntry);
-        });
-        JSONObject response = new JSONObject();
-        response.put("entries", responseEntries);
-        return response;
-    }
+		//
+		// Get the ledger entries
+		//
+		final List<LedgerEntry> ledgerEntries = AccountLedger.getEntries(accountId, event, eventId,
+				holding, holdingId, firstIndex, lastIndex);
+		//
+		// Return the response
+		//
+		final JSONArray responseEntries = new JSONArray();
+		ledgerEntries.forEach((entry) -> {
+			final JSONObject responseEntry = new JSONObject();
+			JSONData.ledgerEntry(responseEntry, entry, includeTransactions, includeHoldingInfo);
+			responseEntries.add(responseEntry);
+		});
+		final JSONObject response = new JSONObject();
+		response.put("entries", responseEntries);
+		return response;
+	}
 }

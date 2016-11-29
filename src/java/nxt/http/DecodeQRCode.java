@@ -68,63 +68,65 @@ import nxt.util.Logger;
 
 public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 
-    static final DecodeQRCode instance = new DecodeQRCode();
+	static final DecodeQRCode instance = new DecodeQRCode();
 
-    private DecodeQRCode() {
-        super(new APITag[] {APITag.UTILS}, "qrCodeBase64");
-    }
-    
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request)
-            throws NxtException {
-   
-        String qrCodeBase64 = Convert.nullToEmpty(request.getParameter("qrCodeBase64"));
+	private DecodeQRCode() {
+		super(new APITag[] {APITag.UTILS}, "qrCodeBase64");
+	}
 
-        JSONObject response = new JSONObject();
-        try {
-        	BufferedImage bImage = ImageIO.read(new ByteArrayInputStream(
-                    Base64.getDecoder().decode(qrCodeBase64)
-            ));
-        	if(bImage==null) throw new IOException("Cannot get binary buffered image!");
-            BinaryBitmap binaryBitmap = new BinaryBitmap(
-                    new HybridBinarizer(new BufferedImageLuminanceSource(
-                            bImage)
-                    )
-            );
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-            Map hints = new HashMap();
-            hints.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
-            hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
-            
-            Result qrCodeData = new MultiFormatReader().decode(binaryBitmap, hints);
-            response.put("qrCodeData", qrCodeData.getText());
-        } catch(IOException ex) {
-            String errorMessage = "Error reading base64 byte stream";
-            Logger.logErrorMessage(errorMessage, ex);
-            JSONData.putException(response, ex, errorMessage);
-        } catch(NullPointerException ex) {
-            String errorMessage = "Invalid base64 image";
-            Logger.logErrorMessage(errorMessage, ex);
-            JSONData.putException(response, ex, errorMessage);
-        } catch(NotFoundException ex) {
-            response.put("qrCodeData", "");
-        }
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request)
+			throws NxtException {
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+		final String qrCodeBase64 = Convert.nullToEmpty(request.getParameter("qrCodeBase64"));
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final JSONObject response = new JSONObject();
+		try {
+			final BufferedImage bImage = ImageIO.read(new ByteArrayInputStream(
+					Base64.getDecoder().decode(qrCodeBase64)
+					));
+			if(bImage==null) {
+				throw new IOException("Cannot get binary buffered image!");
+			}
+			final BinaryBitmap binaryBitmap = new BinaryBitmap(
+					new HybridBinarizer(new BufferedImageLuminanceSource(
+							bImage)
+							)
+					);
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+			final Map hints = new HashMap();
+			hints.put(DecodeHintType.POSSIBLE_FORMATS, EnumSet.of(BarcodeFormat.QR_CODE));
+			hints.put(DecodeHintType.CHARACTER_SET, "UTF-8");
+
+			final Result qrCodeData = new MultiFormatReader().decode(binaryBitmap, hints);
+			response.put("qrCodeData", qrCodeData.getText());
+		} catch(final IOException ex) {
+			final String errorMessage = "Error reading base64 byte stream";
+			Logger.logErrorMessage(errorMessage, ex);
+			JSONData.putException(response, ex, errorMessage);
+		} catch(final NullPointerException ex) {
+			final String errorMessage = "Invalid base64 image";
+			Logger.logErrorMessage(errorMessage, ex);
+			JSONData.putException(response, ex, errorMessage);
+		} catch(final NotFoundException ex) {
+			response.put("qrCodeData", "");
+		}
+		return response;
+	}
+
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
+
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

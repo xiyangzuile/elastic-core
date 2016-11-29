@@ -30,65 +30,65 @@ import nxt.util.Logger;
 
 public final class DownloadTimer implements AddOn {
 
-    private PrintWriter writer = null;
+	private PrintWriter writer = null;
 
-    @Override
-    public void init() {
+	@Override
+	public void init() {
 
-        try {
+		try {
 
-            writer = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream("downloadtime.csv")))), true);
-            writer.println("height,time,dtime,bps,transations,dtransactions,tps");
-            Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
+			this.writer = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream("downloadtime.csv")))), true);
+			this.writer.println("height,time,dtime,bps,transations,dtransactions,tps");
+			Nxt.getBlockchainProcessor().addListener(new Listener<Block>() {
 
-                final int interval = 10000;
-                final long startTime = System.currentTimeMillis();
-                long previousTime = 0;
-                long transactions = 0;
-                long dtransactions = 0;
+				final int interval = 10000;
+				final long startTime = System.currentTimeMillis();
+				long previousTime = 0;
+				long transactions = 0;
+				long dtransactions = 0;
 
-                @Override
-                public void notify(Block block) {
-                    int n = block.getTransactions().size();
-                    transactions += n;
-                    dtransactions += n;
-                    int height = block.getHeight();
-                    if (height % interval == 0) {
-                        long time = System.currentTimeMillis() - startTime;
-                        writer.print(height);
-                        writer.print(',');
-                        writer.print(time/1000);
-                        writer.print(',');
-                        long dtime = (time - previousTime)/1000;
-                        writer.print(dtime);
-                        writer.print(',');
-                        writer.print(interval/dtime);
-                        writer.print(',');
-                        writer.print(transactions);
-                        writer.print(',');
-                        writer.print(dtransactions);
-                        writer.print(',');
-                        long tps = dtransactions/dtime;
-                        writer.println(tps);
-                        previousTime = time;
-                        dtransactions = 0;
-                    }
-                }
+				@Override
+				public void notify(final Block block) {
+					final int n = block.getTransactions().size();
+					this.transactions += n;
+					this.dtransactions += n;
+					final int height = block.getHeight();
+					if ((height % this.interval) == 0) {
+						final long time = System.currentTimeMillis() - this.startTime;
+						DownloadTimer.this.writer.print(height);
+						DownloadTimer.this.writer.print(',');
+						DownloadTimer.this.writer.print(time/1000);
+						DownloadTimer.this.writer.print(',');
+						final long dtime = (time - this.previousTime)/1000;
+						DownloadTimer.this.writer.print(dtime);
+						DownloadTimer.this.writer.print(',');
+						DownloadTimer.this.writer.print(this.interval/dtime);
+						DownloadTimer.this.writer.print(',');
+						DownloadTimer.this.writer.print(this.transactions);
+						DownloadTimer.this.writer.print(',');
+						DownloadTimer.this.writer.print(this.dtransactions);
+						DownloadTimer.this.writer.print(',');
+						final long tps = this.dtransactions/dtime;
+						DownloadTimer.this.writer.println(tps);
+						this.previousTime = time;
+						this.dtransactions = 0;
+					}
+				}
 
-            }, BlockchainProcessor.Event.BLOCK_PUSHED);
+			}, BlockchainProcessor.Event.BLOCK_PUSHED);
 
-        } catch (IOException e) {
-            Logger.logErrorMessage(e.getMessage(), e);
-        }
+		} catch (final IOException e) {
+			Logger.logErrorMessage(e.getMessage(), e);
+		}
 
-    }
+	}
 
-    @Override
-    public void shutdown() {
-        if (writer != null) {
-            writer.flush();
-            writer.close();
-        }
-    }
+	@Override
+	public void shutdown() {
+		if (this.writer != null) {
+			this.writer.flush();
+			this.writer.close();
+		}
+	}
 
 }

@@ -30,40 +30,40 @@ import nxt.db.DbIterator;
 
 public final class GetAccountLessors extends APIServlet.APIRequestHandler {
 
-    static final GetAccountLessors instance = new GetAccountLessors();
+	static final GetAccountLessors instance = new GetAccountLessors();
 
-    private GetAccountLessors() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account", "height");
-    }
+	private GetAccountLessors() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account", "height");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        Account account = ParameterParser.getAccount(req);
-        int height = ParameterParser.getHeight(req);
-        if (height < 0) {
-            height = Nxt.getBlockchain().getHeight();
-        }
+		final Account account = ParameterParser.getAccount(req);
+		int height = ParameterParser.getHeight(req);
+		if (height < 0) {
+			height = Nxt.getBlockchain().getHeight();
+		}
 
-        JSONObject response = new JSONObject();
-        JSONData.putAccount(response, "account", account.getId());
-        response.put("height", height);
-        JSONArray lessorsJSON = new JSONArray();
+		final JSONObject response = new JSONObject();
+		JSONData.putAccount(response, "account", account.getId());
+		response.put("height", height);
+		final JSONArray lessorsJSON = new JSONArray();
 
-        try (DbIterator<Account> lessors = account.getLessors(height)) {
-            if (lessors.hasNext()) {
-                while (lessors.hasNext()) {
-                    Account lessor = lessors.next();
-                    JSONObject lessorJSON = new JSONObject();
-                    JSONData.putAccount(lessorJSON, "lessor", lessor.getId());
-                    lessorJSON.put("guaranteedBalanceNQT", String.valueOf(lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
-                    lessorsJSON.add(lessorJSON);
-                }
-            }
-        }
-        response.put("lessors", lessorsJSON);
-        return response;
+		try (DbIterator<Account> lessors = account.getLessors(height)) {
+			if (lessors.hasNext()) {
+				while (lessors.hasNext()) {
+					final Account lessor = lessors.next();
+					final JSONObject lessorJSON = new JSONObject();
+					JSONData.putAccount(lessorJSON, "lessor", lessor.getId());
+					lessorJSON.put("guaranteedBalanceNQT", String.valueOf(lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
+					lessorsJSON.add(lessorJSON);
+				}
+			}
+		}
+		response.put("lessors", lessorsJSON);
+		return response;
 
-    }
+	}
 
 }

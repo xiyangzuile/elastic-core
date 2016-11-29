@@ -26,40 +26,40 @@ import nxt.util.JSON;
 
 public final class HexConvert extends APIServlet.APIRequestHandler {
 
-    static final HexConvert instance = new HexConvert();
+	static final HexConvert instance = new HexConvert();
 
-    private HexConvert() {
-        super(new APITag[] {APITag.UTILS}, "string");
-    }
+	private HexConvert() {
+		super(new APITag[] {APITag.UTILS}, "string");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        String string = Convert.emptyToNull(req.getParameter("string"));
-        if (string == null) {
-            return JSON.emptyJSON;
-        }
-        JSONObject response = new JSONObject();
-        try {
-            byte[] asHex = Convert.parseHexString(string);
-            if (asHex.length > 0) {
-                response.put("text", Convert.toString(asHex));
-            }
-        } catch (RuntimeException ignore) {}
-        try {
-            byte[] asText = Convert.toBytes(string);
-            response.put("binary", Convert.toHexString(asText));
-        } catch (RuntimeException ignore) {}
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final String string = Convert.emptyToNull(req.getParameter("string"));
+		if (string == null) {
+			return JSON.emptyJSON;
+		}
+		final JSONObject response = new JSONObject();
+		try {
+			final byte[] asHex = Convert.parseHexString(string);
+			if (asHex.length > 0) {
+				response.put("text", Convert.toString(asHex));
+			}
+		} catch (final RuntimeException ignore) {}
+		try {
+			final byte[] asText = Convert.toBytes(string);
+			response.put("binary", Convert.toHexString(asText));
+		} catch (final RuntimeException ignore) {}
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

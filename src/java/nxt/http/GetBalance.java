@@ -26,22 +26,22 @@ import nxt.NxtException;
 
 public final class GetBalance extends APIServlet.APIRequestHandler {
 
-    static final GetBalance instance = new GetBalance();
+	static final GetBalance instance = new GetBalance();
 
-    private GetBalance() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account", "includeEffectiveBalance", "height");
-    }
+	private GetBalance() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account", "includeEffectiveBalance", "height");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        boolean includeEffectiveBalance = "true".equalsIgnoreCase(req.getParameter("includeEffectiveBalance"));
-        long accountId = ParameterParser.getAccountId(req, true);
-        int height = ParameterParser.getHeight(req);
-        if (height < 0) {
-            height = Nxt.getBlockchain().getHeight();
-        }
-        Account account = Account.getAccount(accountId, height);
-        return JSONData.accountBalance(account, includeEffectiveBalance, height);
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		final boolean includeEffectiveBalance = "true".equalsIgnoreCase(req.getParameter("includeEffectiveBalance"));
+		final long accountId = ParameterParser.getAccountId(req, true);
+		int height = ParameterParser.getHeight(req);
+		if (height < 0) {
+			height = Nxt.getBlockchain().getHeight();
+		}
+		final Account account = Account.getAccount(accountId, height);
+		return JSONData.accountBalance(account, includeEffectiveBalance, height);
+	}
 
 }

@@ -27,24 +27,24 @@ import nxt.NxtException;
 
 public final class GetECBlock extends APIServlet.APIRequestHandler {
 
-    static final GetECBlock instance = new GetECBlock();
+	static final GetECBlock instance = new GetECBlock();
 
-    private GetECBlock() {
-        super(new APITag[] {APITag.BLOCKS}, "timestamp");
-    }
+	private GetECBlock() {
+		super(new APITag[] {APITag.BLOCKS}, "timestamp");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        int timestamp = ParameterParser.getTimestamp(req);
-        if (timestamp == 0) {
-            timestamp = Nxt.getEpochTime();
-        }
-        Block ecBlock = Nxt.getBlockchain().getECBlock(timestamp);
-        JSONObject response = new JSONObject();
-        response.put("ecBlockId", ecBlock.getStringId());
-        response.put("ecBlockHeight", ecBlock.getHeight());
-        response.put("timestamp", timestamp);
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		int timestamp = ParameterParser.getTimestamp(req);
+		if (timestamp == 0) {
+			timestamp = Nxt.getEpochTime();
+		}
+		final Block ecBlock = Nxt.getBlockchain().getECBlock(timestamp);
+		final JSONObject response = new JSONObject();
+		response.put("ecBlockId", ecBlock.getStringId());
+		response.put("ecBlockHeight", ecBlock.getHeight());
+		response.put("timestamp", timestamp);
+		return response;
+	}
 
 }

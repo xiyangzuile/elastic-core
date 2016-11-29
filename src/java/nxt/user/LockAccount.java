@@ -16,8 +16,6 @@
 
 package nxt.user;
 
-import static nxt.user.JSONResponses.LOCK_ACCOUNT;
-
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,15 +24,15 @@ import org.json.simple.JSONStreamAware;
 
 public final class LockAccount extends UserServlet.UserRequestHandler {
 
-    static final LockAccount instance = new LockAccount();
+	static final LockAccount instance = new LockAccount();
 
-    private LockAccount() {}
+	private LockAccount() {}
 
-    @Override
-    JSONStreamAware processRequest(HttpServletRequest req, User user) throws IOException {
+	@Override
+	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
 
-        user.lockAccount();
+		user.lockAccount();
 
-        return LOCK_ACCOUNT;
-    }
+		return JSONResponses.LOCK_ACCOUNT;
+	}
 }

@@ -51,40 +51,40 @@ import nxt.peer.Peers;
  */
 public final class GetInboundPeers extends APIServlet.APIRequestHandler {
 
-    /** GetInboundPeers instance */
-    static final GetInboundPeers instance = new GetInboundPeers();
+	/** GetInboundPeers instance */
+	static final GetInboundPeers instance = new GetInboundPeers();
 
-    /**
-     * Create the GetInboundPeers instance
-     */
-    private GetInboundPeers() {
-        super(new APITag[] {APITag.NETWORK}, "includePeerInfo");
-    }
+	/**
+	 * Create the GetInboundPeers instance
+	 */
+	private GetInboundPeers() {
+		super(new APITag[] {APITag.NETWORK}, "includePeerInfo");
+	}
 
-    /**
-     * Process the GetInboundPeers API request
-     *
-     * @param   req                 API request
-     * @return                      API response or null
-     */
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        boolean includePeerInfo = "true".equalsIgnoreCase(req.getParameter("includePeerInfo"));
-        List<Peer> peers = Peers.getInboundPeers();
-        JSONArray peersJSON = new JSONArray();
-        if (includePeerInfo) {
-            peers.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
-        } else {
-            peers.forEach(peer -> peersJSON.add(peer.getHost()));
-        }
-        JSONObject response = new JSONObject();
-        response.put("peers", peersJSON);
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	/**
+	 * Process the GetInboundPeers API request
+	 *
+	 * @param   req                 API request
+	 * @return                      API response or null
+	 */
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final boolean includePeerInfo = "true".equalsIgnoreCase(req.getParameter("includePeerInfo"));
+		final List<Peer> peers = Peers.getInboundPeers();
+		final JSONArray peersJSON = new JSONArray();
+		if (includePeerInfo) {
+			peers.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
+		} else {
+			peers.forEach(peer -> peersJSON.add(peer.getHost()));
+		}
+		final JSONObject response = new JSONObject();
+		response.put("peers", peersJSON);
+		return response;
+	}
 
 }

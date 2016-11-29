@@ -29,32 +29,32 @@ import nxt.http.APITag;
 
 public final class PopOffCounter implements AddOn {
 
-    private volatile int numberOfPopOffs = 0;
+	private volatile int numberOfPopOffs = 0;
 
-    @Override
-    public void init() {
-        Nxt.getBlockchainProcessor().addListener(block -> numberOfPopOffs += 1, BlockchainProcessor.Event.BLOCK_POPPED);
-    }
+	@Override
+	public APIServlet.APIRequestHandler getAPIRequestHandler() {
+		return new APIServlet.APIRequestHandler(new APITag[]{APITag.ADDONS, APITag.BLOCKS}) {
+			@Override
+			protected boolean allowRequiredBlockParameters() {
+				return false;
+			}
+			@Override
+			protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
+				final JSONObject response = new JSONObject();
+				response.put("numberOfPopOffs", PopOffCounter.this.numberOfPopOffs);
+				return response;
+			}
+		};
+	}
 
-    @Override
-    public APIServlet.APIRequestHandler getAPIRequestHandler() {
-        return new APIServlet.APIRequestHandler(new APITag[]{APITag.ADDONS, APITag.BLOCKS}) {
-            @Override
-            protected JSONStreamAware processRequest(HttpServletRequest request) throws NxtException {
-                JSONObject response = new JSONObject();
-                response.put("numberOfPopOffs", numberOfPopOffs);
-                return response;
-            }
-            @Override
-            protected boolean allowRequiredBlockParameters() {
-                return false;
-            }
-        };
-    }
+	@Override
+	public String getAPIRequestType() {
+		return "getNumberOfPopOffs";
+	}
 
-    @Override
-    public String getAPIRequestType() {
-        return "getNumberOfPopOffs";
-    }
+	@Override
+	public void init() {
+		Nxt.getBlockchainProcessor().addListener(block -> this.numberOfPopOffs += 1, BlockchainProcessor.Event.BLOCK_POPPED);
+	}
 
 }

@@ -26,20 +26,20 @@ import nxt.NxtException;
 
 public final class GetAccountBlockCount extends APIServlet.APIRequestHandler {
 
-    static final GetAccountBlockCount instance = new GetAccountBlockCount();
+	static final GetAccountBlockCount instance = new GetAccountBlockCount();
 
-    private GetAccountBlockCount() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account");
-    }
+	private GetAccountBlockCount() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        long accountId = ParameterParser.getAccountId(req, true);
-        JSONObject response = new JSONObject();
-        response.put("numberOfBlocks", Nxt.getBlockchain().getBlockCount(accountId));
+		final long accountId = ParameterParser.getAccountId(req, true);
+		final JSONObject response = new JSONObject();
+		response.put("numberOfBlocks", Nxt.getBlockchain().getBlockCount(accountId));
 
-        return response;
-    }
+		return response;
+	}
 
 }

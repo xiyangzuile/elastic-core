@@ -26,32 +26,32 @@ import nxt.util.Convert;
 
 public final class GetAccountId extends APIServlet.APIRequestHandler {
 
-    static final GetAccountId instance = new GetAccountId();
+	static final GetAccountId instance = new GetAccountId();
 
-    private GetAccountId() {
-        super(new APITag[] {APITag.ACCOUNTS}, "secretPhrase", "publicKey");
-    }
+	private GetAccountId() {
+		super(new APITag[] {APITag.ACCOUNTS}, "secretPhrase", "publicKey");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected final boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        byte[] publicKey = ParameterParser.getPublicKey(req);
-        long accountId = Account.getId(publicKey);
-        JSONObject response = new JSONObject();
-        JSONData.putAccount(response, "account", accountId);
-        response.put("publicKey", Convert.toHexString(publicKey));
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        return response;
-    }
+		final byte[] publicKey = ParameterParser.getPublicKey(req);
+		final long accountId = Account.getId(publicKey);
+		final JSONObject response = new JSONObject();
+		JSONData.putAccount(response, "account", accountId);
+		response.put("publicKey", Convert.toHexString(publicKey));
 
-    @Override
-    protected final boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		return response;
+	}
 
-    @Override
-    protected final boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requireBlockchain() {
+		return false;
+	}
 
 }

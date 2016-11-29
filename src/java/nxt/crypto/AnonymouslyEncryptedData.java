@@ -25,81 +25,81 @@ import nxt.util.Convert;
 
 public final class AnonymouslyEncryptedData {
 
-    public static AnonymouslyEncryptedData encrypt(byte[] plaintext, String secretPhrase, byte[] theirPublicKey, byte[] nonce) {
-        byte[] keySeed = Crypto.getKeySeed(secretPhrase, theirPublicKey, nonce);
-        byte[] myPrivateKey = Crypto.getPrivateKey(keySeed);
-        byte[] myPublicKey = Crypto.getPublicKey(keySeed);
-        byte[] sharedKey = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
-        byte[] data = Crypto.aesGCMEncrypt(plaintext, sharedKey);
-        return new AnonymouslyEncryptedData(data, myPublicKey);
-    }
+	public static AnonymouslyEncryptedData encrypt(final byte[] plaintext, final String secretPhrase, final byte[] theirPublicKey, final byte[] nonce) {
+		final byte[] keySeed = Crypto.getKeySeed(secretPhrase, theirPublicKey, nonce);
+		final byte[] myPrivateKey = Crypto.getPrivateKey(keySeed);
+		final byte[] myPublicKey = Crypto.getPublicKey(keySeed);
+		final byte[] sharedKey = Crypto.getSharedKey(myPrivateKey, theirPublicKey);
+		final byte[] data = Crypto.aesGCMEncrypt(plaintext, sharedKey);
+		return new AnonymouslyEncryptedData(data, myPublicKey);
+	}
 
-    public static AnonymouslyEncryptedData readEncryptedData(ByteBuffer buffer, int length, int maxLength)
-            throws NxtException.NotValidException {
-        if (length > maxLength) {
-            throw new NxtException.NotValidException("Max encrypted data length exceeded: " + length);
-        }
-        byte[] data = new byte[length];
-        buffer.get(data);
-        byte[] publicKey = new byte[32];
-        buffer.get(publicKey);
-        return new AnonymouslyEncryptedData(data, publicKey);
-    }
+	public static AnonymouslyEncryptedData readEncryptedData(final byte[] bytes) {
+		final ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		try {
+			return AnonymouslyEncryptedData.readEncryptedData(buffer, bytes.length - 32, Integer.MAX_VALUE);
+		} catch (final NxtException.NotValidException e) {
+			throw new RuntimeException(e.toString(), e); // never
+		}
+	}
 
-    public static AnonymouslyEncryptedData readEncryptedData(byte[] bytes) {
-        ByteBuffer buffer = ByteBuffer.wrap(bytes);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        try {
-            return readEncryptedData(buffer, bytes.length - 32, Integer.MAX_VALUE);
-        } catch (NxtException.NotValidException e) {
-            throw new RuntimeException(e.toString(), e); // never
-        }
-    }
+	public static AnonymouslyEncryptedData readEncryptedData(final ByteBuffer buffer, final int length, final int maxLength)
+			throws NxtException.NotValidException {
+		if (length > maxLength) {
+			throw new NxtException.NotValidException("Max encrypted data length exceeded: " + length);
+		}
+		final byte[] data = new byte[length];
+		buffer.get(data);
+		final byte[] publicKey = new byte[32];
+		buffer.get(publicKey);
+		return new AnonymouslyEncryptedData(data, publicKey);
+	}
 
-    private final byte[] data;
-    private final byte[] publicKey;
+	private final byte[] data;
+	private final byte[] publicKey;
 
-    public AnonymouslyEncryptedData(byte[] data, byte[] publicKey) {
-        this.data = data;
-        this.publicKey = publicKey;
-    }
+	public AnonymouslyEncryptedData(final byte[] data, final byte[] publicKey) {
+		this.data = data;
+		this.publicKey = publicKey;
+	}
 
-    public byte[] decrypt(String secretPhrase) {
-        byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(secretPhrase), publicKey);
-        return Crypto.aesGCMDecrypt(data, sharedKey);
-    }
+	public byte[] decrypt(final byte[] keySeed, final byte[] theirPublicKey) {
+		if (!Arrays.equals(Crypto.getPublicKey(keySeed), this.publicKey)) {
+			throw new RuntimeException("Data was not encrypted using this keySeed");
+		}
+		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(keySeed), theirPublicKey);
+		return Crypto.aesGCMDecrypt(this.data, sharedKey);
+	}
 
-    public byte[] decrypt(byte[] keySeed, byte[] theirPublicKey) {
-        if (!Arrays.equals(Crypto.getPublicKey(keySeed), publicKey)) {
-            throw new RuntimeException("Data was not encrypted using this keySeed");
-        }
-        byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(keySeed), theirPublicKey);
-        return Crypto.aesGCMDecrypt(data, sharedKey);
-    }
+	public byte[] decrypt(final String secretPhrase) {
+		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(secretPhrase), this.publicKey);
+		return Crypto.aesGCMDecrypt(this.data, sharedKey);
+	}
 
-    public byte[] getData() {
-        return data;
-    }
+	public byte[] getBytes() {
+		final ByteBuffer buffer = ByteBuffer.allocate(this.data.length + 32);
+		buffer.order(ByteOrder.LITTLE_ENDIAN);
+		buffer.put(this.data);
+		buffer.put(this.publicKey);
+		return buffer.array();
+	}
 
-    public byte[] getPublicKey() {
-        return publicKey;
-    }
+	public byte[] getData() {
+		return this.data;
+	}
 
-    public int getSize() {
-        return data.length + 32;
-    }
+	public byte[] getPublicKey() {
+		return this.publicKey;
+	}
 
-    public byte[] getBytes() {
-        ByteBuffer buffer = ByteBuffer.allocate(data.length + 32);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.put(data);
-        buffer.put(publicKey);
-        return buffer.array();
-    }
+	public int getSize() {
+		return this.data.length + 32;
+	}
 
-    @Override
-    public String toString() {
-        return "data: " + Convert.toHexString(data) + " publicKey: " + Convert.toHexString(publicKey);
-    }
+	@Override
+	public String toString() {
+		return "data: " + Convert.toHexString(this.data) + " publicKey: " + Convert.toHexString(this.publicKey);
+	}
 
 }

@@ -18,7 +18,7 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 
 	static final GetWorkBounties instance = new GetWorkBounties();
 
-	
+
 
 	private GetWorkBounties() {
 		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
@@ -27,28 +27,28 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-	
+
 		long wid = 0;
 		try {
-			String readParam = ParameterParser.getParameterMultipart(req, "work_id");
-			BigInteger b = new BigInteger(readParam);
+			final String readParam = ParameterParser.getParameterMultipart(req, "work_id");
+			final BigInteger b = new BigInteger(readParam);
 			wid = b.longValue();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			wid = 0;
 		}
-		
 
-		JSONArray bounties = new JSONArray();
 
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
-        try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
-		  while (iterator.hasNext()) { PowAndBounty b = iterator.next(); bounties.add(b.toJsonObject());
-		} }
-		 
-		JSONObject response = new JSONObject();
+		final JSONArray bounties = new JSONArray();
+
+		ParameterParser.getFirstIndex(req);
+		ParameterParser.getLastIndex(req);
+		try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
+			while (iterator.hasNext()) { final PowAndBounty b = iterator.next(); bounties.add(b.toJsonObject());
+			} }
+
+		final JSONObject response = new JSONObject();
 		response.put("bounties", bounties);
 		return response;
 

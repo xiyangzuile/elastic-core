@@ -21,13 +21,13 @@ import java.net.URI;
 
 public interface RuntimeMode {
 
-    void init();
+	void alert(String message);
 
-    void setServerStatus(ServerStatus status, URI wallet, File logFileDir);
+	void init();
 
-    void launchDesktopApplication();
+	void launchDesktopApplication();
 
-    void shutdown();
+	void setServerStatus(ServerStatus status, URI wallet, File logFileDir);
 
-    void alert(String message);
+	void shutdown();
 }

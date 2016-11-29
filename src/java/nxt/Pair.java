@@ -2,15 +2,15 @@ package nxt;
 
 public class Pair<T, U>
 {
-   T a;
-   U b;
+	T a;
+	U b;
 
-   Pair(T a, U b)
-   {
-    this.a = a;
-    this.b = b;
-   }
+	Pair(final T a, final U b)
+	{
+		this.a = a;
+		this.b = b;
+	}
 
-   public T getA(){ return a;}
-   public U getB(){ return b;}
+	public T getA(){ return this.a;}
+	public U getB(){ return this.b;}
 }

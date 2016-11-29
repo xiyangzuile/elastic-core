@@ -17,7 +17,7 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 
 	static final GetApprovedBounties instance = new GetApprovedBounties();
 
-	
+
 
 	private GetApprovedBounties() {
 		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
@@ -26,33 +26,33 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-	
-		long wid = ParameterParser.getUnsignedLong(req, "work_id",true);
-		
+
+		final long wid = ParameterParser.getUnsignedLong(req, "work_id",true);
+
 		byte hash[] = null;
 		try {
-			String readParam = ParameterParser.getAnnouncement(req, true);
+			final String readParam = ParameterParser.getAnnouncement(req, true);
 
-			BigInteger b = new BigInteger(readParam, 16);
+			final BigInteger b = new BigInteger(readParam, 16);
 			hash = b.toByteArray();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			hash = null;
 		}
 
-		Work w = Work.getWork(wid);
-		if(w == null || w.isClosed()){
-			JSONObject response = new JSONObject();
+		final Work w = Work.getWork(wid);
+		if((w == null) || w.isClosed()){
+			final JSONObject response = new JSONObject();
 			response.put("approved", "deprecated");
 			return response;
 		}
-      
-		 
-		JSONObject response = new JSONObject();
-		
-		boolean hasIt = PowAndBountyAnnouncements.hasValidHash(wid, hash);
-		boolean hasItFailed = PowAndBountyAnnouncements.hasHash(wid, hash);
+
+
+		final JSONObject response = new JSONObject();
+
+		final boolean hasIt = PowAndBountyAnnouncements.hasValidHash(wid, hash);
+		final boolean hasItFailed = PowAndBountyAnnouncements.hasHash(wid, hash);
 		if(hasIt){
 			response.put("approved", "true");
 		}else if (hasItFailed){
@@ -60,8 +60,8 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 		}else{
 			response.put("approved", "false");
 		}
-		
-		
+
+
 		return response;
 
 	}

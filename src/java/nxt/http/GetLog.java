@@ -45,71 +45,72 @@ import nxt.util.MemoryHandler;
  */
 public final class GetLog extends APIServlet.APIRequestHandler {
 
-    /** GetLog instance */
-    static final GetLog instance = new GetLog();
+	/** GetLog instance */
+	static final GetLog instance = new GetLog();
 
-    /**
-     * Create the GetLog instance
-     */
-    private GetLog() {
-        super(new APITag[] {APITag.DEBUG}, "count");
-    }
+	/**
+	 * Create the GetLog instance
+	 */
+	private GetLog() {
+		super(new APITag[] {APITag.DEBUG}, "count");
+	}
 
-    /**
-     * Process the GetLog API request
-     *
-     * @param   req                 API request
-     * @return                      API response
-     */
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        //
-        // Get the number of log messages to return
-        //
-        int count;
-        String value = req.getParameter("count");
-        if (value != null)
-            count = Math.max(Integer.valueOf(value), 0);
-        else
-            count = Integer.MAX_VALUE;
-        //
-        // Get the log messages
-        //
-        JSONArray logJSON = new JSONArray();
-        Logger logger = Logger.getLogger("");
-        Handler[] handlers = logger.getHandlers();
-        for (Handler handler : handlers) {
-            if (handler instanceof MemoryHandler) {
-                logJSON.addAll(((MemoryHandler)handler).getMessages(count));
-                break;
-            }
-        }
-        //
-        // Return the response
-        //
-        JSONObject response = new JSONObject();
-        response.put("messages", logJSON);
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    /**
-     * Require the administrator password
-     *
-     * @return                      TRUE if the admin password is required
-     */
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	/**
+	 * Process the GetLog API request
+	 *
+	 * @param   req                 API request
+	 * @return                      API response
+	 */
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		//
+		// Get the number of log messages to return
+		//
+		int count;
+		final String value = req.getParameter("count");
+		if (value != null) {
+			count = Math.max(Integer.valueOf(value), 0);
+		} else {
+			count = Integer.MAX_VALUE;
+		}
+		//
+		// Get the log messages
+		//
+		final JSONArray logJSON = new JSONArray();
+		final Logger logger = Logger.getLogger("");
+		final Handler[] handlers = logger.getHandlers();
+		for (final Handler handler : handlers) {
+			if (handler instanceof MemoryHandler) {
+				logJSON.addAll(((MemoryHandler)handler).getMessages(count));
+				break;
+			}
+		}
+		//
+		// Return the response
+		//
+		final JSONObject response = new JSONObject();
+		response.put("messages", logJSON);
+		return response;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	/**
+	 * Require the administrator password
+	 *
+	 * @return                      TRUE if the admin password is required
+	 */
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
 }

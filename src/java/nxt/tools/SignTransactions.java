@@ -30,55 +30,56 @@ import nxt.util.Convert;
 
 public final class SignTransactions {
 
-    public static void main(String[] args) {
-        try {
-            if (args.length != 2) {
-                System.out.println("Usage: SignTransactions <unsigned transaction bytes file> <signed transaction bytes file>");
-                System.exit(1);
-            }
-            File unsigned = new File(args[0]);
-            if (!unsigned.exists()) {
-                System.out.println("File not found: " + unsigned.getAbsolutePath());
-                System.exit(1);
-            }
-            File signed = new File(args[1]);
-            if (signed.exists()) {
-                System.out.println("File already exists: " + signed.getAbsolutePath());
-                System.exit(1);
-            }
-            String secretPhrase = null;
-            Console console = System.console();
-            if (console == null) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-                    secretPhrase = reader.readLine();
-                }
-            } else {
-            	char[] chararr = null;
-            	chararr = console.readPassword("Secret phrase: ");
-            	if (chararr != null)
-                secretPhrase = new String(chararr);
-            }
-            if(secretPhrase == null){
-            	System.err.println("No secret phrase given!");
-            	return;
-            }
-            int n = 0;
-            try (BufferedReader reader = new BufferedReader(new FileReader(unsigned));
-                 BufferedWriter writer = new BufferedWriter(new FileWriter(signed))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    byte[] transactionBytes = Convert.parseHexString(line);
-                    Transaction.Builder builder = Nxt.newTransactionBuilder(transactionBytes);
-                    Transaction transaction = builder.build(secretPhrase);
-                    writer.write(Convert.toHexString(transaction.getBytes()));
-                    writer.newLine();
-                    n += 1;
-                }
-            }
-            System.out.println("Signed " + n + " transactions");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+	public static void main(final String[] args) {
+		try {
+			if (args.length != 2) {
+				System.out.println("Usage: SignTransactions <unsigned transaction bytes file> <signed transaction bytes file>");
+				System.exit(1);
+			}
+			final File unsigned = new File(args[0]);
+			if (!unsigned.exists()) {
+				System.out.println("File not found: " + unsigned.getAbsolutePath());
+				System.exit(1);
+			}
+			final File signed = new File(args[1]);
+			if (signed.exists()) {
+				System.out.println("File already exists: " + signed.getAbsolutePath());
+				System.exit(1);
+			}
+			String secretPhrase = null;
+			final Console console = System.console();
+			if (console == null) {
+				try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+					secretPhrase = reader.readLine();
+				}
+			} else {
+				char[] chararr = null;
+				chararr = console.readPassword("Secret phrase: ");
+				if (chararr != null) {
+					secretPhrase = new String(chararr);
+				}
+			}
+			if(secretPhrase == null){
+				System.err.println("No secret phrase given!");
+				return;
+			}
+			int n = 0;
+			try (BufferedReader reader = new BufferedReader(new FileReader(unsigned));
+					BufferedWriter writer = new BufferedWriter(new FileWriter(signed))) {
+				String line;
+				while ((line = reader.readLine()) != null) {
+					final byte[] transactionBytes = Convert.parseHexString(line);
+					final Transaction.Builder builder = Nxt.newTransactionBuilder(transactionBytes);
+					final Transaction transaction = builder.build(secretPhrase);
+					writer.write(Convert.toHexString(transaction.getBytes()));
+					writer.newLine();
+					n += 1;
+				}
+			}
+			System.out.println("Signed " + n + " transactions");
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
 
 }

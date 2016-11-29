@@ -31,36 +31,36 @@ import nxt.NxtException;
 
 public final class GetBlocks extends APIServlet.APIRequestHandler {
 
-    static final GetBlocks instance = new GetBlocks();
+	static final GetBlocks instance = new GetBlocks();
 
-    private GetBlocks() {
-        super(new APITag[] {APITag.BLOCKS}, "firstIndex", "lastIndex", "timestamp", "includeTransactions", "includeExecutedPhased");
-    }
+	private GetBlocks() {
+		super(new APITag[] {APITag.BLOCKS}, "firstIndex", "lastIndex", "timestamp", "includeTransactions", "includeExecutedPhased");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
-        final int timestamp = ParameterParser.getTimestamp(req);
-        boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
-        boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
+		final int timestamp = ParameterParser.getTimestamp(req);
+		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
+		final boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));
 
-        JSONArray blocks = new JSONArray();
-        Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(firstIndex, lastIndex).iterator();
-        while (it.hasNext()) {
-                Block block = it.next();
-                if (block.getTimestamp() < timestamp) {
-                    break;
-                }
-                blocks.add(JSONData.block(block, includeTransactions, includeExecutedPhased));
-            
-        }
+		final JSONArray blocks = new JSONArray();
+		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(firstIndex, lastIndex).iterator();
+		while (it.hasNext()) {
+			final Block block = it.next();
+			if (block.getTimestamp() < timestamp) {
+				break;
+			}
+			blocks.add(JSONData.block(block, includeTransactions, includeExecutedPhased));
 
-        JSONObject response = new JSONObject();
-        response.put("blocks", blocks);
+		}
 
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("blocks", blocks);
+
+		return response;
+	}
 
 }

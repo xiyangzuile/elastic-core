@@ -35,49 +35,49 @@ import nxt.util.UPnP;
 
 public final class GetState extends APIServlet.APIRequestHandler {
 
-    static final GetState instance = new GetState();
+	static final GetState instance = new GetState();
 
-    private GetState() {
-        super(new APITag[] {APITag.INFO}, "includeCounts", "adminPassword");
-    }
+	private GetState() {
+		super(new APITag[] {APITag.INFO}, "includeCounts", "adminPassword");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        JSONObject response = GetBlockchainStatus.instance.processRequest(req);
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        if ("true".equalsIgnoreCase(req.getParameter("includeCounts")) && API.checkPassword(req)) {
-            response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
-            response.put("numberOfAccounts", Account.getCount());
-            response.put("numberOfPrunableSourceCodes", PrunableSourceCode.getCount());
-            response.put("numberOfAccountLeases", Account.getAccountLeaseCount());
-            response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
-        }
-        response.put("numberOfPeers", Peers.getAllPeers().size());
-        response.put("numberOfActivePeers", Peers.getActivePeers().size());
-        response.put("numberOpenWorks", Work.getActiveCount());
-        response.put("numberClosedWorks", Work.getCount()-Work.getActiveCount());
-        response.put("estimatedComputationPower", GigaflopEstimator.estimateText());
-        response.put("openWorkMoney", Work.getActiveMoney());
-        
-        response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());
-        response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
-        response.put("maxMemory", Runtime.getRuntime().maxMemory());
-        response.put("totalMemory", Runtime.getRuntime().totalMemory());
-        response.put("freeMemory", Runtime.getRuntime().freeMemory());
-        response.put("peerPort", Peers.getDefaultPeerPort());
-        response.put("isOffline", Constants.isOffline);
-        response.put("needsAdminPassword", !API.disableAdminPassword);
-        InetAddress externalAddress = UPnP.getExternalAddress();
-        if (externalAddress != null) {
-            response.put("upnpExternalAddress", externalAddress.getHostAddress());
-        }
-        return response;
-    }
+		final JSONObject response = GetBlockchainStatus.instance.processRequest(req);
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		if ("true".equalsIgnoreCase(req.getParameter("includeCounts")) && API.checkPassword(req)) {
+			response.put("numberOfTransactions", Nxt.getBlockchain().getTransactionCount());
+			response.put("numberOfAccounts", Account.getCount());
+			response.put("numberOfPrunableSourceCodes", PrunableSourceCode.getCount());
+			response.put("numberOfAccountLeases", Account.getAccountLeaseCount());
+			response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
+		}
+		response.put("numberOfPeers", Peers.getAllPeers().size());
+		response.put("numberOfActivePeers", Peers.getActivePeers().size());
+		response.put("numberOpenWorks", Work.getActiveCount());
+		response.put("numberClosedWorks", Work.getCount()-Work.getActiveCount());
+		response.put("estimatedComputationPower", GigaflopEstimator.estimateText());
+		response.put("openWorkMoney", Work.getActiveMoney());
+
+		response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());
+		response.put("availableProcessors", Runtime.getRuntime().availableProcessors());
+		response.put("maxMemory", Runtime.getRuntime().maxMemory());
+		response.put("totalMemory", Runtime.getRuntime().totalMemory());
+		response.put("freeMemory", Runtime.getRuntime().freeMemory());
+		response.put("peerPort", Peers.getDefaultPeerPort());
+		response.put("isOffline", Constants.isOffline);
+		response.put("needsAdminPassword", !API.disableAdminPassword);
+		final InetAddress externalAddress = UPnP.getExternalAddress();
+		if (externalAddress != null) {
+			response.put("upnpExternalAddress", externalAddress.getHostAddress());
+		}
+		return response;
+	}
 
 }

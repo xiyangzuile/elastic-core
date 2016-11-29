@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.MISSING_PEER;
-import static nxt.http.JSONResponses.UNKNOWN_PEER;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -31,51 +28,51 @@ import nxt.peer.Peers;
 
 public class BlacklistPeer extends APIRequestHandler {
 
-    static final BlacklistPeer instance = new BlacklistPeer();
-    
-    private BlacklistPeer() {
-        super(new APITag[] {APITag.NETWORK}, "peer");
-    }
+	static final BlacklistPeer instance = new BlacklistPeer();
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request)
-            throws NxtException {
-        JSONObject response = new JSONObject();
-        
-        String peerAddress = request.getParameter("peer");
-        if (peerAddress == null) {
-            return MISSING_PEER;
-        }
-        Peer peer = Peers.findOrCreatePeer(peerAddress, true);
-        if (peer == null) {
-            return UNKNOWN_PEER;
-        } else {
-            Peers.addPeer(peer);
-            peer.blacklist("Manual blacklist");
-            response.put("done", true);
-        }
-        
-        return response;
-    }
+	private BlacklistPeer() {
+		super(new APITag[] {APITag.NETWORK}, "peer");
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request)
+			throws NxtException {
+		final JSONObject response = new JSONObject();
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final String peerAddress = request.getParameter("peer");
+		if (peerAddress == null) {
+			return JSONResponses.MISSING_PEER;
+		}
+		final Peer peer = Peers.findOrCreatePeer(peerAddress, true);
+		if (peer == null) {
+			return JSONResponses.UNKNOWN_PEER;
+		} else {
+			Peers.addPeer(peer);
+			peer.blacklist("Manual blacklist");
+			response.put("done", true);
+		}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+		return response;
+	}
+
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
+
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
+
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

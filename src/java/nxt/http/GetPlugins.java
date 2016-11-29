@@ -36,68 +36,68 @@ import org.json.simple.JSONStreamAware;
 
 public final class GetPlugins extends APIServlet.APIRequestHandler {
 
-    static final GetPlugins instance = new GetPlugins();
+	private static class PluginDirListing extends SimpleFileVisitor<Path> {
 
-    private GetPlugins() {
-        super(new APITag[] {APITag.INFO});
-    }
+		private final List<Path> directories = new ArrayList<>();
 
-    private static final Path PLUGINS_HOME = Paths.get("./html/ui/plugins");
+		public List<Path> getDirectories() {
+			return this.directories;
+		}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+		@Override
+		public FileVisitResult postVisitDirectory(final Path dir, final IOException e) {
+			if (!GetPlugins.PLUGINS_HOME.equals(dir)) {
+				this.directories.add(dir);
+			}
+			return FileVisitResult.CONTINUE;
+		}
 
-        JSONObject response = new JSONObject();
-        if (!Files.isReadable(PLUGINS_HOME)) {
-            return JSONResponses.fileNotFound(PLUGINS_HOME.toString());
-        }
-        PluginDirListing pluginDirListing = new PluginDirListing();
-        try {
-            Files.walkFileTree(PLUGINS_HOME, EnumSet.noneOf(FileVisitOption.class), 2, pluginDirListing);
-        } catch (IOException e) {
-            return JSONResponses.fileNotFound(e.getMessage());
-        }
-        JSONArray plugins = new JSONArray();
-        pluginDirListing.getDirectories().forEach(dir -> plugins.add(Paths.get(dir.toString()).getFileName().toString()));
-        response.put("plugins", plugins);
-        return response;
-    }
+		@Override
+		public FileVisitResult visitFile(final Path file, final BasicFileAttributes attr) {
+			return FileVisitResult.CONTINUE;
+		}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		@Override
+		public FileVisitResult visitFileFailed(final Path file, final IOException e) {
+			return FileVisitResult.CONTINUE;
+		}
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	static final GetPlugins instance = new GetPlugins();
 
-    private static class PluginDirListing extends SimpleFileVisitor<Path> {
+	private static final Path PLUGINS_HOME = Paths.get("./html/ui/plugins");
 
-        private final List<Path> directories = new ArrayList<>();
+	private GetPlugins() {
+		super(new APITag[] {APITag.INFO});
+	}
 
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
-            return FileVisitResult.CONTINUE;
-        }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException e) {
-            if (!PLUGINS_HOME.equals(dir)) {
-                directories.add(dir);
-            }
-            return FileVisitResult.CONTINUE;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        @Override
-        public FileVisitResult visitFileFailed(Path file, IOException e) {
-            return FileVisitResult.CONTINUE;
-        }
+		final JSONObject response = new JSONObject();
+		if (!Files.isReadable(GetPlugins.PLUGINS_HOME)) {
+			return JSONResponses.fileNotFound(GetPlugins.PLUGINS_HOME.toString());
+		}
+		final PluginDirListing pluginDirListing = new PluginDirListing();
+		try {
+			Files.walkFileTree(GetPlugins.PLUGINS_HOME, EnumSet.noneOf(FileVisitOption.class), 2, pluginDirListing);
+		} catch (final IOException e) {
+			return JSONResponses.fileNotFound(e.getMessage());
+		}
+		final JSONArray plugins = new JSONArray();
+		pluginDirListing.getDirectories().forEach(dir -> plugins.add(Paths.get(dir.toString()).getFileName().toString()));
+		response.put("plugins", plugins);
+		return response;
+	}
 
-        public List<Path> getDirectories() {
-            return directories;
-        }
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

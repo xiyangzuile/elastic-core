@@ -31,32 +31,32 @@ import nxt.NxtException;
 
 public final class GetAccountBlockIds extends APIServlet.APIRequestHandler {
 
-    static final GetAccountBlockIds instance = new GetAccountBlockIds();
+	static final GetAccountBlockIds instance = new GetAccountBlockIds();
 
-    private GetAccountBlockIds() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex");
-    }
+	private GetAccountBlockIds() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        long accountId = ParameterParser.getAccountId(req, true);
-        int timestamp = ParameterParser.getTimestamp(req);
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
+		final long accountId = ParameterParser.getAccountId(req, true);
+		final int timestamp = ParameterParser.getTimestamp(req);
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
 
-        JSONArray blockIds = new JSONArray();
-        Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
-        while (it.hasNext()) {
-            Block block = it.next();
-            blockIds.add(block.getStringId());
-        }
-        
+		final JSONArray blockIds = new JSONArray();
+		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
+		while (it.hasNext()) {
+			final Block block = it.next();
+			blockIds.add(block.getStringId());
+		}
 
-        JSONObject response = new JSONObject();
-        response.put("blockIds", blockIds);
 
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("blockIds", blockIds);
+
+		return response;
+	}
 
 }

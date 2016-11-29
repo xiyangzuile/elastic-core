@@ -16,10 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.PEER_NOT_CONNECTED;
-import static nxt.http.JSONResponses.PEER_NOT_OPEN_API;
-import static nxt.http.JSONResponses.UNKNOWN_PEER;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -31,52 +27,52 @@ import nxt.util.Convert;
 
 public class SetAPIProxyPeer extends APIServlet.APIRequestHandler {
 
-    static final SetAPIProxyPeer instance = new SetAPIProxyPeer();
+	static final SetAPIProxyPeer instance = new SetAPIProxyPeer();
 
-    private SetAPIProxyPeer() {
-        super(new APITag[] {APITag.NETWORK}, "peer");
-    }
+	private SetAPIProxyPeer() {
+		super(new APITag[] {APITag.NETWORK}, "peer");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request) throws NxtException {
-        String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
-        if (peerAddress == null) {
-            Peer peer = APIProxy.getInstance().setForcedPeer(null);
-            return JSONData.peer(peer);
-        }
-        Peer peer = Peers.findOrCreatePeer(peerAddress, false);
-        if (peer == null) {
-            return UNKNOWN_PEER;
-        }
-        if (peer.getState() != Peer.State.CONNECTED ) {
-            return PEER_NOT_CONNECTED;
-        }
-        if (!peer.isOpenAPI()) {
-            return PEER_NOT_OPEN_API;
-        }
-        APIProxy.getInstance().setForcedPeer(peer);
-        return JSONData.peer(peer);
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
+		final String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
+		if (peerAddress == null) {
+			final Peer peer = APIProxy.getInstance().setForcedPeer(null);
+			return JSONData.peer(peer);
+		}
+		final Peer peer = Peers.findOrCreatePeer(peerAddress, false);
+		if (peer == null) {
+			return JSONResponses.UNKNOWN_PEER;
+		}
+		if (peer.getState() != Peer.State.CONNECTED ) {
+			return JSONResponses.PEER_NOT_CONNECTED;
+		}
+		if (!peer.isOpenAPI()) {
+			return JSONResponses.PEER_NOT_OPEN_API;
+		}
+		APIProxy.getInstance().setForcedPeer(peer);
+		return JSONData.peer(peer);
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 
 }

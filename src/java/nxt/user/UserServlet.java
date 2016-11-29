@@ -16,10 +16,6 @@
 
 package nxt.user;
 
-import static nxt.user.JSONResponses.DENY_ACCESS;
-import static nxt.user.JSONResponses.INCORRECT_REQUEST;
-import static nxt.user.JSONResponses.POST_REQUIRED;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,102 +35,107 @@ import nxt.util.Logger;
 
 public final class UserServlet extends HttpServlet  {
 
-    abstract static class UserRequestHandler {
-        abstract JSONStreamAware processRequest(HttpServletRequest request, User user) throws NxtException, IOException;
-        boolean requirePost() {
-            return false;
-        }
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5287180407517490598L;
 
-    private static final boolean enforcePost = Nxt.getBooleanProperty("nxt.uiServerEnforcePOST");
+	abstract static class UserRequestHandler {
+		abstract JSONStreamAware processRequest(HttpServletRequest request, User user) throws NxtException, IOException;
+		boolean requirePost() {
+			return false;
+		}
+	}
 
-    private static final Map<String,UserRequestHandler> userRequestHandlers;
+	private static final boolean enforcePost = Nxt.getBooleanProperty("nxt.uiServerEnforcePOST");
 
-    static {
-        Map<String,UserRequestHandler> map = new HashMap<>();
-        map.put("generateAuthorizationToken", GenerateAuthorizationToken.instance);
-        map.put("getInitialData", GetInitialData.instance);
-        map.put("getNewData", GetNewData.instance);
-        map.put("lockAccount", LockAccount.instance);
-        map.put("removeActivePeer", RemoveActivePeer.instance);
-        map.put("removeBlacklistedPeer", RemoveBlacklistedPeer.instance);
-        map.put("removeKnownPeer", RemoveKnownPeer.instance);
-        map.put("sendMoney", SendMoney.instance);
-        map.put("unlockAccount", UnlockAccount.instance);
-        userRequestHandlers = Collections.unmodifiableMap(map);
-    }
+	private static final Map<String,UserRequestHandler> userRequestHandlers;
 
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        process(req, resp);
-    }
+	static {
+		final Map<String,UserRequestHandler> map = new HashMap<>();
+		map.put("generateAuthorizationToken", GenerateAuthorizationToken.instance);
+		map.put("getInitialData", GetInitialData.instance);
+		map.put("getNewData", GetNewData.instance);
+		map.put("lockAccount", LockAccount.instance);
+		map.put("removeActivePeer", RemoveActivePeer.instance);
+		map.put("removeBlacklistedPeer", RemoveBlacklistedPeer.instance);
+		map.put("removeKnownPeer", RemoveKnownPeer.instance);
+		map.put("sendMoney", SendMoney.instance);
+		map.put("unlockAccount", UnlockAccount.instance);
+		userRequestHandlers = Collections.unmodifiableMap(map);
+	}
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        process(req, resp);
-    }
+	@Override
+	protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+		this.process(req, resp);
+	}
 
-    private void process(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	@Override
+	protected void doPost(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+		this.process(req, resp);
+	}
 
-        resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
-        resp.setHeader("Pragma", "no-cache");
-        resp.setDateHeader("Expires", 0);
+	private void process(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
 
-        User user = null;
+		resp.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, private");
+		resp.setHeader("Pragma", "no-cache");
+		resp.setDateHeader("Expires", 0);
 
-        try {
+		User user = null;
 
-            String userPasscode = req.getParameter("user");
-            if (userPasscode == null) {
-                return;
-            }
-            user = Users.getUser(userPasscode);
+		try {
 
-            if (Users.allowedUserHosts != null && ! Users.allowedUserHosts.contains(req.getRemoteHost())) {
-                user.enqueue(DENY_ACCESS);
-                return;
-            }
+			final String userPasscode = req.getParameter("user");
+			if (userPasscode == null) {
+				return;
+			}
+			user = Users.getUser(userPasscode);
 
-            String requestType = req.getParameter("requestType");
-            if (requestType == null) {
-                user.enqueue(INCORRECT_REQUEST);
-                return;
-            }
+			if ((Users.allowedUserHosts != null) && ! Users.allowedUserHosts.contains(req.getRemoteHost())) {
+				user.enqueue(JSONResponses.DENY_ACCESS);
+				return;
+			}
 
-            UserRequestHandler userRequestHandler = userRequestHandlers.get(requestType);
-            if (userRequestHandler == null) {
-                user.enqueue(INCORRECT_REQUEST);
-                return;
-            }
+			final String requestType = req.getParameter("requestType");
+			if (requestType == null) {
+				user.enqueue(JSONResponses.INCORRECT_REQUEST);
+				return;
+			}
 
-            if (enforcePost && userRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
-                user.enqueue(POST_REQUIRED);
-                return;
-            }
+			final UserRequestHandler userRequestHandler = UserServlet.userRequestHandlers.get(requestType);
+			if (userRequestHandler == null) {
+				user.enqueue(JSONResponses.INCORRECT_REQUEST);
+				return;
+			}
 
-            JSONStreamAware response = userRequestHandler.processRequest(req, user);
-            if (response != null) {
-                user.enqueue(response);
-            }
+			if (UserServlet.enforcePost && userRequestHandler.requirePost() && ! "POST".equals(req.getMethod())) {
+				user.enqueue(JSONResponses.POST_REQUIRED);
+				return;
+			}
 
-        } catch (RuntimeException|NxtException e) {
+			final JSONStreamAware response = userRequestHandler.processRequest(req, user);
+			if (response != null) {
+				user.enqueue(response);
+			}
 
-            Logger.logMessage("Error processing GET request", e);
-            if (user != null) {
-                JSONObject response = new JSONObject();
-                response.put("response", "showMessage");
-                response.put("message", e.toString());
-                user.enqueue(response);
-            }
+		} catch (RuntimeException|NxtException e) {
 
-        } finally {
+			Logger.logMessage("Error processing GET request", e);
+			if (user != null) {
+				final JSONObject response = new JSONObject();
+				response.put("response", "showMessage");
+				response.put("message", e.toString());
+				user.enqueue(response);
+			}
 
-            if (user != null) {
-                user.processPendingResponses(req, resp);
-            }
+		} finally {
 
-        }
+			if (user != null) {
+				user.processPendingResponses(req, resp);
+			}
 
-    }
+		}
+
+	}
 
 }

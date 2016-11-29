@@ -19,7 +19,7 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 
 	static final GetAccountWork instance = new GetAccountWork();
 
-	
+
 
 	private GetAccountWork() {
 		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
@@ -28,45 +28,45 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-		Account account = ParameterParser.getAccount(req);
-	
+		final Account account = ParameterParser.getAccount(req);
+
 		long onlyOneId = 0;
 		try {
-			String readParam = ParameterParser.getParameterMultipart(req, "onlyOneId");
-			BigInteger b = new BigInteger(readParam);
+			final String readParam = ParameterParser.getParameterMultipart(req, "onlyOneId");
+			final BigInteger b = new BigInteger(readParam);
 			onlyOneId = b.longValue();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			onlyOneId = 0;
 		}
-		
-		JSONArray work_packages = new JSONArray();
+
+		final JSONArray work_packages = new JSONArray();
 
 		boolean only_counts = false;
 		try {
-			String readParam = ParameterParser.getParameterMultipart(req, "count");
+			final String readParam = ParameterParser.getParameterMultipart(req, "count");
 			only_counts = Boolean.parseBoolean(readParam);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 		}
 
 		if (only_counts ){
-			JSONObject response = new JSONObject();
+			final JSONObject response = new JSONObject();
 			response.put("open", Work.countAccountWork(account.getId(), true));
 			response.put("total", Work.countAccountWork(account.getId(), false));
 			return response;
 		}else{
-	        int firstIndex = ParameterParser.getFirstIndex(req);
-	        int lastIndex = ParameterParser.getLastIndex(req);
-			
-	        List<Work> work = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId);
-	        for(Work w: work){
-	        	work_packages.add(w.toJsonObject());
-	        }
-	        
-			 
-	        
-			JSONObject response = new JSONObject();
+			final int firstIndex = ParameterParser.getFirstIndex(req);
+			final int lastIndex = ParameterParser.getLastIndex(req);
+
+			final List<Work> work = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId);
+			for(final Work w: work){
+				work_packages.add(w.toJsonObject());
+			}
+
+
+
+			final JSONObject response = new JSONObject();
 			response.put("work_packages", work_packages);
 			return response;
 		}

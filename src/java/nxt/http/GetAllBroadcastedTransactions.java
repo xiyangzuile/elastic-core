@@ -27,32 +27,32 @@ import nxt.Transaction;
 
 public final class GetAllBroadcastedTransactions extends APIServlet.APIRequestHandler {
 
-    static final GetAllBroadcastedTransactions instance = new GetAllBroadcastedTransactions();
+	static final GetAllBroadcastedTransactions instance = new GetAllBroadcastedTransactions();
 
-    private GetAllBroadcastedTransactions() {
-        super(new APITag[] {APITag.DEBUG});
-    }
+	private GetAllBroadcastedTransactions() {
+		super(new APITag[] {APITag.DEBUG});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        response.put("transactions", jsonArray);
-        Transaction[] transactions = Nxt.getTransactionProcessor().getAllBroadcastedTransactions();
-        for (Transaction transaction : transactions) {
-            jsonArray.add(JSONData.unconfirmedTransaction(transaction));
-        }
-        return response;
-    }
-    
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		final JSONArray jsonArray = new JSONArray();
+		response.put("transactions", jsonArray);
+		final Transaction[] transactions = Nxt.getTransactionProcessor().getAllBroadcastedTransactions();
+		for (final Transaction transaction : transactions) {
+			jsonArray.add(JSONData.unconfirmedTransaction(transaction));
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
+
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
 }

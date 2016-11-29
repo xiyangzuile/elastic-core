@@ -25,42 +25,42 @@ import nxt.Nxt;
 
 public final class RequeueUnconfirmedTransactions extends APIServlet.APIRequestHandler {
 
-    static final RequeueUnconfirmedTransactions instance = new RequeueUnconfirmedTransactions();
+	static final RequeueUnconfirmedTransactions instance = new RequeueUnconfirmedTransactions();
 
-    private RequeueUnconfirmedTransactions() {
-        super(new APITag[] {APITag.DEBUG});
-    }
+	private RequeueUnconfirmedTransactions() {
+		super(new APITag[] {APITag.DEBUG});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        try {
-            Nxt.getTransactionProcessor().requeueAllUnconfirmedTransactions();
-            response.put("done", true);
-        } catch (RuntimeException e) {
-            JSONData.putException(response, e);
-        }
-        return response;
-    }
+	@Override
+	protected final boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		try {
+			Nxt.getTransactionProcessor().requeueAllUnconfirmedTransactions();
+			response.put("done", true);
+		} catch (final RuntimeException e) {
+			JSONData.putException(response, e);
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected final boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

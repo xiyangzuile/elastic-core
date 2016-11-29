@@ -21,18 +21,18 @@ import java.net.URI;
 
 public class CommandLineMode implements RuntimeMode {
 
-    @Override
-    public void init() {}
+	@Override
+	public void alert(final String message) {}
 
-    @Override
-    public void setServerStatus(ServerStatus status, URI wallet, File logFileDir) {}
+	@Override
+	public void init() {}
 
-    @Override
-    public void launchDesktopApplication() {}
+	@Override
+	public void launchDesktopApplication() {}
 
-    @Override
-    public void shutdown() {}
+	@Override
+	public void setServerStatus(final ServerStatus status, final URI wallet, final File logFileDir) {}
 
-    @Override
-    public void alert(String message) {}
+	@Override
+	public void shutdown() {}
 }

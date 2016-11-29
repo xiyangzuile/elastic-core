@@ -64,54 +64,54 @@ import nxt.NxtException;
  */
 public final class GetNextBlockGeneratorsTemp extends APIServlet.APIRequestHandler {
 
-    static final GetNextBlockGeneratorsTemp instance = new GetNextBlockGeneratorsTemp();
+	static final GetNextBlockGeneratorsTemp instance = new GetNextBlockGeneratorsTemp();
 
-    private GetNextBlockGeneratorsTemp() {
-        super(new APITag[] {APITag.FORGING}, "limit");
-    }
+	private GetNextBlockGeneratorsTemp() {
+		super(new APITag[] {APITag.FORGING}, "limit");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        JSONObject response = new JSONObject();
-        int limit = Math.max(1, ParameterParser.getInt(req, "limit", 1, Integer.MAX_VALUE, false));
-        Blockchain blockchain = Nxt.getBlockchain();
-        blockchain.readLock();
-        try {
-            Block lastBlock = blockchain.getLastBlock();
-            response.put("timestamp", lastBlock.getTimestamp());
-            response.put("height", lastBlock.getHeight());
-            response.put("lastBlock", Long.toUnsignedString(lastBlock.getId()));
-            List<Generator.ActiveGenerator> activeGenerators = Generator.getNextGenerators();
-            response.put("activeCount", activeGenerators.size());
-            JSONArray generators = new JSONArray();
-            for (Generator.ActiveGenerator generator : activeGenerators) {
-                if (generator.getHitTime() > Integer.MAX_VALUE) {
-                    break;
-                }
-                JSONObject resp = new JSONObject();
-                JSONData.putAccount(resp, "account", generator.getAccountId());
-                resp.put("effectiveBalanceNXT", generator.getEffectiveBalance());
-                resp.put("hitTime", generator.getHitTime());
-                resp.put("deadline", (int)generator.getHitTime() - lastBlock.getTimestamp());
-                generators.add(resp);
-                if (generators.size() == limit) {
-                    break;
-                }
-            }
-            response.put("generators", generators);
-        } finally {
-            blockchain.readUnlock();
-        }
-        return response;
-    }
+	/**
+	 * No required block parameters
+	 *
+	 * @return                      FALSE to disable the required block parameters
+	 */
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    /**
-     * No required block parameters
-     *
-     * @return                      FALSE to disable the required block parameters
-     */
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		final JSONObject response = new JSONObject();
+		final int limit = Math.max(1, ParameterParser.getInt(req, "limit", 1, Integer.MAX_VALUE, false));
+		final Blockchain blockchain = Nxt.getBlockchain();
+		blockchain.readLock();
+		try {
+			final Block lastBlock = blockchain.getLastBlock();
+			response.put("timestamp", lastBlock.getTimestamp());
+			response.put("height", lastBlock.getHeight());
+			response.put("lastBlock", Long.toUnsignedString(lastBlock.getId()));
+			final List<Generator.ActiveGenerator> activeGenerators = Generator.getNextGenerators();
+			response.put("activeCount", activeGenerators.size());
+			final JSONArray generators = new JSONArray();
+			for (final Generator.ActiveGenerator generator : activeGenerators) {
+				if (generator.getHitTime() > Integer.MAX_VALUE) {
+					break;
+				}
+				final JSONObject resp = new JSONObject();
+				JSONData.putAccount(resp, "account", generator.getAccountId());
+				resp.put("effectiveBalanceNXT", generator.getEffectiveBalance());
+				resp.put("hitTime", generator.getHitTime());
+				resp.put("deadline", (int)generator.getHitTime() - lastBlock.getTimestamp());
+				generators.add(resp);
+				if (generators.size() == limit) {
+					break;
+				}
+			}
+			response.put("generators", generators);
+		} finally {
+			blockchain.readUnlock();
+		}
+		return response;
+	}
 }

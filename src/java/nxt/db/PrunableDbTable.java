@@ -26,37 +26,37 @@ import nxt.util.Logger;
 
 public abstract class PrunableDbTable<T> extends PersistentDbTable<T> {
 
-    protected PrunableDbTable(String table, DbKey.Factory<T> dbKeyFactory) {
-        super(table, dbKeyFactory);
-    }
+	protected PrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+		super(table, dbKeyFactory);
+	}
 
-    protected PrunableDbTable(String table, DbKey.Factory<T> dbKeyFactory, String fullTextSearchColumns) {
-        super(table, dbKeyFactory, fullTextSearchColumns);
-    }
+	PrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final boolean multiversion, final String fullTextSearchColumns) {
+		super(table, dbKeyFactory, multiversion, fullTextSearchColumns);
+	}
 
-    PrunableDbTable(String table, DbKey.Factory<T> dbKeyFactory, boolean multiversion, String fullTextSearchColumns) {
-        super(table, dbKeyFactory, multiversion, fullTextSearchColumns);
-    }
+	protected PrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final String fullTextSearchColumns) {
+		super(table, dbKeyFactory, fullTextSearchColumns);
+	}
 
-    @Override
-    public final void trim(int height) {
-        prune();
-        super.trim(height);
-    }
+	protected void prune() {
+		if (Constants.ENABLE_PRUNING) {
+			try (Connection con = DerivedDbTable.db.getConnection();
+					PreparedStatement pstmt = con.prepareStatement("DELETE FROM " + this.table + " WHERE transaction_timestamp < ?")) {
+				pstmt.setInt(1, Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME);
+				final int deleted = pstmt.executeUpdate();
+				if (deleted > 0) {
+					Logger.logDebugMessage("Deleted " + deleted + " expired prunable data from " + this.table);
+				}
+			} catch (final SQLException e) {
+				throw new RuntimeException(e.toString(), e);
+			}
+		}
+	}
 
-    protected void prune() {
-        if (Constants.ENABLE_PRUNING) {
-            try (Connection con = db.getConnection();
-                 PreparedStatement pstmt = con.prepareStatement("DELETE FROM " + table + " WHERE transaction_timestamp < ?")) {
-                pstmt.setInt(1, Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME);
-                int deleted = pstmt.executeUpdate();
-                if (deleted > 0) {
-                    Logger.logDebugMessage("Deleted " + deleted + " expired prunable data from " + table);
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e.toString(), e);
-            }
-        }
-    }
+	@Override
+	public final void trim(final int height) {
+		this.prune();
+		super.trim(height);
+	}
 
 }

@@ -22,32 +22,32 @@ import java.util.Properties;
 
 public class DefaultDirProvider implements DirProvider {
 
-    @Override
-    public boolean isLoadPropertyFileFromUserDir() {
-        return true;
-    }
+	@Override
+	public File getConfDir() {
+		return new File(this.getUserHomeDir(), "conf");
+	}
 
-    @Override
-    public void updateLogFileHandler(Properties loggingProperties) {}
+	@Override
+	public String getDbDir(final String dbDir) {
+		return dbDir;
+	}
 
-    @Override
-    public String getDbDir(String dbDir) {
-        return dbDir;
-    }
+	@Override
+	public File getLogFileDir() {
+		return new File(this.getUserHomeDir(), "logs");
+	}
 
-    @Override
-    public File getLogFileDir() {
-        return new File(getUserHomeDir(), "logs");
-    }
+	@Override
+	public String getUserHomeDir() {
+		return Paths.get(".").toAbsolutePath().getParent().toString();
+	}
 
-    @Override
-    public File getConfDir() {
-        return new File(getUserHomeDir(), "conf");
-    }
+	@Override
+	public boolean isLoadPropertyFileFromUserDir() {
+		return true;
+	}
 
-    @Override
-    public String getUserHomeDir() {
-        return Paths.get(".").toAbsolutePath().getParent().toString();
-    }
+	@Override
+	public void updateLogFileHandler(final Properties loggingProperties) {}
 
 }

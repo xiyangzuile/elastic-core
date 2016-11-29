@@ -32,38 +32,38 @@ import nxt.Nxt;
  */
 public class RetrievePrunedData extends APIServlet.APIRequestHandler {
 
-    static final RetrievePrunedData instance = new RetrievePrunedData();
+	static final RetrievePrunedData instance = new RetrievePrunedData();
 
-    private RetrievePrunedData() {
-        super(new APITag[] {APITag.DEBUG});
-    }
+	private RetrievePrunedData() {
+		super(new APITag[] {APITag.DEBUG});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        try {
-            int count = Nxt.getBlockchainProcessor().restorePrunedData();
-            response.put("done", true);
-            response.put("numberOfPrunedData", count);
-        } catch (RuntimeException e) {
-            JSONData.putException(response, e);
-        }
-        return response;
-    }
+	@Override
+	protected final boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		try {
+			final int count = Nxt.getBlockchainProcessor().restorePrunedData();
+			response.put("done", true);
+			response.put("numberOfPrunedData", count);
+		} catch (final RuntimeException e) {
+			JSONData.putException(response, e);
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected final boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

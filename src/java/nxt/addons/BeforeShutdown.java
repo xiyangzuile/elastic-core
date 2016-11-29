@@ -21,17 +21,17 @@ import nxt.util.Logger;
 
 public final class BeforeShutdown implements AddOn {
 
-    final String beforeShutdownScript = Nxt.getStringProperty("nxt.beforeShutdownScript");
+	final String beforeShutdownScript = Nxt.getStringProperty("nxt.beforeShutdownScript");
 
-    @Override
-    public void shutdown() {
-        if (beforeShutdownScript != null) {
-            try {
-                Runtime.getRuntime().exec(beforeShutdownScript);
-            } catch (Exception e) {
-                Logger.logShutdownMessage("Failed to run after start script: " + beforeShutdownScript, e);
-            }
-        }
-    }
+	@Override
+	public void shutdown() {
+		if (this.beforeShutdownScript != null) {
+			try {
+				Runtime.getRuntime().exec(this.beforeShutdownScript);
+			} catch (final Exception e) {
+				Logger.logShutdownMessage("Failed to run after start script: " + this.beforeShutdownScript, e);
+			}
+		}
+	}
 
 }

@@ -14,67 +14,67 @@ import elastic.pl.interpreter.RuntimeEstimator;
 
 
 public class Executioner{
-	
+
 	private static final Object LOCK = new Object();
-	
 
 
-	public static void checkSyntax(byte[] code) throws ParseException {
-		synchronized(LOCK){
-			InputStream stream = new ByteArrayInputStream(code);
-			ElasticPLParser parser = new ElasticPLParser(stream);
+
+	public static void checkSyntax(final byte[] code) throws ParseException {
+		synchronized(Executioner.LOCK){
+			final InputStream stream = new ByteArrayInputStream(code);
+			final ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
-			ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
+			final ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
 			rootNode.reset();
-			boolean stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
+			final boolean stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
 			if(stackExceeded){
 				throw new ParseException("AST tree secursion too high");
-			}		
-			
-			long WCET = RuntimeEstimator.worstWeight(rootNode);
-			
+			}
+
+			final long WCET = RuntimeEstimator.worstWeight(rootNode);
+
 			if(WCET>Constants.MAX_WORK_WCET_TIME){
 				throw new ParseException("WCET too high");
 			}
-				
+
 			rootNode.reset();
 		}
 	}
 
-	public static boolean executeBountyHooks(byte[] code, int inputs[]) throws ParseException {
-		synchronized(LOCK){
-			InputStream stream = new ByteArrayInputStream(code);
-			ElasticPLParser parser = new ElasticPLParser(stream);
+	public static boolean executeBountyHooks(final byte[] code, final int inputs[]) throws ParseException {
+		synchronized(Executioner.LOCK){
+			final InputStream stream = new ByteArrayInputStream(code);
+			final ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
-			
+
 			((ASTCompilationUnit) parser.rootNode()).reset();
 			((ASTCompilationUnit) parser.rootNode()).fillGivenIntNumber(inputs);
 			((ASTCompilationUnit) parser.rootNode()).interpret();
-			
-			
-			boolean verifyB = ((ASTCompilationUnit) parser.rootNode()).verifyBounty();
-			
+
+
+			final boolean verifyB = ((ASTCompilationUnit) parser.rootNode()).verifyBounty();
+
 			((ASTCompilationUnit) parser.rootNode()).reset();
 			return verifyB;
 		}
 	}
 
-	public static ASTCompilationUnit.POW_CHECK_RESULT executeProofOfWork(byte[] code, int inputs[], BigInteger target_pow, BigInteger soft_unblock_pow) throws ParseException{
-		synchronized(LOCK){
-			InputStream stream = new ByteArrayInputStream(code);
-			ElasticPLParser parser = new ElasticPLParser(stream);
+	public static ASTCompilationUnit.POW_CHECK_RESULT executeProofOfWork(final byte[] code, final int inputs[], final BigInteger target_pow, final BigInteger soft_unblock_pow) throws ParseException{
+		synchronized(Executioner.LOCK){
+			final InputStream stream = new ByteArrayInputStream(code);
+			final ElasticPLParser parser = new ElasticPLParser(stream);
 			parser.CompilationUnit();
-			
+
 			((ASTCompilationUnit) parser.rootNode()).reset();
 			((ASTCompilationUnit) parser.rootNode()).fillGivenIntNumber(inputs);
 			((ASTCompilationUnit) parser.rootNode()).interpret();
-			
-			ASTCompilationUnit.POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
-			
+
+			final ASTCompilationUnit.POW_CHECK_RESULT verifyPow = ((ASTCompilationUnit) parser.rootNode()).verifyPOW(target_pow, soft_unblock_pow);
+
 			((ASTCompilationUnit) parser.rootNode()).reset();
 			return verifyPow;
 		}
 	}
 
-	
+
 }

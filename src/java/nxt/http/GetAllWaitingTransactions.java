@@ -27,27 +27,27 @@ import nxt.Transaction;
 
 public final class GetAllWaitingTransactions extends APIServlet.APIRequestHandler {
 
-    static final GetAllWaitingTransactions instance = new GetAllWaitingTransactions();
+	static final GetAllWaitingTransactions instance = new GetAllWaitingTransactions();
 
-    private GetAllWaitingTransactions() {
-        super(new APITag[] {APITag.DEBUG});
-    }
+	private GetAllWaitingTransactions() {
+		super(new APITag[] {APITag.DEBUG});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        response.put("transactions", jsonArray);
-        Transaction[] transactions = Nxt.getTransactionProcessor().getAllWaitingTransactions();
-        for (Transaction transaction : transactions) {
-            jsonArray.add(JSONData.unconfirmedTransaction(transaction));
-        }
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		final JSONArray jsonArray = new JSONArray();
+		response.put("transactions", jsonArray);
+		final Transaction[] transactions = Nxt.getTransactionProcessor().getAllWaitingTransactions();
+		for (final Transaction transaction : transactions) {
+			jsonArray.add(JSONData.unconfirmedTransaction(transaction));
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

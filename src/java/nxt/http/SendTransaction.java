@@ -55,51 +55,51 @@ import nxt.util.Convert;
  */
 public final class SendTransaction extends APIServlet.APIRequestHandler {
 
-    static final SendTransaction instance = new SendTransaction();
+	static final SendTransaction instance = new SendTransaction();
 
-    private SendTransaction() {
-        super(new APITag[] {APITag.TRANSACTIONS}, "transactionJSON", "transactionBytes", "prunableAttachmentJSON");
-    }
+	private SendTransaction() {
+		super(new APITag[] {APITag.TRANSACTIONS}, "transactionJSON", "transactionBytes", "prunableAttachmentJSON");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected final boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String transactionJSON = Convert.emptyToNull(req.getParameter("transactionJSON"));
-        String transactionBytes = Convert.emptyToNull(req.getParameter("transactionBytes"));
-        String prunableAttachmentJSON = Convert.emptyToNull(req.getParameter("prunableAttachmentJSON"));
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        JSONObject response = new JSONObject();
-        try {
-            Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
-            Transaction transaction = builder.build();
-            Peers.sendToSomePeers(Collections.singletonList(transaction));
-            response.put("transaction", transaction.getStringId());
-            response.put("fullHash", transaction.getFullHash());
-        } catch (NxtException.ValidationException|RuntimeException e) {
-            JSONData.putException(response, e, "Failed to broadcast transaction");
-        }
-        return response;
+		final String transactionJSON = Convert.emptyToNull(req.getParameter("transactionJSON"));
+		final String transactionBytes = Convert.emptyToNull(req.getParameter("transactionBytes"));
+		final String prunableAttachmentJSON = Convert.emptyToNull(req.getParameter("prunableAttachmentJSON"));
 
-    }
+		final JSONObject response = new JSONObject();
+		try {
+			final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
+			final Transaction transaction = builder.build();
+			Peers.sendToSomePeers(Collections.singletonList(transaction));
+			response.put("transaction", transaction.getStringId());
+			response.put("fullHash", transaction.getFullHash());
+		} catch (NxtException.ValidationException|RuntimeException e) {
+			JSONData.putException(response, e, "Failed to broadcast transaction");
+		}
+		return response;
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected final boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

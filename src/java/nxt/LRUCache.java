@@ -3,85 +3,87 @@ package nxt;
 import java.math.BigInteger;
 import java.util.HashMap;
 
-class Node{
-    long key;
-    BigInteger value;
-    Node pre;
-    Node next;
- 
-    public Node(long key, BigInteger value){
-        this.key = key;
-        this.value = value;
-    }
+public class LRUCache {
+	int capacity;
+	HashMap<Long, Node> map = new HashMap<>();
+	Node head=null;
+	Node end=null;
+
+	public LRUCache(final int capacity) {
+		this.capacity = capacity;
+	}
+
+	public BigInteger get(final long key) {
+		if(this.map.containsKey(key)){
+			final Node n = this.map.get(key);
+			this.remove(n);
+			this.setHead(n);
+			return n.value;
+		}
+
+		return null;
+	}
+
+	public void remove(final Node n){
+		if(n.pre!=null){
+			n.pre.next = n.next;
+		}else{
+			this.head = n.next;
+		}
+
+		if(n.next!=null){
+			n.next.pre = n.pre;
+		}else{
+			this.end = n.pre;
+		}
+
+	}
+
+	public void set(final long key, final BigInteger value) {
+		if(this.map.containsKey(key)){
+			final Node old = this.map.get(key);
+			old.value = value;
+			this.remove(old);
+			this.setHead(old);
+		}else{
+			final Node created = new Node(key, value);
+			if(this.map.size()>=this.capacity){
+				this.map.remove(this.end.key);
+				this.remove(this.end);
+				this.setHead(created);
+
+			}else{
+				this.setHead(created);
+			}
+
+			this.map.put(key, created);
+		}
+	}
+
+	public void setHead(final Node n){
+		n.next = this.head;
+		n.pre = null;
+
+		if(this.head!=null) {
+			this.head.pre = n;
+		}
+
+		this.head = n;
+
+		if(this.end ==null) {
+			this.end = this.head;
+		}
+	}
 }
 
-public class LRUCache {
-    int capacity;
-    HashMap<Long, Node> map = new HashMap<Long, Node>();
-    Node head=null;
-    Node end=null;
- 
-    public LRUCache(int capacity) {
-        this.capacity = capacity;
-    }
- 
-    public BigInteger get(long key) {
-        if(map.containsKey(key)){
-            Node n = map.get(key);
-            remove(n);
-            setHead(n);
-            return n.value;
-        }
- 
-        return null;
-    }
- 
-    public void remove(Node n){
-        if(n.pre!=null){
-            n.pre.next = n.next;
-        }else{
-            head = n.next;
-        }
- 
-        if(n.next!=null){
-            n.next.pre = n.pre;
-        }else{
-            end = n.pre;
-        }
- 
-    }
- 
-    public void setHead(Node n){
-        n.next = head;
-        n.pre = null;
- 
-        if(head!=null)
-            head.pre = n;
- 
-        head = n;
- 
-        if(end ==null)
-            end = head;
-    }
- 
-    public void set(long key, BigInteger value) {
-        if(map.containsKey(key)){
-            Node old = map.get(key);
-            old.value = value;
-            remove(old);
-            setHead(old);
-        }else{
-            Node created = new Node(key, value);
-            if(map.size()>=capacity){
-                map.remove(end.key);
-                remove(end);
-                setHead(created);
- 
-            }else{
-                setHead(created);
-            }    
- 
-            map.put(key, created);
-        }
-    }
+class Node{
+	long key;
+	BigInteger value;
+	Node pre;
+	Node next;
+
+	public Node(final long key, final BigInteger value){
+		this.key = key;
+		this.value = value;
+	}
 }

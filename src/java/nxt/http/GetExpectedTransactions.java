@@ -33,27 +33,27 @@ import nxt.util.Filter;
 
 public final class GetExpectedTransactions extends APIServlet.APIRequestHandler {
 
-    static final GetExpectedTransactions instance = new GetExpectedTransactions();
+	static final GetExpectedTransactions instance = new GetExpectedTransactions();
 
-    private GetExpectedTransactions() {
-        super(new APITag[] {APITag.TRANSACTIONS}, "account", "account", "account");
-    }
+	private GetExpectedTransactions() {
+		super(new APITag[] {APITag.TRANSACTIONS}, "account", "account", "account");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
-        Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
-                transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
+		final Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
+		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
+			transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
 
-        List<? extends Transaction> transactions = Nxt.getBlockchain().getExpectedTransactions(filter);
+			final List<? extends Transaction> transactions = Nxt.getBlockchain().getExpectedTransactions(filter);
 
-        JSONObject response = new JSONObject();
-        JSONArray jsonArray = new JSONArray();
-        transactions.forEach(transaction -> jsonArray.add(JSONData.unconfirmedTransaction(transaction)));
-        response.put("expectedTransactions", jsonArray);
+			final JSONObject response = new JSONObject();
+			final JSONArray jsonArray = new JSONArray();
+			transactions.forEach(transaction -> jsonArray.add(JSONData.unconfirmedTransaction(transaction)));
+			response.put("expectedTransactions", jsonArray);
 
-        return response;
-    }
+			return response;
+	}
 
 }

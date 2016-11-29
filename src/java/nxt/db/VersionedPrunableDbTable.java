@@ -22,31 +22,31 @@ import java.sql.SQLException;
 
 public abstract class VersionedPrunableDbTable<T> extends PrunableDbTable<T> {
 
-    protected VersionedPrunableDbTable(String table, DbKey.Factory<T> dbKeyFactory) {
-        super(table, dbKeyFactory, true, null);
-    }
+	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+		super(table, dbKeyFactory, true, null);
+	}
 
-    protected VersionedPrunableDbTable(String table, DbKey.Factory<T> dbKeyFactory, String fullTextSearchColumns) {
-        super(table, dbKeyFactory, true, fullTextSearchColumns);
-    }
+	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final String fullTextSearchColumns) {
+		super(table, dbKeyFactory, true, fullTextSearchColumns);
+	}
 
-    public final boolean delete(T t) {
-        throw new UnsupportedOperationException("Versioned prunable tables cannot support delete");
-    }
+	public final boolean delete(final T t) {
+		throw new UnsupportedOperationException("Versioned prunable tables cannot support delete");
+	}
 
-    @Override
-    public final void rollback(int height) {
-        if (!db.isInTransaction()) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        try (Connection con = db.getConnection();
-             PreparedStatement pstmtSetLatest = con.prepareStatement("UPDATE " + table
-                     + " AS a SET a.latest = TRUE WHERE a.latest = FALSE AND a.height = "
-                     + " (SELECT MAX(height) FROM " + table + " AS b WHERE " + dbKeyFactory.getSelfJoinClause() + ")")) {
-            pstmtSetLatest.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	@Override
+	public final void rollback(final int height) {
+		if (!DerivedDbTable.db.isInTransaction()) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		try (Connection con = DerivedDbTable.db.getConnection();
+				PreparedStatement pstmtSetLatest = con.prepareStatement("UPDATE " + this.table
+						+ " AS a SET a.latest = TRUE WHERE a.latest = FALSE AND a.height = "
+						+ " (SELECT MAX(height) FROM " + this.table + " AS b WHERE " + this.dbKeyFactory.getSelfJoinClause() + ")")) {
+			pstmtSetLatest.executeUpdate();
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
 }

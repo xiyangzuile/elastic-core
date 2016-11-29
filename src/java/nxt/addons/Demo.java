@@ -24,17 +24,17 @@ import nxt.util.Logger;
 
 public final class Demo implements AddOn {
 
-    @Override
-    public void init() {
-        Nxt.getBlockchainProcessor().addListener(block -> Logger.logInfoMessage("Block " + block.getStringId()
-                + " has been forged by account " + Convert.rsAccount(block.getGeneratorId()) + " having effective balance of "
-                + Account.getAccount(block.getGeneratorId()).getEffectiveBalanceNXT()),
-                BlockchainProcessor.Event.BEFORE_BLOCK_APPLY);
-    }
+	@Override
+	public void init() {
+		Nxt.getBlockchainProcessor().addListener(block -> Logger.logInfoMessage("Block " + block.getStringId()
+		+ " has been forged by account " + Convert.rsAccount(block.getGeneratorId()) + " having effective balance of "
+		+ Account.getAccount(block.getGeneratorId()).getEffectiveBalanceNXT()),
+				BlockchainProcessor.Event.BEFORE_BLOCK_APPLY);
+	}
 
-    @Override
-    public void shutdown() {
-        Logger.logInfoMessage("Goodbye!");
-    }
+	@Override
+	public void shutdown() {
+		Logger.logInfoMessage("Goodbye!");
+	}
 
 }

@@ -27,26 +27,26 @@ import nxt.NxtException;
 
 public final class GetGuaranteedBalance extends APIServlet.APIRequestHandler {
 
-    static final GetGuaranteedBalance instance = new GetGuaranteedBalance();
+	static final GetGuaranteedBalance instance = new GetGuaranteedBalance();
 
-    private GetGuaranteedBalance() {
-        super(new APITag[] {APITag.ACCOUNTS, APITag.FORGING}, "account", "numberOfConfirmations");
-    }
+	private GetGuaranteedBalance() {
+		super(new APITag[] {APITag.ACCOUNTS, APITag.FORGING}, "account", "numberOfConfirmations");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        Account account = ParameterParser.getAccount(req);
-        int numberOfConfirmations = ParameterParser.getNumberOfConfirmations(req);
+		final Account account = ParameterParser.getAccount(req);
+		final int numberOfConfirmations = ParameterParser.getNumberOfConfirmations(req);
 
-        JSONObject response = new JSONObject();
-        if (account == null) {
-            response.put("guaranteedBalanceNQT", "0");
-        } else {
-            response.put("guaranteedBalanceNQT", String.valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
-        }
+		final JSONObject response = new JSONObject();
+		if (account == null) {
+			response.put("guaranteedBalanceNQT", "0");
+		} else {
+			response.put("guaranteedBalanceNQT", String.valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
+		}
 
-        return response;
-    }
+		return response;
+	}
 
 }

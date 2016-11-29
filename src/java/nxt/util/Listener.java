@@ -18,6 +18,6 @@ package nxt.util;
 
 public interface Listener<T> {
 
-    void notify(T t);
+	void notify(T t);
 
 }

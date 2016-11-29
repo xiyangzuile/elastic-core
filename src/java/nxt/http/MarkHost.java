@@ -16,13 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_DATE;
-import static nxt.http.JSONResponses.INCORRECT_HOST;
-import static nxt.http.JSONResponses.INCORRECT_WEIGHT;
-import static nxt.http.JSONResponses.MISSING_DATE;
-import static nxt.http.JSONResponses.MISSING_HOST;
-import static nxt.http.JSONResponses.MISSING_WEIGHT;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -35,68 +28,68 @@ import nxt.util.Convert;
 
 public final class MarkHost extends APIServlet.APIRequestHandler {
 
-    static final MarkHost instance = new MarkHost();
+	static final MarkHost instance = new MarkHost();
 
-    private MarkHost() {
-        super(new APITag[] {APITag.TOKENS}, "secretPhrase", "host", "weight", "date");
-    }
+	private MarkHost() {
+		super(new APITag[] {APITag.TOKENS}, "secretPhrase", "host", "weight", "date");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-        String host = Convert.emptyToNull(req.getParameter("host"));
-        String weightValue = Convert.emptyToNull(req.getParameter("weight"));
-        String dateValue = Convert.emptyToNull(req.getParameter("date"));
-        if (host == null) {
-            return MISSING_HOST;
-        } else if (weightValue == null) {
-            return MISSING_WEIGHT;
-        } else if (dateValue == null) {
-            return MISSING_DATE;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        if (host.length() > 100) {
-            return INCORRECT_HOST;
-        }
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
+		final String host = Convert.emptyToNull(req.getParameter("host"));
+		final String weightValue = Convert.emptyToNull(req.getParameter("weight"));
+		final String dateValue = Convert.emptyToNull(req.getParameter("date"));
+		if (host == null) {
+			return JSONResponses.MISSING_HOST;
+		} else if (weightValue == null) {
+			return JSONResponses.MISSING_WEIGHT;
+		} else if (dateValue == null) {
+			return JSONResponses.MISSING_DATE;
+		}
 
-        int weight;
-        try {
-            weight = Integer.parseInt(weightValue);
-            if (weight <= 0 || weight > Constants.MAX_BALANCE_NXT) {
-                return INCORRECT_WEIGHT;
-            }
-        } catch (NumberFormatException e) {
-            return INCORRECT_WEIGHT;
-        }
+		if (host.length() > 100) {
+			return JSONResponses.INCORRECT_HOST;
+		}
 
-        try {
+		int weight;
+		try {
+			weight = Integer.parseInt(weightValue);
+			if ((weight <= 0) || (weight > Constants.MAX_BALANCE_NXT)) {
+				return JSONResponses.INCORRECT_WEIGHT;
+			}
+		} catch (final NumberFormatException e) {
+			return JSONResponses.INCORRECT_WEIGHT;
+		}
 
-            String hallmark = Hallmark.generateHallmark(secretPhrase, host, weight, Hallmark.parseDate(dateValue));
+		try {
 
-            JSONObject response = new JSONObject();
-            response.put("hallmark", hallmark);
-            return response;
+			final String hallmark = Hallmark.generateHallmark(secretPhrase, host, weight, Hallmark.parseDate(dateValue));
 
-        } catch (RuntimeException e) {
-            return INCORRECT_DATE;
-        }
+			final JSONObject response = new JSONObject();
+			response.put("hallmark", hallmark);
+			return response;
 
-    }
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_DATE;
+		}
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

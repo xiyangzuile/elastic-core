@@ -25,107 +25,107 @@ import nxt.http.APIEnum;
 
 public interface Peer extends Comparable<Peer> {
 
-    enum State {
-        NON_CONNECTED, CONNECTED, DISCONNECTED
-    }
+	enum BlockchainState {
+		UP_TO_DATE,
+		DOWNLOADING,
+		LIGHT_CLIENT,
+		FORK
+	}
 
-    enum Service {
-        HALLMARK(1),                    // Hallmarked node
-        PRUNABLE(2),                    // Stores expired prunable messages
-        API(4),                         // Provides open API access over http
-        API_SSL(8),                     // Provides open API access over https
-        CORS(16);                       // API CORS enabled
+	enum Service {
+		HALLMARK(1),                    // Hallmarked node
+		PRUNABLE(2),                    // Stores expired prunable messages
+		API(4),                         // Provides open API access over http
+		API_SSL(8),                     // Provides open API access over https
+		CORS(16);                       // API CORS enabled
 
-        private final long code;        // Service code - must be a power of 2
+		private final long code;        // Service code - must be a power of 2
 
-        Service(int code) {
-            this.code = code;
-        }
+		Service(final int code) {
+			this.code = code;
+		}
 
-        public long getCode() {
-            return code;
-        }
-    }
+		public long getCode() {
+			return this.code;
+		}
+	}
 
-    enum BlockchainState {
-        UP_TO_DATE,
-        DOWNLOADING,
-        LIGHT_CLIENT,
-        FORK
-    }
+	enum State {
+		NON_CONNECTED, CONNECTED, DISCONNECTED
+	}
 
-    boolean providesService(Service service);
+	void blacklist(Exception cause);
 
-    boolean providesServices(long services);
+	void blacklist(String cause);
 
-    String getHost();
+	void deactivate();
 
-    int getPort();
+	String getAnnouncedAddress();
 
-    String getAnnouncedAddress();
+	int getApiPort();
 
-    State getState();
+	int getApiServerIdleTimeout();
 
-    String getVersion();
+	int getApiSSLPort();
 
-    String getApplication();
+	String getApplication();
 
-    String getPlatform();
+	String getBlacklistingCause();
 
-    String getSoftware();
+	BlockchainState getBlockchainState();
 
-    int getApiPort();
+	Set<APIEnum> getDisabledAPIs();
 
-    int getApiSSLPort();
+	long getDownloadedVolume();
 
-    Set<APIEnum> getDisabledAPIs();
+	Hallmark getHallmark();
 
-    int getApiServerIdleTimeout();
+	String getHost();
 
-    BlockchainState getBlockchainState();
+	int getLastConnectAttempt();
 
-    Hallmark getHallmark();
+	int getLastUpdated();
 
-    int getWeight();
+	StringBuilder getPeerApiUri();
 
-    boolean shareAddress();
+	String getPlatform();
 
-    boolean isBlacklisted();
+	int getPort();
 
-    void blacklist(Exception cause);
+	String getSoftware();
 
-    void blacklist(String cause);
+	State getState();
 
-    void unBlacklist();
+	long getUploadedVolume();
 
-    void deactivate();
+	String getVersion();
 
-    void remove();
+	int getWeight();
 
-    long getDownloadedVolume();
+	boolean isApiConnectable();
 
-    long getUploadedVolume();
+	boolean isBlacklisted();
 
-    int getLastUpdated();
+	boolean isInbound();
 
-    int getLastConnectAttempt();
+	boolean isInboundWebSocket();
 
-    boolean isInbound();
+	boolean isOpenAPI();
 
-    boolean isInboundWebSocket();
+	boolean isOutboundWebSocket();
 
-    boolean isOutboundWebSocket();
+	boolean providesService(Service service);
 
-    boolean isOpenAPI();
+	boolean providesServices(long services);
 
-    boolean isApiConnectable();
+	void remove();
 
-    StringBuilder getPeerApiUri();
+	JSONObject send(JSONStreamAware request);
 
-    String getBlacklistingCause();
+	JSONObject send(JSONStreamAware request, int maxResponseSize);
 
-    JSONObject send(JSONStreamAware request);
+	boolean shareAddress();
 
-    JSONObject send(JSONStreamAware request, int maxResponseSize);
+	void unBlacklist();
 
 }

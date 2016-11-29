@@ -21,15 +21,15 @@ import java.util.Properties;
 
 public interface DirProvider {
 
-    boolean isLoadPropertyFileFromUserDir();
+	File getConfDir();
 
-    void updateLogFileHandler(Properties loggingProperties);
+	String getDbDir(String dbDir);
 
-    String getDbDir(String dbDir);
+	File getLogFileDir();
 
-    File getLogFileDir();
+	String getUserHomeDir();
 
-    File getConfDir();
+	boolean isLoadPropertyFileFromUserDir();
 
-    String getUserHomeDir();
+	void updateLogFileHandler(Properties loggingProperties);
 }

@@ -25,47 +25,47 @@ import nxt.util.Logger;
 
 public class DesktopMode implements RuntimeMode {
 
-    private DesktopSystemTray desktopSystemTray;
-    private Class desktopApplication;
+	private DesktopSystemTray desktopSystemTray;
+	private Class<?> desktopApplication;
 
-    @Override
-    public void init() {
-        LookAndFeel.init();
-        desktopSystemTray = new DesktopSystemTray();
-        SwingUtilities.invokeLater(desktopSystemTray::createAndShowGUI);
-    }
+	@Override
+	public void alert(final String message) {
+		this.desktopSystemTray.alert(message);
+	}
 
-    @Override
-    public void setServerStatus(ServerStatus status, URI wallet, File logFileDir) {
-        desktopSystemTray.setToolTip(new SystemTrayDataProvider(status.getMessage(), wallet, logFileDir));
-    }
+	@Override
+	public void init() {
+		LookAndFeel.init();
+		this.desktopSystemTray = new DesktopSystemTray();
+		SwingUtilities.invokeLater(this.desktopSystemTray::createAndShowGUI);
+	}
 
-    @Override
-    public void launchDesktopApplication() {
-        Logger.logInfoMessage("Launching desktop wallet");
-        try {
-            desktopApplication = Class.forName("nxtdesktop.DesktopApplication");
-            desktopApplication.getMethod("launch").invoke(null);
-        } catch (ReflectiveOperationException e) {
-            Logger.logInfoMessage("nxtdesktop.DesktopApplication failed to launch", e);
-        }
-    }
+	@Override
+	public void launchDesktopApplication() {
+		Logger.logInfoMessage("Launching desktop wallet");
+		try {
+			this.desktopApplication = Class.forName("nxtdesktop.DesktopApplication");
+			this.desktopApplication.getMethod("launch").invoke(null);
+		} catch (final ReflectiveOperationException e) {
+			Logger.logInfoMessage("nxtdesktop.DesktopApplication failed to launch", e);
+		}
+	}
 
-    @Override
-    public void shutdown() {
-        desktopSystemTray.shutdown();
-        if (desktopApplication == null) {
-            return;
-        }
-        try {
-            desktopApplication.getMethod("shutdown").invoke(null);
-        } catch (ReflectiveOperationException e) {
-            Logger.logInfoMessage("nxtdesktop.DesktopApplication failed to shutdown", e);
-        }
-    }
+	@Override
+	public void setServerStatus(final ServerStatus status, final URI wallet, final File logFileDir) {
+		this.desktopSystemTray.setToolTip(new SystemTrayDataProvider(status.getMessage(), wallet, logFileDir));
+	}
 
-    @Override
-    public void alert(String message) {
-        desktopSystemTray.alert(message);
-    }
+	@Override
+	public void shutdown() {
+		this.desktopSystemTray.shutdown();
+		if (this.desktopApplication == null) {
+			return;
+		}
+		try {
+			this.desktopApplication.getMethod("shutdown").invoke(null);
+		} catch (final ReflectiveOperationException e) {
+			Logger.logInfoMessage("nxtdesktop.DesktopApplication failed to shutdown", e);
+		}
+	}
 }

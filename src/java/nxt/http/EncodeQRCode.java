@@ -63,7 +63,7 @@ import nxt.util.Logger;
  * <p>Notes:</p>
  * <ul>
  * <li>The output image consists of a centrally positioned square QR code
- * with a size which is an integer multiple of the minimum size, surrounded by 
+ * with a size which is an integer multiple of the minimum size, surrounded by
  * sufficient white padding to achieve the requested width/height.</li>
  * <li>The default width/height of 0 results in the minimum sized output
  * image, with one pixel per black/white region of the QR code and no
@@ -82,64 +82,64 @@ import nxt.util.Logger;
 
 public final class EncodeQRCode extends APIServlet.APIRequestHandler {
 
-    static final EncodeQRCode instance = new EncodeQRCode();
+	static final EncodeQRCode instance = new EncodeQRCode();
 
-    private EncodeQRCode() {
-        super(new APITag[] {APITag.UTILS}, "qrCodeData", "width", "height");
-    }
-    
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request)
-            throws NxtException {
-        
-        JSONObject response = new JSONObject();
+	private EncodeQRCode() {
+		super(new APITag[] {APITag.UTILS}, "qrCodeData", "width", "height");
+	}
 
-        String qrCodeData = Convert.nullToEmpty(request.getParameter("qrCodeData"));
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        int width = ParameterParser.getInt(request, "width", 0, 5000, false);
-        int height = ParameterParser.getInt(request, "height", 0, 5000, false);
-        
-        try {
-            Map hints = new HashMap();
-            // Error correction level: L (7%), M (15%), Q (25%), H (30%) -- Default L.
-            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
-            hints.put(EncodeHintType.MARGIN, 0); // Default 4
-            hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request)
+			throws NxtException {
 
-            BitMatrix matrix = new MultiFormatWriter().encode(qrCodeData,
-                    BarcodeFormat.QR_CODE,
-                    width, 
-                    height, 
-                    hints
-            );
-            BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(matrix);
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "jpeg", os);
-            byte[] bytes = os.toByteArray();
-            os.close();
-            String base64 = Base64.getEncoder().encodeToString(bytes);
-            response.put("qrCodeBase64", base64);
-        } catch(WriterException|IOException ex) {
-            String errorMessage = "Error creating image from qrCodeData";
-            Logger.logErrorMessage(errorMessage, ex);
-            JSONData.putException(response, ex, errorMessage);
-        }
-        return response;
-    }
+		final JSONObject response = new JSONObject();
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+		final String qrCodeData = Convert.nullToEmpty(request.getParameter("qrCodeData"));
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final int width = ParameterParser.getInt(request, "width", 0, 5000, false);
+		final int height = ParameterParser.getInt(request, "height", 0, 5000, false);
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+		try {
+			final Map hints = new HashMap();
+			// Error correction level: L (7%), M (15%), Q (25%), H (30%) -- Default L.
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+			hints.put(EncodeHintType.MARGIN, 0); // Default 4
+			hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+
+			final BitMatrix matrix = new MultiFormatWriter().encode(qrCodeData,
+					BarcodeFormat.QR_CODE,
+					width,
+					height,
+					hints
+					);
+			final BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(matrix);
+			final ByteArrayOutputStream os = new ByteArrayOutputStream();
+			ImageIO.write(bufferedImage, "jpeg", os);
+			final byte[] bytes = os.toByteArray();
+			os.close();
+			final String base64 = Base64.getEncoder().encodeToString(bytes);
+			response.put("qrCodeBase64", base64);
+		} catch(WriterException|IOException ex) {
+			final String errorMessage = "Error creating image from qrCodeData";
+			Logger.logErrorMessage(errorMessage, ex);
+			JSONData.putException(response, ex, errorMessage);
+		}
+		return response;
+	}
+
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
+
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

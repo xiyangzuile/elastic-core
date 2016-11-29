@@ -25,18 +25,18 @@ import nxt.NxtException;
 
 public final class SendMoney extends CreateTransaction {
 
-    static final SendMoney instance = new SendMoney();
+	static final SendMoney instance = new SendMoney();
 
-    private SendMoney() {
-        super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "recipient", "amountNQT");
-    }
+	private SendMoney() {
+		super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "recipient", "amountNQT");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        long recipient = ParameterParser.getAccountId(req, "recipient", true);
-        long amountNQT = ParameterParser.getAmountNQT(req);
-        Account account = ParameterParser.getSenderAccount(req);
-        return createTransaction(req, account, recipient, amountNQT);
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		final long recipient = ParameterParser.getAccountId(req, "recipient", true);
+		final long amountNQT = ParameterParser.getAmountNQT(req);
+		final Account account = ParameterParser.getSenderAccount(req);
+		return this.createTransaction(req, account, recipient, amountNQT);
+	}
 
 }

@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.MISSING_PEER;
-import static nxt.http.JSONResponses.UNKNOWN_PEER;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -31,47 +28,47 @@ import nxt.util.Convert;
 
 public class BlacklistAPIProxyPeer extends APIServlet.APIRequestHandler {
 
-    static final BlacklistAPIProxyPeer instance = new BlacklistAPIProxyPeer();
+	static final BlacklistAPIProxyPeer instance = new BlacklistAPIProxyPeer();
 
-    private BlacklistAPIProxyPeer() {
-        super(new APITag[] {APITag.NETWORK}, "peer");
-    }
+	private BlacklistAPIProxyPeer() {
+		super(new APITag[] {APITag.NETWORK}, "peer");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request) throws NxtException {
-        String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
-        if (peerAddress == null) {
-            return MISSING_PEER;
-        }
-        Peer peer = Peers.findOrCreatePeer(peerAddress, true);
-        JSONObject response = new JSONObject();
-        if (peer == null) {
-            return UNKNOWN_PEER;
-        } else {
-            APIProxy.getInstance().blacklistHost(peer.getHost());
-            response.put("done", true);
-        }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
+		final String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
+		if (peerAddress == null) {
+			return JSONResponses.MISSING_PEER;
+		}
+		final Peer peer = Peers.findOrCreatePeer(peerAddress, true);
+		final JSONObject response = new JSONObject();
+		if (peer == null) {
+			return JSONResponses.UNKNOWN_PEER;
+		} else {
+			APIProxy.getInstance().blacklistHost(peer.getHost());
+			response.put("done", true);
+		}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 }

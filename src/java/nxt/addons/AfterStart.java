@@ -22,18 +22,18 @@ import nxt.util.ThreadPool;
 
 public final class AfterStart implements AddOn {
 
-    @Override
-    public void init() {
-        String afterStartScript = Nxt.getStringProperty("nxt.afterStartScript");
-        if (afterStartScript != null) {
-            ThreadPool.runAfterStart(() -> {
-                try {
-                    Runtime.getRuntime().exec(afterStartScript);
-                } catch (Exception e) {
-                    Logger.logErrorMessage("Failed to run after start script: " + afterStartScript, e);
-                }
-            });
-        }
-    }
+	@Override
+	public void init() {
+		final String afterStartScript = Nxt.getStringProperty("nxt.afterStartScript");
+		if (afterStartScript != null) {
+			ThreadPool.runAfterStart(() -> {
+				try {
+					Runtime.getRuntime().exec(afterStartScript);
+				} catch (final Exception e) {
+					Logger.logErrorMessage("Failed to run after start script: " + afterStartScript, e);
+				}
+			});
+		}
+	}
 
 }

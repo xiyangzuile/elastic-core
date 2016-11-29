@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.NOT_FORGING;
-import static nxt.http.JSONResponses.UNKNOWN_ACCOUNT;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONArray;
@@ -33,45 +30,45 @@ import nxt.crypto.Crypto;
 
 public final class GetForging extends APIServlet.APIRequestHandler {
 
-    static final GetForging instance = new GetForging();
+	static final GetForging instance = new GetForging();
 
-    private GetForging() {
-        super(new APITag[] {APITag.FORGING}, "secretPhrase", "adminPassword");
-    }
+	private GetForging() {
+		super(new APITag[] {APITag.FORGING}, "secretPhrase", "adminPassword");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, false);
-        int elapsedTime = Nxt.getEpochTime() - Nxt.getBlockchain().getLastBlock().getTimestamp();
-        if (secretPhrase != null) {
-            Account account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
-            if (account == null) {
-                return UNKNOWN_ACCOUNT;
-            }
-            Generator generator = Generator.getGenerator(secretPhrase);
-            if (generator == null) {
-                return NOT_FORGING;
-            }
-            return JSONData.generator(generator, elapsedTime);
-        } else {
-            API.verifyPassword(req);
-            JSONObject response = new JSONObject();
-            JSONArray generators = new JSONArray();
-            Generator.getSortedForgers().forEach(generator -> generators.add(JSONData.generator(generator, elapsedTime)));
-            response.put("generators", generators);
-            return response;
-        }
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, false);
+		final int elapsedTime = Nxt.getEpochTime() - Nxt.getBlockchain().getLastBlock().getTimestamp();
+		if (secretPhrase != null) {
+			final Account account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
+			if (account == null) {
+				return JSONResponses.UNKNOWN_ACCOUNT;
+			}
+			final Generator generator = Generator.getGenerator(secretPhrase);
+			if (generator == null) {
+				return JSONResponses.NOT_FORGING;
+			}
+			return JSONData.generator(generator, elapsedTime);
+		} else {
+			API.verifyPassword(req);
+			final JSONObject response = new JSONObject();
+			final JSONArray generators = new JSONArray();
+			Generator.getSortedForgers().forEach(generator -> generators.add(JSONData.generator(generator, elapsedTime)));
+			response.put("generators", generators);
+			return response;
+		}
+	}
 
-    @Override
-    protected boolean requireFullClient() {
-        return true;
-    }
+	@Override
+	protected boolean requireFullClient() {
+		return true;
+	}
 
 }

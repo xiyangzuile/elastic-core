@@ -23,55 +23,55 @@ import org.json.simple.JSONObject;
 
 public interface Block {
 
-    int getVersion();
+	int countNumberPOW();
 
-    long getId();
+	long countNumberPOWPerWorkId(long work_id);
 
-    String getStringId();
+	long getBaseTarget();
 
-    int getHeight();
+	byte[] getBlockSignature();
 
-    int getTimestamp();
+	byte[] getBytes();
 
-    long getGeneratorId();
+	BigInteger getCumulativeDifficulty();
 
-    byte[] getGeneratorPublicKey();
+	byte[] getGenerationSignature();
 
-    long getPreviousBlockId();
+	long getGeneratorId();
 
-    byte[] getPreviousBlockHash();
+	byte[] getGeneratorPublicKey();
 
-    long getNextBlockId();
+	int getHeight();
 
-    long getTotalAmountNQT();
+	long getId();
 
-    long getTotalFeeNQT();
+	JSONObject getJSONObject();
 
-    int getPayloadLength();
+	BigInteger getMinPowTarget();
 
-    byte[] getPayloadHash();
+	long getNextBlockId();
 
-    List<? extends Transaction> getTransactions();
+	byte[] getPayloadHash();
 
-    byte[] getGenerationSignature();
+	int getPayloadLength();
 
-    byte[] getBlockSignature();
+	BlockImpl getPreviousBlock();
 
-    long getBaseTarget();
+	byte[] getPreviousBlockHash();
 
-    BigInteger getCumulativeDifficulty();
+	long getPreviousBlockId();
 
-    byte[] getBytes();
+	String getStringId();
 
-    JSONObject getJSONObject();
-    
-    BlockImpl getPreviousBlock();
-    
-    BigInteger getMinPowTarget();
-    
-    int countNumberPOW();
-    
-    long countNumberPOWPerWorkId(long work_id);
+	int getTimestamp();
+
+	long getTotalAmountNQT();
+
+	long getTotalFeeNQT();
+
+	List<? extends Transaction> getTransactions();
+
+	int getVersion();
 
 
 }

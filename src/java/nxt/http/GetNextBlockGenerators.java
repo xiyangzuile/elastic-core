@@ -30,16 +30,16 @@ import nxt.Nxt;
 
 public final class GetNextBlockGenerators extends APIServlet.APIRequestHandler {
 
-    static final GetNextBlockGenerators instance = new GetNextBlockGenerators();
+	static final GetNextBlockGenerators instance = new GetNextBlockGenerators();
 
-    private GetNextBlockGenerators() {
-        super(new APITag[] {APITag.FORGING});
-    }
+	private GetNextBlockGenerators() {
+		super(new APITag[] {APITag.FORGING});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        /* implement later, if needed
+		/* implement later, if needed
         Block curBlock;
 
         String block = req.getParameter("block");
@@ -55,37 +55,37 @@ public final class GetNextBlockGenerators extends APIServlet.APIRequestHandler {
                 return INCORRECT_BLOCK;
             }
         }
-        */
+		 */
 
-        Block curBlock = Nxt.getBlockchain().getLastBlock();
-       
-        JSONObject response = new JSONObject();
-        response.put("time", Nxt.getEpochTime());
-        response.put("lastBlock", Long.toUnsignedString(curBlock.getId()));
-        JSONArray hubs = new JSONArray();
+		final Block curBlock = Nxt.getBlockchain().getLastBlock();
 
-        int limit;
-        try {
-            limit = Integer.parseInt(req.getParameter("limit"));
-        } catch (RuntimeException e) {
-            limit = Integer.MAX_VALUE;
-        }
+		final JSONObject response = new JSONObject();
+		response.put("time", Nxt.getEpochTime());
+		response.put("lastBlock", Long.toUnsignedString(curBlock.getId()));
+		final JSONArray hubs = new JSONArray();
 
-        Iterator<Hub.Hit> iterator = Hub.getHubHits(curBlock).iterator();
-        while (iterator.hasNext() && hubs.size() < limit) {
-            JSONObject hub = new JSONObject();
-            Hub.Hit hit = iterator.next();
-            hub.put("account", Long.toUnsignedString(hit.hub.getAccountId()));
-            hub.put("minFeePerByteNQT", hit.hub.getMinFeePerByteNQT());
-            hub.put("time", hit.hitTime);
-            JSONArray uris = new JSONArray();
-            uris.addAll(hit.hub.getUris());
-            hub.put("uris", uris);
-            hubs.add(hub);
-        }
-        
-        response.put("hubs", hubs);
-        return response;
-    }
+		int limit;
+		try {
+			limit = Integer.parseInt(req.getParameter("limit"));
+		} catch (final RuntimeException e) {
+			limit = Integer.MAX_VALUE;
+		}
+
+		final Iterator<Hub.Hit> iterator = Hub.getHubHits(curBlock).iterator();
+		while (iterator.hasNext() && (hubs.size() < limit)) {
+			final JSONObject hub = new JSONObject();
+			final Hub.Hit hit = iterator.next();
+			hub.put("account", Long.toUnsignedString(hit.hub.getAccountId()));
+			hub.put("minFeePerByteNQT", hit.hub.getMinFeePerByteNQT());
+			hub.put("time", hit.hitTime);
+			final JSONArray uris = new JSONArray();
+			uris.addAll(hit.hub.getUris());
+			hub.put("uris", uris);
+			hubs.add(hub);
+		}
+
+		response.put("hubs", hubs);
+		return response;
+	}
 
 }

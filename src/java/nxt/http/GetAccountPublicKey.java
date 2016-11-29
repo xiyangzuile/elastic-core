@@ -28,24 +28,24 @@ import nxt.util.JSON;
 
 public final class GetAccountPublicKey extends APIServlet.APIRequestHandler {
 
-    static final GetAccountPublicKey instance = new GetAccountPublicKey();
+	static final GetAccountPublicKey instance = new GetAccountPublicKey();
 
-    private GetAccountPublicKey() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account");
-    }
+	private GetAccountPublicKey() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        long accountId = ParameterParser.getAccountId(req, true);
-        byte[] publicKey = Account.getPublicKey(accountId);
-        if (publicKey != null) {
-            JSONObject response = new JSONObject();
-            response.put("publicKey", Convert.toHexString(publicKey));
-            return response;
-        } else {
-            return JSON.emptyJSON;
-        }
-    }
+		final long accountId = ParameterParser.getAccountId(req, true);
+		final byte[] publicKey = Account.getPublicKey(accountId);
+		if (publicKey != null) {
+			final JSONObject response = new JSONObject();
+			response.put("publicKey", Convert.toHexString(publicKey));
+			return response;
+		} else {
+			return JSON.emptyJSON;
+		}
+	}
 
 }

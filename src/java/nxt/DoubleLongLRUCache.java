@@ -2,94 +2,96 @@ package nxt;
 
 import java.util.HashMap;
 
-class DoubleLongNode{
-    long key1;
-    long key2;
-    long value;
-    DoubleLongNode pre;
-    DoubleLongNode next;
- 
-    public DoubleLongNode(long key1, long key2, long value){
-        this.key1 = key1;
-        this.key2 = key2;
-        this.value = value;
-    }
+public class DoubleLongLRUCache {
+	int capacity;
+	HashMap<Pair<Long,Long>, DoubleLongNode> map = new HashMap<>();
+	DoubleLongNode head=null;
+	DoubleLongNode end=null;
+
+	public DoubleLongLRUCache(final int capacity) {
+		this.capacity = capacity;
+	}
+
+	public long get(final long key1, final long key2) {
+		final Pair<Long,Long> pairkey = new Pair<>(key1,key2);
+		if(this.map.containsKey(pairkey)){
+			final DoubleLongNode n = this.map.get(pairkey);
+			this.remove(n);
+			this.setHead(n);
+			return n.value;
+		}
+
+		return -1;
+	}
+
+	public void increment(final long key1, final long key2) {
+		long res = this.get(key1, key2);
+		res = res + 1;
+		this.set(key1, key2, res);
+	}
+
+	public void remove(final DoubleLongNode n){
+		if(n.pre!=null){
+			n.pre.next = n.next;
+		}else{
+			this.head = n.next;
+		}
+
+		if(n.next!=null){
+			n.next.pre = n.pre;
+		}else{
+			this.end = n.pre;
+		}
+
+	}
+
+	public void set(final long key1, final long key2, final long value) {
+		final Pair<Long,Long> pairkey = new Pair<>(key1,key2);
+		if(this.map.containsKey(pairkey)){
+			final DoubleLongNode old = this.map.get(pairkey);
+			old.value = value;
+			this.remove(old);
+			this.setHead(old);
+		}else{
+			final DoubleLongNode created = new DoubleLongNode(key1, key2, value);
+			if(this.map.size()>=this.capacity){
+				this.map.remove(pairkey);
+				this.remove(this.end);
+				this.setHead(created);
+
+			}else{
+				this.setHead(created);
+			}
+			this.map.put(pairkey, created);
+		}
+	}
+
+	public void setHead(final DoubleLongNode n){
+		n.next = this.head;
+		n.pre = null;
+
+		if(this.head!=null) {
+			this.head.pre = n;
+		}
+
+		this.head = n;
+
+		if(this.end ==null) {
+			this.end = this.head;
+		}
+	}
 }
 
-public class DoubleLongLRUCache {
-    int capacity;
-    HashMap<Pair<Long,Long>, DoubleLongNode> map = new HashMap<Pair<Long,Long>, DoubleLongNode>();
-    DoubleLongNode head=null;
-    DoubleLongNode end=null;
- 
-    public DoubleLongLRUCache(int capacity) {
-        this.capacity = capacity;
-    }
- 
-    public long get(long key1, long key2) {
-    	Pair<Long,Long> pairkey = new Pair<Long,Long>(key1,key2);
-        if(map.containsKey(pairkey)){
-        	DoubleLongNode n = map.get(pairkey);
-            remove(n);
-            setHead(n);
-            return n.value;
-        }
- 
-        return -1;
-    }
- 
-    public void remove(DoubleLongNode n){
-        if(n.pre!=null){
-            n.pre.next = n.next;
-        }else{
-            head = n.next;
-        }
- 
-        if(n.next!=null){
-            n.next.pre = n.pre;
-        }else{
-            end = n.pre;
-        }
- 
-    }
- 
-    public void setHead(DoubleLongNode n){
-        n.next = head;
-        n.pre = null;
- 
-        if(head!=null)
-            head.pre = n;
- 
-        head = n;
- 
-        if(end ==null)
-            end = head;
-    }
- 
-    public void set(long key1, long key2, long value) {
-    	Pair<Long,Long> pairkey = new Pair<Long,Long>(key1,key2);
-        if(map.containsKey(pairkey)){
-            DoubleLongNode old = map.get(pairkey);
-            old.value = value;
-            remove(old);
-            setHead(old);
-        }else{
-        	DoubleLongNode created = new DoubleLongNode(key1, key2, value);
-            if(map.size()>=capacity){
-                map.remove(pairkey);
-                remove(end);
-                setHead(created);
- 
-            }else{
-                setHead(created);
-            }    
-            map.put(pairkey, created);
-        }
-    }
-    
-    public void increment(long key1, long key2) {
-    	long res = this.get(key1, key2);
-    	res = res + 1;
-    	this.set(key1, key2, res);
-    }
+class DoubleLongNode{
+	long key1;
+	long key2;
+	long value;
+	DoubleLongNode pre;
+	DoubleLongNode next;
+
+	public DoubleLongNode(final long key1, final long key2, final long value){
+		this.key1 = key1;
+		this.key2 = key2;
+		this.value = value;
+	}
 }

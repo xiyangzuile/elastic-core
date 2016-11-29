@@ -23,87 +23,87 @@ import nxt.util.Filter;
 
 public final class FilteringIterator<T> implements Iterator<T>, Iterable<T>, AutoCloseable {
 
-    private final DbIterator<T> dbIterator;
-    private final Filter<T> filter;
-    private final int from;
-    private final int to;
-    private T next;
-    private boolean hasNext;
-    private boolean iterated;
-    private int count;
+	private final DbIterator<T> dbIterator;
+	private final Filter<T> filter;
+	private final int from;
+	private final int to;
+	private T next;
+	private boolean hasNext;
+	private boolean iterated;
+	private int count;
 
-    public FilteringIterator(DbIterator<T> dbIterator, Filter<T> filter) {
-        this(dbIterator, filter, 0, Integer.MAX_VALUE);
-    }
+	public FilteringIterator(final DbIterator<T> dbIterator, final Filter<T> filter) {
+		this(dbIterator, filter, 0, Integer.MAX_VALUE);
+	}
 
-    public FilteringIterator(DbIterator<T> dbIterator, int from, int to) {
-        this(dbIterator, t -> true, from, to);
-    }
+	public FilteringIterator(final DbIterator<T> dbIterator, final Filter<T> filter, final int from, final int to) {
+		this.dbIterator = dbIterator;
+		this.filter = filter;
+		this.from = from;
+		this.to = to;
+	}
 
-    public FilteringIterator(DbIterator<T> dbIterator, Filter<T> filter, int from, int to) {
-        this.dbIterator = dbIterator;
-        this.filter = filter;
-        this.from = from;
-        this.to = to;
-    }
+	public FilteringIterator(final DbIterator<T> dbIterator, final int from, final int to) {
+		this(dbIterator, t -> true, from, to);
+	}
 
-    @Override
-    public boolean hasNext() {
-        if (hasNext) {
-            return true;
-        }
-        while (dbIterator.hasNext() && count <= to) {
-            next = dbIterator.next();
-            if (filter.ok(next)) {
-                if (count >= from) {
-                    count += 1;
-                    hasNext = true;
-                    return true;
-                }
-                count += 1;
-            }
-        }
-        hasNext = false;
-        return false;
-    }
+	@Override
+	public void close() {
+		this.dbIterator.close();
+	}
 
-    @Override
-    public T next() {
-        if (hasNext) {
-            hasNext = false;
-            return next;
-        }
-        while (dbIterator.hasNext() && count <= to) {
-            next = dbIterator.next();
-            if (filter.ok(next)) {
-                if (count >= from) {
-                    count += 1;
-                    hasNext = false;
-                    return next;
-                }
-                count += 1;
-            }
-        }
-        throw new NoSuchElementException();
-    }
+	@Override
+	public boolean hasNext() {
+		if (this.hasNext) {
+			return true;
+		}
+		while (this.dbIterator.hasNext() && (this.count <= this.to)) {
+			this.next = this.dbIterator.next();
+			if (this.filter.ok(this.next)) {
+				if (this.count >= this.from) {
+					this.count += 1;
+					this.hasNext = true;
+					return true;
+				}
+				this.count += 1;
+			}
+		}
+		this.hasNext = false;
+		return false;
+	}
 
-    @Override
-    public void close() {
-        dbIterator.close();
-    }
+	@Override
+	public Iterator<T> iterator() {
+		if (this.iterated) {
+			throw new IllegalStateException("Already iterated");
+		}
+		this.iterated = true;
+		return this;
+	}
 
-    @Override
-    public void remove() {
-        throw new UnsupportedOperationException();
-    }
+	@Override
+	public T next() {
+		if (this.hasNext) {
+			this.hasNext = false;
+			return this.next;
+		}
+		while (this.dbIterator.hasNext() && (this.count <= this.to)) {
+			this.next = this.dbIterator.next();
+			if (this.filter.ok(this.next)) {
+				if (this.count >= this.from) {
+					this.count += 1;
+					this.hasNext = false;
+					return this.next;
+				}
+				this.count += 1;
+			}
+		}
+		throw new NoSuchElementException();
+	}
 
-    @Override
-    public Iterator<T> iterator() {
-        if (iterated) {
-            throw new IllegalStateException("Already iterated");
-        }
-        iterated = true;
-        return this;
-    }
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
 
 }

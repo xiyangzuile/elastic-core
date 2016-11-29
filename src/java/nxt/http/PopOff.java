@@ -29,65 +29,65 @@ import nxt.Nxt;
 
 public final class PopOff extends APIServlet.APIRequestHandler {
 
-    static final PopOff instance = new PopOff();
+	static final PopOff instance = new PopOff();
 
-    private PopOff() {
-        super(new APITag[] {APITag.DEBUG}, "numBlocks", "height", "keepTransactions");
-    }
+	private PopOff() {
+		super(new APITag[] {APITag.DEBUG}, "numBlocks", "height", "keepTransactions");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected final boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        int numBlocks = 0;
-        try {
-            numBlocks = Integer.parseInt(req.getParameter("numBlocks"));
-        } catch (NumberFormatException ignored) {}
-        int height = 0;
-        try {
-            height = Integer.parseInt(req.getParameter("height"));
-        } catch (NumberFormatException ignored) {}
-        boolean keepTransactions = "true".equalsIgnoreCase(req.getParameter("keepTransactions"));
-        List<? extends Block> blocks;
-        try {
-            Nxt.getBlockchainProcessor().setGetMoreBlocks(false);
-            if (numBlocks > 0) {
-                blocks = Nxt.getBlockchainProcessor().popOffTo(Nxt.getBlockchain().getHeight() - numBlocks);
-            } else if (height > 0) {
-                blocks = Nxt.getBlockchainProcessor().popOffTo(height);
-            } else {
-                return JSONResponses.missing("numBlocks", "height");
-            }
-        } finally {
-            Nxt.getBlockchainProcessor().setGetMoreBlocks(true);
-        }
-        JSONArray blocksJSON = new JSONArray();
-        blocks.forEach(block -> blocksJSON.add(JSONData.block(block, true, false)));
-        JSONObject response = new JSONObject();
-        response.put("blocks", blocksJSON);
-        if (keepTransactions) {
-            blocks.forEach(block -> Nxt.getTransactionProcessor().processLater(block.getTransactions()));
-        }
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+		int numBlocks = 0;
+		try {
+			numBlocks = Integer.parseInt(req.getParameter("numBlocks"));
+		} catch (final NumberFormatException ignored) {}
+		int height = 0;
+		try {
+			height = Integer.parseInt(req.getParameter("height"));
+		} catch (final NumberFormatException ignored) {}
+		final boolean keepTransactions = "true".equalsIgnoreCase(req.getParameter("keepTransactions"));
+		List<? extends Block> blocks;
+		try {
+			Nxt.getBlockchainProcessor().setGetMoreBlocks(false);
+			if (numBlocks > 0) {
+				blocks = Nxt.getBlockchainProcessor().popOffTo(Nxt.getBlockchain().getHeight() - numBlocks);
+			} else if (height > 0) {
+				blocks = Nxt.getBlockchainProcessor().popOffTo(height);
+			} else {
+				return JSONResponses.missing("numBlocks", "height");
+			}
+		} finally {
+			Nxt.getBlockchainProcessor().setGetMoreBlocks(true);
+		}
+		final JSONArray blocksJSON = new JSONArray();
+		blocks.forEach(block -> blocksJSON.add(JSONData.block(block, true, false)));
+		final JSONObject response = new JSONObject();
+		response.put("blocks", blocksJSON);
+		if (keepTransactions) {
+			blocks.forEach(block -> Nxt.getTransactionProcessor().processLater(block.getTransactions()));
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected final boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

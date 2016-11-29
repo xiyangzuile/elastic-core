@@ -21,93 +21,93 @@ import java.lang.reflect.Method;
 
 public class RuntimeEnvironment {
 
-    public static final String RUNTIME_MODE_ARG = "nxt.runtime.mode";
-    public static final String DIRPROVIDER_ARG = "nxt.runtime.dirProvider";
+	public static final String RUNTIME_MODE_ARG = "nxt.runtime.mode";
+	public static final String DIRPROVIDER_ARG = "nxt.runtime.dirProvider";
 
-    private static final String osname = System.getProperty("os.name").toLowerCase();
-    private static final boolean isHeadless;
-    private static final boolean hasJavaFX;
-    static {
-        boolean b;
-        try {
-            // Load by reflection to prevent exception in case java.awt does not exist
-            Class<?> graphicsEnvironmentClass = Class.forName("java.awt.GraphicsEnvironment");
-            Method isHeadlessMethod = graphicsEnvironmentClass.getMethod("isHeadless");
-            b = (Boolean)isHeadlessMethod.invoke(null);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            b = true;
-        }
-        isHeadless = b;
-        try {
-            Class.forName("javafx.application.Application");
-            b = true;
-        } catch (ClassNotFoundException e) {
-            System.out.println("javafx not supported");
-            b = false;
-        }
-        hasJavaFX = b;
-    }
+	private static final String osname = System.getProperty("os.name").toLowerCase();
+	private static final boolean isHeadless;
+	private static final boolean hasJavaFX;
+	static {
+		boolean b;
+		try {
+			// Load by reflection to prevent exception in case java.awt does not exist
+			final Class<?> graphicsEnvironmentClass = Class.forName("java.awt.GraphicsEnvironment");
+			final Method isHeadlessMethod = graphicsEnvironmentClass.getMethod("isHeadless");
+			b = (Boolean)isHeadlessMethod.invoke(null);
+		} catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+			b = true;
+		}
+		isHeadless = b;
+		try {
+			Class.forName("javafx.application.Application");
+			b = true;
+		} catch (final ClassNotFoundException e) {
+			System.out.println("javafx not supported");
+			b = false;
+		}
+		hasJavaFX = b;
+	}
 
-    private static boolean isWindowsRuntime() {
-        return osname.startsWith("windows");
-    }
+	public static DirProvider getDirProvider() {
+		final String dirProvider = System.getProperty(RuntimeEnvironment.DIRPROVIDER_ARG);
+		if (dirProvider != null) {
+			try {
+				return (DirProvider)Class.forName(dirProvider).newInstance();
+			} catch (final ReflectiveOperationException e) {
+				System.out.println("Failed to instantiate dirProvider " + dirProvider);
+				throw new RuntimeException(e.getMessage(), e);
+			}
+		}
+		if (RuntimeEnvironment.isDesktopEnabled()) {
+			if (RuntimeEnvironment.isWindowsRuntime()) {
+				return new WindowsUserDirProvider();
+			}
+			if (RuntimeEnvironment.isUnixRuntime()) {
+				return new UnixUserDirProvider();
+			}
+			if (RuntimeEnvironment.isMacRuntime()) {
+				return new MacUserDirProvider();
+			}
+		}
+		return new DefaultDirProvider();
+	}
 
-    private static boolean isUnixRuntime() {
-        return osname.contains("nux") || osname.contains("nix") || osname.contains("aix") || osname.contains("bsd") || osname.contains("sunos");
-    }
+	public static RuntimeMode getRuntimeMode() {
+		System.out.println("isHeadless=" + RuntimeEnvironment.isHeadless());
+		if (RuntimeEnvironment.isDesktopEnabled()) {
+			return new DesktopMode();
+		} else if (RuntimeEnvironment.isWindowsService()) {
+			return new WindowsServiceMode();
+		} else {
+			return new CommandLineMode();
+		}
+	}
 
-    private static boolean isMacRuntime() {
-        return osname.contains("mac");
-    }
+	public static boolean isDesktopApplicationEnabled() {
+		return RuntimeEnvironment.isDesktopEnabled() && RuntimeEnvironment.hasJavaFX;
+	}
 
-    private static boolean isWindowsService() {
-        return "service".equalsIgnoreCase(System.getProperty(RUNTIME_MODE_ARG)) && isWindowsRuntime();
-    }
+	private static boolean isDesktopEnabled() {
+		return "desktop".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG)) && !RuntimeEnvironment.isHeadless();
+	}
 
-    private static boolean isHeadless() {
-        return isHeadless;
-    }
+	private static boolean isHeadless() {
+		return RuntimeEnvironment.isHeadless;
+	}
 
-    private static boolean isDesktopEnabled() {
-        return "desktop".equalsIgnoreCase(System.getProperty(RUNTIME_MODE_ARG)) && !isHeadless();
-    }
+	private static boolean isMacRuntime() {
+		return RuntimeEnvironment.osname.contains("mac");
+	}
 
-    public static boolean isDesktopApplicationEnabled() {
-        return isDesktopEnabled() && hasJavaFX;
-    }
+	private static boolean isUnixRuntime() {
+		return RuntimeEnvironment.osname.contains("nux") || RuntimeEnvironment.osname.contains("nix") || RuntimeEnvironment.osname.contains("aix") || RuntimeEnvironment.osname.contains("bsd") || RuntimeEnvironment.osname.contains("sunos");
+	}
 
-    public static RuntimeMode getRuntimeMode() {
-        System.out.println("isHeadless=" + isHeadless());
-        if (isDesktopEnabled()) {
-            return new DesktopMode();
-        } else if (isWindowsService()) {
-            return new WindowsServiceMode();
-        } else {
-            return new CommandLineMode();
-        }
-    }
+	private static boolean isWindowsRuntime() {
+		return RuntimeEnvironment.osname.startsWith("windows");
+	}
 
-    public static DirProvider getDirProvider() {
-        String dirProvider = System.getProperty(DIRPROVIDER_ARG);
-        if (dirProvider != null) {
-            try {
-                return (DirProvider)Class.forName(dirProvider).newInstance();
-            } catch (ReflectiveOperationException e) {
-                System.out.println("Failed to instantiate dirProvider " + dirProvider);
-                throw new RuntimeException(e.getMessage(), e);
-            }
-        }
-        if (isDesktopEnabled()) {
-            if (isWindowsRuntime()) {
-                return new WindowsUserDirProvider();
-            }
-            if (isUnixRuntime()) {
-                return new UnixUserDirProvider();
-            }
-            if (isMacRuntime()) {
-                return new MacUserDirProvider();
-            }
-        }
-        return new DefaultDirProvider();
-    }
+	private static boolean isWindowsService() {
+		return "service".equalsIgnoreCase(System.getProperty(RuntimeEnvironment.RUNTIME_MODE_ARG)) && RuntimeEnvironment.isWindowsRuntime();
+	}
 }

@@ -25,38 +25,38 @@ import nxt.Nxt;
 
 public final class TrimDerivedTables extends APIServlet.APIRequestHandler {
 
-    static final TrimDerivedTables instance = new TrimDerivedTables();
+	static final TrimDerivedTables instance = new TrimDerivedTables();
 
-    private TrimDerivedTables() {
-        super(new APITag[] {APITag.DEBUG});
-    }
+	private TrimDerivedTables() {
+		super(new APITag[] {APITag.DEBUG});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        Nxt.getBlockchainProcessor().trimDerivedTables();
-        response.put("done", true);
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		Nxt.getBlockchainProcessor().trimDerivedTables();
+		response.put("done", true);
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

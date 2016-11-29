@@ -16,10 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_WEBSITE;
-import static nxt.http.JSONResponses.MISSING_TOKEN;
-import static nxt.http.JSONResponses.MISSING_WEBSITE;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -28,37 +24,37 @@ import nxt.Token;
 
 public final class DecodeToken extends APIServlet.APIRequestHandler {
 
-    static final DecodeToken instance = new DecodeToken();
+	static final DecodeToken instance = new DecodeToken();
 
-    private DecodeToken() {
-        super(new APITag[] {APITag.TOKENS}, "website", "token");
-    }
+	private DecodeToken() {
+		super(new APITag[] {APITag.TOKENS}, "website", "token");
+	}
 
-    @Override
-    public JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String website = req.getParameter("website");
-        String tokenString = req.getParameter("token");
-        if (website == null) {
-            return MISSING_WEBSITE;
-        } else if (tokenString == null) {
-            return MISSING_TOKEN;
-        }
+	@Override
+	public JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        try {
+		final String website = req.getParameter("website");
+		final String tokenString = req.getParameter("token");
+		if (website == null) {
+			return JSONResponses.MISSING_WEBSITE;
+		} else if (tokenString == null) {
+			return JSONResponses.MISSING_TOKEN;
+		}
 
-            Token token = Token.parseToken(tokenString, website.trim());
+		try {
 
-            return JSONData.token(token);
+			final Token token = Token.parseToken(tokenString, website.trim());
 
-        } catch (RuntimeException e) {
-            return INCORRECT_WEBSITE;
-        }
-    }
+			return JSONData.token(token);
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_WEBSITE;
+		}
+	}
 
 }

@@ -28,61 +28,61 @@ import nxt.util.Logger;
 
 public final class AddOns {
 
-    private static final List<AddOn> addOns;
-    static {
-        List<AddOn> addOnsList = new ArrayList<>();
-        Nxt.getStringListProperty("nxt.addOns").forEach(addOn -> {
-            try {
-                addOnsList.add((AddOn)Class.forName(addOn).newInstance());
-            } catch (ReflectiveOperationException e) {
-                Logger.logErrorMessage(e.getMessage(), e);
-            }
-        });
-        addOns = Collections.unmodifiableList(addOnsList);
-        if (!addOns.isEmpty()) {
-            System.setProperty("java.security.policy", Nxt.isDesktopApplicationEnabled() ? "nxtdesktop.policy" : "nxt.policy");
-            Logger.logMessage("Setting security manager with policy " + System.getProperty("java.security.policy"));
-            System.setSecurityManager(new SecurityManager());
-        }
-        addOns.forEach(addOn -> {
-            Logger.logInfoMessage("Initializing " + addOn.getClass().getName());
-            addOn.init();
-        });
-    }
+	private static final List<AddOn> addOns;
+	static {
+		final List<AddOn> addOnsList = new ArrayList<>();
+		Nxt.getStringListProperty("nxt.addOns").forEach(addOn -> {
+			try {
+				addOnsList.add((AddOn)Class.forName(addOn).newInstance());
+			} catch (final ReflectiveOperationException e) {
+				Logger.logErrorMessage(e.getMessage(), e);
+			}
+		});
+		addOns = Collections.unmodifiableList(addOnsList);
+		if (!AddOns.addOns.isEmpty()) {
+			System.setProperty("java.security.policy", Nxt.isDesktopApplicationEnabled() ? "nxtdesktop.policy" : "nxt.policy");
+			Logger.logMessage("Setting security manager with policy " + System.getProperty("java.security.policy"));
+			System.setSecurityManager(new SecurityManager());
+		}
+		AddOns.addOns.forEach(addOn -> {
+			Logger.logInfoMessage("Initializing " + addOn.getClass().getName());
+			addOn.init();
+		});
+	}
 
-    public static void init() {}
+	public static void init() {}
 
-    public static void shutdown() {
-        addOns.forEach(addOn -> {
-            Logger.logShutdownMessage("Shutting down " + addOn.getClass().getName());
-            addOn.shutdown();
-        });
-    }
+	public static void registerAPIRequestHandlers(final Map<String,APIServlet.APIRequestHandler> map) {
+		for (final AddOn addOn : AddOns.addOns) {
+			final APIServlet.APIRequestHandler requestHandler = addOn.getAPIRequestHandler();
+			if (requestHandler != null) {
+				if (!requestHandler.getAPITags().contains(APITag.ADDONS)) {
+					Logger.logErrorMessage("Add-on " + addOn.getClass().getName()
+							+ " attempted to register request handler which is not tagged as APITag.ADDONS, skipping");
+					continue;
+				}
+				final String requestType = addOn.getAPIRequestType();
+				if (requestType == null) {
+					Logger.logErrorMessage("Add-on " + addOn.getClass().getName() + " requestType not defined");
+					continue;
+				}
+				if (map.get(requestType) != null) {
+					Logger.logErrorMessage("Add-on " + addOn.getClass().getName() + " attempted to override requestType " + requestType + ", skipping");
+					continue;
+				}
+				Logger.logMessage("Add-on " + addOn.getClass().getName() + " registered new API: " + requestType);
+				map.put(requestType, requestHandler);
+			}
+		}
+	}
 
-    public static void registerAPIRequestHandlers(Map<String,APIServlet.APIRequestHandler> map) {
-        for (AddOn addOn : addOns) {
-            APIServlet.APIRequestHandler requestHandler = addOn.getAPIRequestHandler();
-            if (requestHandler != null) {
-                if (!requestHandler.getAPITags().contains(APITag.ADDONS)) {
-                    Logger.logErrorMessage("Add-on " + addOn.getClass().getName()
-                            + " attempted to register request handler which is not tagged as APITag.ADDONS, skipping");
-                    continue;
-                }
-                String requestType = addOn.getAPIRequestType();
-                if (requestType == null) {
-                    Logger.logErrorMessage("Add-on " + addOn.getClass().getName() + " requestType not defined");
-                    continue;
-                }
-                if (map.get(requestType) != null) {
-                    Logger.logErrorMessage("Add-on " + addOn.getClass().getName() + " attempted to override requestType " + requestType + ", skipping");
-                    continue;
-                }
-                Logger.logMessage("Add-on " + addOn.getClass().getName() + " registered new API: " + requestType);
-                map.put(requestType, requestHandler);
-            }
-        }
-    }
+	public static void shutdown() {
+		AddOns.addOns.forEach(addOn -> {
+			Logger.logShutdownMessage("Shutting down " + addOn.getClass().getName());
+			addOn.shutdown();
+		});
+	}
 
-    private AddOns() {}
+	private AddOns() {}
 
 }

@@ -20,10 +20,10 @@ import java.nio.file.Paths;
 
 public class WindowsUserDirProvider extends DesktopUserDirProvider {
 
-    private static final String NXT_USER_HOME = Paths.get(System.getProperty("user.home"), "AppData", "Roaming", "XEL").toString();
+	private static final String NXT_USER_HOME = Paths.get(System.getProperty("user.home"), "AppData", "Roaming", "XEL").toString();
 
-    @Override
-    public String getUserHomeDir() {
-        return NXT_USER_HOME;
-    }
+	@Override
+	public String getUserHomeDir() {
+		return WindowsUserDirProvider.NXT_USER_HOME;
+	}
 }

@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
-import static nxt.http.JSONResponses.MISSING_HEIGHT;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -29,34 +26,34 @@ import nxt.util.Convert;
 
 public final class GetBlockId extends APIServlet.APIRequestHandler {
 
-    static final GetBlockId instance = new GetBlockId();
+	static final GetBlockId instance = new GetBlockId();
 
-    private GetBlockId() {
-        super(new APITag[] {APITag.BLOCKS}, "height");
-    }
+	private GetBlockId() {
+		super(new APITag[] {APITag.BLOCKS}, "height");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        int height;
-        try {
-            String heightValue = Convert.emptyToNull(req.getParameter("height"));
-            if (heightValue == null) {
-                return MISSING_HEIGHT;
-            }
-            height = Integer.parseInt(heightValue);
-        } catch (RuntimeException e) {
-            return INCORRECT_HEIGHT;
-        }
+		int height;
+		try {
+			final String heightValue = Convert.emptyToNull(req.getParameter("height"));
+			if (heightValue == null) {
+				return JSONResponses.MISSING_HEIGHT;
+			}
+			height = Integer.parseInt(heightValue);
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_HEIGHT;
+		}
 
-        try {
-            JSONObject response = new JSONObject();
-            response.put("block", Long.toUnsignedString(Nxt.getBlockchain().getBlockIdAtHeight(height)));
-            return response;
-        } catch (RuntimeException e) {
-            return INCORRECT_HEIGHT;
-        }
+		try {
+			final JSONObject response = new JSONObject();
+			response.put("block", Long.toUnsignedString(Nxt.getBlockchain().getBlockIdAtHeight(height)));
+			return response;
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_HEIGHT;
+		}
 
-    }
+	}
 
 }

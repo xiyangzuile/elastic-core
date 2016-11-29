@@ -28,41 +28,41 @@ import nxt.util.Observable;
 
 public interface TransactionProcessor extends Observable<List<? extends Transaction>,TransactionProcessor.Event> {
 
-    enum Event {
-        REMOVED_UNCONFIRMED_TRANSACTIONS,
-        ADDED_UNCONFIRMED_TRANSACTIONS,
-        ADDED_CONFIRMED_TRANSACTIONS,
-        RELEASE_PHASED_TRANSACTION,
-        REJECT_PHASED_TRANSACTION,
-        BROADCASTED_OWN_TRANSACTION,
-    }
+	enum Event {
+		REMOVED_UNCONFIRMED_TRANSACTIONS,
+		ADDED_UNCONFIRMED_TRANSACTIONS,
+		ADDED_CONFIRMED_TRANSACTIONS,
+		RELEASE_PHASED_TRANSACTION,
+		REJECT_PHASED_TRANSACTION,
+		BROADCASTED_OWN_TRANSACTION,
+	}
 
-    DbIterator<? extends Transaction> getAllUnconfirmedTransactions();
+	void broadcast(Transaction transaction) throws NxtException.ValidationException;
 
-    DbIterator<? extends Transaction> getAllUnconfirmedTransactions(String sort);
+	void clearUnconfirmedThatGotInvalidLately();
 
-    Transaction getUnconfirmedTransaction(long transactionId);
+	void clearUnconfirmedTransactions();
 
-    Transaction[] getAllWaitingTransactions();
+	Transaction[] getAllBroadcastedTransactions();
 
-    Transaction[] getAllBroadcastedTransactions();
+	DbIterator<? extends Transaction> getAllUnconfirmedTransactions();
 
-    void clearUnconfirmedTransactions();
-    
-    void clearUnconfirmedThatGotInvalidLately();
+	DbIterator<? extends Transaction> getAllUnconfirmedTransactions(String sort);
 
-    void requeueAllUnconfirmedTransactions();
+	Transaction[] getAllWaitingTransactions();
 
-    void rebroadcastAllUnconfirmedTransactions();
+	SortedSet<? extends Transaction> getCachedUnconfirmedTransactions(List<String> exclude);
 
-    void broadcast(Transaction transaction) throws NxtException.ValidationException;
+	Transaction getUnconfirmedTransaction(long transactionId);
 
-    void processPeerTransactions(JSONObject request) throws NxtException.ValidationException;
+	void processLater(Collection<? extends Transaction> transactions);
 
-    void processLater(Collection<? extends Transaction> transactions);
+	void processPeerTransactions(JSONObject request) throws NxtException.ValidationException;
 
-    SortedSet<? extends Transaction> getCachedUnconfirmedTransactions(List<String> exclude);
+	void rebroadcastAllUnconfirmedTransactions();
 
-    List<Transaction> restorePrunableData(JSONArray transactions) throws NxtException.NotValidException;
-   
+	void requeueAllUnconfirmedTransactions();
+
+	List<Transaction> restorePrunableData(JSONArray transactions) throws NxtException.NotValidException;
+
 }

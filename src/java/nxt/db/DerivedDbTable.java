@@ -26,55 +26,55 @@ import nxt.Nxt;
 
 public abstract class DerivedDbTable {
 
-    protected static final TransactionalDb db = Db.db;
+	protected static final TransactionalDb db = Db.db;
 
-    protected final String table;
+	protected final String table;
 
-    protected DerivedDbTable(String table) {
-        this.table = table;
-        Nxt.getBlockchainProcessor().registerDerivedTable(this);
-    }
+	protected DerivedDbTable(final String table) {
+		this.table = table;
+		Nxt.getBlockchainProcessor().registerDerivedTable(this);
+	}
 
-    public void rollback(int height) {
-        if (!db.isInTransaction()) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        try (Connection con = db.getConnection();
-             PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM " + table + " WHERE height > ?")) {
-            pstmtDelete.setInt(1, height);
-            pstmtDelete.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	public void createSearchIndex(final Connection con) throws SQLException {
+		//implemented in EntityDbTable only
+	}
 
-    public void truncate() {
-        if (!db.isInTransaction()) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        try (Connection con = db.getConnection();
-             Statement stmt = con.createStatement()) {
-            stmt.executeUpdate("TRUNCATE TABLE " + table);
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	public boolean isPersistent() {
+		return false;
+	}
 
-    public void trim(int height) {
-        //nothing to trim
-    }
+	public void rollback(final int height) {
+		if (!DerivedDbTable.db.isInTransaction()) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		try (Connection con = DerivedDbTable.db.getConnection();
+				PreparedStatement pstmtDelete = con.prepareStatement("DELETE FROM " + this.table + " WHERE height > ?")) {
+			pstmtDelete.setInt(1, height);
+			pstmtDelete.executeUpdate();
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-    public void createSearchIndex(Connection con) throws SQLException {
-        //implemented in EntityDbTable only
-    }
+	@Override
+	public final String toString() {
+		return this.table;
+	}
 
-    public boolean isPersistent() {
-        return false;
-    }
+	public void trim(final int height) {
+		//nothing to trim
+	}
 
-    @Override
-    public final String toString() {
-        return table;
-    }
+	public void truncate() {
+		if (!DerivedDbTable.db.isInTransaction()) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		try (Connection con = DerivedDbTable.db.getConnection();
+				Statement stmt = con.createStatement()) {
+			stmt.executeUpdate("TRUNCATE TABLE " + this.table);
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
 }

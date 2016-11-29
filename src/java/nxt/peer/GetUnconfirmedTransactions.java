@@ -29,36 +29,36 @@ import nxt.util.JSON;
 
 final class GetUnconfirmedTransactions extends PeerServlet.PeerRequestHandler {
 
-    static final GetUnconfirmedTransactions instance = new GetUnconfirmedTransactions();
+	static final GetUnconfirmedTransactions instance = new GetUnconfirmedTransactions();
 
-    private GetUnconfirmedTransactions() {}
+	private GetUnconfirmedTransactions() {}
 
 
-    @Override
-    JSONStreamAware processRequest(JSONObject request, Peer peer) {
+	@Override
+	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
-        List<String> exclude = (List<String>)request.get("exclude");
-        if (exclude == null) {
-            return JSON.emptyJSON;
-        }
+		final List<String> exclude = (List<String>)request.get("exclude");
+		if (exclude == null) {
+			return JSON.emptyJSON;
+		}
 
-        SortedSet<? extends Transaction> transactionSet = Nxt.getTransactionProcessor().getCachedUnconfirmedTransactions(exclude);
-        JSONArray transactionsData = new JSONArray();
-        for (Transaction transaction : transactionSet) {
-            if (transactionsData.size() >= 100) {
-                break;
-            }
-            transactionsData.add(transaction.getJSONObject());
-        }
-        JSONObject response = new JSONObject();
-        response.put("unconfirmedTransactions", transactionsData);
+		final SortedSet<? extends Transaction> transactionSet = Nxt.getTransactionProcessor().getCachedUnconfirmedTransactions(exclude);
+		final JSONArray transactionsData = new JSONArray();
+		for (final Transaction transaction : transactionSet) {
+			if (transactionsData.size() >= 100) {
+				break;
+			}
+			transactionsData.add(transaction.getJSONObject());
+		}
+		final JSONObject response = new JSONObject();
+		response.put("unconfirmedTransactions", transactionsData);
 
-        return response;
-    }
+		return response;
+	}
 
-    @Override
-    boolean rejectWhileDownloading() {
-        return true;
-    }
+	@Override
+	boolean rejectWhileDownloading() {
+		return true;
+	}
 
 }

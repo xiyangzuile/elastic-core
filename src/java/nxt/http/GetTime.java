@@ -25,29 +25,29 @@ import nxt.Nxt;
 
 public final class GetTime extends APIServlet.APIRequestHandler {
 
-    static final GetTime instance = new GetTime();
+	static final GetTime instance = new GetTime();
 
-    private GetTime() {
-        super(new APITag[] {APITag.INFO});
-    }
+	private GetTime() {
+		super(new APITag[] {APITag.INFO});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        JSONObject response = new JSONObject();
-        response.put("time", Nxt.getEpochTime());
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("time", Nxt.getEpochTime());
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

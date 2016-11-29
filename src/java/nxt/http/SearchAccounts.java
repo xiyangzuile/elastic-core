@@ -28,38 +28,38 @@ import nxt.util.Convert;
 
 public final class SearchAccounts extends APIServlet.APIRequestHandler {
 
-    static final SearchAccounts instance = new SearchAccounts();
+	static final SearchAccounts instance = new SearchAccounts();
 
-    private SearchAccounts() {
-        super(new APITag[] {APITag.ACCOUNTS, APITag.SEARCH}, "query", "firstIndex", "lastIndex");
-    }
+	private SearchAccounts() {
+		super(new APITag[] {APITag.ACCOUNTS, APITag.SEARCH}, "query", "firstIndex", "lastIndex");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
-        String query = Convert.nullToEmpty(req.getParameter("query"));
-        if (query.isEmpty()) {
-            return JSONResponses.missing("query");
-        }
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
+		final String query = Convert.nullToEmpty(req.getParameter("query"));
+		if (query.isEmpty()) {
+			return JSONResponses.missing("query");
+		}
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
 
-        JSONObject response = new JSONObject();
-        JSONArray accountsJSONArray = new JSONArray();
-        try (DbIterator<Account.AccountInfo> accounts = Account.searchAccounts(query, firstIndex, lastIndex)) {
-            for (Account.AccountInfo account : accounts) {
-                JSONObject accountJSON = new JSONObject();
-                JSONData.putAccount(accountJSON, "account", account.getAccountId());
-                if (account.getName() != null) {
-                    accountJSON.put("name", account.getName());
-                }
-                if (account.getDescription() != null) {
-                    accountJSON.put("description", account.getDescription());
-                }
-                accountsJSONArray.add(accountJSON);
-            }
-        }
-        response.put("accounts", accountsJSONArray);
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		final JSONArray accountsJSONArray = new JSONArray();
+		try (DbIterator<Account.AccountInfo> accounts = Account.searchAccounts(query, firstIndex, lastIndex)) {
+			for (final Account.AccountInfo account : accounts) {
+				final JSONObject accountJSON = new JSONObject();
+				JSONData.putAccount(accountJSON, "account", account.getAccountId());
+				if (account.getName() != null) {
+					accountJSON.put("name", account.getName());
+				}
+				if (account.getDescription() != null) {
+					accountJSON.put("description", account.getDescription());
+				}
+				accountsJSONArray.add(accountJSON);
+			}
+		}
+		response.put("accounts", accountsJSONArray);
+		return response;
+	}
 
 }

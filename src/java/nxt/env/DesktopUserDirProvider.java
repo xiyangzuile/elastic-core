@@ -25,53 +25,53 @@ import java.util.Properties;
 
 abstract class DesktopUserDirProvider implements DirProvider {
 
-    public static final String LOG_FILE_PATTERN = "java.util.logging.FileHandler.pattern";
+	public static final String LOG_FILE_PATTERN = "java.util.logging.FileHandler.pattern";
 
-    private File logFileDir;
+	private File logFileDir;
 
-    @Override
-    public boolean isLoadPropertyFileFromUserDir() {
-        return true;
-    }
+	@Override
+	public File getConfDir() {
+		return new File(this.getUserHomeDir(), "conf");
+	}
 
-    @Override
-    public void updateLogFileHandler(Properties loggingProperties) {
-        if (loggingProperties.getProperty(LOG_FILE_PATTERN) == null) {
-            logFileDir = new File(getUserHomeDir(), "logs");
-            return;
-        }
-        Path logFilePattern = Paths.get(getUserHomeDir()).resolve(Paths.get(loggingProperties.getProperty(LOG_FILE_PATTERN)));
-        loggingProperties.setProperty(LOG_FILE_PATTERN, logFilePattern.toString());
+	@Override
+	public String getDbDir(final String dbDir) {
+		return Paths.get(this.getUserHomeDir()).resolve(Paths.get(dbDir)).toString();
+	}
 
-        Path logDirPath = logFilePattern.getParent();
-        System.out.printf("Logs dir %s\n", logDirPath.toString());
-        this.logFileDir = new File(logDirPath.toString());
-        if (!Files.isReadable(logDirPath)) {
-            System.out.printf("Creating dir %s\n", logDirPath);
-            try {
-                Files.createDirectory(logDirPath);
-            } catch (IOException e) {
-                throw new IllegalArgumentException("Cannot create " + logDirPath, e);
-            }
-        }
-    }
+	@Override
+	public File getLogFileDir() {
+		return this.logFileDir;
+	}
 
-    @Override
-    public File getLogFileDir() {
-        return logFileDir;
-    }
+	@Override
+	public abstract String getUserHomeDir();
 
-    @Override
-    public String getDbDir(String dbDir) {
-        return Paths.get(getUserHomeDir()).resolve(Paths.get(dbDir)).toString();
-    }
+	@Override
+	public boolean isLoadPropertyFileFromUserDir() {
+		return true;
+	}
 
-    @Override
-    public File getConfDir() {
-        return new File(getUserHomeDir(), "conf");
-    }
+	@Override
+	public void updateLogFileHandler(final Properties loggingProperties) {
+		if (loggingProperties.getProperty(DesktopUserDirProvider.LOG_FILE_PATTERN) == null) {
+			this.logFileDir = new File(this.getUserHomeDir(), "logs");
+			return;
+		}
+		final Path logFilePattern = Paths.get(this.getUserHomeDir()).resolve(Paths.get(loggingProperties.getProperty(DesktopUserDirProvider.LOG_FILE_PATTERN)));
+		loggingProperties.setProperty(DesktopUserDirProvider.LOG_FILE_PATTERN, logFilePattern.toString());
 
-    @Override
-    public abstract String getUserHomeDir();
+		final Path logDirPath = logFilePattern.getParent();
+		System.out.printf("Logs dir %s\n", logDirPath.toString());
+		this.logFileDir = new File(logDirPath.toString());
+		if (!Files.isReadable(logDirPath)) {
+			System.out.printf("Creating dir %s\n", logDirPath);
+			try {
+				Files.createDirectory(logDirPath);
+			} catch (final IOException e) {
+				throw new IllegalArgumentException("Cannot create " + logDirPath, e);
+			}
+		}
+	}
 
 }

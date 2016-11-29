@@ -30,49 +30,49 @@ import nxt.util.JSON;
 
 final class GetNextBlocks extends PeerServlet.PeerRequestHandler {
 
-    static final GetNextBlocks instance = new GetNextBlocks();
+	static final GetNextBlocks instance = new GetNextBlocks();
 
-    static final JSONStreamAware TOO_MANY_BLOCKS_REQUESTED;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("error", Errors.TOO_MANY_BLOCKS_REQUESTED);
-        TOO_MANY_BLOCKS_REQUESTED = JSON.prepare(response);
-    }
+	static final JSONStreamAware TOO_MANY_BLOCKS_REQUESTED;
+	static {
+		final JSONObject response = new JSONObject();
+		response.put("error", Errors.TOO_MANY_BLOCKS_REQUESTED);
+		TOO_MANY_BLOCKS_REQUESTED = JSON.prepare(response);
+	}
 
-    private GetNextBlocks() {}
+	private GetNextBlocks() {}
 
 
-    @Override
-    JSONStreamAware processRequest(JSONObject request, Peer peer) {
+	@Override
+	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
-        JSONObject response = new JSONObject();
-        JSONArray nextBlocksArray = new JSONArray();
-        List<? extends Block> blocks;
-        long blockId = Convert.parseUnsignedLong((String) request.get("blockId"));
-        List<String> stringList = (List<String>)request.get("blockIds");
-        if (stringList != null) {
-            if (stringList.size() > 36) {
-                return TOO_MANY_BLOCKS_REQUESTED;
-            }
-            List<Long> idList = new ArrayList<>();
-            stringList.forEach(stringId -> idList.add(Convert.parseUnsignedLong(stringId)));
-            blocks = Nxt.getBlockchain().getBlocksAfter(blockId, idList);
-        } else {
-            long limit = Convert.parseLong(request.get("limit"));
-            if (limit > 36) {
-                return TOO_MANY_BLOCKS_REQUESTED;
-            }
-            blocks = Nxt.getBlockchain().getBlocksAfter(blockId, limit > 0 ? (int)limit : 36);
-        }
-        blocks.forEach(block -> nextBlocksArray.add(block.getJSONObject()));
-        response.put("nextBlocks", nextBlocksArray);
+		final JSONObject response = new JSONObject();
+		final JSONArray nextBlocksArray = new JSONArray();
+		List<? extends Block> blocks;
+		final long blockId = Convert.parseUnsignedLong((String) request.get("blockId"));
+		final List<String> stringList = (List<String>)request.get("blockIds");
+		if (stringList != null) {
+			if (stringList.size() > 36) {
+				return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
+			}
+			final List<Long> idList = new ArrayList<>();
+			stringList.forEach(stringId -> idList.add(Convert.parseUnsignedLong(stringId)));
+			blocks = Nxt.getBlockchain().getBlocksAfter(blockId, idList);
+		} else {
+			final long limit = Convert.parseLong(request.get("limit"));
+			if (limit > 36) {
+				return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
+			}
+			blocks = Nxt.getBlockchain().getBlocksAfter(blockId, limit > 0 ? (int)limit : 36);
+		}
+		blocks.forEach(block -> nextBlocksArray.add(block.getJSONObject()));
+		response.put("nextBlocks", nextBlocksArray);
 
-        return response;
-    }
+		return response;
+	}
 
-    @Override
-    boolean rejectWhileDownloading() {
-        return true;
-    }
+	@Override
+	boolean rejectWhileDownloading() {
+		return true;
+	}
 
 }

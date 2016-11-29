@@ -20,63 +20,67 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public interface Time {
 
-    int getTime();
+	final class ConstantTime implements Time {
 
-    final class EpochTime implements Time {
+		private final int time;
 
-        public int getTime() {
-            return Convert.toEpochTime(System.currentTimeMillis());
-        }
+		public ConstantTime(final int time) {
+			this.time = time;
+		}
 
-    }
+		@Override
+		public int getTime() {
+			return this.time;
+		}
 
-    final class ConstantTime implements Time {
+	}
 
-        private final int time;
+	final class CounterTime implements Time {
 
-        public ConstantTime(int time) {
-            this.time = time;
-        }
+		private final AtomicInteger counter;
 
-        public int getTime() {
-            return time;
-        }
+		public CounterTime(final int time) {
+			this.counter = new AtomicInteger(time);
+		}
 
-    }
+		@Override
+		public int getTime() {
+			return this.counter.incrementAndGet();
+		}
 
-    final class FasterTime implements Time {
+	}
 
-        private final int multiplier;
-        private final long systemStartTime;
-        private final int time;
+	final class EpochTime implements Time {
 
-        public FasterTime(int time, int multiplier) {
-            if (multiplier > 1000 || multiplier <= 0) {
-                throw new IllegalArgumentException("Time multiplier must be between 1 and 1000");
-            }
-            this.multiplier = multiplier;
-            this.time = time;
-            this.systemStartTime = System.currentTimeMillis();
-        }
+		@Override
+		public int getTime() {
+			return Convert.toEpochTime(System.currentTimeMillis());
+		}
 
-        public int getTime() {
-            return time + (int)((System.currentTimeMillis() - systemStartTime) / (1000 / multiplier));
-        }
+	}
 
-    }
+	final class FasterTime implements Time {
 
-    final class CounterTime implements Time {
+		private final int multiplier;
+		private final long systemStartTime;
+		private final int time;
 
-        private final AtomicInteger counter;
+		public FasterTime(final int time, final int multiplier) {
+			if ((multiplier > 1000) || (multiplier <= 0)) {
+				throw new IllegalArgumentException("Time multiplier must be between 1 and 1000");
+			}
+			this.multiplier = multiplier;
+			this.time = time;
+			this.systemStartTime = System.currentTimeMillis();
+		}
 
-        public CounterTime(int time) {
-            this.counter = new AtomicInteger(time);
-        }
+		@Override
+		public int getTime() {
+			return this.time + (int)((System.currentTimeMillis() - this.systemStartTime) / (1000 / this.multiplier));
+		}
 
-        public int getTime() {
-            return counter.incrementAndGet();
-        }
+	}
 
-    }
+	int getTime();
 
 }

@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_WEBSITE;
-import static nxt.http.JSONResponses.MISSING_WEBSITE;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -30,49 +27,49 @@ import nxt.util.Convert;
 
 public final class GenerateToken extends APIServlet.APIRequestHandler {
 
-    static final GenerateToken instance = new GenerateToken();
+	static final GenerateToken instance = new GenerateToken();
 
-    private GenerateToken() {
-        super(new APITag[] {APITag.TOKENS}, "website", "secretPhrase");
-    }
+	private GenerateToken() {
+		super(new APITag[] {APITag.TOKENS}, "website", "secretPhrase");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-        String website = Convert.emptyToNull(req.getParameter("website"));
-        if (website == null) {
-            return MISSING_WEBSITE;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        try {
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
+		final String website = Convert.emptyToNull(req.getParameter("website"));
+		if (website == null) {
+			return JSONResponses.MISSING_WEBSITE;
+		}
 
-            String tokenString = Token.generateToken(secretPhrase, website.trim());
+		try {
 
-            JSONObject response = JSONData.token(Token.parseToken(tokenString, website));
-            response.put("token", tokenString);
+			final String tokenString = Token.generateToken(secretPhrase, website.trim());
 
-            return response;
+			final JSONObject response = JSONData.token(Token.parseToken(tokenString, website));
+			response.put("token", tokenString);
 
-        } catch (RuntimeException e) {
-            return INCORRECT_WEBSITE;
-        }
+			return response;
 
-    }
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_WEBSITE;
+		}
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

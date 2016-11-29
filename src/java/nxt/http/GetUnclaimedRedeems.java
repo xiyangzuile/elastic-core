@@ -14,7 +14,7 @@ public final class GetUnclaimedRedeems extends APIServlet.APIRequestHandler {
 
 	static final GetUnclaimedRedeems instance = new GetUnclaimedRedeems();
 
-	
+
 
 	private GetUnclaimedRedeems() {
 		super(new APITag[] { APITag.ACCOUNTS, APITag.WC }, "account",
@@ -23,17 +23,18 @@ public final class GetUnclaimedRedeems extends APIServlet.APIRequestHandler {
 	}
 
 	@Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-		
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-		JSONArray redeems = new JSONArray();
+
+		final JSONArray redeems = new JSONArray();
 		for(int i=0;i<nxt.Redeem.listOfAddresses.length;++i){
-			if(!nxt.Redeem.isAlreadyRedeemed(nxt.Redeem.listOfAddresses[i] ))
+			if(!nxt.Redeem.isAlreadyRedeemed(nxt.Redeem.listOfAddresses[i] )) {
 				redeems.add(new String(String.valueOf(i) + "," + nxt.Redeem.listOfAddresses[i] + "," + String.valueOf(nxt.Redeem.amounts[i]).replace("L", "")));
+			}
 		}
 
-        
-		JSONObject response = new JSONObject();
+
+		final JSONObject response = new JSONObject();
 		response.put("redeems", redeems);
 		return response;
 

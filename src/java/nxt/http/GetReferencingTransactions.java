@@ -29,31 +29,31 @@ import nxt.db.DbIterator;
 
 public final class GetReferencingTransactions extends APIServlet.APIRequestHandler {
 
-    static final GetReferencingTransactions instance = new GetReferencingTransactions();
+	static final GetReferencingTransactions instance = new GetReferencingTransactions();
 
-    private GetReferencingTransactions() {
-        super(new APITag[] {APITag.TRANSACTIONS}, "transaction", "firstIndex", "lastIndex");
-    }
+	private GetReferencingTransactions() {
+		super(new APITag[] {APITag.TRANSACTIONS}, "transaction", "firstIndex", "lastIndex");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        long transactionId = ParameterParser.getUnsignedLong(req, "transaction", true);
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
+		final long transactionId = ParameterParser.getUnsignedLong(req, "transaction", true);
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
 
-        JSONArray transactions = new JSONArray();
-        try (DbIterator<? extends Transaction> iterator = Nxt.getBlockchain().getReferencingTransactions(transactionId, firstIndex, lastIndex)) {
-            while (iterator.hasNext()) {
-                Transaction transaction = iterator.next();
-                transactions.add(JSONData.transaction(transaction));
-            }
-        }
+		final JSONArray transactions = new JSONArray();
+		try (DbIterator<? extends Transaction> iterator = Nxt.getBlockchain().getReferencingTransactions(transactionId, firstIndex, lastIndex)) {
+			while (iterator.hasNext()) {
+				final Transaction transaction = iterator.next();
+				transactions.add(JSONData.transaction(transaction));
+			}
+		}
 
-        JSONObject response = new JSONObject();
-        response.put("transactions", transactions);
-        return response;
+		final JSONObject response = new JSONObject();
+		response.put("transactions", transactions);
+		return response;
 
-    }
+	}
 
 }

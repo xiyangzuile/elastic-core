@@ -31,149 +31,149 @@ import nxt.util.Logger;
 import nxt.util.ThreadPool;
 
 public class APIProxy {
-    private static final APIProxy instance = new APIProxy();
+	private static final APIProxy instance = new APIProxy();
 
-    static final boolean enableAPIProxy = Constants.isLightClient ||
-            (Nxt.getBooleanProperty("nxt.enableAPIProxy") && API.openAPIPort == 0 && API.openAPISSLPort == 0);
-    private static final int blacklistingPeriod = Nxt.getIntProperty("nxt.apiProxyBlacklistingPeriod") / 1000;
-    static final String forcedServerURL = Nxt.getStringProperty("nxt.forceAPIProxyServerURL", "");
+	static final boolean enableAPIProxy = Constants.isLightClient ||
+			(Nxt.getBooleanProperty("nxt.enableAPIProxy") && (API.openAPIPort == 0) && (API.openAPISSLPort == 0));
+	private static final int blacklistingPeriod = Nxt.getIntProperty("nxt.apiProxyBlacklistingPeriod") / 1000;
+	static final String forcedServerURL = Nxt.getStringProperty("nxt.forceAPIProxyServerURL", "");
 
-    private volatile String forcedPeerHost;
-    private volatile List<String> peersHosts = Collections.emptyList();
-    private volatile String mainPeerAnnouncedAddress;
+	private static final Runnable peersUpdateThread = () -> {
+		final int curTime = Nxt.getEpochTime();
+		APIProxy.instance.blacklistedPeers.entrySet().removeIf((entry) -> {
+			if (entry.getValue() < curTime) {
+				Logger.logDebugMessage("Unblacklisting API peer " + entry.getKey());
+				return true;
+			}
+			return false;
+		});
+		final List<String> currentPeersHosts = APIProxy.instance.peersHosts;
+		if (currentPeersHosts != null) {
+			for (final String host : currentPeersHosts) {
+				final Peer peer = Peers.getPeer(host);
+				if (peer != null) {
+					Peers.connectPeer(peer);
+				}
+			}
+		}
+	};
+	static {
+		if (!Constants.isOffline && APIProxy.enableAPIProxy) {
+			ThreadPool.scheduleThread("APIProxyPeersUpdate", APIProxy.peersUpdateThread, 60);
+		}
+	}
+	public static APIProxy getInstance() {
+		return APIProxy.instance;
+	}
 
-    private final ConcurrentHashMap<String, Integer> blacklistedPeers = new ConcurrentHashMap<>();
+	public static void init() {}
 
-    private static final Runnable peersUpdateThread = () -> {
-        int curTime = Nxt.getEpochTime();
-        instance.blacklistedPeers.entrySet().removeIf((entry) -> {
-            if (entry.getValue() < curTime) {
-                Logger.logDebugMessage("Unblacklisting API peer " + entry.getKey());
-                return true;
-            }
-            return false;
-        });
-        List<String> currentPeersHosts = instance.peersHosts;
-        if (currentPeersHosts != null) {
-            for (String host : currentPeersHosts) {
-                Peer peer = Peers.getPeer(host);
-                if (peer != null) {
-                    Peers.connectPeer(peer);
-                }
-            }
-        }
-    };
+	static boolean isActivated() {
+		return Constants.isLightClient || (APIProxy.enableAPIProxy && Nxt.getBlockchainProcessor().isDownloading());
+	}
 
-    static {
-        if (!Constants.isOffline && enableAPIProxy) {
-            ThreadPool.scheduleThread("APIProxyPeersUpdate", peersUpdateThread, 60);
-        }
-    }
+	private volatile String forcedPeerHost;
 
-    private APIProxy() {
+	private volatile List<String> peersHosts = Collections.emptyList();
 
-    }
+	private volatile String mainPeerAnnouncedAddress;
 
-    public static void init() {}
+	private final ConcurrentHashMap<String, Integer> blacklistedPeers = new ConcurrentHashMap<>();
 
-    public static APIProxy getInstance() {
-        return instance;
-    }
+	private APIProxy() {
 
-    Peer getServingPeer(String requestType) {
-        if (forcedPeerHost != null) {
-            return Peers.getPeer(forcedPeerHost);
-        }
+	}
 
-        APIEnum requestAPI = APIEnum.fromName(requestType);
-        if (!peersHosts.isEmpty()) {
-            for (String host : peersHosts) {
-                Peer peer = Peers.getPeer(host);
-                if (peer != null && peer.isApiConnectable() && !peer.getDisabledAPIs().contains(requestAPI)) {
-                    return peer;
-                }
-            }
-        }
+	void blacklistHost(final String host) {
+		this.blacklistedPeers.put(host, Nxt.getEpochTime() + APIProxy.blacklistingPeriod);
+		if (this.peersHosts.contains(host)) {
+			this.peersHosts = Collections.emptyList();
+			this.getServingPeer(null);
+		}
+	}
 
-        List<Peer> connectablePeers = Peers.getPeers(p -> p.isApiConnectable() && !blacklistedPeers.containsKey(p.getHost()));
-        if (connectablePeers.isEmpty()) {
-            return null;
-        }
-        // subset of connectable peers that have at least one new API enabled, which was disabled for the
-        // The first peer (element 0 of peersHosts) is chosen at random. Next peers are chosen randomly from a
-        // previously chosen peers. In worst case the size of peersHosts will be the number of APIs
-        Peer peer = getRandomAPIPeer(connectablePeers);
-        if (peer == null) {
-            return null;
-        }
+	String getMainPeerAnnouncedAddress() {
+		// The first client request GetBlockchainState is handled by the server
+		// Not by the proxy. In order to report a peer to the client we have
+		// To select some initial peer.
+		if (this.mainPeerAnnouncedAddress == null) {
+			final Peer peer = this.getServingPeer(null);
+			if (peer != null) {
+				this.mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
+			}
+		}
+		return this.mainPeerAnnouncedAddress;
+	}
 
-        Peer resultPeer = null;
-        List<String> currentPeersHosts = new ArrayList<>();
-        EnumSet<APIEnum> disabledAPIs = EnumSet.noneOf(APIEnum.class);
-        currentPeersHosts.add(peer.getHost());
-        mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
-        if (!peer.getDisabledAPIs().contains(requestAPI)) {
-            resultPeer = peer;
-        }
-        while (!disabledAPIs.isEmpty() && !connectablePeers.isEmpty()) {
-            // remove all peers that do not introduce new enabled APIs
-            connectablePeers.removeIf(p -> p.getDisabledAPIs().containsAll(disabledAPIs));
-            peer = getRandomAPIPeer(connectablePeers);
-            if (peer != null) {
-                currentPeersHosts.add(peer.getHost());
-                if (!peer.getDisabledAPIs().contains(requestAPI)) {
-                    resultPeer = peer;
-                }
-                disabledAPIs.retainAll(peer.getDisabledAPIs());
-            }
-        }
-        peersHosts = Collections.unmodifiableList(currentPeersHosts);
-        Logger.logInfoMessage("Selected API peer " + resultPeer + " peer hosts selected " + currentPeersHosts);
-        return resultPeer;
-    }
+	private Peer getRandomAPIPeer(final List<Peer> peers) {
+		if (peers.isEmpty()) {
+			return null;
+		}
+		final int index = ThreadLocalRandom.current().nextInt(peers.size());
+		return peers.remove(index);
+	}
 
-    Peer setForcedPeer(Peer peer) {
-        if (peer != null) {
-            forcedPeerHost = peer.getHost();
-            mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
-            return peer;
-        } else {
-            forcedPeerHost = null;
-            mainPeerAnnouncedAddress = null;
-            return getServingPeer(null);
-        }
-    }
+	Peer getServingPeer(final String requestType) {
+		if (this.forcedPeerHost != null) {
+			return Peers.getPeer(this.forcedPeerHost);
+		}
 
-    String getMainPeerAnnouncedAddress() {
-        // The first client request GetBlockchainState is handled by the server
-        // Not by the proxy. In order to report a peer to the client we have
-        // To select some initial peer.
-        if (mainPeerAnnouncedAddress == null) {
-            Peer peer = getServingPeer(null);
-            if (peer != null) {
-                mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
-            }
-        }
-        return mainPeerAnnouncedAddress;
-    }
+		final APIEnum requestAPI = APIEnum.fromName(requestType);
+		if (!this.peersHosts.isEmpty()) {
+			for (final String host : this.peersHosts) {
+				final Peer peer = Peers.getPeer(host);
+				if ((peer != null) && peer.isApiConnectable() && !peer.getDisabledAPIs().contains(requestAPI)) {
+					return peer;
+				}
+			}
+		}
 
-    static boolean isActivated() {
-        return Constants.isLightClient || (enableAPIProxy && Nxt.getBlockchainProcessor().isDownloading());
-    }
+		final List<Peer> connectablePeers = Peers.getPeers(p -> p.isApiConnectable() && !this.blacklistedPeers.containsKey(p.getHost()));
+		if (connectablePeers.isEmpty()) {
+			return null;
+		}
+		// subset of connectable peers that have at least one new API enabled, which was disabled for the
+		// The first peer (element 0 of peersHosts) is chosen at random. Next peers are chosen randomly from a
+		// previously chosen peers. In worst case the size of peersHosts will be the number of APIs
+		Peer peer = this.getRandomAPIPeer(connectablePeers);
+		if (peer == null) {
+			return null;
+		}
 
-    void blacklistHost(String host) {
-        blacklistedPeers.put(host, Nxt.getEpochTime() + blacklistingPeriod);
-        if (peersHosts.contains(host)) {
-            peersHosts = Collections.emptyList();
-            getServingPeer(null);
-        }
-    }
+		Peer resultPeer = null;
+		final List<String> currentPeersHosts = new ArrayList<>();
+		final EnumSet<APIEnum> disabledAPIs = EnumSet.noneOf(APIEnum.class);
+		currentPeersHosts.add(peer.getHost());
+		this.mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
+		if (!peer.getDisabledAPIs().contains(requestAPI)) {
+			resultPeer = peer;
+		}
+		while (!disabledAPIs.isEmpty() && !connectablePeers.isEmpty()) {
+			// remove all peers that do not introduce new enabled APIs
+			connectablePeers.removeIf(p -> p.getDisabledAPIs().containsAll(disabledAPIs));
+			peer = this.getRandomAPIPeer(connectablePeers);
+			if (peer != null) {
+				currentPeersHosts.add(peer.getHost());
+				if (!peer.getDisabledAPIs().contains(requestAPI)) {
+					resultPeer = peer;
+				}
+				disabledAPIs.retainAll(peer.getDisabledAPIs());
+			}
+		}
+		this.peersHosts = Collections.unmodifiableList(currentPeersHosts);
+		Logger.logInfoMessage("Selected API peer " + resultPeer + " peer hosts selected " + currentPeersHosts);
+		return resultPeer;
+	}
 
-    private Peer getRandomAPIPeer(List<Peer> peers) {
-        if (peers.isEmpty()) {
-            return null;
-        }
-        int index = ThreadLocalRandom.current().nextInt(peers.size());
-        return peers.remove(index);
-    }
+	Peer setForcedPeer(final Peer peer) {
+		if (peer != null) {
+			this.forcedPeerHost = peer.getHost();
+			this.mainPeerAnnouncedAddress = peer.getAnnouncedAddress();
+			return peer;
+		} else {
+			this.forcedPeerHost = null;
+			this.mainPeerAnnouncedAddress = null;
+			return this.getServingPeer(null);
+		}
+	}
 }

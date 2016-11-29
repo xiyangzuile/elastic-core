@@ -37,180 +37,180 @@ import nxt.util.Logger;
 
 final class User {
 
-    private volatile String secretPhrase;
-    private volatile byte[] publicKey;
-    private volatile boolean isInactive;
-    private final String userId;
-    private final ConcurrentLinkedQueue<JSONStreamAware> pendingResponses = new ConcurrentLinkedQueue<>();
-    private AsyncContext asyncContext;
+	private final class UserAsyncListener implements AsyncListener {
 
-    User(String userId) {
-        this.userId = userId;
-    }
+		@Override
+		public void onComplete(final AsyncEvent asyncEvent) throws IOException { }
 
-    String getUserId() {
-        return this.userId;
-    }
+		@Override
+		public void onError(final AsyncEvent asyncEvent) throws IOException {
 
-    byte[] getPublicKey() {
-        return publicKey;
-    }
+			synchronized (User.this) {
+				User.this.asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
 
-    String getSecretPhrase() {
-        return secretPhrase;
-    }
+				try (Writer writer = User.this.asyncContext.getResponse().getWriter()) {
+					JSON.emptyJSON.writeJSONString(writer);
+				}
 
-    boolean isInactive() {
-        return isInactive;
-    }
+				User.this.asyncContext.complete();
+				User.this.asyncContext = null;
+			}
 
-    void setInactive(boolean inactive) {
-        this.isInactive = inactive;
-    }
+		}
 
-    synchronized void enqueue(JSONStreamAware response) {
-        pendingResponses.offer(response);
-    }
+		@Override
+		public void onStartAsync(final AsyncEvent asyncEvent) throws IOException { }
 
-    void lockAccount() {
-        Generator.stopForging(secretPhrase);
-        secretPhrase = null;
-    }
+		@Override
+		public void onTimeout(final AsyncEvent asyncEvent) throws IOException {
 
-    long unlockAccount(String secretPhrase) {
-        this.publicKey = Crypto.getPublicKey(secretPhrase);
-        this.secretPhrase = secretPhrase;
-        return Generator.startForging(secretPhrase).getAccountId();
-    }
+			synchronized (User.this) {
+				User.this.asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
 
-    synchronized void processPendingResponses(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        JSONArray responses = new JSONArray();
-        JSONStreamAware pendingResponse;
-        while ((pendingResponse = pendingResponses.poll()) != null) {
-            responses.add(pendingResponse);
-        }
-        if (responses.size() > 0) {
-            JSONObject combinedResponse = new JSONObject();
-            combinedResponse.put("responses", responses);
-            if (asyncContext != null) {
-                asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
-                try (Writer writer = asyncContext.getResponse().getWriter()) {
-                    combinedResponse.writeJSONString(writer);
-                }
-                asyncContext.complete();
-                asyncContext = req.startAsync();
-                asyncContext.addListener(new UserAsyncListener());
-                asyncContext.setTimeout(5000);
-            } else {
-                resp.setContentType("text/plain; charset=UTF-8");
-                try (Writer writer = resp.getWriter()) {
-                    combinedResponse.writeJSONString(writer);
-                }
-            }
-        } else {
-            if (asyncContext != null) {
-                asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
-                try (Writer writer = asyncContext.getResponse().getWriter()) {
-                    JSON.emptyJSON.writeJSONString(writer);
-                }
-                asyncContext.complete();
-            }
-            asyncContext = req.startAsync();
-            asyncContext.addListener(new UserAsyncListener());
-            asyncContext.setTimeout(5000);
-        }
-    }
+				try (Writer writer = User.this.asyncContext.getResponse().getWriter()) {
+					JSON.emptyJSON.writeJSONString(writer);
+				}
 
-    synchronized void send(JSONStreamAware response) {
-        if (asyncContext == null) {
+				User.this.asyncContext.complete();
+				User.this.asyncContext = null;
+			}
 
-            if (isInactive) {
-                // user not seen recently, no responses should be collected
-                return;
-            }
-            if (pendingResponses.size() > 1000) {
-                pendingResponses.clear();
-                // stop collecting responses for this user
-                isInactive = true;
-                if (secretPhrase == null) {
-                    // but only completely remove users that don't have unlocked accounts
-                    Users.remove(this);
-                }
-                return;
-            }
+		}
 
-            pendingResponses.offer(response);
+	}
+	private volatile String secretPhrase;
+	private volatile byte[] publicKey;
+	private volatile boolean isInactive;
+	private final String userId;
+	private final ConcurrentLinkedQueue<JSONStreamAware> pendingResponses = new ConcurrentLinkedQueue<>();
 
-        } else {
+	private AsyncContext asyncContext;
 
-            JSONArray responses = new JSONArray();
-            JSONStreamAware pendingResponse;
-            while ((pendingResponse = pendingResponses.poll()) != null) {
+	User(final String userId) {
+		this.userId = userId;
+	}
 
-                responses.add(pendingResponse);
+	synchronized void enqueue(final JSONStreamAware response) {
+		this.pendingResponses.offer(response);
+	}
 
-            }
-            responses.add(response);
+	byte[] getPublicKey() {
+		return this.publicKey;
+	}
 
-            JSONObject combinedResponse = new JSONObject();
-            combinedResponse.put("responses", responses);
+	String getSecretPhrase() {
+		return this.secretPhrase;
+	}
 
-            asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
+	String getUserId() {
+		return this.userId;
+	}
 
-            try (Writer writer = asyncContext.getResponse().getWriter()) {
-                combinedResponse.writeJSONString(writer);
-            } catch (IOException e) {
-                Logger.logMessage("Error sending response to user", e);
-            }
+	boolean isInactive() {
+		return this.isInactive;
+	}
 
-            asyncContext.complete();
-            asyncContext = null;
+	void lockAccount() {
+		Generator.stopForging(this.secretPhrase);
+		this.secretPhrase = null;
+	}
 
-        }
+	synchronized void processPendingResponses(final HttpServletRequest req, final HttpServletResponse resp) throws IOException {
+		final JSONArray responses = new JSONArray();
+		JSONStreamAware pendingResponse;
+		while ((pendingResponse = this.pendingResponses.poll()) != null) {
+			responses.add(pendingResponse);
+		}
+		if (responses.size() > 0) {
+			final JSONObject combinedResponse = new JSONObject();
+			combinedResponse.put("responses", responses);
+			if (this.asyncContext != null) {
+				this.asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
+				try (Writer writer = this.asyncContext.getResponse().getWriter()) {
+					combinedResponse.writeJSONString(writer);
+				}
+				this.asyncContext.complete();
+				this.asyncContext = req.startAsync();
+				this.asyncContext.addListener(new UserAsyncListener());
+				this.asyncContext.setTimeout(5000);
+			} else {
+				resp.setContentType("text/plain; charset=UTF-8");
+				try (Writer writer = resp.getWriter()) {
+					combinedResponse.writeJSONString(writer);
+				}
+			}
+		} else {
+			if (this.asyncContext != null) {
+				this.asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
+				try (Writer writer = this.asyncContext.getResponse().getWriter()) {
+					JSON.emptyJSON.writeJSONString(writer);
+				}
+				this.asyncContext.complete();
+			}
+			this.asyncContext = req.startAsync();
+			this.asyncContext.addListener(new UserAsyncListener());
+			this.asyncContext.setTimeout(5000);
+		}
+	}
 
-    }
+	synchronized void send(final JSONStreamAware response) {
+		if (this.asyncContext == null) {
+
+			if (this.isInactive) {
+				// user not seen recently, no responses should be collected
+				return;
+			}
+			if (this.pendingResponses.size() > 1000) {
+				this.pendingResponses.clear();
+				// stop collecting responses for this user
+				this.isInactive = true;
+				if (this.secretPhrase == null) {
+					// but only completely remove users that don't have unlocked accounts
+					Users.remove(this);
+				}
+				return;
+			}
+
+			this.pendingResponses.offer(response);
+
+		} else {
+
+			final JSONArray responses = new JSONArray();
+			JSONStreamAware pendingResponse;
+			while ((pendingResponse = this.pendingResponses.poll()) != null) {
+
+				responses.add(pendingResponse);
+
+			}
+			responses.add(response);
+
+			final JSONObject combinedResponse = new JSONObject();
+			combinedResponse.put("responses", responses);
+
+			this.asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
+
+			try (Writer writer = this.asyncContext.getResponse().getWriter()) {
+				combinedResponse.writeJSONString(writer);
+			} catch (final IOException e) {
+				Logger.logMessage("Error sending response to user", e);
+			}
+
+			this.asyncContext.complete();
+			this.asyncContext = null;
+
+		}
+
+	}
+
+	void setInactive(final boolean inactive) {
+		this.isInactive = inactive;
+	}
 
 
-    private final class UserAsyncListener implements AsyncListener {
-
-        @Override
-        public void onComplete(AsyncEvent asyncEvent) throws IOException { }
-
-        @Override
-        public void onError(AsyncEvent asyncEvent) throws IOException {
-
-            synchronized (User.this) {
-                asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
-
-                try (Writer writer = asyncContext.getResponse().getWriter()) {
-                    JSON.emptyJSON.writeJSONString(writer);
-                }
-
-                asyncContext.complete();
-                asyncContext = null;
-            }
-
-        }
-
-        @Override
-        public void onStartAsync(AsyncEvent asyncEvent) throws IOException { }
-
-        @Override
-        public void onTimeout(AsyncEvent asyncEvent) throws IOException {
-
-            synchronized (User.this) {
-                asyncContext.getResponse().setContentType("text/plain; charset=UTF-8");
-
-                try (Writer writer = asyncContext.getResponse().getWriter()) {
-                    JSON.emptyJSON.writeJSONString(writer);
-                }
-
-                asyncContext.complete();
-                asyncContext = null;
-            }
-
-        }
-
-    }
+	long unlockAccount(final String secretPhrase) {
+		this.publicKey = Crypto.getPublicKey(secretPhrase);
+		this.secretPhrase = secretPhrase;
+		return Generator.startForging(secretPhrase).getAccountId();
+	}
 
 }

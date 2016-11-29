@@ -41,218 +41,218 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class ReadWriteUpdateLock {
 
-    /** Lock shared by the read and write locks */
-    private final ReentrantReadWriteLock sharedLock = new ReentrantReadWriteLock();
+	/**
+	 * Lock interface
+	 */
+	public interface Lock {
 
-    /** Lock used by the update lock */
-    private final ReentrantLock mutexLock = new ReentrantLock();
+		/**
+		 * Check if the thread holds the lock
+		 *
+		 * @return                  TRUE if the thread holds the lock
+		 */
+		boolean hasLock();
 
-    /** Lock counts */
-    private final ThreadLocal<LockCount> lockCount = ThreadLocal.withInitial(LockCount::new);
+		/**
+		 * Obtain the lock
+		 */
+		void lock();
 
-    /** Read lock */
-    private final ReadLock readLock = new ReadLock();
+		/**
+		 * Release the lock
+		 */
+		void unlock();
+	}
 
-    /** Update lock */
-    private final UpdateLock updateLock = new UpdateLock();
+	/**
+	 * Lock counts
+	 */
+	private class LockCount {
 
-    /** Write lock */
-    private final WriteLock writeLock = new WriteLock();
+		/** Read lock count */
+		private int readCount;
 
-    /**
-     * Return the read lock
-     *
-     * @return                      Read lock
-     */
-    public Lock readLock() {
-        return readLock;
-    }
+		/** Update lock count */
+		private int updateCount;
 
-    /**
-     * Return the update lock
-     *
-     * @return                      Update lock
-     */
-    public Lock updateLock() {
-        return updateLock;
-    }
+		/** Write lock count */
+		private int writeCount;
+	}
 
-    /**
-     * Return the write lock
-     *
-     * @return                      Write lock
-     */
-    public Lock writeLock() {
-        return writeLock;
-    }
+	/**
+	 * Read lock
+	 */
+	private class ReadLock implements Lock {
 
-    /**
-     * Lock interface
-     */
-    public interface Lock {
+		/**
+		 * Check if the thread holds the lock
+		 *
+		 * @return                  TRUE if the thread holds the lock
+		 */
+		@Override
+		public boolean hasLock() {
+			return ReadWriteUpdateLock.this.lockCount.get().readCount != 0;
+		}
 
-        /**
-         * Obtain the lock
-         */
-        void lock();
+		/**
+		 * Obtain the lock
+		 */
+		@Override
+		public void lock() {
+			ReadWriteUpdateLock.this.sharedLock.readLock().lock();
+			ReadWriteUpdateLock.this.lockCount.get().readCount++;
+		}
 
-        /**
-         * Release the lock
-         */
-        void unlock();
+		/**
+		 * Release the lock
+		 */
+		@Override
+		public void unlock() {
+			ReadWriteUpdateLock.this.sharedLock.readLock().unlock();
+			ReadWriteUpdateLock.this.lockCount.get().readCount--;
+		}
+	}
 
-        /**
-         * Check if the thread holds the lock
-         *
-         * @return                  TRUE if the thread holds the lock
-         */
-        boolean hasLock();
-    }
+	/**
+	 * Update lock
+	 */
+	private class UpdateLock implements Lock {
 
-    /**
-     * Read lock
-     */
-    private class ReadLock implements Lock {
+		/**
+		 * Check if the thread holds the lock
+		 *
+		 * @return                  TRUE if the thread holds the lock
+		 */
+		@Override
+		public boolean hasLock() {
+			return ReadWriteUpdateLock.this.lockCount.get().updateCount != 0;
+		}
 
-        /**
-         * Obtain the lock
-         */
-        @Override
-        public void lock() {
-            sharedLock.readLock().lock();
-            lockCount.get().readCount++;
-        }
+		/**
+		 * Obtain the lock
+		 *
+		 * Caller must not hold the read or write lock
+		 */
+		@Override
+		public void lock() {
+			final LockCount counts = ReadWriteUpdateLock.this.lockCount.get();
+			if (counts.readCount != 0) {
+				throw new IllegalStateException("Update lock cannot be obtained while holding the read lock");
+			}
+			if (counts.writeCount != 0) {
+				throw new IllegalStateException("Update lock cannot be obtained while holding the write lock");
+			}
+			ReadWriteUpdateLock.this.mutexLock.lock();
+			counts.updateCount++;
+		}
 
-        /**
-         * Release the lock
-         */
-        @Override
-        public void unlock() {
-            sharedLock.readLock().unlock();
-            lockCount.get().readCount--;
-        }
+		/**
+		 * Release the lock
+		 */
+		@Override
+		public void unlock() {
+			ReadWriteUpdateLock.this.mutexLock.unlock();
+			ReadWriteUpdateLock.this.lockCount.get().updateCount--;
+		}
+	}
 
-        /**
-         * Check if the thread holds the lock
-         *
-         * @return                  TRUE if the thread holds the lock
-         */
-        @Override
-        public boolean hasLock() {
-            return lockCount.get().readCount != 0;
-        }
-    }
+	/**
+	 * Write lock
+	 */
+	private class WriteLock implements Lock {
 
-    /**
-     * Update lock
-     */
-    private class UpdateLock implements Lock {
+		/**
+		 * Check if the thread holds the lock
+		 *
+		 * @return                  TRUE if the thread holds the lock
+		 */
+		@Override
+		public boolean hasLock() {
+			return ReadWriteUpdateLock.this.lockCount.get().writeCount != 0;
+		}
 
-        /**
-         * Obtain the lock
-         *
-         * Caller must not hold the read or write lock
-         */
-        @Override
-        public void lock() {
-            LockCount counts = lockCount.get();
-            if (counts.readCount != 0) {
-                throw new IllegalStateException("Update lock cannot be obtained while holding the read lock");
-            }
-            if (counts.writeCount != 0) {
-                throw new IllegalStateException("Update lock cannot be obtained while holding the write lock");
-            }
-            mutexLock.lock();
-            counts.updateCount++;
-        }
+		/**
+		 * Obtain the lock
+		 *
+		 * Caller must not hold the read lock
+		 */
+		@Override
+		public void lock() {
+			final LockCount counts = ReadWriteUpdateLock.this.lockCount.get();
+			if (counts.readCount != 0) {
+				throw new IllegalStateException("Write lock cannot be obtained while holding the read lock");
+			}
+			boolean lockObtained = false;
+			try {
+				ReadWriteUpdateLock.this.mutexLock.lock();
+				counts.updateCount++;
+				lockObtained = true;
+				ReadWriteUpdateLock.this.sharedLock.writeLock().lock();
+				counts.writeCount++;
+			} catch (final Exception exc) {
+				if (lockObtained) {
+					ReadWriteUpdateLock.this.mutexLock.unlock();
+					counts.updateCount--;
+				}
+				throw exc;
+			}
+		}
 
-        /**
-         * Release the lock
-         */
-        @Override
-        public void unlock() {
-            mutexLock.unlock();
-            lockCount.get().updateCount--;
-        }
+		/**
+		 * Release the lock
+		 */
+		@Override
+		public void unlock() {
+			final LockCount counts = ReadWriteUpdateLock.this.lockCount.get();
+			ReadWriteUpdateLock.this.sharedLock.writeLock().unlock();
+			counts.writeCount--;
+			ReadWriteUpdateLock.this.mutexLock.unlock();
+			counts.updateCount--;
+		}
+	}
 
-        /**
-         * Check if the thread holds the lock
-         *
-         * @return                  TRUE if the thread holds the lock
-         */
-        @Override
-        public boolean hasLock() {
-            return lockCount.get().updateCount != 0;
-        }
-    }
+	/** Lock shared by the read and write locks */
+	private final ReentrantReadWriteLock sharedLock = new ReentrantReadWriteLock();
 
-    /**
-     * Write lock
-     */
-    private class WriteLock implements Lock {
+	/** Lock used by the update lock */
+	private final ReentrantLock mutexLock = new ReentrantLock();
 
-        /**
-         * Obtain the lock
-         *
-         * Caller must not hold the read lock
-         */
-        @Override
-        public void lock() {
-            LockCount counts = lockCount.get();
-            if (counts.readCount != 0) {
-                throw new IllegalStateException("Write lock cannot be obtained while holding the read lock");
-            }
-            boolean lockObtained = false;
-            try {
-                mutexLock.lock();
-                counts.updateCount++;
-                lockObtained = true;
-                sharedLock.writeLock().lock();
-                counts.writeCount++;
-            } catch (Exception exc) {
-                if (lockObtained) {
-                    mutexLock.unlock();
-                    counts.updateCount--;
-                }
-                throw exc;
-            }
-        }
+	/** Lock counts */
+	private final ThreadLocal<LockCount> lockCount = ThreadLocal.withInitial(LockCount::new);
 
-        /**
-         * Release the lock
-         */
-        @Override
-        public void unlock() {
-            LockCount counts = lockCount.get();
-            sharedLock.writeLock().unlock();
-            counts.writeCount--;
-            mutexLock.unlock();
-            counts.updateCount--;
-        }
+	/** Read lock */
+	private final ReadLock readLock = new ReadLock();
 
-        /**
-         * Check if the thread holds the lock
-         *
-         * @return                  TRUE if the thread holds the lock
-         */
-        @Override
-        public boolean hasLock() {
-            return lockCount.get().writeCount != 0;
-        }
-    }
+	/** Update lock */
+	private final UpdateLock updateLock = new UpdateLock();
 
-    /**
-     * Lock counts
-     */
-    private class LockCount {
+	/** Write lock */
+	private final WriteLock writeLock = new WriteLock();
 
-        /** Read lock count */
-        private int readCount;
+	/**
+	 * Return the read lock
+	 *
+	 * @return                      Read lock
+	 */
+	public Lock readLock() {
+		return this.readLock;
+	}
 
-        /** Update lock count */
-        private int updateCount;
+	/**
+	 * Return the update lock
+	 *
+	 * @return                      Update lock
+	 */
+	public Lock updateLock() {
+		return this.updateLock;
+	}
 
-        /** Write lock count */
-        private int writeCount;
-    }
+	/**
+	 * Return the write lock
+	 *
+	 * @return                      Write lock
+	 */
+	public Lock writeLock() {
+		return this.writeLock;
+	}
 }

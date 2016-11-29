@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_FILE;
-import static nxt.http.JSONResponses.INCORRECT_TOKEN;
-
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -33,49 +30,49 @@ import nxt.Token;
 
 public final class GenerateFileToken extends APIServlet.APIRequestHandler {
 
-    static final GenerateFileToken instance = new GenerateFileToken();
+	static final GenerateFileToken instance = new GenerateFileToken();
 
-    private GenerateFileToken() {
-        super("file", new APITag[] {APITag.TOKENS}, "secretPhrase");
-    }
+	private GenerateFileToken() {
+		super("file", new APITag[] {APITag.TOKENS}, "secretPhrase");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
-        String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-        byte[] data;
-        try {
-            Part part = req.getPart("file");
-            if (part == null) {
-                throw new ParameterException(INCORRECT_FILE);
-            }
-            ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
-            data = fileData.getData();
-        } catch (IOException | ServletException e) {
-            throw new ParameterException(INCORRECT_FILE);
-        }
-        try {
-            String tokenString = Token.generateToken(secretPhrase, data);
-            JSONObject response = JSONData.token(Token.parseToken(tokenString, data));
-            response.put("token", tokenString);
-            return response;
-        } catch (RuntimeException e) {
-            return INCORRECT_TOKEN;
-        }
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
+		byte[] data;
+		try {
+			final Part part = req.getPart("file");
+			if (part == null) {
+				throw new ParameterException(JSONResponses.INCORRECT_FILE);
+			}
+			final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
+			data = fileData.getData();
+		} catch (IOException | ServletException e) {
+			throw new ParameterException(JSONResponses.INCORRECT_FILE);
+		}
+		try {
+			final String tokenString = Token.generateToken(secretPhrase, data);
+			final JSONObject response = JSONData.token(Token.parseToken(tokenString, data));
+			response.put("token", tokenString);
+			return response;
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_TOKEN;
+		}
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

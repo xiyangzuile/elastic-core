@@ -22,14 +22,18 @@ import nxt.NxtException;
 
 public final class ParameterException extends NxtException {
 
-    private final JSONStreamAware errorResponse;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 411553011935598645L;
+	private final JSONStreamAware errorResponse;
 
-    ParameterException(JSONStreamAware errorResponse) {
-        this.errorResponse = errorResponse;
-    }
+	ParameterException(final JSONStreamAware errorResponse) {
+		this.errorResponse = errorResponse;
+	}
 
-    JSONStreamAware getErrorResponse() {
-        return errorResponse;
-    }
+	JSONStreamAware getErrorResponse() {
+		return this.errorResponse;
+	}
 
 }

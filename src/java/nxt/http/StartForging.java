@@ -26,38 +26,38 @@ import nxt.Generator;
 
 public final class StartForging extends APIServlet.APIRequestHandler {
 
-    static final StartForging instance = new StartForging();
+	static final StartForging instance = new StartForging();
 
-    private StartForging() {
-        super(new APITag[] {APITag.FORGING}, "secretPhrase");
-    }
+	private StartForging() {
+		super(new APITag[] {APITag.FORGING}, "secretPhrase");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-        Generator generator = Generator.startForging(secretPhrase);
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        JSONObject response = new JSONObject();
-        response.put("deadline", generator.getDeadline());
-        response.put("hitTime", generator.getHitTime());
-        return response;
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
+		final Generator generator = Generator.startForging(secretPhrase);
 
-    }
+		final JSONObject response = new JSONObject();
+		response.put("deadline", generator.getDeadline());
+		response.put("hitTime", generator.getHitTime());
+		return response;
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireFullClient() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireFullClient() {
-        return true;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

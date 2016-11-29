@@ -31,34 +31,34 @@ import nxt.NxtException;
 
 public final class GetAccountBlocks extends APIServlet.APIRequestHandler {
 
-    static final GetAccountBlocks instance = new GetAccountBlocks();
+	static final GetAccountBlocks instance = new GetAccountBlocks();
 
-    private GetAccountBlocks() {
-        super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex", "includeTransactions");
-    }
+	private GetAccountBlocks() {
+		super(new APITag[] {APITag.ACCOUNTS}, "account", "timestamp", "firstIndex", "lastIndex", "includeTransactions");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        long accountId = ParameterParser.getAccountId(req, true);
-        int timestamp = ParameterParser.getTimestamp(req);
-        int firstIndex = ParameterParser.getFirstIndex(req);
-        int lastIndex = ParameterParser.getLastIndex(req);
+		final long accountId = ParameterParser.getAccountId(req, true);
+		final int timestamp = ParameterParser.getTimestamp(req);
+		final int firstIndex = ParameterParser.getFirstIndex(req);
+		final int lastIndex = ParameterParser.getLastIndex(req);
 
-        boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
+		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
 
-        JSONArray blocks = new JSONArray();
-        Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
-        while (it.hasNext()) {
-                Block block = it.next();
-                blocks.add(JSONData.block(block, includeTransactions, false));
-            
-        }
+		final JSONArray blocks = new JSONArray();
+		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex).iterator();
+		while (it.hasNext()) {
+			final Block block = it.next();
+			blocks.add(JSONData.block(block, includeTransactions, false));
 
-        JSONObject response = new JSONObject();
-        response.put("blocks", blocks);
+		}
 
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("blocks", blocks);
+
+		return response;
+	}
 
 }

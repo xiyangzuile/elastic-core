@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
-import static nxt.http.JSONResponses.INCORRECT_ACCOUNT_NAME_LENGTH;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -31,30 +28,30 @@ import nxt.util.Convert;
 
 public final class SetAccountInfo extends CreateTransaction {
 
-    static final SetAccountInfo instance = new SetAccountInfo();
+	static final SetAccountInfo instance = new SetAccountInfo();
 
-    private SetAccountInfo() {
-        super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "name", "description");
-    }
+	private SetAccountInfo() {
+		super(new APITag[] {APITag.ACCOUNTS, APITag.CREATE_TRANSACTION}, "name", "description");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-        String name = Convert.nullToEmpty(req.getParameter("name")).trim();
-        String description = Convert.nullToEmpty(req.getParameter("description")).trim();
+		final String name = Convert.nullToEmpty(req.getParameter("name")).trim();
+		final String description = Convert.nullToEmpty(req.getParameter("description")).trim();
 
-        if (name.length() > Constants.MAX_ACCOUNT_NAME_LENGTH) {
-            return INCORRECT_ACCOUNT_NAME_LENGTH;
-        }
+		if (name.length() > Constants.MAX_ACCOUNT_NAME_LENGTH) {
+			return JSONResponses.INCORRECT_ACCOUNT_NAME_LENGTH;
+		}
 
-        if (description.length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH) {
-            return INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
-        }
+		if (description.length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH) {
+			return JSONResponses.INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
+		}
 
-        Account account = ParameterParser.getSenderAccount(req);
-        Attachment attachment = new Attachment.MessagingAccountInfo(name, description);
-        return createTransaction(req, account, attachment);
+		final Account account = ParameterParser.getSenderAccount(req);
+		final Attachment attachment = new Attachment.MessagingAccountInfo(name, description);
+		return this.createTransaction(req, account, attachment);
 
-    }
+	}
 
 }

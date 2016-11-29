@@ -20,16 +20,16 @@ import nxt.http.APIServlet;
 
 public interface AddOn {
 
-    default void init() {}
+	default APIServlet.APIRequestHandler getAPIRequestHandler() {
+		return null;
+	}
 
-    default void shutdown() {}
+	default String getAPIRequestType() {
+		return null;
+	}
 
-    default APIServlet.APIRequestHandler getAPIRequestHandler() {
-        return null;
-    }
+	default void init() {}
 
-    default String getAPIRequestType() {
-        return null;
-    }
+	default void shutdown() {}
 
 }

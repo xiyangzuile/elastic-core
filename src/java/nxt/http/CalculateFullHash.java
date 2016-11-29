@@ -16,8 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.MISSING_SIGNATURE_HASH;
-
 import java.security.MessageDigest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -32,43 +30,43 @@ import nxt.util.Convert;
 
 public final class CalculateFullHash extends APIServlet.APIRequestHandler {
 
-    static final CalculateFullHash instance = new CalculateFullHash();
+	static final CalculateFullHash instance = new CalculateFullHash();
 
-    private CalculateFullHash() {
-        super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "unsignedTransactionJSON", "signatureHash");
-    }
+	private CalculateFullHash() {
+		super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionBytes", "unsignedTransactionJSON", "signatureHash");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String unsignedBytesString = Convert.emptyToNull(req.getParameter("unsignedTransactionBytes"));
-        String signatureHashString = Convert.emptyToNull(req.getParameter("signatureHash"));
-        String unsignedTransactionJSONString = Convert.emptyToNull(req.getParameter("unsignedTransactionJSON"));
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        if (signatureHashString == null) {
-            return MISSING_SIGNATURE_HASH;
-        }
-        JSONObject response = new JSONObject();
-        try {
-            Transaction transaction = ParameterParser.parseTransaction(unsignedTransactionJSONString, unsignedBytesString, null).build();
-            MessageDigest digest = Crypto.sha256();
-            digest.update(transaction.getUnsignedBytes());
-            byte[] fullHash = digest.digest(Convert.parseHexString(signatureHashString));
-            response.put("fullHash", Convert.toHexString(fullHash));
-        } catch (NxtException.NotValidException e) {
-            JSONData.putException(response, e, "Incorrect unsigned transaction json or bytes");
-        }
-        return response;
-    }
+		final String unsignedBytesString = Convert.emptyToNull(req.getParameter("unsignedTransactionBytes"));
+		final String signatureHashString = Convert.emptyToNull(req.getParameter("signatureHash"));
+		final String unsignedTransactionJSONString = Convert.emptyToNull(req.getParameter("unsignedTransactionJSON"));
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		if (signatureHashString == null) {
+			return JSONResponses.MISSING_SIGNATURE_HASH;
+		}
+		final JSONObject response = new JSONObject();
+		try {
+			final Transaction transaction = ParameterParser.parseTransaction(unsignedTransactionJSONString, unsignedBytesString, null).build();
+			final MessageDigest digest = Crypto.sha256();
+			digest.update(transaction.getUnsignedBytes());
+			final byte[] fullHash = digest.digest(Convert.parseHexString(signatureHashString));
+			response.put("fullHash", Convert.toHexString(fullHash));
+		} catch (final NxtException.NotValidException e) {
+			JSONData.putException(response, e, "Incorrect unsigned transaction json or bytes");
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

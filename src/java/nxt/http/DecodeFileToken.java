@@ -16,10 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_FILE;
-import static nxt.http.JSONResponses.INCORRECT_TOKEN;
-import static nxt.http.JSONResponses.MISSING_TOKEN;
-
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -32,46 +28,46 @@ import nxt.Token;
 
 public final class DecodeFileToken extends APIServlet.APIRequestHandler {
 
-    static final DecodeFileToken instance = new DecodeFileToken();
+	static final DecodeFileToken instance = new DecodeFileToken();
 
-    private DecodeFileToken() {
-        super("file", new APITag[] {APITag.TOKENS}, "token");
-    }
+	private DecodeFileToken() {
+		super("file", new APITag[] {APITag.TOKENS}, "token");
+	}
 
-    @Override
-    public JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
-        String tokenString = req.getParameter("token");
-        if (tokenString == null) {
-            return MISSING_TOKEN;
-        }
-        byte[] data;
-        try {
-            Part part = req.getPart("file");
-            if (part == null) {
-                throw new ParameterException(INCORRECT_FILE);
-            }
-            ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
-            data = fileData.getData();
-        } catch (IOException | ServletException e) {
-            throw new ParameterException(INCORRECT_FILE);
-        }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        try {
-            Token token = Token.parseToken(tokenString, data);
-            return JSONData.token(token);
-        } catch (RuntimeException e) {
-            return INCORRECT_TOKEN;
-        }
-    }
+	@Override
+	public JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
+		final String tokenString = req.getParameter("token");
+		if (tokenString == null) {
+			return JSONResponses.MISSING_TOKEN;
+		}
+		byte[] data;
+		try {
+			final Part part = req.getPart("file");
+			if (part == null) {
+				throw new ParameterException(JSONResponses.INCORRECT_FILE);
+			}
+			final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
+			data = fileData.getData();
+		} catch (IOException | ServletException e) {
+			throw new ParameterException(JSONResponses.INCORRECT_FILE);
+		}
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+		try {
+			final Token token = Token.parseToken(tokenString, data);
+			return JSONData.token(token);
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_TOKEN;
+		}
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

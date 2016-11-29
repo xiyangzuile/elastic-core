@@ -44,281 +44,281 @@ import java.util.concurrent.Executor;
  */
 public class FilteredConnection implements Connection {
 
-    private final Connection con;
-    private final FilteredFactory factory;
+	private final Connection con;
+	private final FilteredFactory factory;
 
-    public FilteredConnection(Connection con, FilteredFactory factory) {
-        this.con = con;
-        this.factory = factory;
-    }
+	public FilteredConnection(final Connection con, final FilteredFactory factory) {
+		this.con = con;
+		this.factory = factory;
+	}
 
-    @Override
-    public Statement createStatement() throws SQLException {
-        return factory.createStatement(con.createStatement());
-    }
+	@Override
+	public void abort(final Executor executor) throws SQLException {
+		this.con.abort(executor);
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql), sql);
-    }
+	@Override
+	public void clearWarnings() throws SQLException {
+		this.con.clearWarnings();
+	}
 
-    @Override
-    public CallableStatement prepareCall(String sql) throws SQLException {
-        return con.prepareCall(sql);
-    }
+	@Override
+	public void close() throws SQLException {
+		this.con.close();
+	}
 
-    @Override
-    public String nativeSQL(String sql) throws SQLException {
-        return con.nativeSQL(sql);
-    }
+	@Override
+	public void commit() throws SQLException {
+		this.con.commit();
+	}
 
-    @Override
-    public void setAutoCommit(boolean autoCommit) throws SQLException {
-        con.setAutoCommit(autoCommit);
-    }
+	@Override
+	public Array createArrayOf(final String typeName, final Object[] elements) throws SQLException {
+		return this.con.createArrayOf(typeName, elements);
+	}
 
-    @Override
-    public boolean getAutoCommit() throws SQLException {
-        return con.getAutoCommit();
-    }
+	@Override
+	public Blob createBlob() throws SQLException {
+		return this.con.createBlob();
+	}
 
-    @Override
-    public void commit() throws SQLException {
-        con.commit();
-    }
+	@Override
+	public Clob createClob() throws SQLException {
+		return this.con.createClob();
+	}
 
-    @Override
-    public void rollback() throws SQLException {
-        con.rollback();
-    }
+	@Override
+	public NClob createNClob() throws SQLException {
+		return this.con.createNClob();
+	}
 
-    @Override
-    public void close() throws SQLException {
-        con.close();
-    }
+	@Override
+	public SQLXML createSQLXML() throws SQLException {
+		return this.con.createSQLXML();
+	}
 
-    @Override
-    public boolean isClosed() throws SQLException {
-        return con.isClosed();
-    }
+	@Override
+	public Statement createStatement() throws SQLException {
+		return this.factory.createStatement(this.con.createStatement());
+	}
 
-    @Override
-    public DatabaseMetaData getMetaData() throws SQLException {
-        return con.getMetaData();
-    }
+	@Override
+	public Statement createStatement(final int resultSetType, final int resultSetConcurrency) throws SQLException {
+		return this.factory.createStatement(this.con.createStatement(resultSetType, resultSetConcurrency));
+	}
 
-    @Override
-    public void setReadOnly(boolean readOnly) throws SQLException {
-        con.setReadOnly(readOnly);
-    }
+	@Override
+	public Statement createStatement(final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
+		return this.factory.createStatement(this.con.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+	}
 
-    @Override
-    public boolean isReadOnly() throws SQLException {
-        return con.isReadOnly();
-    }
+	@Override
+	public Struct createStruct(final String typeName, final Object[] attributes) throws SQLException {
+		return this.con.createStruct(typeName, attributes);
+	}
 
-    @Override
-    public void setCatalog(String catalog) throws SQLException {
-        con.setCatalog(catalog);
-    }
+	@Override
+	public boolean getAutoCommit() throws SQLException {
+		return this.con.getAutoCommit();
+	}
 
-    @Override
-    public String getCatalog() throws SQLException {
-        return con.getCatalog();
-    }
+	@Override
+	public String getCatalog() throws SQLException {
+		return this.con.getCatalog();
+	}
 
-    @Override
-    public void setTransactionIsolation(int level) throws SQLException {
-        con.setTransactionIsolation(level);
-    }
+	@Override
+	public Properties getClientInfo() throws SQLException {
+		return this.con.getClientInfo();
+	}
 
-    @Override
-    public int getTransactionIsolation() throws SQLException {
-        return con.getTransactionIsolation();
-    }
+	@Override
+	public String getClientInfo(final String name) throws SQLException {
+		return this.con.getClientInfo(name);
+	}
 
-    @Override
-    public SQLWarning getWarnings() throws SQLException {
-        return con.getWarnings();
-    }
+	@Override
+	public int getHoldability() throws SQLException {
+		return this.con.getHoldability();
+	}
 
-    @Override
-    public void clearWarnings() throws SQLException {
-        con.clearWarnings();
-    }
+	@Override
+	public DatabaseMetaData getMetaData() throws SQLException {
+		return this.con.getMetaData();
+	}
 
-    @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-        return factory.createStatement(con.createStatement(resultSetType, resultSetConcurrency));
-    }
+	@Override
+	public int getNetworkTimeout() throws SQLException {
+		return this.con.getNetworkTimeout();
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql, resultSetType, resultSetConcurrency), sql);
-    }
+	@Override
+	public String getSchema() throws SQLException {
+		return this.con.getSchema();
+	}
 
-    @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        return con.prepareCall(sql, resultSetType, resultSetConcurrency);
-    }
+	@Override
+	public int getTransactionIsolation() throws SQLException {
+		return this.con.getTransactionIsolation();
+	}
 
-    @Override
-    public Map<String, Class<?>> getTypeMap() throws SQLException {
-        return con.getTypeMap();
-    }
+	@Override
+	public Map<String, Class<?>> getTypeMap() throws SQLException {
+		return this.con.getTypeMap();
+	}
 
-    @Override
-    public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        con.setTypeMap(map);
-    }
+	@Override
+	public SQLWarning getWarnings() throws SQLException {
+		return this.con.getWarnings();
+	}
 
-    @Override
-    public void setHoldability(int holdability) throws SQLException {
-        con.setHoldability(holdability);
-    }
+	@Override
+	public boolean isClosed() throws SQLException {
+		return this.con.isClosed();
+	}
 
-    @Override
-    public int getHoldability() throws SQLException {
-        return con.getHoldability();
-    }
+	@Override
+	public boolean isReadOnly() throws SQLException {
+		return this.con.isReadOnly();
+	}
 
-    @Override
-    public Savepoint setSavepoint() throws SQLException {
-        return con.setSavepoint();
-    }
+	@Override
+	public boolean isValid(final int timeout) throws SQLException {
+		return this.con.isValid(timeout);
+	}
 
-    @Override
-    public Savepoint setSavepoint(String name) throws SQLException {
-        return con.setSavepoint(name);
-    }
+	@Override
+	public boolean isWrapperFor(final Class<?> iface) throws SQLException {
+		return this.con.isWrapperFor(iface);
+	}
 
-    @Override
-    public void rollback(Savepoint savepoint) throws SQLException {
-        con.rollback(savepoint);
-    }
+	@Override
+	public String nativeSQL(final String sql) throws SQLException {
+		return this.con.nativeSQL(sql);
+	}
 
-    @Override
-    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        con.releaseSavepoint(savepoint);
-    }
+	@Override
+	public CallableStatement prepareCall(final String sql) throws SQLException {
+		return this.con.prepareCall(sql);
+	}
 
-    @Override
-    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return factory.createStatement(con.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
-    }
+	@Override
+	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException {
+		return this.con.prepareCall(sql, resultSetType, resultSetConcurrency);
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
-    }
+	@Override
+	public CallableStatement prepareCall(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
+		return this.con.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+	}
 
-    @Override
-    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        return con.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql), sql);
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql, autoGeneratedKeys), sql);
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql, final int autoGeneratedKeys) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, autoGeneratedKeys), sql);
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql, columnIndexes), sql);
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, resultSetType, resultSetConcurrency), sql);
+	}
 
-    @Override
-    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-        return factory.createPreparedStatement(con.prepareStatement(sql, columnNames), sql);
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql, final int resultSetType, final int resultSetConcurrency, final int resultSetHoldability) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
+	}
 
-    @Override
-    public Clob createClob() throws SQLException {
-        return con.createClob();
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql, final int[] columnIndexes) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, columnIndexes), sql);
+	}
 
-    @Override
-    public Blob createBlob() throws SQLException {
-        return con.createBlob();
-    }
+	@Override
+	public PreparedStatement prepareStatement(final String sql, final String[] columnNames) throws SQLException {
+		return this.factory.createPreparedStatement(this.con.prepareStatement(sql, columnNames), sql);
+	}
 
-    @Override
-    public NClob createNClob() throws SQLException {
-        return con.createNClob();
-    }
+	@Override
+	public void releaseSavepoint(final Savepoint savepoint) throws SQLException {
+		this.con.releaseSavepoint(savepoint);
+	}
 
-    @Override
-    public SQLXML createSQLXML() throws SQLException {
-        return con.createSQLXML();
-    }
+	@Override
+	public void rollback() throws SQLException {
+		this.con.rollback();
+	}
 
-    @Override
-    public boolean isValid(int timeout) throws SQLException {
-        return con.isValid(timeout);
-    }
+	@Override
+	public void rollback(final Savepoint savepoint) throws SQLException {
+		this.con.rollback(savepoint);
+	}
 
-    @Override
-    public void setClientInfo(String name, String value) throws SQLClientInfoException {
-        con.setClientInfo(name, value);
-    }
+	@Override
+	public void setAutoCommit(final boolean autoCommit) throws SQLException {
+		this.con.setAutoCommit(autoCommit);
+	}
 
-    @Override
-    public void setClientInfo(Properties properties) throws SQLClientInfoException {
-        con.setClientInfo(properties);
-    }
+	@Override
+	public void setCatalog(final String catalog) throws SQLException {
+		this.con.setCatalog(catalog);
+	}
 
-    @Override
-    public String getClientInfo(String name) throws SQLException {
-        return con.getClientInfo(name);
-    }
+	@Override
+	public void setClientInfo(final Properties properties) throws SQLClientInfoException {
+		this.con.setClientInfo(properties);
+	}
 
-    @Override
-    public Properties getClientInfo() throws SQLException {
-        return con.getClientInfo();
-    }
+	@Override
+	public void setClientInfo(final String name, final String value) throws SQLClientInfoException {
+		this.con.setClientInfo(name, value);
+	}
 
-    @Override
-    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        return con.createArrayOf(typeName, elements);
-    }
+	@Override
+	public void setHoldability(final int holdability) throws SQLException {
+		this.con.setHoldability(holdability);
+	}
 
-    @Override
-    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-        return con.createStruct(typeName, attributes);
-    }
+	@Override
+	public void setNetworkTimeout(final Executor executor, final int milliseconds) throws SQLException {
+		this.con.setNetworkTimeout(executor, milliseconds);
+	}
 
-    @Override
-    public void setSchema(String schema) throws SQLException {
-        con.setSchema(schema);
-    }
+	@Override
+	public void setReadOnly(final boolean readOnly) throws SQLException {
+		this.con.setReadOnly(readOnly);
+	}
 
-    @Override
-    public String getSchema() throws SQLException {
-        return con.getSchema();
-    }
+	@Override
+	public Savepoint setSavepoint() throws SQLException {
+		return this.con.setSavepoint();
+	}
 
-    @Override
-    public void abort(Executor executor) throws SQLException {
-        con.abort(executor);
-    }
+	@Override
+	public Savepoint setSavepoint(final String name) throws SQLException {
+		return this.con.setSavepoint(name);
+	}
 
-    @Override
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        con.setNetworkTimeout(executor, milliseconds);
-    }
+	@Override
+	public void setSchema(final String schema) throws SQLException {
+		this.con.setSchema(schema);
+	}
 
-    @Override
-    public int getNetworkTimeout() throws SQLException {
-        return con.getNetworkTimeout();
-    }
+	@Override
+	public void setTransactionIsolation(final int level) throws SQLException {
+		this.con.setTransactionIsolation(level);
+	}
 
-    @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return con.unwrap(iface);
-    }
+	@Override
+	public void setTypeMap(final Map<String, Class<?>> map) throws SQLException {
+		this.con.setTypeMap(map);
+	}
 
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return con.isWrapperFor(iface);
-    }
+	@Override
+	public <T> T unwrap(final Class<T> iface) throws SQLException {
+		return this.con.unwrap(iface);
+	}
 }

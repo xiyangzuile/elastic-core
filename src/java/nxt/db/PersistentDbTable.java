@@ -18,29 +18,29 @@ package nxt.db;
 
 public abstract class PersistentDbTable<T> extends EntityDbTable<T> {
 
-    protected PersistentDbTable(String table, DbKey.Factory<T> dbKeyFactory) {
-        super(table, dbKeyFactory, false, null);
-    }
+	protected PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+		super(table, dbKeyFactory, false, null);
+	}
 
-    protected PersistentDbTable(String table, DbKey.Factory<T> dbKeyFactory, String fullTextSearchColumns) {
-        super(table, dbKeyFactory, false, fullTextSearchColumns);
-    }
+	PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final boolean multiversion, final String fullTextSearchColumns) {
+		super(table, dbKeyFactory, multiversion, fullTextSearchColumns);
+	}
 
-    PersistentDbTable(String table, DbKey.Factory<T> dbKeyFactory, boolean multiversion, String fullTextSearchColumns) {
-        super(table, dbKeyFactory, multiversion, fullTextSearchColumns);
-    }
+	protected PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final String fullTextSearchColumns) {
+		super(table, dbKeyFactory, false, fullTextSearchColumns);
+	}
 
-    @Override
-    public void rollback(int height) {
-    }
+	@Override
+	public final boolean isPersistent() {
+		return true;
+	}
 
-    @Override
-    public final void truncate() {
-    }
+	@Override
+	public void rollback(final int height) {
+	}
 
-    @Override
-    public final boolean isPersistent() {
-        return true;
-    }
+	@Override
+	public final void truncate() {
+	}
 
 }

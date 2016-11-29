@@ -16,8 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.MISSING_PEER;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONObject;
@@ -31,51 +29,51 @@ import nxt.util.Convert;
 
 public class AddPeer extends APIRequestHandler {
 
-    static final AddPeer instance = new AddPeer();
-    
-    private AddPeer() {
-        super(new APITag[] {APITag.NETWORK}, "peer");
-    }
+	static final AddPeer instance = new AddPeer();
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest request)
-            throws NxtException {
-        String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
-        if (peerAddress == null) {
-            return MISSING_PEER;
-        }
-        JSONObject response = new JSONObject();
-        Peer peer = Peers.findOrCreatePeer(peerAddress, true);
-        if (peer != null) {
-            boolean isNewlyAdded = Peers.addPeer(peer, peerAddress);
-            Peers.connectPeer(peer);
-            response = JSONData.peer(peer);
-            response.put("isNewlyAdded", isNewlyAdded);
-        } else {
-            response.put("errorCode", 8);
-            response.put("errorDescription", "Failed to add peer");
-        }
-        return response;
-    }
+	private AddPeer() {
+		super(new APITag[] {APITag.NETWORK}, "peer");
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest request)
+			throws NxtException {
+		final String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
+		if (peerAddress == null) {
+			return JSONResponses.MISSING_PEER;
+		}
+		JSONObject response = new JSONObject();
+		final Peer peer = Peers.findOrCreatePeer(peerAddress, true);
+		if (peer != null) {
+			final boolean isNewlyAdded = Peers.addPeer(peer, peerAddress);
+			Peers.connectPeer(peer);
+			response = JSONData.peer(peer);
+			response.put("isNewlyAdded", isNewlyAdded);
+		} else {
+			response.put("errorCode", 8);
+			response.put("errorDescription", "Failed to add peer");
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
+
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

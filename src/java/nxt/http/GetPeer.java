@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.MISSING_PEER;
-import static nxt.http.JSONResponses.UNKNOWN_PEER;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -28,32 +25,32 @@ import nxt.peer.Peers;
 
 public final class GetPeer extends APIServlet.APIRequestHandler {
 
-    static final GetPeer instance = new GetPeer();
+	static final GetPeer instance = new GetPeer();
 
-    private GetPeer() {
-        super(new APITag[] {APITag.NETWORK}, "peer");
-    }
+	private GetPeer() {
+		super(new APITag[] {APITag.NETWORK}, "peer");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String peerAddress = req.getParameter("peer");
-        if (peerAddress == null) {
-            return MISSING_PEER;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        Peer peer = Peers.findOrCreatePeer(peerAddress, false);
-        if (peer == null) {
-            return UNKNOWN_PEER;
-        }
+		final String peerAddress = req.getParameter("peer");
+		if (peerAddress == null) {
+			return JSONResponses.MISSING_PEER;
+		}
 
-        return JSONData.peer(peer);
+		final Peer peer = Peers.findOrCreatePeer(peerAddress, false);
+		if (peer == null) {
+			return JSONResponses.UNKNOWN_PEER;
+		}
 
-    }
+		return JSONData.peer(peer);
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	}
 
 }

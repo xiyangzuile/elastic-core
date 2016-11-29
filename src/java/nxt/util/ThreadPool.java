@@ -29,128 +29,128 @@ import nxt.Nxt;
 
 public final class ThreadPool {
 
-    private static volatile ScheduledExecutorService scheduledThreadPool;
-    private static Map<Runnable,Long> backgroundJobs = new HashMap<>();
-    private static List<Runnable> beforeStartJobs = new ArrayList<>();
-    private static List<Runnable> lastBeforeStartJobs = new ArrayList<>();
-    private static List<Runnable> afterStartJobs = new ArrayList<>();
+	private static volatile ScheduledExecutorService scheduledThreadPool;
+	private static Map<Runnable,Long> backgroundJobs = new HashMap<>();
+	private static List<Runnable> beforeStartJobs = new ArrayList<>();
+	private static List<Runnable> lastBeforeStartJobs = new ArrayList<>();
+	private static List<Runnable> afterStartJobs = new ArrayList<>();
 
-    public static synchronized void runBeforeStart(Runnable runnable, boolean runLast) {
-        if (scheduledThreadPool != null) {
-            throw new IllegalStateException("Executor service already started");
-        }
-        if (runLast) {
-            lastBeforeStartJobs.add(runnable);
-        } else {
-            beforeStartJobs.add(runnable);
-        }
-    }
+	public static synchronized void runAfterStart(final Runnable runnable) {
+		ThreadPool.afterStartJobs.add(runnable);
+	}
 
-    public static synchronized void runAfterStart(Runnable runnable) {
-        afterStartJobs.add(runnable);
-    }
+	private static void runAll(final List<Runnable> jobs) {
+		final List<Thread> threads = new ArrayList<>();
+		final StringBuffer errors = new StringBuffer();
+		for (final Runnable runnable : jobs) {
+			final Thread thread = new Thread() {
+				@Override
+				public void run() {
+					try {
+						runnable.run();
+					} catch (final Throwable t) {
+						errors.append(t.getMessage()).append('\n');
+						throw t;
+					}
+				}
+			};
+			thread.setDaemon(true);
+			thread.start();
+			threads.add(thread);
+		}
+		for (final Thread thread : threads) {
+			try {
+				thread.join();
+			} catch (final InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+		if (errors.length() > 0) {
+			throw new RuntimeException("Errors running startup tasks:\n" + errors.toString());
+		}
+	}
 
-    public static synchronized void scheduleThread(String name, Runnable runnable, int delay) {
-        scheduleThread(name, runnable, delay, TimeUnit.SECONDS);
-    }
+	public static synchronized void runBeforeStart(final Runnable runnable, final boolean runLast) {
+		if (ThreadPool.scheduledThreadPool != null) {
+			throw new IllegalStateException("Executor service already started");
+		}
+		if (runLast) {
+			ThreadPool.lastBeforeStartJobs.add(runnable);
+		} else {
+			ThreadPool.beforeStartJobs.add(runnable);
+		}
+	}
 
-    public static synchronized void scheduleThread(String name, Runnable runnable, int delay, TimeUnit timeUnit) {
-        if (scheduledThreadPool != null) {
-            throw new IllegalStateException("Executor service already started, no new jobs accepted");
-        }
-        if (! Nxt.getBooleanProperty("nxt.disable" + name + "Thread")) {
-            backgroundJobs.put(runnable, timeUnit.toMillis(delay));
-        } else {
-            Logger.logMessage("Will not run " + name + " thread");
-        }
-    }
+	public static synchronized void scheduleThread(final String name, final Runnable runnable, final int delay) {
+		ThreadPool.scheduleThread(name, runnable, delay, TimeUnit.SECONDS);
+	}
 
-    public static synchronized void start(int timeMultiplier) {
-        if (scheduledThreadPool != null) {
-            throw new IllegalStateException("Executor service already started");
-        }
+	public static synchronized void scheduleThread(final String name, final Runnable runnable, final int delay, final TimeUnit timeUnit) {
+		if (ThreadPool.scheduledThreadPool != null) {
+			throw new IllegalStateException("Executor service already started, no new jobs accepted");
+		}
+		if (! Nxt.getBooleanProperty("nxt.disable" + name + "Thread")) {
+			ThreadPool.backgroundJobs.put(runnable, timeUnit.toMillis(delay));
+		} else {
+			Logger.logMessage("Will not run " + name + " thread");
+		}
+	}
 
-        Logger.logDebugMessage("Running " + beforeStartJobs.size() + " tasks...");
-        runAll(beforeStartJobs);
-        beforeStartJobs = null;
+	public static void shutdown() {
+		if (ThreadPool.scheduledThreadPool != null) {
+			Logger.logShutdownMessage("Stopping background jobs...");
+			ThreadPool.shutdownExecutor("scheduledThreadPool", ThreadPool.scheduledThreadPool, 10);
+			ThreadPool.scheduledThreadPool = null;
+			Logger.logShutdownMessage("...Done");
+		}
+	}
 
-        Logger.logDebugMessage("Running " + lastBeforeStartJobs.size() + " final tasks...");
-        runAll(lastBeforeStartJobs);
-        lastBeforeStartJobs = null;
+	public static void shutdownExecutor(final String name, final ExecutorService executor, final int timeout) {
+		Logger.logShutdownMessage("shutting down " + name);
+		executor.shutdown();
+		try {
+			executor.awaitTermination(timeout, TimeUnit.SECONDS);
+		} catch (final InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+		if (! executor.isTerminated()) {
+			Logger.logShutdownMessage("some threads in " + name + " didn't terminate, forcing shutdown");
+			executor.shutdownNow();
+		}
+	}
 
-        Logger.logDebugMessage("Starting " + backgroundJobs.size() + " background jobs");
-        scheduledThreadPool = Executors.newScheduledThreadPool(backgroundJobs.size());
-        for (Map.Entry<Runnable,Long> entry : backgroundJobs.entrySet()) {
-            scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, Math.max(entry.getValue() / timeMultiplier, 1), TimeUnit.MILLISECONDS);
-        }
-        backgroundJobs = null;
+	public static synchronized void start(final int timeMultiplier) {
+		if (ThreadPool.scheduledThreadPool != null) {
+			throw new IllegalStateException("Executor service already started");
+		}
 
-        Logger.logDebugMessage("Starting " + afterStartJobs.size() + " delayed tasks");
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                runAll(afterStartJobs);
-                afterStartJobs = null;
-            }
-        };
-        thread.setDaemon(true);
-        thread.start();
-    }
+		Logger.logDebugMessage("Running " + ThreadPool.beforeStartJobs.size() + " tasks...");
+		ThreadPool.runAll(ThreadPool.beforeStartJobs);
+		ThreadPool.beforeStartJobs = null;
 
-    public static void shutdown() {
-        if (scheduledThreadPool != null) {
-	        Logger.logShutdownMessage("Stopping background jobs...");
-            shutdownExecutor("scheduledThreadPool", scheduledThreadPool, 10);
-            scheduledThreadPool = null;
-        	Logger.logShutdownMessage("...Done");
-        }
-    }
+		Logger.logDebugMessage("Running " + ThreadPool.lastBeforeStartJobs.size() + " final tasks...");
+		ThreadPool.runAll(ThreadPool.lastBeforeStartJobs);
+		ThreadPool.lastBeforeStartJobs = null;
 
-    public static void shutdownExecutor(String name, ExecutorService executor, int timeout) {
-        Logger.logShutdownMessage("shutting down " + name);
-        executor.shutdown();
-        try {
-            executor.awaitTermination(timeout, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        if (! executor.isTerminated()) {
-            Logger.logShutdownMessage("some threads in " + name + " didn't terminate, forcing shutdown");
-            executor.shutdownNow();
-        }
-    }
+		Logger.logDebugMessage("Starting " + ThreadPool.backgroundJobs.size() + " background jobs");
+		ThreadPool.scheduledThreadPool = Executors.newScheduledThreadPool(ThreadPool.backgroundJobs.size());
+		for (final Map.Entry<Runnable,Long> entry : ThreadPool.backgroundJobs.entrySet()) {
+			ThreadPool.scheduledThreadPool.scheduleWithFixedDelay(entry.getKey(), 0, Math.max(entry.getValue() / timeMultiplier, 1), TimeUnit.MILLISECONDS);
+		}
+		ThreadPool.backgroundJobs = null;
 
-    private static void runAll(List<Runnable> jobs) {
-        List<Thread> threads = new ArrayList<>();
-        final StringBuffer errors = new StringBuffer();
-        for (final Runnable runnable : jobs) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        runnable.run();
-                    } catch (Throwable t) {
-                        errors.append(t.getMessage()).append('\n');
-                        throw t;
-                    }
-                }
-            };
-            thread.setDaemon(true);
-            thread.start();
-            threads.add(thread);
-        }
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        if (errors.length() > 0) {
-            throw new RuntimeException("Errors running startup tasks:\n" + errors.toString());
-        }
-    }
+		Logger.logDebugMessage("Starting " + ThreadPool.afterStartJobs.size() + " delayed tasks");
+		final Thread thread = new Thread() {
+			@Override
+			public void run() {
+				ThreadPool.runAll(ThreadPool.afterStartJobs);
+				ThreadPool.afterStartJobs = null;
+			}
+		};
+		thread.setDaemon(true);
+		thread.start();
+	}
 
-    private ThreadPool() {} //never
+	private ThreadPool() {} //never
 
 }

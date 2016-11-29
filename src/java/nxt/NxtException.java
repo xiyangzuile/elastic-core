@@ -20,150 +20,210 @@ import java.io.IOException;
 
 public abstract class NxtException extends Exception {
 
-    protected NxtException() {
-        super();
-    }
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8278126418545304279L;
 
-    protected NxtException(String message) {
-        super(message);
-    }
+	public static class AccountControlException extends NotCurrentlyValidException {
 
-    protected NxtException(String message, Throwable cause) {
-        super(message, cause);
-    }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -3158698982508130693L;
 
-    protected NxtException(Throwable cause) {
-        super(cause);
-    }
+		public AccountControlException(final String message) {
+			super(message);
+		}
 
-    public static abstract class ValidationException extends NxtException {
+		public AccountControlException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-        private ValidationException(String message) {
-            super(message);
-        }
+	}
 
-        private ValidationException(String message, Throwable cause) {
-            super(message, cause);
-        }
+	public static class ExistingTransactionException extends NotCurrentlyValidException {
 
-    }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 238633582217656708L;
 
-    public static class NotCurrentlyValidException extends ValidationException {
+		public ExistingTransactionException(final String message) {
+			super(message);
+		}
 
-        public NotCurrentlyValidException(String message) {
-            super(message);
-        }
+	}
 
-        public NotCurrentlyValidException(String message, Throwable cause) {
-            super(message, cause);
-        }
+	public static class InsufficientBalanceException extends NotCurrentlyValidException {
 
-    }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 3892830943717809186L;
 
-    public static class ExistingTransactionException extends NotCurrentlyValidException {
+		public InsufficientBalanceException(final String message) {
+			super(message);
+		}
 
-        public ExistingTransactionException(String message) {
-            super(message);
-        }
+		public InsufficientBalanceException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-    }
-    
+	}
 
-    public static class LostValidityException extends ValidationException {
+	public static class LostValidityException extends ValidationException {
 
-        public LostValidityException(String message) {
-            super(message);
-        }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -4435913410989969624L;
 
-        public LostValidityException(String message, Throwable cause) {
-            super(message, cause);
-        }
+		public LostValidityException(final String message) {
+			super(message);
+		}
 
-    }
-    
+		public LostValidityException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-    public static final class NotYetEnabledException extends NotCurrentlyValidException {
+	}
 
-        public NotYetEnabledException(String message) {
-            super(message);
-        }
+	public static class NotCurrentlyValidException extends ValidationException {
 
-        public NotYetEnabledException(String message, Throwable throwable) {
-            super(message, throwable);
-        }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8488904506080293440L;
 
-    }
+		public NotCurrentlyValidException(final String message) {
+			super(message);
+		}
 
-    public static final class NotValidException extends ValidationException {
+		public NotCurrentlyValidException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-        public NotValidException(String message) {
-            super(message);
-        }
+	}
 
-        public NotValidException(String message, Throwable cause) {
-            super(message, cause);
-        }
+	public static final class NotValidException extends ValidationException {
 
-    }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5065486096946575621L;
 
-    public static class AccountControlException extends NotCurrentlyValidException {
+		public NotValidException(final String message) {
+			super(message);
+		}
 
-        public AccountControlException(String message) {
-            super(message);
-        }
+		public NotValidException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-        public AccountControlException(String message, Throwable cause) {
-            super(message, cause);
-        }
-        
-    }
+	}
 
-    public static class InsufficientBalanceException extends NotCurrentlyValidException {
+	public static final class NotYetEnabledException extends NotCurrentlyValidException {
 
-        public InsufficientBalanceException(String message) {
-            super(message);
-        }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7711689101554355302L;
 
-        public InsufficientBalanceException(String message, Throwable cause) {
-            super(message, cause);
-        }
+		public NotYetEnabledException(final String message) {
+			super(message);
+		}
 
-    }
+		public NotYetEnabledException(final String message, final Throwable throwable) {
+			super(message, throwable);
+		}
 
-    public static final class NotYetEncryptedException extends IllegalStateException {
+	}
 
-        public NotYetEncryptedException(String message) {
-            super(message);
-        }
 
-        public NotYetEncryptedException(String message, Throwable cause) {
-            super(message, cause);
-        }
+	public static final class NotYetEncryptedException extends IllegalStateException {
 
-    }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -3906380175077193938L;
 
-    public static final class StopException extends RuntimeException {
+		public NotYetEncryptedException(final String message) {
+			super(message);
+		}
 
-        public StopException(String message) {
-            super(message);
-        }
+		public NotYetEncryptedException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
 
-        public StopException(String message, Throwable cause) {
-            super(message, cause);
-        }
+	}
 
-    }
 
-    public static final class NxtIOException extends IOException {
+	public static final class NxtIOException extends IOException {
 
-        public NxtIOException(String message) {
-            super(message);
-        }
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -3874359379672304539L;
 
-        public NxtIOException(String message, Throwable cause) {
-            super(message, cause);
-        }
+		public NxtIOException(final String message) {
+			super(message);
+		}
 
-    }
+		public NxtIOException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
+
+	}
+
+	public static final class StopException extends RuntimeException {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 4476063168043141203L;
+
+		public StopException(final String message) {
+			super(message);
+		}
+
+		public StopException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
+
+	}
+
+	public static abstract class ValidationException extends NxtException {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -419444228963022363L;
+
+		private ValidationException(final String message) {
+			super(message);
+		}
+
+		private ValidationException(final String message, final Throwable cause) {
+			super(message, cause);
+		}
+
+	}
+
+	protected NxtException() {
+		super();
+	}
+
+	protected NxtException(final String message) {
+		super(message);
+	}
+
+	protected NxtException(final String message, final Throwable cause) {
+		super(message, cause);
+	}
+
+	protected NxtException(final Throwable cause) {
+		super(cause);
+	}
 
 }

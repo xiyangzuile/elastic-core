@@ -32,32 +32,32 @@ import nxt.util.Filter;
 
 public final class GetUnconfirmedTransactions extends APIServlet.APIRequestHandler {
 
-    static final GetUnconfirmedTransactions instance = new GetUnconfirmedTransactions();
+	static final GetUnconfirmedTransactions instance = new GetUnconfirmedTransactions();
 
-    private GetUnconfirmedTransactions() {
-        super(new APITag[] {APITag.TRANSACTIONS, APITag.ACCOUNTS}, "account", "account", "account");
-    }
+	private GetUnconfirmedTransactions() {
+		super(new APITag[] {APITag.TRANSACTIONS, APITag.ACCOUNTS}, "account", "account", "account");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
-        Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
-                transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
+		final Set<Long> accountIds = Convert.toSet(ParameterParser.getAccountIds(req, false));
+		final Filter<Transaction> filter = accountIds.isEmpty() ? transaction -> true :
+			transaction -> accountIds.contains(transaction.getSenderId()) || accountIds.contains(transaction.getRecipientId());
 
-        JSONArray transactions = new JSONArray();
-        try (DbIterator<? extends Transaction> transactionsIterator = Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
-            while (transactionsIterator.hasNext()) {
-                Transaction transaction = transactionsIterator.next();
-                if (filter.ok(transaction)) {
-                    transactions.add(JSONData.unconfirmedTransaction(transaction));
-                }
-            }
-        }
+			final JSONArray transactions = new JSONArray();
+			try (DbIterator<? extends Transaction> transactionsIterator = Nxt.getTransactionProcessor().getAllUnconfirmedTransactions()) {
+				while (transactionsIterator.hasNext()) {
+					final Transaction transaction = transactionsIterator.next();
+					if (filter.ok(transaction)) {
+						transactions.add(JSONData.unconfirmedTransaction(transaction));
+					}
+				}
+			}
 
-        JSONObject response = new JSONObject();
-        response.put("unconfirmedTransactions", transactions);
-        return response;
-    }
+			final JSONObject response = new JSONObject();
+			response.put("unconfirmedTransactions", transactions);
+			return response;
+	}
 
 }

@@ -18,77 +18,77 @@ package nxt;
 
 public enum HoldingType {
 
-    NXT((byte)0) {
+	NXT((byte)0) {
 
-        @Override
-        public long getBalance(Account account, long holdingId) {
-            if (holdingId != 0) {
-                throw new IllegalArgumentException("holdingId must be 0");
-            }
-            return account.getBalanceNQT();
-        }
+		@Override
+		void addToBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+			if (holdingId != 0) {
+				throw new IllegalArgumentException("holdingId must be 0");
+			}
+			account.addToBalanceNQT(event, eventId, amount);
+		}
 
-        @Override
-        public long getUnconfirmedBalance(Account account, long holdingId) {
-            if (holdingId != 0) {
-                throw new IllegalArgumentException("holdingId must be 0");
-            }
-            return account.getUnconfirmedBalanceNQT();
-        }
+		@Override
+		void addToBalanceAndUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+			if (holdingId != 0) {
+				throw new IllegalArgumentException("holdingId must be 0");
+			}
+			account.addToBalanceAndUnconfirmedBalanceNQT(event, eventId, amount);
+		}
 
-        @Override
-        void addToBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount) {
-            if (holdingId != 0) {
-                throw new IllegalArgumentException("holdingId must be 0");
-            }
-            account.addToBalanceNQT(event, eventId, amount);
-        }
+		@Override
+		void addToUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId, final long holdingId, final long amount) {
+			if (holdingId != 0) {
+				throw new IllegalArgumentException("holdingId must be 0");
+			}
+			account.addToUnconfirmedBalanceNQT(event, eventId, amount);
+		}
 
-        @Override
-        void addToUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount) {
-            if (holdingId != 0) {
-                throw new IllegalArgumentException("holdingId must be 0");
-            }
-            account.addToUnconfirmedBalanceNQT(event, eventId, amount);
-        }
+		@Override
+		public long getBalance(final Account account, final long holdingId) {
+			if (holdingId != 0) {
+				throw new IllegalArgumentException("holdingId must be 0");
+			}
+			return account.getBalanceNQT();
+		}
 
-        @Override
-        void addToBalanceAndUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount) {
-            if (holdingId != 0) {
-                throw new IllegalArgumentException("holdingId must be 0");
-            }
-            account.addToBalanceAndUnconfirmedBalanceNQT(event, eventId, amount);
-        }
+		@Override
+		public long getUnconfirmedBalance(final Account account, final long holdingId) {
+			if (holdingId != 0) {
+				throw new IllegalArgumentException("holdingId must be 0");
+			}
+			return account.getUnconfirmedBalanceNQT();
+		}
 
-    };
+	};
 
-    public static HoldingType get(byte code) {
-        for (HoldingType holdingType : values()) {
-            if (holdingType.getCode() == code) {
-                return holdingType;
-            }
-        }
-        throw new IllegalArgumentException("Invalid holdingType code: " + code);
-    }
+	public static HoldingType get(final byte code) {
+		for (final HoldingType holdingType : HoldingType.values()) {
+			if (holdingType.getCode() == code) {
+				return holdingType;
+			}
+		}
+		throw new IllegalArgumentException("Invalid holdingType code: " + code);
+	}
 
-    private final byte code;
+	private final byte code;
 
-    HoldingType(byte code) {
-        this.code = code;
-    }
+	HoldingType(final byte code) {
+		this.code = code;
+	}
 
-    public byte getCode() {
-        return code;
-    }
+	abstract void addToBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
 
-    public abstract long getBalance(Account account, long holdingId);
+	abstract void addToBalanceAndUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
 
-    public abstract long getUnconfirmedBalance(Account account, long holdingId);
+	abstract void addToUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
 
-    abstract void addToBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	public abstract long getBalance(Account account, long holdingId);
 
-    abstract void addToUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	public byte getCode() {
+		return this.code;
+	}
 
-    abstract void addToBalanceAndUnconfirmedBalance(Account account, AccountLedger.LedgerEvent event, long eventId, long holdingId, long amount);
+	public abstract long getUnconfirmedBalance(Account account, long holdingId);
 
 }

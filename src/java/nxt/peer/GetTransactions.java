@@ -30,39 +30,39 @@ import nxt.Transaction;
  */
 public class GetTransactions extends PeerServlet.PeerRequestHandler {
 
-    static final GetTransactions instance = new GetTransactions();
+	static final GetTransactions instance = new GetTransactions();
 
-    private GetTransactions() {}
+	private GetTransactions() {}
 
-    @Override
-    JSONStreamAware processRequest(JSONObject request, Peer peer) {
-        if (!Constants.INCLUDE_EXPIRED_PRUNABLE) {
-            return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
-        }
-        JSONObject response = new JSONObject();
-        JSONArray transactionArray = new JSONArray();
-        JSONArray transactionIds = (JSONArray)request.get("transactionIds");
-        Blockchain blockchain = Nxt.getBlockchain();
-        //
-        // Return the transactions to the caller
-        //
-        if (transactionIds != null) {
-            transactionIds.forEach(transactionId -> {
-                long id = Long.parseUnsignedLong((String)transactionId);
-                Transaction transaction = blockchain.getTransaction(id);
-                if (transaction != null) {
-                    transaction.getAppendages(true);
-                    JSONObject transactionJSON = transaction.getJSONObject();
-                    transactionArray.add(transactionJSON);
-                }
-            });
-        }
-        response.put("transactions", transactionArray);
-        return response;
-    }
+	@Override
+	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
+		if (!Constants.INCLUDE_EXPIRED_PRUNABLE) {
+			return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
+		}
+		final JSONObject response = new JSONObject();
+		final JSONArray transactionArray = new JSONArray();
+		final JSONArray transactionIds = (JSONArray)request.get("transactionIds");
+		final Blockchain blockchain = Nxt.getBlockchain();
+		//
+		// Return the transactions to the caller
+		//
+		if (transactionIds != null) {
+			transactionIds.forEach(transactionId -> {
+				final long id = Long.parseUnsignedLong((String)transactionId);
+				final Transaction transaction = blockchain.getTransaction(id);
+				if (transaction != null) {
+					transaction.getAppendages(true);
+					final JSONObject transactionJSON = transaction.getJSONObject();
+					transactionArray.add(transactionJSON);
+				}
+			});
+		}
+		response.put("transactions", transactionArray);
+		return response;
+	}
 
-    @Override
-    boolean rejectWhileDownloading() {
-        return true;
-    }
+	@Override
+	boolean rejectWhileDownloading() {
+		return true;
+	}
 }

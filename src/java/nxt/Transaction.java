@@ -24,98 +24,98 @@ import nxt.util.Filter;
 
 public interface Transaction {
 
-    interface Builder {
+	interface Builder {
 
-        Builder recipientId(long recipientId);
+		Builder appendix(Appendix.PrunableSourceCode prunableSourceCode);
 
-        Builder referencedTransactionFullHash(String referencedTransactionFullHash);
+		Builder appendix(Appendix.PublicKeyAnnouncement publicKeyAnnouncement);
 
-        Builder appendix(Appendix.PublicKeyAnnouncement publicKeyAnnouncement);
-        
-        Builder appendix(Appendix.PrunableSourceCode prunableSourceCode);
+		Transaction build() throws NxtException.NotValidException;
 
-        Builder timestamp(int timestamp);
+		Transaction build(String secretPhrase) throws NxtException.NotValidException;
 
-        Builder ecBlockHeight(int height);
+		Builder ecBlockHeight(int height);
 
-        Builder ecBlockId(long blockId);
+		Builder ecBlockId(long blockId);
 
-        Transaction build() throws NxtException.NotValidException;
+		Builder recipientId(long recipientId);
 
-        Transaction build(String secretPhrase) throws NxtException.NotValidException;
-        
+		Builder referencedTransactionFullHash(String referencedTransactionFullHash);
 
-    }
+		Builder timestamp(int timestamp);
 
-    long getId();
 
-    String getStringId();
+	}
 
-    long getSenderId();
+	long getAmountNQT();
 
-    byte[] getSenderPublicKey();
+	List<? extends Appendix> getAppendages();
 
-    long getRecipientId();
+	List<? extends Appendix> getAppendages(boolean includeExpiredPrunable);
 
-    int getHeight();
+	List<? extends Appendix> getAppendages(Filter<Appendix> filter, boolean includeExpiredPrunable);
 
-    long getBlockId();
+	Attachment getAttachment();
 
-    Block getBlock();
+	Block getBlock();
 
-    short getIndex();
+	long getBlockId();
 
-    int getTimestamp();
+	int getBlockTimestamp();
 
-    int getBlockTimestamp();
+	byte[] getBytes();
 
-    short getDeadline();
+	short getDeadline();
 
-    int getExpiration();
+	int getECBlockHeight();
 
-    long getAmountNQT();
+	long getECBlockId();
 
-    long getFeeNQT();
+	int getExpiration();
 
-    String getReferencedTransactionFullHash();
+	String getExtraInfo();
 
-    byte[] getSignature();
+	long getFeeNQT();
 
-    String getFullHash();
+	String getFullHash();
 
-    TransactionType getType();
+	int getFullSize();
 
-    Attachment getAttachment();
+	int getHeight();
 
-    boolean verifySignature();
+	long getId();
 
-    void validate() throws NxtException.ValidationException;
+	short getIndex();
 
-    byte[] getBytes();
+	JSONObject getJSONObject();
 
-    byte[] getUnsignedBytes();
+	JSONObject getPrunableAttachmentJSON();
 
-    JSONObject getJSONObject();
+	Appendix.PrunableSourceCode getPrunableSourceCode();
 
-    JSONObject getPrunableAttachmentJSON();
+	long getRecipientId();
 
-    byte getVersion();
+	String getReferencedTransactionFullHash();
 
-    int getFullSize();
-    
-    Appendix.PrunableSourceCode getPrunableSourceCode();
+	long getSenderId();
 
-    List<? extends Appendix> getAppendages();
+	byte[] getSenderPublicKey();
 
-    List<? extends Appendix> getAppendages(boolean includeExpiredPrunable);
+	byte[] getSignature();
 
-    List<? extends Appendix> getAppendages(Filter<Appendix> filter, boolean includeExpiredPrunable);
+	String getStringId();
 
-    int getECBlockHeight();
+	int getTimestamp();
 
-    long getECBlockId();
-    
-    String getExtraInfo();
-    
-    void setExtraInfo(String extraInfo);
+	TransactionType getType();
+
+	byte[] getUnsignedBytes();
+
+	byte getVersion();
+
+	void setExtraInfo(String extraInfo);
+
+	void validate() throws NxtException.ValidationException;
+
+	boolean verifySignature();
 }

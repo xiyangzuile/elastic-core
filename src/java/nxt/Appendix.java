@@ -16,8 +16,6 @@
 
 package nxt;
 
-import static nxt.Appendix.hasAppendix;
-
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.util.Arrays;
@@ -30,112 +28,38 @@ import nxt.util.Convert;
 
 public interface Appendix {
 
-	int getSize();
-
-	int getFullSize();
-
-	void putBytes(ByteBuffer buffer);
-
-	JSONObject getJSONObject();
-
-	byte getVersion();
-
-	int getBaselineFeeHeight();
-
-	Fee getBaselineFee(Transaction transaction);
-
-	int getNextFeeHeight();
-
-	Fee getNextFee(Transaction transaction);
-
-	interface Prunable {
-		byte[] getHash();
-
-		boolean hasPrunableData();
-
-		void restorePrunableData(Transaction transaction, int blockTimestamp, int height);
-
-		default boolean shouldLoadPrunable(Transaction transaction, boolean includeExpiredPrunable) {
-			return Nxt.getEpochTime()
-					- transaction.getTimestamp() < (includeExpiredPrunable && Constants.INCLUDE_EXPIRED_PRUNABLE
-							? Constants.MAX_PRUNABLE_LIFETIME : Constants.MIN_PRUNABLE_LIFETIME);
-		}
-	}
-
-	interface Encryptable {
-		void encrypt(String secretPhrase);
-	}
-
 	abstract class AbstractAppendix implements Appendix {
 
 		private final byte version;
-
-		AbstractAppendix(JSONObject attachmentData) {
-			Long l = (Long) attachmentData.get("version." + getAppendixName());
-			version = (byte) (l == null ? 0 : l);
-		}
-
-		AbstractAppendix(ByteBuffer buffer, byte transactionVersion) {
-			if (transactionVersion == 0) {
-				version = 0;
-			} else {
-				version = buffer.get();
-			}
-		}
-
-		AbstractAppendix(int version) {
-			this.version = (byte) version;
-		}
 
 		AbstractAppendix() {
 			this.version = 1;
 		}
 
+		AbstractAppendix(final ByteBuffer buffer, final byte transactionVersion) {
+			if (transactionVersion == 0) {
+				this.version = 0;
+			} else {
+				this.version = buffer.get();
+			}
+		}
+
+		AbstractAppendix(final int version) {
+			this.version = (byte) version;
+		}
+
+		AbstractAppendix(final JSONObject attachmentData) {
+			final Long l = (Long) attachmentData.get("version." + this.getAppendixName());
+			this.version = (byte) (l == null ? 0 : l);
+		}
+
+		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException;
+
 		abstract String getAppendixName();
 
 		@Override
-		public final int getSize() {
-			return getMySize() + (version > 0 ? 1 : 0);
-		}
-
-		@Override
-		public final int getFullSize() {
-			return getMyFullSize() + (version > 0 ? 1 : 0);
-		}
-
-		abstract int getMySize();
-
-		int getMyFullSize() {
-			return getMySize();
-		}
-
-		@Override
-		public final void putBytes(ByteBuffer buffer) {
-			if (version > 0) {
-				buffer.put(version);
-			}
-			putMyBytes(buffer);
-		}
-
-		abstract void putMyBytes(ByteBuffer buffer);
-
-		@Override
-		public final JSONObject getJSONObject() {
-			JSONObject json = new JSONObject();
-			json.put("version." + getAppendixName(), version);
-			putMyJSON(json);
-			return json;
-		}
-
-		abstract void putMyJSON(JSONObject json);
-
-		@Override
-		public final byte getVersion() {
-			return version;
-		}
-
-		boolean verifyVersion(byte transactionVersion) {
-			return version == 1;
+		public Fee getBaselineFee(final Transaction transaction) {
+			return Fee.NONE;
 		}
 
 		@Override
@@ -144,8 +68,27 @@ public interface Appendix {
 		}
 
 		@Override
-		public Fee getBaselineFee(Transaction transaction) {
-			return Fee.NONE;
+		public final int getFullSize() {
+			return this.getMyFullSize() + (this.version > 0 ? 1 : 0);
+		}
+
+		@Override
+		public final JSONObject getJSONObject() {
+			final JSONObject json = new JSONObject();
+			json.put("version." + this.getAppendixName(), this.version);
+			this.putMyJSON(json);
+			return json;
+		}
+
+		int getMyFullSize() {
+			return this.getMySize();
+		}
+
+		abstract int getMySize();
+
+		@Override
+		public Fee getNextFee(final Transaction transaction) {
+			return this.getBaselineFee(transaction);
 		}
 
 		@Override
@@ -154,25 +97,58 @@ public interface Appendix {
 		}
 
 		@Override
-		public Fee getNextFee(Transaction transaction) {
-			return getBaselineFee(transaction);
+		public final int getSize() {
+			return this.getMySize() + (this.version > 0 ? 1 : 0);
 		}
+
+		@Override
+		public final byte getVersion() {
+			return this.version;
+		}
+
+		final void loadPrunable(final Transaction transaction) {
+			this.loadPrunable(transaction, false);
+		}
+
+		void loadPrunable(final Transaction transaction, final boolean includeExpiredPrunable) {
+		}
+
+		@Override
+		public final void putBytes(final ByteBuffer buffer) {
+			if (this.version > 0) {
+				buffer.put(this.version);
+			}
+			this.putMyBytes(buffer);
+		}
+
+		abstract void putMyBytes(ByteBuffer buffer);
+
+		abstract void putMyJSON(JSONObject json);
 
 		abstract void validate(Transaction transaction) throws NxtException.ValidationException;
 
-		abstract void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException;
-
-		final void loadPrunable(Transaction transaction) {
-			loadPrunable(transaction, false);
-		}
-
-		void loadPrunable(Transaction transaction, boolean includeExpiredPrunable) {
+		boolean verifyVersion(final byte transactionVersion) {
+			return this.version == 1;
 		}
 
 	}
 
-	static boolean hasAppendix(String appendixName, JSONObject attachmentData) {
-		return attachmentData.get("version." + appendixName) != null;
+	interface Encryptable {
+		void encrypt(String secretPhrase);
+	}
+
+	interface Prunable {
+		byte[] getHash();
+
+		boolean hasPrunableData();
+
+		void restorePrunableData(Transaction transaction, int blockTimestamp, int height);
+
+		default boolean shouldLoadPrunable(final Transaction transaction, final boolean includeExpiredPrunable) {
+			return (Nxt.getEpochTime()
+					- transaction.getTimestamp()) < (includeExpiredPrunable && Constants.INCLUDE_EXPIRED_PRUNABLE
+							? Constants.MAX_PRUNABLE_LIFETIME : Constants.MIN_PRUNABLE_LIFETIME);
+		}
 	}
 
 	class PrunableSourceCode extends Appendix.AbstractAppendix implements Prunable {
@@ -181,13 +157,13 @@ public interface Appendix {
 
 		private static final Fee PRUNABLE_SOURCE_FEE = new Fee.SizeBasedFee(Constants.ONE_NXT / 10) {
 			@Override
-			public int getSize(TransactionImpl transaction, Appendix appendix) {
+			public int getSize(final TransactionImpl transaction, final Appendix appendix) {
 				return appendix.getFullSize();
 			}
 		};
 
-		static PrunableSourceCode parse(JSONObject attachmentData) {
-			if (!hasAppendix(appendixName, attachmentData)) {
+		static PrunableSourceCode parse(final JSONObject attachmentData) {
+			if (!Appendix.hasAppendix(PrunableSourceCode.appendixName, attachmentData)) {
 				return null;
 			}
 			return new PrunableSourceCode(attachmentData);
@@ -199,7 +175,13 @@ public interface Appendix {
 
 		private volatile nxt.PrunableSourceCode prunableSourceCode;
 
-		PrunableSourceCode(ByteBuffer buffer, byte transactionVersion) {
+		public PrunableSourceCode(final byte[] source, final short language) {
+			this.source = source;
+			this.hash = null;
+			this.language = language;
+		}
+
+		PrunableSourceCode(final ByteBuffer buffer, final byte transactionVersion) {
 			super(buffer, transactionVersion);
 			this.hash = new byte[32];
 			buffer.get(this.hash);
@@ -207,13 +189,13 @@ public interface Appendix {
 			this.language = 0;
 		}
 
-		private PrunableSourceCode(JSONObject attachmentData) {
+		private PrunableSourceCode(final JSONObject attachmentData) {
 			super(attachmentData);
-			String hashString = Convert.emptyToNull((String) attachmentData.get("messageHash"));
-			String messageString = Convert.emptyToNull((String) attachmentData.get("source"));
-			String languageString = Convert.emptyToNull((String) attachmentData.get("language"));
+			final String hashString = Convert.emptyToNull((String) attachmentData.get("messageHash"));
+			final String messageString = Convert.emptyToNull((String) attachmentData.get("source"));
+			final String languageString = Convert.emptyToNull((String) attachmentData.get("language"));
 
-			if (hashString != null && messageString == null) {
+			if ((hashString != null) && (messageString == null)) {
 				this.hash = Convert.parseHexString(hashString);
 				this.source = null;
 				this.language = 0;
@@ -224,24 +206,49 @@ public interface Appendix {
 			}
 		}
 
-		public PrunableSourceCode(String source, short language) {
+		public PrunableSourceCode(final String source, final short language) {
 			this(Convert.toBytes(source, true), language);
 		}
 
-		public PrunableSourceCode(byte[] source, short language) {
-			this.source = source;
-			this.hash = null;
-			this.language = language;
+		@Override
+		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount) {
+			if ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MAX_PRUNABLE_LIFETIME) {
+				nxt.PrunableSourceCode.add((TransactionImpl) transaction, this);
+			}
 		}
 
 		@Override
 		String getAppendixName() {
-			return appendixName;
+			return PrunableSourceCode.appendixName;
 		}
 
 		@Override
-		public Fee getBaselineFee(Transaction transaction) {
-			return PRUNABLE_SOURCE_FEE;
+		public Fee getBaselineFee(final Transaction transaction) {
+			return PrunableSourceCode.PRUNABLE_SOURCE_FEE;
+		}
+
+		@Override
+		public byte[] getHash() {
+			if (this.hash != null) {
+				return this.hash;
+			}
+			final MessageDigest digest = Crypto.sha256();
+			digest.update(this.source);
+			digest.update(Short.toString(this.language).getBytes());
+			return digest.digest();
+		}
+
+		public short getLanguage() {
+			if (this.prunableSourceCode != null) {
+				return this.prunableSourceCode.getLanguage();
+			}
+			return this.language;
+		}
+
+		@Override
+		int getMyFullSize() {
+			return this.getSource() == null ? 0
+					: this.getSource().length + 2 /* short for language id */;
 		}
 
 		@Override
@@ -249,54 +256,85 @@ public interface Appendix {
 			return 32;
 		}
 
-		@Override
-		int getMyFullSize() {
-			return getSource() == null ? 0
-					: getSource().length + 2 /* short for language id */;
-		}
-
-		@Override
-		void putMyBytes(ByteBuffer buffer) {
-			buffer.put(getHash());
-		}
-
-		@Override
-		void putMyJSON(JSONObject json) {
-			if (prunableSourceCode != null) {
-				json.put("source", Convert.toString(prunableSourceCode.getSource(), true));
-				json.put("language", Short.toString(prunableSourceCode.getLanguage()));
-			} else if (source != null) {
-				json.put("source", Convert.toString(source, true));
-				json.put("language", Short.toString(language));
+		public byte[] getSource() {
+			if (this.prunableSourceCode != null) {
+				return this.prunableSourceCode.getSource();
 			}
-			json.put("messageHash", Convert.toHexString(getHash()));
+			return this.source;
 		}
 
 		@Override
-		void validate(Transaction transaction) throws NxtException.ValidationException {
+		public final boolean hasPrunableData() {
+			return ((this.prunableSourceCode != null) || (this.source != null));
+		}
+
+		@Override
+		final void loadPrunable(final Transaction transaction, final boolean includeExpiredPrunable) {
+			if (!this.hasPrunableData() && this.shouldLoadPrunable(transaction, includeExpiredPrunable)) {
+				final nxt.PrunableSourceCode prunableSourceCode = nxt.PrunableSourceCode
+						.getPrunableSourceCode(transaction.getId());
+				if ((prunableSourceCode != null) && (prunableSourceCode.getSource() != null)) {
+					this.prunableSourceCode = prunableSourceCode;
+				}
+			}
+		}
+
+		@Override
+		void putMyBytes(final ByteBuffer buffer) {
+			buffer.put(this.getHash());
+		}
+
+		@Override
+		void putMyJSON(final JSONObject json) {
+			if (this.prunableSourceCode != null) {
+				json.put("source", Convert.toString(this.prunableSourceCode.getSource(), true));
+				json.put("language", Short.toString(this.prunableSourceCode.getLanguage()));
+			} else if (this.source != null) {
+				json.put("source", Convert.toString(this.source, true));
+				json.put("language", Short.toString(this.language));
+			}
+			json.put("messageHash", Convert.toHexString(this.getHash()));
+		}
+
+		public byte[] recalcHash() {
+			final MessageDigest digest = Crypto.sha256();
+			digest.update(this.source);
+			digest.update(Short.toString(this.language).getBytes());
+			return digest.digest();
+		}
+
+		@Override
+		public void restorePrunableData(final Transaction transaction, final int blockTimestamp, final int height) {
+			nxt.PrunableSourceCode.add((TransactionImpl) transaction, this, blockTimestamp, height);
+		}
+
+		@Override
+		void validate(final Transaction transaction) throws NxtException.ValidationException {
 			if (transaction.getType() != TransactionType.WorkControl.NEW_TASK) {
 				throw new NxtException.NotValidException(
 						"Source code can only be attached to work-creation transactions!");
 			}
 
-			if (source != null) {
-				byte[] src = getSource();
+			if (this.source != null) {
+				final byte[] src = this.getSource();
 
-				if (src != null && src.length > Constants.MAX_WORK_CODE_LENGTH) {
+				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH)) {
 					throw new NxtException.NotValidException("Invalid source code length: " + src.length);
 				}
-				if (src == null && Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MIN_PRUNABLE_LIFETIME) {
+				if ((src == null) && ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
-				
 
-				
-				if (language == 0x01) {
+
+
+				if (this.language == 0x01) {
 					try {
-						if(src != null)
+						if(src != null) {
 							Executioner.checkSyntax(src);
-						else throw new NxtException.NotValidException("Source code unavailable");
-					} catch (Exception e) {
+						} else {
+							throw new NxtException.NotValidException("Source code unavailable");
+						}
+					} catch (final Exception e) {
 						e.printStackTrace();
 						throw new NxtException.NotValidException(e.getMessage());
 					}
@@ -306,74 +344,14 @@ public interface Appendix {
 				// OTHER LANGUAGES MUST BE APPENDED HERE IF ADDED LATER ON!!
 			}
 		}
-
-		@Override
-		void apply(Transaction transaction, Account senderAccount, Account recipientAccount) {
-			if (Nxt.getEpochTime() - transaction.getTimestamp() < Constants.MAX_PRUNABLE_LIFETIME) {
-				nxt.PrunableSourceCode.add((TransactionImpl) transaction, this);
-			}
-		}
-
-		public byte[] getSource() {
-			if (prunableSourceCode != null) {
-				return prunableSourceCode.getSource();
-			}
-			return source;
-		}
-
-		public short getLanguage() {
-			if (prunableSourceCode != null) {
-				return prunableSourceCode.getLanguage();
-			}
-			return language;
-		}
-
-		@Override
-		public byte[] getHash() {
-			if (hash != null) {
-				return hash;
-			}
-			MessageDigest digest = Crypto.sha256();
-			digest.update(source);
-			digest.update(Short.toString(language).getBytes());
-			return digest.digest();
-		}
-		
-		public byte[] recalcHash() {
-			MessageDigest digest = Crypto.sha256();
-			digest.update(source);
-			digest.update(Short.toString(language).getBytes());
-			return digest.digest();
-		}
-
-		@Override
-		final void loadPrunable(Transaction transaction, boolean includeExpiredPrunable) {
-			if (!hasPrunableData() && shouldLoadPrunable(transaction, includeExpiredPrunable)) {
-				nxt.PrunableSourceCode prunableSourceCode = nxt.PrunableSourceCode
-						.getPrunableSourceCode(transaction.getId());
-				if (prunableSourceCode != null && prunableSourceCode.getSource() != null) {
-					this.prunableSourceCode = prunableSourceCode;
-				}
-			}
-		}
-
-		@Override
-		public final boolean hasPrunableData() {
-			return (prunableSourceCode != null || source != null);
-		}
-
-		@Override
-		public void restorePrunableData(Transaction transaction, int blockTimestamp, int height) {
-			nxt.PrunableSourceCode.add((TransactionImpl) transaction, this, blockTimestamp, height);
-		}
 	}
 
 	final class PublicKeyAnnouncement extends AbstractAppendix {
 
 		private static final String appendixName = "PublicKeyAnnouncement";
 
-		static PublicKeyAnnouncement parse(JSONObject attachmentData) {
-			if (!hasAppendix(appendixName, attachmentData)) {
+		static PublicKeyAnnouncement parse(final JSONObject attachmentData) {
+			if (!Appendix.hasAppendix(PublicKeyAnnouncement.appendixName, attachmentData)) {
 				return null;
 			}
 			return new PublicKeyAnnouncement(attachmentData);
@@ -381,24 +359,35 @@ public interface Appendix {
 
 		private final byte[] publicKey;
 
-		PublicKeyAnnouncement(ByteBuffer buffer, byte transactionVersion) {
+		public PublicKeyAnnouncement(final byte[] publicKey) {
+			this.publicKey = publicKey;
+		}
+
+		PublicKeyAnnouncement(final ByteBuffer buffer, final byte transactionVersion) {
 			super(buffer, transactionVersion);
 			this.publicKey = new byte[32];
 			buffer.get(this.publicKey);
 		}
 
-		PublicKeyAnnouncement(JSONObject attachmentData) {
+		PublicKeyAnnouncement(final JSONObject attachmentData) {
 			super(attachmentData);
 			this.publicKey = Convert.parseHexString((String) attachmentData.get("recipientPublicKey"));
 		}
 
-		public PublicKeyAnnouncement(byte[] publicKey) {
-			this.publicKey = publicKey;
+		@Override
+		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount) throws NotValidException {
+			if(recipientAccount == null){
+				throw new NxtException.NotValidException(
+						"PublicKeyAnnouncement must have a correct receipient");
+			}
+			if (Account.setOrVerify(recipientAccount.getId(), this.publicKey)) {
+				recipientAccount.apply(this.publicKey);
+			}
 		}
 
 		@Override
 		String getAppendixName() {
-			return appendixName;
+			return PublicKeyAnnouncement.appendixName;
 		}
 
 		@Override
@@ -406,51 +395,62 @@ public interface Appendix {
 			return 32;
 		}
 
-		@Override
-		void putMyBytes(ByteBuffer buffer) {
-			buffer.put(publicKey);
+		public byte[] getPublicKey() {
+			return this.publicKey;
 		}
 
 		@Override
-		void putMyJSON(JSONObject json) {
-			json.put("recipientPublicKey", Convert.toHexString(publicKey));
+		void putMyBytes(final ByteBuffer buffer) {
+			buffer.put(this.publicKey);
 		}
 
 		@Override
-		void validate(Transaction transaction) throws NxtException.ValidationException {
+		void putMyJSON(final JSONObject json) {
+			json.put("recipientPublicKey", Convert.toHexString(this.publicKey));
+		}
+
+		@Override
+		void validate(final Transaction transaction) throws NxtException.ValidationException {
 			if (transaction.getRecipientId() == 0) {
 				throw new NxtException.NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions with no recipient");
 			}
-			if (!Crypto.isCanonicalPublicKey(publicKey)) {
+			if (!Crypto.isCanonicalPublicKey(this.publicKey)) {
 				throw new NxtException.NotValidException(
-						"Invalid recipient public key: " + Convert.toHexString(publicKey));
+						"Invalid recipient public key: " + Convert.toHexString(this.publicKey));
 			}
-			long recipientId = transaction.getRecipientId();
+			final long recipientId = transaction.getRecipientId();
 			if (Account.getId(this.publicKey) != recipientId) {
 				throw new NxtException.NotValidException("Announced public key does not match recipient accountId");
 			}
-			byte[] recipientPublicKey = Account.getPublicKey(recipientId);
-			if (recipientPublicKey != null && !Arrays.equals(publicKey, recipientPublicKey)) {
+			final byte[] recipientPublicKey = Account.getPublicKey(recipientId);
+			if ((recipientPublicKey != null) && !Arrays.equals(this.publicKey, recipientPublicKey)) {
 				throw new NxtException.NotCurrentlyValidException(
 						"A different public key for this account has already been announced");
 			}
 		}
 
-		@Override
-		void apply(Transaction transaction, Account senderAccount, Account recipientAccount) throws NotValidException {
-			if(recipientAccount == null){
-				throw new NxtException.NotValidException(
-						"PublicKeyAnnouncement must have a correct receipient");
-			}
-			if (Account.setOrVerify(recipientAccount.getId(), publicKey)) {
-				recipientAccount.apply(this.publicKey);
-			}
-		}
-
-		public byte[] getPublicKey() {
-			return publicKey;
-		}
-
 	}
+
+	static boolean hasAppendix(final String appendixName, final JSONObject attachmentData) {
+		return attachmentData.get("version." + appendixName) != null;
+	}
+
+	Fee getBaselineFee(Transaction transaction);
+
+	int getBaselineFeeHeight();
+
+	int getFullSize();
+
+	JSONObject getJSONObject();
+
+	Fee getNextFee(Transaction transaction);
+
+	int getNextFeeHeight();
+
+	int getSize();
+
+	byte getVersion();
+
+	void putBytes(ByteBuffer buffer);
 }

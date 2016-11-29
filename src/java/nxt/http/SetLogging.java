@@ -61,105 +61,107 @@ import nxt.util.Logger;
  */
 public class SetLogging extends APIServlet.APIRequestHandler {
 
-    /** SetLogging instance */
-    static final SetLogging instance = new SetLogging();
+	/** SetLogging instance */
+	static final SetLogging instance = new SetLogging();
 
-    /** Logging updated */
-    private static final JSONStreamAware LOGGING_UPDATED;
-    static {
-        JSONObject response = new JSONObject();
-        response.put("loggingUpdated", true);
-        LOGGING_UPDATED = JSON.prepare(response);
-    }
+	/** Logging updated */
+	private static final JSONStreamAware LOGGING_UPDATED;
+	static {
+		final JSONObject response = new JSONObject();
+		response.put("loggingUpdated", true);
+		LOGGING_UPDATED = JSON.prepare(response);
+	}
 
-    /** Incorrect log level */
-    private static final JSONStreamAware INCORRECT_LEVEL =
-            JSONResponses.incorrect("logLevel", "Log level must be DEBUG, INFO, WARN or ERROR");
+	/** Incorrect log level */
+	private static final JSONStreamAware INCORRECT_LEVEL =
+			JSONResponses.incorrect("logLevel", "Log level must be DEBUG, INFO, WARN or ERROR");
 
-    /** Incorrect communication event */
-    private static final JSONStreamAware INCORRECT_EVENT =
-            JSONResponses.incorrect("communicationEvent",
-                                    "Communication event must be EXCEPTION, HTTP-ERROR or HTTP-OK");
+	/** Incorrect communication event */
+	private static final JSONStreamAware INCORRECT_EVENT =
+			JSONResponses.incorrect("communicationEvent",
+					"Communication event must be EXCEPTION, HTTP-ERROR or HTTP-OK");
 
-    /**
-     * Create the SetLogging instance
-     */
-    private SetLogging() {
-        super(new APITag[] {APITag.DEBUG}, "logLevel", "communicationEvent", "communicationEvent", "communicationEvent");
-    }
+	/**
+	 * Create the SetLogging instance
+	 */
+	private SetLogging() {
+		super(new APITag[] {APITag.DEBUG}, "logLevel", "communicationEvent", "communicationEvent", "communicationEvent");
+	}
 
-    /**
-     * Process the SetLogging API request
-     *
-     * @param   req                 API request
-     * @return                      API response
-     */
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONStreamAware response = null;
-        //
-        // Get the log level
-        //
-        String value = req.getParameter("logLevel");
-        if (value != null) {
-            switch (value) {
-                case "DEBUG":
-                    Logger.setLevel(Logger.Level.DEBUG);
-                    break;
-                case "INFO":
-                    Logger.setLevel(Logger.Level.INFO);
-                    break;
-                case "WARN":
-                    Logger.setLevel(Logger.Level.WARN);
-                    break;
-                case "ERROR":
-                    Logger.setLevel(Logger.Level.ERROR);
-                    break;
-                default:
-                    response = INCORRECT_LEVEL;
-            }
-        } else {
-            Logger.setLevel(Logger.Level.INFO);
-        }
-        //
-        // Get the communication events
-        //
-        if (response == null) {
-            String[] events = req.getParameterValues("communicationEvent");
-            if (!Peers.setCommunicationLoggingMask(events))
-                response = INCORRECT_EVENT;
-        }
-        //
-        // Return the response
-        //
-        if (response == null)
-            response = LOGGING_UPDATED;
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    /**
-     * Require the administrator password
-     *
-     * @return                      TRUE if the admin password is required
-     */
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	/**
+	 * Process the SetLogging API request
+	 *
+	 * @param   req                 API request
+	 * @return                      API response
+	 */
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		JSONStreamAware response = null;
+		//
+		// Get the log level
+		//
+		final String value = req.getParameter("logLevel");
+		if (value != null) {
+			switch (value) {
+			case "DEBUG":
+				Logger.setLevel(Logger.Level.DEBUG);
+				break;
+			case "INFO":
+				Logger.setLevel(Logger.Level.INFO);
+				break;
+			case "WARN":
+				Logger.setLevel(Logger.Level.WARN);
+				break;
+			case "ERROR":
+				Logger.setLevel(Logger.Level.ERROR);
+				break;
+			default:
+				response = SetLogging.INCORRECT_LEVEL;
+			}
+		} else {
+			Logger.setLevel(Logger.Level.INFO);
+		}
+		//
+		// Get the communication events
+		//
+		if (response == null) {
+			final String[] events = req.getParameterValues("communicationEvent");
+			if (!Peers.setCommunicationLoggingMask(events)) {
+				response = SetLogging.INCORRECT_EVENT;
+			}
+		}
+		//
+		// Return the response
+		//
+		if (response == null) {
+			response = SetLogging.LOGGING_UPDATED;
+		}
+		return response;
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	/**
+	 * Require the administrator password
+	 *
+	 * @return                      TRUE if the admin password is required
+	 */
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

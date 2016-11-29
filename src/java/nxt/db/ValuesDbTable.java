@@ -25,104 +25,104 @@ import java.util.List;
 
 public abstract class ValuesDbTable<T,V> extends DerivedDbTable {
 
-    private final boolean multiversion;
-    protected final DbKey.Factory<T> dbKeyFactory;
+	private final boolean multiversion;
+	protected final DbKey.Factory<T> dbKeyFactory;
 
-    protected ValuesDbTable(String table, DbKey.Factory<T> dbKeyFactory) {
-        this(table, dbKeyFactory, false);
-    }
+	protected ValuesDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+		this(table, dbKeyFactory, false);
+	}
 
-    ValuesDbTable(String table, DbKey.Factory<T> dbKeyFactory, boolean multiversion) {
-        super(table);
-        this.dbKeyFactory = dbKeyFactory;
-        this.multiversion = multiversion;
-    }
+	ValuesDbTable(final String table, final DbKey.Factory<T> dbKeyFactory, final boolean multiversion) {
+		super(table);
+		this.dbKeyFactory = dbKeyFactory;
+		this.multiversion = multiversion;
+	}
 
-    protected abstract V load(Connection con, ResultSet rs) throws SQLException;
+	protected void clearCache() {
+		DerivedDbTable.db.clearCache(this.table);
+	}
 
-    protected abstract void save(Connection con, T t, V v) throws SQLException;
+	private List<V> get(final Connection con, final PreparedStatement pstmt) {
+		try {
+			final List<V> result = new ArrayList<>();
+			try (ResultSet rs = pstmt.executeQuery()) {
+				while (rs.next()) {
+					result.add(this.load(con, rs));
+				}
+			}
+			return result;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-    protected void clearCache() {
-        db.clearCache(table);
-    }
+	public final List<V> get(final DbKey dbKey) {
+		List<V> values;
+		if (DerivedDbTable.db.isInTransaction()) {
+			values = (List<V>) DerivedDbTable.db.getCache(this.table).get(dbKey);
+			if (values != null) {
+				return values;
+			}
+		}
+		try (Connection con = DerivedDbTable.db.getConnection();
+				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM " + this.table + this.dbKeyFactory.getPKClause()
+				+ (this.multiversion ? " AND latest = TRUE" : "") + " ORDER BY db_id")) {
+			dbKey.setPK(pstmt);
+			values = this.get(con, pstmt);
+			if (DerivedDbTable.db.isInTransaction()) {
+				DerivedDbTable.db.getCache(this.table).put(dbKey, values);
+			}
+			return values;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-    public final List<V> get(DbKey dbKey) {
-        List<V> values;
-        if (db.isInTransaction()) {
-            values = (List<V>) db.getCache(table).get(dbKey);
-            if (values != null) {
-                return values;
-            }
-        }
-        try (Connection con = db.getConnection();
-             PreparedStatement pstmt = con.prepareStatement("SELECT * FROM " + table + dbKeyFactory.getPKClause()
-                     + (multiversion ? " AND latest = TRUE" : "") + " ORDER BY db_id")) {
-            dbKey.setPK(pstmt);
-            values = get(con, pstmt);
-            if (db.isInTransaction()) {
-                db.getCache(table).put(dbKey, values);
-            }
-            return values;
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	public final void insert(final T t, final List<V> values) {
+		if (!DerivedDbTable.db.isInTransaction()) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		final DbKey dbKey = this.dbKeyFactory.newKey(t);
+		if (dbKey == null) {
+			throw new RuntimeException("DbKey not set");
+		}
+		DerivedDbTable.db.getCache(this.table).put(dbKey, values);
+		try (Connection con = DerivedDbTable.db.getConnection()) {
+			if (this.multiversion) {
+				try (PreparedStatement pstmt = con.prepareStatement("UPDATE " + this.table
+						+ " SET latest = FALSE " + this.dbKeyFactory.getPKClause() + " AND latest = TRUE")) {
+					dbKey.setPK(pstmt);
+					pstmt.executeUpdate();
+				}
+			}
+			for (final V v : values) {
+				this.save(con, t, v);
+			}
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-    private List<V> get(Connection con, PreparedStatement pstmt) {
-        try {
-            List<V> result = new ArrayList<>();
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(load(con, rs));
-                }
-            }
-            return result;
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	protected abstract V load(Connection con, ResultSet rs) throws SQLException;
 
-    public final void insert(T t, List<V> values) {
-        if (!db.isInTransaction()) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        DbKey dbKey = dbKeyFactory.newKey(t);
-        if (dbKey == null) {
-            throw new RuntimeException("DbKey not set");
-        }
-        db.getCache(table).put(dbKey, values);
-        try (Connection con = db.getConnection()) {
-            if (multiversion) {
-                try (PreparedStatement pstmt = con.prepareStatement("UPDATE " + table
-                        + " SET latest = FALSE " + dbKeyFactory.getPKClause() + " AND latest = TRUE")) {
-                    dbKey.setPK(pstmt);
-                    pstmt.executeUpdate();
-                }
-            }
-            for (V v : values) {
-                save(con, t, v);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+	@Override
+	public final void rollback(final int height) {
+		if (this.multiversion) {
+			VersionedEntityDbTable.rollback(DerivedDbTable.db, this.table, height, this.dbKeyFactory);
+		} else {
+			super.rollback(height);
+		}
+	}
 
-    @Override
-    public final void rollback(int height) {
-        if (multiversion) {
-            VersionedEntityDbTable.rollback(db, table, height, dbKeyFactory);
-        } else {
-            super.rollback(height);
-        }
-    }
+	protected abstract void save(Connection con, T t, V v) throws SQLException;
 
-    @Override
-    public final void trim(int height) {
-        if (multiversion) {
-            VersionedEntityDbTable.trim(db, table, height, dbKeyFactory);
-        } else {
-            super.trim(height);
-        }
-    }
+	@Override
+	public final void trim(final int height) {
+		if (this.multiversion) {
+			VersionedEntityDbTable.trim(DerivedDbTable.db, this.table, height, this.dbKeyFactory);
+		} else {
+			super.trim(height);
+		}
+	}
 
 }

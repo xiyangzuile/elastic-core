@@ -25,78 +25,78 @@ import nxt.util.Filter;
 
 public interface Blockchain {
 
-    void readLock();
+	DbIterator<? extends Block> getAllBlocks();
 
-    void readUnlock();
+	DbIterator<? extends Transaction> getAllTransactions();
 
-    void updateLock();
+	Block getBlock(long blockId);
 
-    void updateUnlock();
+	Block getBlockAtHeight(int height);
 
-    Block getLastBlock();
+	int getBlockCount(long accountId);
 
-    Block getLastBlock(int timestamp);
+	Integer getBlockHeight(long lastBlockId);
 
-    int getHeight();
+	long getBlockIdAtHeight(int height);
 
-    int getLastBlockTimestamp();
+	List<Long> getBlockIdsAfter(long blockId, int limit);
 
-    Block getBlock(long blockId);
+	DbIterator<? extends Block> getBlocks(Connection con, PreparedStatement pstmt);
 
-    Block getBlockAtHeight(int height);
+	List<BlockImpl> getBlocks(int from, int to);
 
-    boolean hasBlock(long blockId);
+	List<BlockImpl> getBlocks(long accountId, int timestamp);
 
-    DbIterator<? extends Block> getAllBlocks();
+	List<BlockImpl> getBlocks(long accountId, int timestamp, int from, int to);
 
-    List<BlockImpl> getBlocks(int from, int to);
+	List<? extends Block> getBlocksAfter(long blockId, int limit);
 
-    List<BlockImpl> getBlocks(long accountId, int timestamp);
+	List<? extends Block> getBlocksAfter(long blockId, List<Long> blockList);
 
-    List<BlockImpl> getBlocks(long accountId, int timestamp, int from, int to);
+	Block getECBlock(int timestamp);
 
-    int getBlockCount(long accountId);
+	List<? extends Transaction> getExpectedTransactions(Filter<Transaction> filter);
 
-    DbIterator<? extends Block> getBlocks(Connection con, PreparedStatement pstmt);
+	int getHeight();
 
-    List<Long> getBlockIdsAfter(long blockId, int limit);
+	Block getLastBlock();
 
-    List<? extends Block> getBlocksAfter(long blockId, int limit);
-
-    List<? extends Block> getBlocksAfter(long blockId, List<Long> blockList);
-
-    long getBlockIdAtHeight(int height);
-
-    Block getECBlock(int timestamp);
-
-    Transaction getTransaction(long transactionId);
-
-    Transaction getTransactionByFullHash(String fullHash);
-
-    boolean hasTransaction(long transactionId);
-
-    boolean hasTransactionByFullHash(String fullHash);
-
-    int getTransactionCount();
-
-    DbIterator<? extends Transaction> getAllTransactions();
-
-    DbIterator<? extends Transaction> getTransactions(long accountId, byte type, byte subtype, int blockTimestamp,
-                                                      boolean includeExpiredPrunable);
-
-    DbIterator<? extends Transaction> getTransactions(long accountId, int numberOfConfirmations, byte type, byte subtype,
-                                                      int blockTimestamp, boolean withMessage, boolean phasedOnly, boolean nonPhasedOnly,
-                                                      int from, int to, boolean includeExpiredPrunable, boolean executedOnly);
-
-    DbIterator<? extends Transaction> getTransactions(Connection con, PreparedStatement pstmt);
-
-    List<? extends Transaction> getExpectedTransactions(Filter<Transaction> filter);
-
-    DbIterator<? extends Transaction> getReferencingTransactions(long transactionId, int from, int to);
+	Block getLastBlock(int timestamp);
 
 	long getLastBlockId();
 
-	Integer getBlockHeight(long lastBlockId);
-	
+	int getLastBlockTimestamp();
+
+	DbIterator<? extends Transaction> getReferencingTransactions(long transactionId, int from, int to);
+
+	Transaction getTransaction(long transactionId);
+
+	Transaction getTransactionByFullHash(String fullHash);
+
+	int getTransactionCount();
+
+	DbIterator<? extends Transaction> getTransactions(Connection con, PreparedStatement pstmt);
+
+	DbIterator<? extends Transaction> getTransactions(long accountId, byte type, byte subtype, int blockTimestamp,
+			boolean includeExpiredPrunable);
+
+	DbIterator<? extends Transaction> getTransactions(long accountId, int numberOfConfirmations, byte type, byte subtype,
+			int blockTimestamp, boolean withMessage, boolean phasedOnly, boolean nonPhasedOnly,
+			int from, int to, boolean includeExpiredPrunable, boolean executedOnly);
+
+	boolean hasBlock(long blockId);
+
+	boolean hasTransaction(long transactionId);
+
+	boolean hasTransactionByFullHash(String fullHash);
+
+	void readLock();
+
+	void readUnlock();
+
+	void updateLock();
+
+	void updateUnlock();
+
 
 }

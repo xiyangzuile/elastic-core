@@ -16,8 +16,6 @@
 
 package nxt.user;
 
-import static nxt.user.JSONResponses.INVALID_SECRET_PHRASE;
-
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,29 +27,29 @@ import nxt.Token;
 
 public final class GenerateAuthorizationToken extends UserServlet.UserRequestHandler {
 
-    static final GenerateAuthorizationToken instance = new GenerateAuthorizationToken();
+	static final GenerateAuthorizationToken instance = new GenerateAuthorizationToken();
 
-    private GenerateAuthorizationToken() {}
+	private GenerateAuthorizationToken() {}
 
-    @Override
-    JSONStreamAware processRequest(HttpServletRequest req, User user) throws IOException {
-        String secretPhrase = req.getParameter("secretPhrase");
-        if (! user.getSecretPhrase().equals(secretPhrase)) {
-            return INVALID_SECRET_PHRASE;
-        }
+	@Override
+	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
+		final String secretPhrase = req.getParameter("secretPhrase");
+		if (! user.getSecretPhrase().equals(secretPhrase)) {
+			return JSONResponses.INVALID_SECRET_PHRASE;
+		}
 
-        String tokenString = Token.generateToken(secretPhrase, req.getParameter("website").trim());
+		final String tokenString = Token.generateToken(secretPhrase, req.getParameter("website").trim());
 
-        JSONObject response = new JSONObject();
-        response.put("response", "showAuthorizationToken");
-        response.put("token", tokenString);
+		final JSONObject response = new JSONObject();
+		response.put("response", "showAuthorizationToken");
+		response.put("token", tokenString);
 
-        return response;
-    }
+		return response;
+	}
 
-    @Override
-    boolean requirePost() {
-        return true;
-    }
+	@Override
+	boolean requirePost() {
+		return true;
+	}
 
 }

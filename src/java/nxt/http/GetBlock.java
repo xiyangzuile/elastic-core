@@ -16,11 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_BLOCK;
-import static nxt.http.JSONResponses.INCORRECT_HEIGHT;
-import static nxt.http.JSONResponses.INCORRECT_TIMESTAMP;
-import static nxt.http.JSONResponses.UNKNOWN_BLOCK;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -31,58 +26,58 @@ import nxt.util.Convert;
 
 public final class GetBlock extends APIServlet.APIRequestHandler {
 
-    static final GetBlock instance = new GetBlock();
+	static final GetBlock instance = new GetBlock();
 
-    private GetBlock() {
-        super(new APITag[] {APITag.BLOCKS}, "block", "height", "timestamp", "includeTransactions", "includeExecutedPhased");
-    }
+	private GetBlock() {
+		super(new APITag[] {APITag.BLOCKS}, "block", "height", "timestamp", "includeTransactions", "includeExecutedPhased");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        Block blockData;
-        String blockValue = Convert.emptyToNull(req.getParameter("block"));
-        String heightValue = Convert.emptyToNull(req.getParameter("height"));
-        String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
-        if (blockValue != null) {
-            try {
-                blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(blockValue));
-            } catch (RuntimeException e) {
-                return INCORRECT_BLOCK;
-            }
-        } else if (heightValue != null) {
-            try {
-                int height = Integer.parseInt(heightValue);
-                if (height < 0 || height > Nxt.getBlockchain().getHeight()) {
-                    return INCORRECT_HEIGHT;
-                }
-                blockData = Nxt.getBlockchain().getBlockAtHeight(height);
-            } catch (RuntimeException e) {
-                return INCORRECT_HEIGHT;
-            }
-        } else if (timestampValue != null) {
-            try {
-                int timestamp = Integer.parseInt(timestampValue);
-                if (timestamp < 0) {
-                    return INCORRECT_TIMESTAMP;
-                }
-                blockData = Nxt.getBlockchain().getLastBlock(timestamp);
-            } catch (RuntimeException e) {
-                return INCORRECT_TIMESTAMP;
-            }
-        } else {
-            blockData = Nxt.getBlockchain().getLastBlock();
-        }
+		Block blockData;
+		final String blockValue = Convert.emptyToNull(req.getParameter("block"));
+		final String heightValue = Convert.emptyToNull(req.getParameter("height"));
+		final String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
+		if (blockValue != null) {
+			try {
+				blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(blockValue));
+			} catch (final RuntimeException e) {
+				return JSONResponses.INCORRECT_BLOCK;
+			}
+		} else if (heightValue != null) {
+			try {
+				final int height = Integer.parseInt(heightValue);
+				if ((height < 0) || (height > Nxt.getBlockchain().getHeight())) {
+					return JSONResponses.INCORRECT_HEIGHT;
+				}
+				blockData = Nxt.getBlockchain().getBlockAtHeight(height);
+			} catch (final RuntimeException e) {
+				return JSONResponses.INCORRECT_HEIGHT;
+			}
+		} else if (timestampValue != null) {
+			try {
+				final int timestamp = Integer.parseInt(timestampValue);
+				if (timestamp < 0) {
+					return JSONResponses.INCORRECT_TIMESTAMP;
+				}
+				blockData = Nxt.getBlockchain().getLastBlock(timestamp);
+			} catch (final RuntimeException e) {
+				return JSONResponses.INCORRECT_TIMESTAMP;
+			}
+		} else {
+			blockData = Nxt.getBlockchain().getLastBlock();
+		}
 
-        if (blockData == null) {
-            return UNKNOWN_BLOCK;
-        }
+		if (blockData == null) {
+			return JSONResponses.UNKNOWN_BLOCK;
+		}
 
-        boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
-        boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));
+		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
+		final boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));
 
-        return JSONData.block(blockData, includeTransactions, includeExecutedPhased);
+		return JSONData.block(blockData, includeTransactions, includeExecutedPhased);
 
-    }
+	}
 
 }

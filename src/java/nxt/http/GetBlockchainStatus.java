@@ -31,52 +31,52 @@ import nxt.peer.Peers;
 
 public final class GetBlockchainStatus extends APIServlet.APIRequestHandler {
 
-    static final GetBlockchainStatus instance = new GetBlockchainStatus();
+	static final GetBlockchainStatus instance = new GetBlockchainStatus();
 
-    private GetBlockchainStatus() {
-        super(new APITag[] {APITag.BLOCKS, APITag.INFO});
-    }
+	private GetBlockchainStatus() {
+		super(new APITag[] {APITag.BLOCKS, APITag.INFO});
+	}
 
-    @Override
-    protected JSONObject processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        response.put("application", Nxt.APPLICATION);
-        response.put("version", Nxt.VERSION);
-        response.put("time", Nxt.getEpochTime());
-        Block lastBlock = Nxt.getBlockchain().getLastBlock();
-        response.put("lastBlock", lastBlock.getStringId());
-        response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
-        response.put("numberOfBlocks", lastBlock.getHeight() + 1);
-        BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
-        Peer lastBlockchainFeeder = blockchainProcessor.getLastBlockchainFeeder();
-        response.put("lastBlockchainFeeder", lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
-        response.put("lastBlockchainFeederHeight", blockchainProcessor.getLastBlockchainFeederHeight());
-        response.put("isScanning", blockchainProcessor.isScanning());
-        response.put("isDownloading", blockchainProcessor.isDownloading());
-        response.put("maxRollback", Constants.MAX_ROLLBACK);
-        response.put("currentMinRollbackHeight", Nxt.getBlockchainProcessor().getMinRollbackHeight());
-        response.put("isTestnet", Constants.isTestnet);
-        response.put("maxPrunableLifetime", Constants.MAX_PRUNABLE_LIFETIME);
-        response.put("includeExpiredPrunable", Constants.INCLUDE_EXPIRED_PRUNABLE);
-        response.put("correctInvalidFees", Constants.correctInvalidFees);
-        response.put("ledgerTrimKeep", AccountLedger.trimKeep);
-        JSONArray servicesArray = new JSONArray();
-        Peers.getServices().forEach(service -> servicesArray.add(service.name()));
-        response.put("services", servicesArray);
-        if (APIProxy.isActivated()) {
-            String servingPeer = APIProxy.getInstance().getMainPeerAnnouncedAddress();
-            response.put("apiProxy", true);
-            response.put("apiProxyPeer", servingPeer);
-        } else {
-            response.put("apiProxy", false);
-        }
-        response.put("isLightClient", Constants.isLightClient);
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected JSONObject processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		response.put("application", Nxt.APPLICATION);
+		response.put("version", Nxt.VERSION);
+		response.put("time", Nxt.getEpochTime());
+		final Block lastBlock = Nxt.getBlockchain().getLastBlock();
+		response.put("lastBlock", lastBlock.getStringId());
+		response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
+		response.put("numberOfBlocks", lastBlock.getHeight() + 1);
+		final BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
+		final Peer lastBlockchainFeeder = blockchainProcessor.getLastBlockchainFeeder();
+		response.put("lastBlockchainFeeder", lastBlockchainFeeder == null ? null : lastBlockchainFeeder.getAnnouncedAddress());
+		response.put("lastBlockchainFeederHeight", blockchainProcessor.getLastBlockchainFeederHeight());
+		response.put("isScanning", blockchainProcessor.isScanning());
+		response.put("isDownloading", blockchainProcessor.isDownloading());
+		response.put("maxRollback", Constants.MAX_ROLLBACK);
+		response.put("currentMinRollbackHeight", Nxt.getBlockchainProcessor().getMinRollbackHeight());
+		response.put("isTestnet", Constants.isTestnet);
+		response.put("maxPrunableLifetime", Constants.MAX_PRUNABLE_LIFETIME);
+		response.put("includeExpiredPrunable", Constants.INCLUDE_EXPIRED_PRUNABLE);
+		response.put("correctInvalidFees", Constants.correctInvalidFees);
+		response.put("ledgerTrimKeep", AccountLedger.trimKeep);
+		final JSONArray servicesArray = new JSONArray();
+		Peers.getServices().forEach(service -> servicesArray.add(service.name()));
+		response.put("services", servicesArray);
+		if (APIProxy.isActivated()) {
+			final String servingPeer = APIProxy.getInstance().getMainPeerAnnouncedAddress();
+			response.put("apiProxy", true);
+			response.put("apiProxyPeer", servingPeer);
+		} else {
+			response.put("apiProxy", false);
+		}
+		response.put("isLightClient", Constants.isLightClient);
+		return response;
+	}
 
 }

@@ -26,42 +26,42 @@ import nxt.Generator;
 
 public final class StopForging extends APIServlet.APIRequestHandler {
 
-    static final StopForging instance = new StopForging();
+	static final StopForging instance = new StopForging();
 
-    private StopForging() {
-        super(new APITag[] {APITag.FORGING}, "secretPhrase", "adminPassword");
-    }
+	private StopForging() {
+		super(new APITag[] {APITag.FORGING}, "secretPhrase", "adminPassword");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, false);
-        JSONObject response = new JSONObject();
-        if (secretPhrase != null) {
-            Generator generator = Generator.stopForging(secretPhrase);
-            response.put("foundAndStopped", generator != null);
-            response.put("forgersCount", Generator.getGeneratorCount());
-        } else {
-            API.verifyPassword(req);
-            int count = Generator.stopForging();
-            response.put("stopped", count);
-        }
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-    @Override
-    protected boolean requirePost() {
-        return true;
-    }
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, false);
+		final JSONObject response = new JSONObject();
+		if (secretPhrase != null) {
+			final Generator generator = Generator.stopForging(secretPhrase);
+			response.put("foundAndStopped", generator != null);
+			response.put("forgersCount", Generator.getGeneratorCount());
+		} else {
+			API.verifyPassword(req);
+			final int count = Generator.stopForging();
+			response.put("stopped", count);
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requireFullClient() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireFullClient() {
-        return true;
-    }
+	@Override
+	protected boolean requirePost() {
+		return true;
+	}
 
 }

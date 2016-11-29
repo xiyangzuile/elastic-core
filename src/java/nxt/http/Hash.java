@@ -26,49 +26,49 @@ import nxt.util.Convert;
 
 public final class Hash extends APIServlet.APIRequestHandler {
 
-    static final Hash instance = new Hash();
+	static final Hash instance = new Hash();
 
-    private Hash() {
-        super(new APITag[] {APITag.UTILS}, "hashAlgorithm", "secret", "secretIsText");
-    }
+	private Hash() {
+		super(new APITag[] {APITag.UTILS}, "hashAlgorithm", "secret", "secretIsText");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        byte algorithm = ParameterParser.getByte(req, "hashAlgorithm", (byte) 0, Byte.MAX_VALUE, false);
-        HashFunction hashFunction = null;
-        try {
-            hashFunction = HashFunction.getHashFunction(algorithm);
-        } catch (IllegalArgumentException ignore) {}
-        if (hashFunction == null) {
-            return JSONResponses.INCORRECT_HASH_ALGORITHM;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        boolean secretIsText = "true".equalsIgnoreCase(req.getParameter("secretIsText"));
-        byte[] secret;
-        try {
-            secret = secretIsText ? Convert.toBytes(req.getParameter("secret"))
-                    : Convert.parseHexString(req.getParameter("secret"));
-        } catch (RuntimeException e) {
-            return JSONResponses.INCORRECT_SECRET;
-        }
-        if (secret == null || secret.length == 0) {
-            return JSONResponses.MISSING_SECRET;
-        }
+		final byte algorithm = ParameterParser.getByte(req, "hashAlgorithm", (byte) 0, Byte.MAX_VALUE, false);
+		HashFunction hashFunction = null;
+		try {
+			hashFunction = HashFunction.getHashFunction(algorithm);
+		} catch (final IllegalArgumentException ignore) {}
+		if (hashFunction == null) {
+			return JSONResponses.INCORRECT_HASH_ALGORITHM;
+		}
 
-        JSONObject response = new JSONObject();
-        response.put("hash", Convert.toHexString(hashFunction.hash(secret)));
-        return response;
-    }
+		final boolean secretIsText = "true".equalsIgnoreCase(req.getParameter("secretIsText"));
+		byte[] secret;
+		try {
+			secret = secretIsText ? Convert.toBytes(req.getParameter("secret"))
+					: Convert.parseHexString(req.getParameter("secret"));
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_SECRET;
+		}
+		if ((secret == null) || (secret.length == 0)) {
+			return JSONResponses.MISSING_SECRET;
+		}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("hash", Convert.toHexString(hashFunction.hash(secret)));
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

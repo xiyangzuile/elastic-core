@@ -18,59 +18,59 @@ package nxt;
 
 public interface Fee {
 
-    long getFee(TransactionImpl transaction, Appendix appendage);
+	final class ConstantFee implements Fee {
 
-    Fee DEFAULT_FEE = new Fee.ConstantFee(Constants.ONE_NXT);
+		private final long fee;
 
-    Fee NONE = new Fee.ConstantFee(0L);
+		public ConstantFee(final long fee) {
+			this.fee = fee;
+		}
 
-    final class ConstantFee implements Fee {
+		@Override
+		public long getFee(final TransactionImpl transaction, final Appendix appendage) {
+			return this.fee;
+		}
 
-        private final long fee;
+	}
 
-        public ConstantFee(long fee) {
-            this.fee = fee;
-        }
+	abstract class SizeBasedFee implements Fee {
 
-        @Override
-        public long getFee(TransactionImpl transaction, Appendix appendage) {
-            return fee;
-        }
+		private final long constantFee;
+		private final long feePerSize;
+		private final int unitSize;
 
-    }
+		public SizeBasedFee(final long feePerSize) {
+			this(0, feePerSize);
+		}
 
-    abstract class SizeBasedFee implements Fee {
+		public SizeBasedFee(final long constantFee, final long feePerSize) {
+			this(constantFee, feePerSize, 1024);
+		}
 
-        private final long constantFee;
-        private final long feePerSize;
-        private final int unitSize;
+		public SizeBasedFee(final long constantFee, final long feePerSize, final int unitSize) {
+			this.constantFee = constantFee;
+			this.feePerSize = feePerSize;
+			this.unitSize = unitSize;
+		}
 
-        public SizeBasedFee(long feePerSize) {
-            this(0, feePerSize);
-        }
+		// the first size unit is free if constantFee is 0
+		@Override
+		public final long getFee(final TransactionImpl transaction, final Appendix appendage) {
+			final int size = this.getSize(transaction, appendage) - 1;
+			if (size < 0) {
+				return this.constantFee;
+			}
+			return Math.addExact(this.constantFee, Math.multiplyExact(size / this.unitSize, this.feePerSize));
+		}
 
-        public SizeBasedFee(long constantFee, long feePerSize) {
-            this(constantFee, feePerSize, 1024);
-        }
+		public abstract int getSize(TransactionImpl transaction, Appendix appendage);
 
-        public SizeBasedFee(long constantFee, long feePerSize, int unitSize) {
-            this.constantFee = constantFee;
-            this.feePerSize = feePerSize;
-            this.unitSize = unitSize;
-        }
+	}
 
-        // the first size unit is free if constantFee is 0
-        @Override
-        public final long getFee(TransactionImpl transaction, Appendix appendage) {
-            int size = getSize(transaction, appendage) - 1;
-            if (size < 0) {
-                return constantFee;
-            }
-            return Math.addExact(constantFee, Math.multiplyExact((long) (size / unitSize), feePerSize));
-        }
+	Fee DEFAULT_FEE = new Fee.ConstantFee(Constants.ONE_NXT);
 
-        public abstract int getSize(TransactionImpl transaction, Appendix appendage);
+	Fee NONE = new Fee.ConstantFee(0L);
 
-    }
+	long getFee(TransactionImpl transaction, Appendix appendage);
 
 }

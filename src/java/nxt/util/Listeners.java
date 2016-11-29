@@ -22,36 +22,36 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class Listeners<T,E extends Enum<E>> {
 
-    private final ConcurrentHashMap<Enum<E>, List<Listener<T>>> listenersMap = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Enum<E>, List<Listener<T>>> listenersMap = new ConcurrentHashMap<>();
 
-    public boolean addListener(Listener<T> listener, Enum<E> eventType) {
-        synchronized (eventType) {
-            List<Listener<T>> listeners = listenersMap.get(eventType);
-            if (listeners == null) {
-                listeners = new CopyOnWriteArrayList<>();
-                listenersMap.put(eventType, listeners);
-            }
-            return listeners.add(listener);
-        }
-    }
+	public boolean addListener(final Listener<T> listener, final Enum<E> eventType) {
+		synchronized (eventType) {
+			List<Listener<T>> listeners = this.listenersMap.get(eventType);
+			if (listeners == null) {
+				listeners = new CopyOnWriteArrayList<>();
+				this.listenersMap.put(eventType, listeners);
+			}
+			return listeners.add(listener);
+		}
+	}
 
-    public boolean removeListener(Listener<T> listener, Enum<E> eventType) {
-        synchronized (eventType) {
-            List<Listener<T>> listeners = listenersMap.get(eventType);
-            if (listeners != null) {
-                return listeners.remove(listener);
-            }
-        }
-        return false;
-    }
+	public void notify(final T t, final Enum<E> eventType) {
+		final List<Listener<T>> listeners = this.listenersMap.get(eventType);
+		if (listeners != null) {
+			for (final Listener<T> listener : listeners) {
+				listener.notify(t);
+			}
+		}
+	}
 
-    public void notify(T t, Enum<E> eventType) {
-        List<Listener<T>> listeners = listenersMap.get(eventType);
-        if (listeners != null) {
-            for (Listener<T> listener : listeners) {
-                listener.notify(t);
-            }
-        }
-    }
+	public boolean removeListener(final Listener<T> listener, final Enum<E> eventType) {
+		synchronized (eventType) {
+			final List<Listener<T>> listeners = this.listenersMap.get(eventType);
+			if (listeners != null) {
+				return listeners.remove(listener);
+			}
+		}
+		return false;
+	}
 
 }

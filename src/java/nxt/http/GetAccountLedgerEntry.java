@@ -168,53 +168,54 @@ import nxt.NxtException;
  */
 public class GetAccountLedgerEntry extends APIServlet.APIRequestHandler {
 
-    /** GetAccountLedgerEntry instance */
-    static final GetAccountLedgerEntry instance = new GetAccountLedgerEntry();
+	/** GetAccountLedgerEntry instance */
+	static final GetAccountLedgerEntry instance = new GetAccountLedgerEntry();
 
-    /**
-     * Create the GetAccountLedgerEntry instance
-     */
-    private GetAccountLedgerEntry() {
-        super(new APITag[] {APITag.ACCOUNTS}, "ledgerId", "includeTransaction", "includeHoldingInfo");
-    }
+	/**
+	 * Create the GetAccountLedgerEntry instance
+	 */
+	private GetAccountLedgerEntry() {
+		super(new APITag[] {APITag.ACCOUNTS}, "ledgerId", "includeTransaction", "includeHoldingInfo");
+	}
 
-    /**
-     * Process the GetAccountLedgerEntry API request
-     *
-     * @param   req                 API request
-     * @return                      API response
-     * @throws  NxtException        Invalid request
-     */
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws NxtException {
-        //
-        // Process the request parameters
-        //
-        long ledgerId = ParameterParser.getUnsignedLong(req, "ledgerId", true);
-        boolean includeTransaction = "true".equalsIgnoreCase(req.getParameter("includeTransaction"));
-        boolean includeHoldingInfo = "true".equalsIgnoreCase(req.getParameter("includeHoldingInfo"));
+	/**
+	 * No required block parameters
+	 *
+	 * @return                      FALSE to disable the required block parameters
+	 */
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        //
-        // Get the ledger entry
-        //
-        LedgerEntry ledgerEntry = AccountLedger.getEntry(ledgerId);
-        if (ledgerEntry == null)
-            return JSONResponses.UNKNOWN_ENTRY;
-        //
-        // Return the response
-        //
-        JSONObject response = new JSONObject();
-        JSONData.ledgerEntry(response, ledgerEntry, includeTransaction, includeHoldingInfo);
-        return response;
-    }
+	/**
+	 * Process the GetAccountLedgerEntry API request
+	 *
+	 * @param   req                 API request
+	 * @return                      API response
+	 * @throws  NxtException        Invalid request
+	 */
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
+		//
+		// Process the request parameters
+		//
+		final long ledgerId = ParameterParser.getUnsignedLong(req, "ledgerId", true);
+		final boolean includeTransaction = "true".equalsIgnoreCase(req.getParameter("includeTransaction"));
+		final boolean includeHoldingInfo = "true".equalsIgnoreCase(req.getParameter("includeHoldingInfo"));
 
-    /**
-     * No required block parameters
-     *
-     * @return                      FALSE to disable the required block parameters
-     */
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		//
+		// Get the ledger entry
+		//
+		final LedgerEntry ledgerEntry = AccountLedger.getEntry(ledgerId);
+		if (ledgerEntry == null) {
+			return JSONResponses.UNKNOWN_ENTRY;
+		}
+		//
+		// Return the response
+		//
+		final JSONObject response = new JSONObject();
+		JSONData.ledgerEntry(response, ledgerEntry, includeTransaction, includeHoldingInfo);
+		return response;
+	}
 }

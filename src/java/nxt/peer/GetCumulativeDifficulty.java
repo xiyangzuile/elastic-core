@@ -24,25 +24,25 @@ import nxt.Nxt;
 
 final class GetCumulativeDifficulty extends PeerServlet.PeerRequestHandler {
 
-    static final GetCumulativeDifficulty instance = new GetCumulativeDifficulty();
+	static final GetCumulativeDifficulty instance = new GetCumulativeDifficulty();
 
-    private GetCumulativeDifficulty() {}
+	private GetCumulativeDifficulty() {}
 
 
-    @Override
-    JSONStreamAware processRequest(JSONObject request, Peer peer) {
+	@Override
+	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
-        JSONObject response = new JSONObject();
+		final JSONObject response = new JSONObject();
 
-        Block lastBlock = Nxt.getBlockchain().getLastBlock();
-        response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
-        response.put("blockchainHeight", lastBlock.getHeight());
-        return response;
-    }
+		final Block lastBlock = Nxt.getBlockchain().getLastBlock();
+		response.put("cumulativeDifficulty", lastBlock.getCumulativeDifficulty().toString());
+		response.put("blockchainHeight", lastBlock.getHeight());
+		return response;
+	}
 
-    @Override
-    boolean rejectWhileDownloading() {
-        return true;
-    }
+	@Override
+	boolean rejectWhileDownloading() {
+		return true;
+	}
 
 }

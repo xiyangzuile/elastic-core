@@ -16,9 +16,6 @@
 
 package nxt.http;
 
-import static nxt.http.JSONResponses.INCORRECT_HALLMARK;
-import static nxt.http.JSONResponses.MISSING_HALLMARK;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
@@ -27,34 +24,34 @@ import nxt.peer.Hallmark;
 
 public final class DecodeHallmark extends APIServlet.APIRequestHandler {
 
-    static final DecodeHallmark instance = new DecodeHallmark();
+	static final DecodeHallmark instance = new DecodeHallmark();
 
-    private DecodeHallmark() {
-        super(new APITag[] {APITag.TOKENS}, "hallmark");
-    }
+	private DecodeHallmark() {
+		super(new APITag[] {APITag.TOKENS}, "hallmark");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        String hallmarkValue = req.getParameter("hallmark");
-        if (hallmarkValue == null) {
-            return MISSING_HALLMARK;
-        }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-        try {
+		final String hallmarkValue = req.getParameter("hallmark");
+		if (hallmarkValue == null) {
+			return JSONResponses.MISSING_HALLMARK;
+		}
 
-            Hallmark hallmark = Hallmark.parseHallmark(hallmarkValue);
+		try {
 
-            return JSONData.hallmark(hallmark);
+			final Hallmark hallmark = Hallmark.parseHallmark(hallmarkValue);
 
-        } catch (RuntimeException e) {
-            return INCORRECT_HALLMARK;
-        }
-    }
+			return JSONData.hallmark(hallmark);
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		} catch (final RuntimeException e) {
+			return JSONResponses.INCORRECT_HALLMARK;
+		}
+	}
 
 }

@@ -31,334 +31,343 @@ import nxt.util.Logger;
 
 public class TransactionalDb extends BasicDb {
 
-    private static final DbFactory factory = new DbFactory();
-    private static final long stmtThreshold;
-    private static final long txThreshold;
-    private static final long txInterval;
-    static {
-        long temp;
-        stmtThreshold = (temp=Nxt.getIntProperty("nxt.statementLogThreshold")) != 0 ? temp : 1000;
-        txThreshold = (temp=Nxt.getIntProperty("nxt.transactionLogThreshold")) != 0 ? temp : 5000;
-        txInterval = (temp=Nxt.getIntProperty("nxt.transactionLogInterval")) != 0 ? temp*60*1000 : 15*60*1000;
-    }
+	private final class DbConnection extends FilteredConnection {
 
-    private final ThreadLocal<DbConnection> localConnection = new ThreadLocal<>();
-    private final ThreadLocal<Map<String,Map<DbKey,Object>>> transactionCaches = new ThreadLocal<>();
-    private final ThreadLocal<Set<TransactionCallback>> transactionCallback = new ThreadLocal<>();
-    private volatile long txTimes = 0;
-    private volatile long txCount = 0;
-    private volatile long statsTime = 0;
+		long txStart = 0;
 
-    public TransactionalDb(DbProperties dbProperties) {
-        super(dbProperties);
-    }
+		private DbConnection(final Connection con) {
+			super(con, TransactionalDb.factory);
+		}
 
-    @Override
-    public Connection getConnection() throws SQLException {
-        Connection con = localConnection.get();
-        if (con != null) {
-            return con;
-        }
-        return new DbConnection(super.getConnection());
-    }
+		@Override
+		public void close() throws SQLException {
+			if (TransactionalDb.this.localConnection.get() == null) {
+				super.close();
+			} else if (this != TransactionalDb.this.localConnection.get()) {
+				throw new IllegalStateException("Previous connection not committed");
+			}
+		}
 
-    public boolean isInTransaction() {
-        return localConnection.get() != null;
-    }
+		@Override
+		public void commit() throws SQLException {
+			if (TransactionalDb.this.localConnection.get() == null) {
+				super.commit();
+			} else if (this != TransactionalDb.this.localConnection.get()) {
+				throw new IllegalStateException("Previous connection not committed");
+			} else {
+				TransactionalDb.this.commitTransaction();
+			}
+		}
 
-    public Connection beginTransaction() {
-        if (localConnection.get() != null) {
-            throw new IllegalStateException("Transaction already in progress");
-        }
-        try {
-            Connection con = getPooledConnection();
-            con.setAutoCommit(false);
-            con = new DbConnection(con);
-            ((DbConnection)con).txStart = System.currentTimeMillis();
-            localConnection.set((DbConnection)con);
-            transactionCaches.set(new HashMap<>());
-            return con;
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+		private void doCommit() throws SQLException {
+			super.commit();
+		}
 
-    public void commitTransaction() {
-        DbConnection con = localConnection.get();
-        if (con == null) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        try {
-            con.doCommit();
-            Set<TransactionCallback> callbacks = transactionCallback.get();
-            if (callbacks != null) {
-                callbacks.forEach(TransactionCallback::commit);
-                transactionCallback.set(null);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        }
-    }
+		private void doRollback() throws SQLException {
+			super.rollback();
+		}
 
-    public void rollbackTransaction() {
-        DbConnection con = localConnection.get();
-        if (con == null) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        try {
-            con.doRollback();
-        } catch (SQLException e) {
-            throw new RuntimeException(e.toString(), e);
-        } finally {
-            transactionCaches.get().clear();
-            Set<TransactionCallback> callbacks = transactionCallback.get();
-            if (callbacks != null) {
-                callbacks.forEach(TransactionCallback::rollback);
-                transactionCallback.set(null);
-            }
-        }
-    }
+		@Override
+		public void rollback() throws SQLException {
+			if (TransactionalDb.this.localConnection.get() == null) {
+				super.rollback();
+			} else if (this != TransactionalDb.this.localConnection.get()) {
+				throw new IllegalStateException("Previous connection not committed");
+			} else {
+				TransactionalDb.this.rollbackTransaction();
+			}
+		}
 
-    public void endTransaction() {
-        Connection con = localConnection.get();
-        if (con == null) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        localConnection.set(null);
-        transactionCaches.set(null);
-        long now = System.currentTimeMillis();
-        long elapsed = now - ((DbConnection)con).txStart;
-        if (elapsed >= txThreshold) {
-            logThreshold(String.format("Database transaction required %.3f seconds at height %d",
-                                       (double)elapsed/1000.0, Nxt.getBlockchain().getHeight()));
-        } else {
-            long count, times;
-            boolean logStats = false;
-            synchronized(this) {
-                count = ++txCount;
-                times = txTimes += elapsed;
-                if (now - statsTime >= txInterval) {
-                    logStats = true;
-                    txCount = 0;
-                    txTimes = 0;
-                    statsTime = now;
-                }
-            }
-            if (logStats)
-                Logger.logDebugMessage(String.format("Average database transaction time is %.3f seconds",
-                                                     (double)times/1000.0/(double)count));
-        }
-        DbUtils.close(con);
-    }
+		@Override
+		public void setAutoCommit(final boolean autoCommit) throws SQLException {
+			throw new UnsupportedOperationException("Use Db.beginTransaction() to start a new transaction");
+		}
+	}
+	private static final class DbFactory implements FilteredFactory {
 
-    public void registerCallback(TransactionCallback callback) {
-        Set<TransactionCallback> callbacks = transactionCallback.get();
-        if (callbacks == null) {
-            callbacks = new HashSet<>();
-            transactionCallback.set(callbacks);
-        }
-        callbacks.add(callback);
-    }
+		@Override
+		public PreparedStatement createPreparedStatement(final PreparedStatement stmt, final String sql) {
+			return new DbPreparedStatement(stmt, sql);
+		}
 
-    Map<DbKey,Object> getCache(String tableName) {
-        if (!isInTransaction()) {
-            throw new IllegalStateException("Not in transaction");
-        }
-        Map<DbKey,Object> cacheMap = transactionCaches.get().get(tableName);
-        if (cacheMap == null) {
-            cacheMap = new HashMap<>();
-            transactionCaches.get().put(tableName, cacheMap);
-        }
-        return cacheMap;
-    }
+		@Override
+		public Statement createStatement(final Statement stmt) {
+			return new DbStatement(stmt);
+		}
+	}
+	private static final class DbPreparedStatement extends FilteredPreparedStatement {
+		private DbPreparedStatement(final PreparedStatement stmt, final String sql) {
+			super(stmt, sql);
+		}
 
-    void clearCache(String tableName) {
-        Map<DbKey,Object> cacheMap = transactionCaches.get().get(tableName);
-        if (cacheMap != null) {
-            cacheMap.clear();
-        }
-    }
+		@Override
+		public boolean execute() throws SQLException {
+			final long start = System.currentTimeMillis();
+			final boolean b = super.execute();
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+			}
+			return b;
+		}
 
-    public void clearCache() {
-        transactionCaches.get().values().forEach(Map::clear);
-    }
+		@Override
+		public ResultSet executeQuery() throws SQLException {
+			final long start = System.currentTimeMillis();
+			final ResultSet r = super.executeQuery();
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+			}
+			return r;
+		}
 
-    private static void logThreshold(String msg) {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append(msg).append('\n');
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        boolean firstLine = true;
-        for (int i=3; i<stackTrace.length; i++) {
-            String line = stackTrace[i].toString();
-            if (!line.startsWith("nxt."))
-                break;
-            if (firstLine)
-                firstLine = false;
-            else
-                sb.append('\n');
-            sb.append("  ").append(line);
-        }
-        Logger.logDebugMessage(sb.toString());
-    }
+		@Override
+		public int executeUpdate() throws SQLException {
+			final long start = System.currentTimeMillis();
+			final int c = super.executeUpdate();
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
+			}
+			return c;
+		}
+	}
+	private static final class DbStatement extends FilteredStatement {
 
-    private final class DbConnection extends FilteredConnection {
+		private DbStatement(final Statement stmt) {
+			super(stmt);
+		}
 
-        long txStart = 0;
+		@Override
+		public boolean execute(final String sql) throws SQLException {
+			final long start = System.currentTimeMillis();
+			final boolean b = super.execute(sql);
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+			}
+			return b;
+		}
 
-        private DbConnection(Connection con) {
-            super(con, factory);
-        }
+		@Override
+		public ResultSet executeQuery(final String sql) throws SQLException {
+			final long start = System.currentTimeMillis();
+			final ResultSet r = super.executeQuery(sql);
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+			}
+			return r;
+		}
 
-        @Override
-        public void setAutoCommit(boolean autoCommit) throws SQLException {
-            throw new UnsupportedOperationException("Use Db.beginTransaction() to start a new transaction");
-        }
+		@Override
+		public int executeUpdate(final String sql) throws SQLException {
+			final long start = System.currentTimeMillis();
+			final int c = super.executeUpdate(sql);
+			final long elapsed = System.currentTimeMillis() - start;
+			if (elapsed > TransactionalDb.stmtThreshold) {
+				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+						elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
+			}
+			return c;
+		}
+	}
+	/**
+	 * Transaction callback interface
+	 */
+	public interface TransactionCallback {
 
-        @Override
-        public void commit() throws SQLException {
-            if (localConnection.get() == null) {
-                super.commit();
-            } else if (this != localConnection.get()) {
-                throw new IllegalStateException("Previous connection not committed");
-            } else {
-                commitTransaction();
-            }
-        }
+		/**
+		 * Transaction has been committed
+		 */
+		void commit();
 
-        private void doCommit() throws SQLException {
-            super.commit();
-        }
+		/**
+		 * Transaction has been rolled back
+		 */
+		void rollback();
+	}
 
-        @Override
-        public void rollback() throws SQLException {
-            if (localConnection.get() == null) {
-                super.rollback();
-            } else if (this != localConnection.get()) {
-                throw new IllegalStateException("Previous connection not committed");
-            } else {
-                rollbackTransaction();
-            }
-        }
+	private static final DbFactory factory = new DbFactory();
+	private static final long stmtThreshold;
+	private static final long txThreshold;
+	private static final long txInterval;
+	static {
+		long temp;
+		stmtThreshold = (temp=Nxt.getIntProperty("nxt.statementLogThreshold")) != 0 ? temp : 1000;
+		txThreshold = (temp=Nxt.getIntProperty("nxt.transactionLogThreshold")) != 0 ? temp : 5000;
+		txInterval = (temp=Nxt.getIntProperty("nxt.transactionLogInterval")) != 0 ? temp*60*1000 : 15*60*1000;
+	}
+	private static void logThreshold(final String msg) {
+		final StringBuilder sb = new StringBuilder(512);
+		sb.append(msg).append('\n');
+		final StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		boolean firstLine = true;
+		for (int i=3; i<stackTrace.length; i++) {
+			final String line = stackTrace[i].toString();
+			if (!line.startsWith("nxt.")) {
+				break;
+			}
+			if (firstLine) {
+				firstLine = false;
+			} else {
+				sb.append('\n');
+			}
+			sb.append("  ").append(line);
+		}
+		Logger.logDebugMessage(sb.toString());
+	}
 
-        private void doRollback() throws SQLException {
-            super.rollback();
-        }
+	private final ThreadLocal<DbConnection> localConnection = new ThreadLocal<>();
 
-        @Override
-        public void close() throws SQLException {
-            if (localConnection.get() == null) {
-                super.close();
-            } else if (this != localConnection.get()) {
-                throw new IllegalStateException("Previous connection not committed");
-            }
-        }
-    }
+	private final ThreadLocal<Map<String,Map<DbKey,Object>>> transactionCaches = new ThreadLocal<>();
 
-    private static final class DbStatement extends FilteredStatement {
+	private final ThreadLocal<Set<TransactionCallback>> transactionCallback = new ThreadLocal<>();
 
-        private DbStatement(Statement stmt) {
-            super(stmt);
-        }
+	private volatile long txTimes = 0;
 
-        @Override
-        public boolean execute(String sql) throws SQLException {
-            long start = System.currentTimeMillis();
-            boolean b = super.execute(sql);
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
-            return b;
-        }
+	private volatile long txCount = 0;
 
-        @Override
-        public ResultSet executeQuery(String sql) throws SQLException {
-            long start = System.currentTimeMillis();
-            ResultSet r = super.executeQuery(sql);
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
-            return r;
-        }
+	private volatile long statsTime = 0;
 
-        @Override
-        public int executeUpdate(String sql) throws SQLException {
-            long start = System.currentTimeMillis();
-            int c = super.executeUpdate(sql);
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), sql));
-            return c;
-        }
-    }
+	public TransactionalDb(final DbProperties dbProperties) {
+		super(dbProperties);
+	}
 
-    private static final class DbPreparedStatement extends FilteredPreparedStatement {
-        private DbPreparedStatement(PreparedStatement stmt, String sql) {
-            super(stmt, sql);
-        }
+	public Connection beginTransaction() {
+		if (this.localConnection.get() != null) {
+			throw new IllegalStateException("Transaction already in progress");
+		}
+		try {
+			Connection con = this.getPooledConnection();
+			con.setAutoCommit(false);
+			con = new DbConnection(con);
+			((DbConnection)con).txStart = System.currentTimeMillis();
+			this.localConnection.set((DbConnection)con);
+			this.transactionCaches.set(new HashMap<>());
+			return con;
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-        @Override
-        public boolean execute() throws SQLException {
-            long start = System.currentTimeMillis();
-            boolean b = super.execute();
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), getSQL()));
-            return b;
-        }
+	public void clearCache() {
+		this.transactionCaches.get().values().forEach(Map::clear);
+	}
 
-        @Override
-        public ResultSet executeQuery() throws SQLException {
-            long start = System.currentTimeMillis();
-            ResultSet r = super.executeQuery();
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), getSQL()));
-            return r;
-        }
+	void clearCache(final String tableName) {
+		final Map<DbKey,Object> cacheMap = this.transactionCaches.get().get(tableName);
+		if (cacheMap != null) {
+			cacheMap.clear();
+		}
+	}
 
-        @Override
-        public int executeUpdate() throws SQLException {
-            long start = System.currentTimeMillis();
-            int c = super.executeUpdate();
-            long elapsed = System.currentTimeMillis() - start;
-            if (elapsed > stmtThreshold)
-                logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-                                           (double)elapsed/1000.0, Nxt.getBlockchain().getHeight(), getSQL()));
-            return c;
-        }
-    }
+	public void commitTransaction() {
+		final DbConnection con = this.localConnection.get();
+		if (con == null) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		try {
+			con.doCommit();
+			final Set<TransactionCallback> callbacks = this.transactionCallback.get();
+			if (callbacks != null) {
+				callbacks.forEach(TransactionCallback::commit);
+				this.transactionCallback.set(null);
+			}
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
 
-    private static final class DbFactory implements FilteredFactory {
+	public void endTransaction() {
+		final Connection con = this.localConnection.get();
+		if (con == null) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		this.localConnection.set(null);
+		this.transactionCaches.set(null);
+		final long now = System.currentTimeMillis();
+		final long elapsed = now - ((DbConnection)con).txStart;
+		if (elapsed >= TransactionalDb.txThreshold) {
+			TransactionalDb.logThreshold(String.format("Database transaction required %.3f seconds at height %d",
+					elapsed/1000.0, Nxt.getBlockchain().getHeight()));
+		} else {
+			long count, times;
+			boolean logStats = false;
+			synchronized(this) {
+				count = ++this.txCount;
+				times = this.txTimes += elapsed;
+				if ((now - this.statsTime) >= TransactionalDb.txInterval) {
+					logStats = true;
+					this.txCount = 0;
+					this.txTimes = 0;
+					this.statsTime = now;
+				}
+			}
+			if (logStats) {
+				Logger.logDebugMessage(String.format("Average database transaction time is %.3f seconds",
+						times/1000.0/count));
+			}
+		}
+		DbUtils.close(con);
+	}
 
-        @Override
-        public Statement createStatement(Statement stmt) {
-            return new DbStatement(stmt);
-        }
+	Map<DbKey,Object> getCache(final String tableName) {
+		if (!this.isInTransaction()) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		Map<DbKey,Object> cacheMap = this.transactionCaches.get().get(tableName);
+		if (cacheMap == null) {
+			cacheMap = new HashMap<>();
+			this.transactionCaches.get().put(tableName, cacheMap);
+		}
+		return cacheMap;
+	}
 
-        @Override
-        public PreparedStatement createPreparedStatement(PreparedStatement stmt, String sql) {
-            return new DbPreparedStatement(stmt, sql);
-        }
-    }
+	@Override
+	public Connection getConnection() throws SQLException {
+		final Connection con = this.localConnection.get();
+		if (con != null) {
+			return con;
+		}
+		return new DbConnection(super.getConnection());
+	}
 
-    /**
-     * Transaction callback interface
-     */
-    public interface TransactionCallback {
+	public boolean isInTransaction() {
+		return this.localConnection.get() != null;
+	}
 
-        /**
-         * Transaction has been committed
-         */
-        void commit();
+	public void registerCallback(final TransactionCallback callback) {
+		Set<TransactionCallback> callbacks = this.transactionCallback.get();
+		if (callbacks == null) {
+			callbacks = new HashSet<>();
+			this.transactionCallback.set(callbacks);
+		}
+		callbacks.add(callback);
+	}
 
-        /**
-         * Transaction has been rolled back
-         */
-        void rollback();
-    }
+	public void rollbackTransaction() {
+		final DbConnection con = this.localConnection.get();
+		if (con == null) {
+			throw new IllegalStateException("Not in transaction");
+		}
+		try {
+			con.doRollback();
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		} finally {
+			this.transactionCaches.get().clear();
+			final Set<TransactionCallback> callbacks = this.transactionCallback.get();
+			if (callbacks != null) {
+				callbacks.forEach(TransactionCallback::rollback);
+				this.transactionCallback.set(null);
+			}
+		}
+	}
 }

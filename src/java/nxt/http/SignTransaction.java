@@ -27,47 +27,47 @@ import nxt.util.Convert;
 
 public final class SignTransaction extends APIServlet.APIRequestHandler {
 
-    static final SignTransaction instance = new SignTransaction();
+	static final SignTransaction instance = new SignTransaction();
 
-    private SignTransaction() {
-        super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionJSON", "unsignedTransactionBytes", "prunableAttachmentJSON", "secretPhrase", "validate");
-    }
+	private SignTransaction() {
+		super(new APITag[] {APITag.TRANSACTIONS}, "unsignedTransactionJSON", "unsignedTransactionBytes", "prunableAttachmentJSON", "secretPhrase", "validate");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) throws ParameterException {
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 
-        String transactionJSON = Convert.emptyToNull(req.getParameter("unsignedTransactionJSON"));
-        String transactionBytes = Convert.emptyToNull(req.getParameter("unsignedTransactionBytes"));
-        String prunableAttachmentJSON = Convert.emptyToNull(req.getParameter("prunableAttachmentJSON"));
+		final String transactionJSON = Convert.emptyToNull(req.getParameter("unsignedTransactionJSON"));
+		final String transactionBytes = Convert.emptyToNull(req.getParameter("unsignedTransactionBytes"));
+		final String prunableAttachmentJSON = Convert.emptyToNull(req.getParameter("prunableAttachmentJSON"));
 
-        Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
+		final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes, prunableAttachmentJSON);
 
-        String secretPhrase = ParameterParser.getSecretPhrase(req, true);
-        boolean validate = !"false".equalsIgnoreCase(req.getParameter("validate"));
+		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
+		final boolean validate = !"false".equalsIgnoreCase(req.getParameter("validate"));
 
-        JSONObject response = new JSONObject();
-        try {
-            Transaction transaction = builder.build(secretPhrase);
-            JSONObject signedTransactionJSON = JSONData.unconfirmedTransaction(transaction);
-            if (validate) {
-                transaction.validate();
-                response.put("verify", transaction.verifySignature());
-            }
-            response.put("transactionJSON", signedTransactionJSON);
-            response.put("fullHash", signedTransactionJSON.get("fullHash"));
-            response.put("signatureHash", signedTransactionJSON.get("signatureHash"));
-            response.put("transaction", transaction.getStringId());
-            response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
-            JSONData.putPrunableAttachment(response, transaction);
-        } catch (NxtException.ValidationException|RuntimeException e) {
-            JSONData.putException(response, e, "Incorrect unsigned transaction json or bytes");
-        }
-        return response;
-    }
+		final JSONObject response = new JSONObject();
+		try {
+			final Transaction transaction = builder.build(secretPhrase);
+			final JSONObject signedTransactionJSON = JSONData.unconfirmedTransaction(transaction);
+			if (validate) {
+				transaction.validate();
+				response.put("verify", transaction.verifySignature());
+			}
+			response.put("transactionJSON", signedTransactionJSON);
+			response.put("fullHash", signedTransactionJSON.get("fullHash"));
+			response.put("signatureHash", signedTransactionJSON.get("signatureHash"));
+			response.put("transaction", transaction.getStringId());
+			response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
+			JSONData.putPrunableAttachment(response, transaction);
+		} catch (NxtException.ValidationException|RuntimeException e) {
+			JSONData.putException(response, e, "Incorrect unsigned transaction json or bytes");
+		}
+		return response;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
 }

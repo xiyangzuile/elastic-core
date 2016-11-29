@@ -25,45 +25,45 @@ import nxt.Nxt;
 
 public final class Shutdown extends APIServlet.APIRequestHandler {
 
-    static final Shutdown instance = new Shutdown();
+	static final Shutdown instance = new Shutdown();
 
-    private Shutdown() {
-        super(new APITag[] {APITag.DEBUG}, "scan");
-    }
+	private Shutdown() {
+		super(new APITag[] {APITag.DEBUG}, "scan");
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
-        JSONObject response = new JSONObject();
-        boolean scan = "true".equalsIgnoreCase(req.getParameter("scan"));
-        if (scan) {
-            Nxt.getBlockchainProcessor().fullScanWithShutdown();
-        } else {
-            new Thread(() -> {
-                System.exit(0);
-            }).start();
-        }
-        response.put("shutdown", true);
-        return response;
-    }
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-    @Override
-    protected final boolean requirePost() {
-        return true;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
+		final JSONObject response = new JSONObject();
+		final boolean scan = "true".equalsIgnoreCase(req.getParameter("scan"));
+		if (scan) {
+			Nxt.getBlockchainProcessor().fullScanWithShutdown();
+		} else {
+			new Thread(() -> {
+				System.exit(0);
+			}).start();
+		}
+		response.put("shutdown", true);
+		return response;
+	}
 
-    @Override
-    protected boolean requirePassword() {
-        return true;
-    }
+	@Override
+	protected boolean requireBlockchain() {
+		return false;
+	}
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+	@Override
+	protected boolean requirePassword() {
+		return true;
+	}
 
-    @Override
-    protected boolean requireBlockchain() {
-        return false;
-    }
+	@Override
+	protected final boolean requirePost() {
+		return true;
+	}
 
 }

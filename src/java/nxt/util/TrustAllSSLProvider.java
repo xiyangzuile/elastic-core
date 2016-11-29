@@ -28,40 +28,43 @@ import javax.net.ssl.X509TrustManager;
 
 public class TrustAllSSLProvider {
 
-    // Verify-all name verifier
-    private final static HostnameVerifier hostNameVerifier = (hostname, session) -> true;
+	// Verify-all name verifier
+	private final static HostnameVerifier hostNameVerifier = (hostname, session) -> true;
 
-    // Trust-all socket factory
-    private static final SSLSocketFactory sslSocketFactory;
-    static {
-        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
-            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                return null;
-            }
-            public void checkClientTrusted(X509Certificate[] certs, String authType) {
-            }
-            public void checkServerTrusted(X509Certificate[] certs, String authType) {
-            }
-        }};
-        SSLContext sc;
-        try {
-            sc = SSLContext.getInstance("TLS");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
-        try {
-            sc.init(null, trustAllCerts, new java.security.SecureRandom());
-        } catch (KeyManagementException e) {
-            throw new IllegalStateException(e);
-        }
-        sslSocketFactory = sc.getSocketFactory();
-    }
+	// Trust-all socket factory
+	private static final SSLSocketFactory sslSocketFactory;
+	static {
+		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(final X509Certificate[] certs, final String authType) {
+			}
+			@Override
+			public void checkServerTrusted(final X509Certificate[] certs, final String authType) {
+			}
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		}};
+		SSLContext sc;
+		try {
+			sc = SSLContext.getInstance("TLS");
+		} catch (final NoSuchAlgorithmException e) {
+			throw new IllegalStateException(e);
+		}
+		try {
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+		} catch (final KeyManagementException e) {
+			throw new IllegalStateException(e);
+		}
+		sslSocketFactory = sc.getSocketFactory();
+	}
 
-    public static HostnameVerifier getHostNameVerifier() {
-        return hostNameVerifier;
-    }
+	public static HostnameVerifier getHostNameVerifier() {
+		return TrustAllSSLProvider.hostNameVerifier;
+	}
 
-    public static SSLSocketFactory getSslSocketFactory() {
-        return sslSocketFactory;
-    }
+	public static SSLSocketFactory getSslSocketFactory() {
+		return TrustAllSSLProvider.sslSocketFactory;
+	}
 }

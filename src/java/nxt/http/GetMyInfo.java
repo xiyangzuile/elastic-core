@@ -23,24 +23,24 @@ import org.json.simple.JSONStreamAware;
 
 public final class GetMyInfo extends APIServlet.APIRequestHandler {
 
-    static final GetMyInfo instance = new GetMyInfo();
+	static final GetMyInfo instance = new GetMyInfo();
 
-    private GetMyInfo() {
-        super(new APITag[] {APITag.NETWORK});
-    }
+	private GetMyInfo() {
+		super(new APITag[] {APITag.NETWORK});
+	}
 
-    @Override
-    protected JSONStreamAware processRequest(HttpServletRequest req) {
+	@Override
+	protected boolean allowRequiredBlockParameters() {
+		return false;
+	}
 
-        JSONObject response = new JSONObject();
-        response.put("host", req.getRemoteHost());
-        response.put("address", req.getRemoteAddr());
-        return response;
-    }
+	@Override
+	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
-    @Override
-    protected boolean allowRequiredBlockParameters() {
-        return false;
-    }
+		final JSONObject response = new JSONObject();
+		response.put("host", req.getRemoteHost());
+		response.put("address", req.getRemoteAddr());
+		return response;
+	}
 
 }
