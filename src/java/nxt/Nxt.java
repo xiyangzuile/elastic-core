@@ -87,8 +87,11 @@ public final class Nxt {
 				// Invoke measurement for gigaflop estimator
 				GigaflopEstimator.measure_baseline();
 
+				int configuredMultiplier = Nxt.getIntProperty("nxt.timeMultiplier");
+				if (configuredMultiplier < 1) configuredMultiplier = 1;
+				
 				final int timeMultiplier = (Constants.isTestnet && Constants.isOffline)
-						? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
+						? configuredMultiplier : 1;
 				ThreadPool.start(timeMultiplier);
 				if (timeMultiplier > 1) {
 					Nxt.setTime(new Time.FasterTime(

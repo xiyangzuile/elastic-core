@@ -156,8 +156,11 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 
 			}
 
-			try (DbIterator<? extends Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId,
-					(byte) -1, (byte) -1, 0, false)) {
+		
+			
+				final Iterator<Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId,
+						(byte) -1, (byte) -1, 0, false).iterator();
+		
 				while (transactionIterator.hasNext()) {
 					final Transaction transaction = transactionIterator.next();
 					if (transaction.getSenderId() == accountId) {
@@ -188,7 +191,7 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 						myTransaction.put("timestamp", transaction.getTimestamp());
 						myTransactionsSet.add(myTransaction);
 					}
-				}
+				
 			}
 
 			final Iterator<JSONObject> iterator = myTransactionsSet.iterator();

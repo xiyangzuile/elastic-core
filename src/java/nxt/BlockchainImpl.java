@@ -431,17 +431,20 @@ final class BlockchainImpl implements Blockchain {
 	}
 
 	@Override
-	public DbIterator<TransactionImpl> getTransactions(final long accountId, final byte type, final byte subtype,
+	public List<Transaction> getTransactions(final long accountId, final byte type, final byte subtype,
 			final int blockTimestamp, final boolean includeExpiredPrunable) {
 		return this.getTransactions(accountId, 0, type, subtype, blockTimestamp, false, false, false, 0, -1,
 				includeExpiredPrunable, false);
 	}
 
 	@Override
-	public DbIterator<TransactionImpl> getTransactions(final long accountId, final int numberOfConfirmations,
-			final byte type, final byte subtype, final int blockTimestamp, final boolean withMessage,
-			final boolean phasedOnly, final boolean nonPhasedOnly, final int from, final int to,
-			final boolean includeExpiredPrunable, final boolean executedOnly) {
+	public List<Transaction> getTransactions(final long accountId, final int numberOfConfirmations, final byte type,
+			final byte subtype, final int blockTimestamp, final boolean withMessage, final boolean phasedOnly,
+			final boolean nonPhasedOnly, final int from, final int to, final boolean includeExpiredPrunable,
+			final boolean executedOnly) {
+
+		List<Transaction> ret = new ArrayList<>();
+
 		if (phasedOnly && nonPhasedOnly) {
 			throw new IllegalArgumentException("At least one of phasedOnly or nonPhasedOnly must be false");
 		}
@@ -450,7 +453,6 @@ final class BlockchainImpl implements Blockchain {
 			throw new IllegalArgumentException("Number of confirmations required " + numberOfConfirmations
 					+ " exceeds current blockchain height " + this.getHeight());
 		}
-		Connection con = null;
 		try {
 			final StringBuilder buf = new StringBuilder();
 			buf.append("SELECT transaction.* FROM transaction ");
@@ -517,53 +519,58 @@ final class BlockchainImpl implements Blockchain {
 
 			buf.append("ORDER BY block_timestamp DESC, transaction_index DESC");
 			buf.append(DbUtils.limitsClause(from, to));
-			con = Db.db.getConnection();
-			PreparedStatement pstmt;
-			int i = 0;
-			pstmt = con.prepareStatement(buf.toString());
-			pstmt.setLong(++i, accountId);
-			pstmt.setLong(++i, accountId);
-			if (blockTimestamp > 0) {
-				pstmt.setInt(++i, blockTimestamp);
-			}
-			if (type >= 0) {
-				pstmt.setByte(++i, type);
-				if (subtype >= 0) {
-					pstmt.setByte(++i, subtype);
+
+			try (Connection con = Db.db.getConnection();
+					PreparedStatement pstmt = con.prepareStatement(buf.toString());) {
+				int i = 0;
+				pstmt.setLong(++i, accountId);
+				pstmt.setLong(++i, accountId);
+				if (blockTimestamp > 0) {
+					pstmt.setInt(++i, blockTimestamp);
+				}
+				if (type >= 0) {
+					pstmt.setByte(++i, type);
+					if (subtype >= 0) {
+						pstmt.setByte(++i, subtype);
+					}
+				}
+				if (height < Integer.MAX_VALUE) {
+					pstmt.setInt(++i, height);
+				}
+				final int prunableExpiration = Math.max(0,
+						Constants.INCLUDE_EXPIRED_PRUNABLE && includeExpiredPrunable
+								? Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME
+								: Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME);
+				if (withMessage) {
+					pstmt.setInt(++i, prunableExpiration);
+				}
+				pstmt.setLong(++i, accountId);
+				if (blockTimestamp > 0) {
+					pstmt.setInt(++i, blockTimestamp);
+				}
+				if (type >= 0) {
+					pstmt.setByte(++i, type);
+					if (subtype >= 0) {
+						pstmt.setByte(++i, subtype);
+					}
+				}
+				if (height < Integer.MAX_VALUE) {
+					pstmt.setInt(++i, height);
+				}
+				if (withMessage) {
+					pstmt.setInt(++i, prunableExpiration);
+				}
+				DbUtils.setLimits(++i, pstmt, from, to);
+				try(DbIterator<TransactionImpl> it = this.getTransactions(con, pstmt);){
+					while(it.hasNext())
+						ret.add(it.next());
 				}
 			}
-			if (height < Integer.MAX_VALUE) {
-				pstmt.setInt(++i, height);
-			}
-			final int prunableExpiration = Math.max(0,
-					Constants.INCLUDE_EXPIRED_PRUNABLE && includeExpiredPrunable
-							? Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME
-							: Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME);
-			if (withMessage) {
-				pstmt.setInt(++i, prunableExpiration);
-			}
-			pstmt.setLong(++i, accountId);
-			if (blockTimestamp > 0) {
-				pstmt.setInt(++i, blockTimestamp);
-			}
-			if (type >= 0) {
-				pstmt.setByte(++i, type);
-				if (subtype >= 0) {
-					pstmt.setByte(++i, subtype);
-				}
-			}
-			if (height < Integer.MAX_VALUE) {
-				pstmt.setInt(++i, height);
-			}
-			if (withMessage) {
-				pstmt.setInt(++i, prunableExpiration);
-			}
-			DbUtils.setLimits(++i, pstmt, from, to);
-			return this.getTransactions(con, pstmt);
 		} catch (final SQLException e) {
-			DbUtils.close(con);
 			throw new RuntimeException(e.toString(), e);
 		}
+
+		return ret;
 	}
 
 	@Override
