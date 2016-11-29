@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import nxt.Constants;
 import nxt.util.Convert;
+import com.coverity.security.Escape;
 
 public class APITestServlet extends HttpServlet {
 
@@ -150,8 +151,8 @@ public class APITestServlet extends HttpServlet {
 				if (requestTag.equals(apiTag.name())) {
 					buf.append(" class='active'");
 				}
-				buf.append("><a href='/test?requestTag=").append(apiTag.name()).append("'>");
-				buf.append(apiTag.getDisplayName()).append("</a></li>\n");
+				buf.append("><a href='/test?requestTag=").append(Escape.html(apiTag.name())).append("'>");
+				buf.append(Escape.html(apiTag.getDisplayName())).append("</a></li>\n");
 			}
 		}
 		return buf.toString();
@@ -165,16 +166,16 @@ public class APITestServlet extends HttpServlet {
 		final String fileParameter = requestHandler.getFileParameter();
 		final StringBuilder buf = new StringBuilder();
 		buf.append("<div class='panel panel-default api-call-All' ");
-		buf.append("id='api-call-").append(requestType).append("'>\n");
+		buf.append("id='api-call-").append(Escape.html(requestType)).append("'>\n");
 		buf.append("<div class='panel-heading'>\n");
 		buf.append("<h4 class='panel-title'>\n");
-		buf.append("<a data-toggle='collapse' class='collapse-link' data-target='#collapse").append(requestType)
+		buf.append("<a data-toggle='collapse' class='collapse-link' data-target='#collapse").append(Escape.html(requestType))
 				.append("' href='#'>");
 		buf.append(requestType);
 		buf.append("</a>\n");
 		buf.append("<span style='float:right;font-weight:normal;font-size:14px;'>\n");
 		if (!singleView) {
-			buf.append("<a href='/test?requestType=").append(requestType);
+			buf.append("<a href='/test?requestType=").append(Escape.html(requestType));
 			buf.append(
 					"' target='_blank' style='font-weight:normal;font-size:14px;color:#777;'>\n<span class='glyphicon glyphicon-new-window'></span>\n</a>");
 			buf.append(" &nbsp;&nbsp;\n");
@@ -214,21 +215,21 @@ public class APITestServlet extends HttpServlet {
 		if (fileParameter != null) {
 			buf.append("<tr class='api-call-input-tr'>\n");
 			buf.append("<td>").append(fileParameter).append(":</td>\n");
-			buf.append("<td><input type='file' name='").append(fileParameter).append("' id='").append(fileParameter)
-					.append(requestType).append("' ");
+			buf.append("<td><input type='file' name='").append(Escape.html(fileParameter)).append("' id='").append(Escape.html(fileParameter))
+					.append(Escape.html(requestType)).append("' ");
 			buf.append("style='width:100%;min-width:200px;'/></td>\n");
 			buf.append("</tr>\n");
 		}
 		for (final String parameter : parameters) {
 			buf.append("<tr class='api-call-input-tr'>\n");
-			buf.append("<td>").append(parameter).append(":</td>\n");
+			buf.append("<td>").append(Escape.html(parameter)).append(":</td>\n");
 			if (APITestServlet.isTextArea(parameter)) {
 				buf.append("<td><textarea ");
 			} else {
 				buf.append("<td><input type='").append(APITestServlet.isPassword(parameter) ? "password" : "text")
 						.append("' ");
 			}
-			buf.append("name='").append(parameter).append("' ");
+			buf.append("name='").append(Escape.html(parameter)).append("' ");
 			final String value = Convert.emptyToNull(req.getParameter(parameter));
 			if (value != null) {
 				buf.append("value='").append(value.replace("'", "&quot;")).append("' ");
@@ -307,18 +308,18 @@ public class APITestServlet extends HttpServlet {
 			} else if (APIProxy.enableAPIProxy) {
 				nodeType = "Roaming Client";
 			}
-			bufJSCalls.append("    $('#nodeType').val('").append(nodeType).append("');");
+			bufJSCalls.append("    $('#nodeType').val('").append(Escape.html(nodeType)).append("');");
 			bufJSCalls.append("    $('#servletPath').val('").append(req.getServletPath()).append("');");
 			if (requestHandler != null) {
 				writer.print(APITestServlet.form(req, requestType, true, requestHandler));
-				bufJSCalls.append("    ATS.apiCalls.push('").append(requestType).append("');\n");
+				bufJSCalls.append("    ATS.apiCalls.push('").append(Escape.html(requestType)).append("');\n");
 			} else if (!req.getParameterMap().containsKey("requestTypes")) {
 				final String requestTag = Convert.nullToEmpty(req.getParameter("requestTag"));
 				final Set<String> taggedTypes = APITestServlet.requestTags.get(requestTag);
 				for (final String type : (taggedTypes != null ? taggedTypes : APITestServlet.allRequestTypes)) {
 					requestHandler = APIServlet.apiRequestHandlers.get(type);
 					writer.print(APITestServlet.form(req, type, false, requestHandler));
-					bufJSCalls.append("    ATS.apiCalls.push('").append(type).append("');\n");
+					bufJSCalls.append("    ATS.apiCalls.push('").append(Escape.html(type)).append("');\n");
 				}
 			} else {
 				final String requestTypes = Convert.nullToEmpty(req.getParameter("requestTypes"));
@@ -327,7 +328,7 @@ public class APITestServlet extends HttpServlet {
 					for (final String type : selectedRequestTypes) {
 						requestHandler = APIServlet.apiRequestHandlers.get(type);
 						writer.print(APITestServlet.form(req, type, false, requestHandler));
-						bufJSCalls.append("    ATS.apiCalls.push('").append(type).append("');\n");
+						bufJSCalls.append("    ATS.apiCalls.push('").append(Escape.html(type)).append("');\n");
 					}
 				} else {
 					writer.print(APITestServlet.fullTextMessage("No API calls selected.", "info"));
