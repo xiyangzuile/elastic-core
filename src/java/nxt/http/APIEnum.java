@@ -91,7 +91,6 @@ public enum APIEnum {
     FULL_RESET("fullReset", FullReset.instance),
     POP_OFF("popOff", PopOff.instance),
     SCAN("scan", Scan.instance),
-    LUCENE_REINDEX("luceneReindex", LuceneReindex.instance),
     ADD_PEER("addPeer", AddPeer.instance),
     BLACKLIST_PEER("blacklistPeer", BlacklistPeer.instance),
     DUMP_PEERS("dumpPeers", DumpPeers.instance),

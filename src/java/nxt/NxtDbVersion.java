@@ -997,7 +997,6 @@ class NxtDbVersion extends DbVersion {
             case 414:
                 apply("DROP INDEX IF EXISTS prunable_source_code_height_idx");
             case 415:
-                nxt.db.FullTextTrigger.init();
                 apply(null);
             case 416:
                 apply("DROP INDEX IF EXISTS asset_height_idx");

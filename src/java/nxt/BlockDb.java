@@ -143,27 +143,35 @@ final class BlockDb {
 
     static BlockImpl findBlockAtHeight(int height) {
         // Check the cache
+    	
+    	BlockImpl block = null; 
+    	
         synchronized(blockCache) {
-            BlockImpl block = heightMap.get(height);
+            block = heightMap.get(height);
             if (block != null) {
                 return block;
             }
         }
+        
         // Search the database
         try (Connection con = Db.db.getConnection();
              PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE height = ?")) {
             pstmt.setInt(1, height);
             try (ResultSet rs = pstmt.executeQuery()) {
-                BlockImpl block;
                 if (rs.next()) {
                     block = loadBlock(con, rs);
                 } else {
-                    throw new RuntimeException("Block at height " + height + " not found in database!");
+                    block = null;
                 }
-                return block;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e.toString(), e);
+        }
+        
+        if(block != null){
+        	return block;
+        }else{
+        	throw new RuntimeException("Block at height " + height + " not found in database!");
         }
     }
 

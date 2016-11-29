@@ -53,7 +53,6 @@ import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
 import nxt.db.DerivedDbTable;
 import nxt.db.FilteringIterator;
-import nxt.db.FullTextTrigger;
 import nxt.peer.Peer;
 import nxt.peer.Peers;
 import nxt.util.Convert;
@@ -1840,10 +1839,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                     Db.db.commitTransaction();
                     return;
                 }
-                if (height == 0) {
-                    Logger.logDebugMessage("Dropping all full text search indexes");
-                    FullTextTrigger.dropAll(con);
-                }
+            
                 for (DerivedDbTable table : derivedTables) {
                     if (height == 0) {
                         table.truncate();

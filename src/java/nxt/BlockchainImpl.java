@@ -572,12 +572,10 @@ final class BlockchainImpl implements Blockchain {
 
 	@Override
 	public Integer getBlockHeight(long lastBlockId) {
-		Connection con = null;
-        try {
-            con = Db.db.getConnection();
-            PreparedStatement pstmt = con.prepareStatement("SELECT height FROM block WHERE ID = ?");
+        try ( Connection con = Db.db.getConnection();
+            PreparedStatement pstmt = con.prepareStatement("SELECT height FROM block WHERE ID = ?")){
             pstmt.setLong(1, lastBlockId);
-            DbIterator<Integer> it = new DbIterator<Integer>(con, pstmt,
+            try(DbIterator<Integer> it = new DbIterator<Integer>(con, pstmt,
 					new DbIterator.ResultSetReader<Integer>() {
 				@Override
 				public Integer get(Connection con, ResultSet rs)
@@ -587,13 +585,13 @@ final class BlockchainImpl implements Blockchain {
 					int height = rs.getInt("height");
 					return height;
 				}
-			});
+			})){
             if(it.hasNext()){
             	return it.next();
             }else
             	return 0;
+            }
         } catch (SQLException e) {
-            DbUtils.close(con);
             throw new RuntimeException(e.toString(), e);
         }
 	}

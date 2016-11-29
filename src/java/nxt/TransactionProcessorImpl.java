@@ -224,18 +224,17 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 				List<Transaction> transactionList = new ArrayList<>();
 				int curTime = Nxt.getEpochTime();
-				
+
 				Iterator<TransactionImpl> iterator = broadcastedTransactions.iterator();
 				while (iterator.hasNext()) {
 					TransactionImpl transaction = iterator.next();
 					if (transaction.getExpiration() < curTime || TransactionDb.hasTransaction(transaction.getId())) {
-						broadcastedTransactions.remove(transaction);
+						iterator.remove();
 					} else if (transaction.getTimestamp() < curTime - 30) {
 						transactionList.add(transaction);
 					}
-					
+
 				}
-			
 
 				if (transactionList.size() > 0) {
 					Peers.sendToSomePeers(transactionList);
@@ -619,7 +618,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 				if (addedUnconfirmedTransactions.size() > 0) {
 					transactionListeners.notify(addedUnconfirmedTransactions, Event.ADDED_UNCONFIRMED_TRANSACTIONS);
-					
+
 				}
 			}
 		} finally {
@@ -698,7 +697,9 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			try {
 				Db.db.beginTransaction();
 				if (Nxt.getBlockchain().getHeight() < Constants.LAST_KNOWN_BLOCK && !testUnconfirmedTransactions) {
-					throw new NxtException.NotCurrentlyValidException("Blockchain not ready to accept transactions: last block " + Nxt.getBlockchain().getHeight() + " < " + Constants.LAST_KNOWN_BLOCK);
+					throw new NxtException.NotCurrentlyValidException(
+							"Blockchain not ready to accept transactions: last block " + Nxt.getBlockchain().getHeight()
+									+ " < " + Constants.LAST_KNOWN_BLOCK);
 				}
 
 				if (getUnconfirmedTransaction(transaction.getDbKey()) != null
@@ -719,8 +720,9 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				}
 
 				if (transaction.isUnconfirmedDuplicate(unconfirmedDuplicates)) {
-					if(transaction.getExtraInfo().length()>0)
-						throw new NxtException.NotCurrentlyValidException("Duplicate unconfirmed transaction: " + transaction.getExtraInfo());
+					if (transaction.getExtraInfo().length() > 0)
+						throw new NxtException.NotCurrentlyValidException(
+								"Duplicate unconfirmed transaction: " + transaction.getExtraInfo());
 					else
 						throw new NxtException.NotCurrentlyValidException("Duplicate unconfirmed transaction");
 				}
@@ -877,52 +879,56 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		return processed;
 	}
 
-	
-
 	@Override
 	public void clearUnconfirmedThatGotInvalidLately() {
-		
-		
+
 		DbIterator<UnconfirmedTransaction> it = getAllUnconfirmedTransactions();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			UnconfirmedTransaction u = it.next();
 			TransactionImpl tImpl = u.getTransaction();
-			
+
 			// re-validate POW and proof of bounty
-			if(u.getType() == TransactionType.WorkControl.BOUNTY){
-				Attachment.PiggybackedProofOfBounty b = (Attachment.PiggybackedProofOfBounty)u.getAttachment();
-				try{
+			if (u.getType() == TransactionType.WorkControl.BOUNTY) {
+				Attachment.PiggybackedProofOfBounty b = (Attachment.PiggybackedProofOfBounty) u.getAttachment();
+				try {
 					b.validate(tImpl);
-				}catch(Exception e){
-					// this tx became invalid! Purge it from the memory pool immediately
+				} catch (Exception e) {
+					// this tx became invalid! Purge it from the memory pool
+					// immediately
 					this.removeUnconfirmedTransaction(tImpl);
-					System.err.println("[!!] removing TX (bounty) from mem-pool that later became invalid: " + tImpl.getId());
+					System.err.println(
+							"[!!] removing TX (bounty) from mem-pool that later became invalid: " + tImpl.getId());
 				}
-				
+
 			}
-			if(u.getType() == TransactionType.WorkControl.PROOF_OF_WORK){
-				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork)u.getAttachment();
-				try{
+			if (u.getType() == TransactionType.WorkControl.PROOF_OF_WORK) {
+				Attachment.PiggybackedProofOfWork b = (Attachment.PiggybackedProofOfWork) u.getAttachment();
+				try {
 					b.validate(tImpl);
-				}catch(Exception e){
-					// this tx became invalid! Purge it from the memory pool immediately
+				} catch (Exception e) {
+					// this tx became invalid! Purge it from the memory pool
+					// immediately
 					this.removeUnconfirmedTransaction(tImpl);
-					System.err.println("[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
-				}
-			}
-			if(u.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST){
-				Attachment.WorkIdentifierCancellationRequest b = (Attachment.WorkIdentifierCancellationRequest)u.getAttachment();
-				try{
-					b.validate(tImpl);
-				}catch(Exception e){
-					// this tx became invalid! Purge it from the memory pool immediately
-					this.removeUnconfirmedTransaction(tImpl);
-					System.err.println("[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
+					System.err.println(
+							"[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
 				}
 			}
-			
+			if (u.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST) {
+				Attachment.WorkIdentifierCancellationRequest b = (Attachment.WorkIdentifierCancellationRequest) u
+						.getAttachment();
+				try {
+					b.validate(tImpl);
+				} catch (Exception e) {
+					// this tx became invalid! Purge it from the memory pool
+					// immediately
+					this.removeUnconfirmedTransaction(tImpl);
+					System.err.println(
+							"[!!] removing TX (pow) from mem-pool that later became invalid: " + tImpl.getId());
+				}
+			}
+
 		}
-		
+
 	}
 
 }

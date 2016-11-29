@@ -69,6 +69,9 @@ public final class VerifyTraceFile {
         	
         	
             String line = reader.readLine();
+            if(line==null)
+            	return;
+            
             String[] headers = unquote(line.split("\t"));
 
             Map<String,Map<String,Long>> totals = new HashMap<>();

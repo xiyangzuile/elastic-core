@@ -376,7 +376,7 @@ public final class Nxt {
                 GigaflopEstimator.measure_baseline();
                 
                 
-                int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.min(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
+                int timeMultiplier = (Constants.isTestnet && Constants.isOffline) ? Math.max(Nxt.getIntProperty("nxt.timeMultiplier"), 1) : 1;
                 ThreadPool.start(timeMultiplier);
                 if (timeMultiplier > 1) {
                     setTime(new Time.FasterTime(Math.max(getEpochTime(), Nxt.getBlockchain().getLastBlock().getTimestamp()), timeMultiplier));
