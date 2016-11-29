@@ -262,10 +262,11 @@ public final class Generator implements Comparable<Generator> {
 		final float inverse = (float) (1.0 / scaledHitTIme);
 		final long absolute = (long) inverse;
 		final BigInteger factor = BigInteger.valueOf(absolute);
-		System.out.println("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
-
+		
+		System.out.println("Generator: Hit for [Bal: " + effectiveBalance.toString() + "]: in " + ((block.getTimestamp() + (hit.divide(BigInteger.valueOf(block.getBaseTarget())
+				.multiply(effectiveBalance.multiply(factor))).longValue())) - Nxt.getEpochTime()) + "seconds");
 		return block.getTimestamp() + hit.divide(BigInteger.valueOf(block.getBaseTarget())
-				.multiply(effectiveBalance.multiply(factor)).multiply(new BigInteger("10"))).longValue();
+				.multiply(effectiveBalance.multiply(factor))).longValue();
 	}
 
 	/**

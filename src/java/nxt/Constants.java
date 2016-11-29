@@ -53,7 +53,7 @@ public final class Constants {
 	public static final int MAX_PAYLOAD_LENGTH = Constants.MAX_NUMBER_OF_TRANSACTIONS * Constants.MIN_TRANSACTION_SIZE;
 	public static final long MAX_BALANCE_NXT = 100000000;
 	public static final long MAX_BALANCE_NQT = Constants.MAX_BALANCE_NXT * Constants.ONE_NXT;
-	public static final long INITIAL_BASE_TARGET = 153722867;
+	public static final long INITIAL_BASE_TARGET = 1537228670;
 	public static final long MAX_BASE_TARGET = Constants.MAX_BALANCE_NXT * Constants.INITIAL_BASE_TARGET;
 	public static final long MAX_BASE_TARGET_2 = Constants.isTestnet ? Constants.MAX_BASE_TARGET
 			: Constants.INITIAL_BASE_TARGET * 50;

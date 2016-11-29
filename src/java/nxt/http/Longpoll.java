@@ -50,7 +50,6 @@ class ClearTask extends TimerTask {
 					it.remove(); // avoids a ConcurrentModificationException
 				} else {
 					if (ExpiringListPointer.lastPosition < minimalIndex) {
-						ptr.getValue();
 						minimalIndex = ExpiringListPointer.lastPosition;
 					}
 				}

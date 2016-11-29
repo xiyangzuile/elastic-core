@@ -1121,9 +1121,14 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		try (Connection con = Db.db.getConnection()) {
 			BlockDb.saveBlock(con, block);
 			this.blockchain.setLastBlock(block);
+			
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
+		
+		// Get statistics
+		final float scaledHitTIme = Redeem.getRedeemedPercentage();
+		System.out.println("[!!] Redeem Statistics: " + String.valueOf(scaledHitTIme) + " % of all XEL have been redeemed.");
 
 		// in any case, trigger the TX-processor cleanup routine. Some tx may
 		// have become invalid!
