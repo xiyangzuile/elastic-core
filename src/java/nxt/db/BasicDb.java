@@ -182,11 +182,11 @@ public class BasicDb {
 		if (!this.initialized) {
 			return;
 		}
-		try {
+		try (
 			final Connection con = this.cp.getConnection();
-			final Statement stmt = con.createStatement();
-			stmt.execute("SHUTDOWN COMPACT");
-			Logger.logShutdownMessage("Database shutdown completed");
+			final Statement stmt = con.createStatement();){
+				stmt.execute("SHUTDOWN COMPACT");
+				Logger.logShutdownMessage("Database shutdown completed");
 		} catch (final SQLException e) {
 			Logger.logShutdownMessage(e.toString(), e);
 		}

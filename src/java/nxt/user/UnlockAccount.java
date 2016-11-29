@@ -156,42 +156,40 @@ public final class UnlockAccount extends UserServlet.UserRequestHandler {
 
 			}
 
-		
-			
-				final Iterator<Transaction> transactionIterator = Nxt.getBlockchain().getTransactions(accountId,
-						(byte) -1, (byte) -1, 0, false).iterator();
-		
-				while (transactionIterator.hasNext()) {
-					final Transaction transaction = transactionIterator.next();
-					if (transaction.getSenderId() == accountId) {
-						final JSONObject myTransaction = new JSONObject();
-						myTransaction.put("index", Users.getIndex(transaction));
-						myTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
-						myTransaction.put("transactionTimestamp", transaction.getTimestamp());
-						myTransaction.put("account", Long.toUnsignedString(transaction.getRecipientId()));
-						myTransaction.put("sentAmountNQT", transaction.getAmountNQT());
-						if (accountId == transaction.getRecipientId()) {
-							myTransaction.put("receivedAmountNQT", transaction.getAmountNQT());
-						}
-						myTransaction.put("feeNQT", transaction.getFeeNQT());
-						myTransaction.put("numberOfConfirmations", blockchainHeight - transaction.getHeight());
-						myTransaction.put("id", transaction.getStringId());
-						myTransaction.put("timestamp", transaction.getTimestamp());
-						myTransactionsSet.add(myTransaction);
-					} else if (transaction.getRecipientId() == accountId) {
-						final JSONObject myTransaction = new JSONObject();
-						myTransaction.put("index", Users.getIndex(transaction));
-						myTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
-						myTransaction.put("transactionTimestamp", transaction.getTimestamp());
-						myTransaction.put("account", Long.toUnsignedString(transaction.getSenderId()));
+			final Iterator<Transaction> transactionIterator = Nxt.getBlockchain()
+					.getTransactions(accountId, (byte) -1, (byte) -1, 0, false).iterator();
+
+			while (transactionIterator.hasNext()) {
+				final Transaction transaction = transactionIterator.next();
+				if (transaction.getSenderId() == accountId) {
+					final JSONObject myTransaction = new JSONObject();
+					myTransaction.put("index", Users.getIndex(transaction));
+					myTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
+					myTransaction.put("transactionTimestamp", transaction.getTimestamp());
+					myTransaction.put("account", Long.toUnsignedString(transaction.getRecipientId()));
+					myTransaction.put("sentAmountNQT", transaction.getAmountNQT());
+					if (accountId == transaction.getRecipientId()) {
 						myTransaction.put("receivedAmountNQT", transaction.getAmountNQT());
-						myTransaction.put("feeNQT", transaction.getFeeNQT());
-						myTransaction.put("numberOfConfirmations", blockchainHeight - transaction.getHeight());
-						myTransaction.put("id", transaction.getStringId());
-						myTransaction.put("timestamp", transaction.getTimestamp());
-						myTransactionsSet.add(myTransaction);
 					}
-				
+					myTransaction.put("feeNQT", transaction.getFeeNQT());
+					myTransaction.put("numberOfConfirmations", blockchainHeight - transaction.getHeight());
+					myTransaction.put("id", transaction.getStringId());
+					myTransaction.put("timestamp", transaction.getTimestamp());
+					myTransactionsSet.add(myTransaction);
+				} else if (transaction.getRecipientId() == accountId) {
+					final JSONObject myTransaction = new JSONObject();
+					myTransaction.put("index", Users.getIndex(transaction));
+					myTransaction.put("blockTimestamp", transaction.getBlockTimestamp());
+					myTransaction.put("transactionTimestamp", transaction.getTimestamp());
+					myTransaction.put("account", Long.toUnsignedString(transaction.getSenderId()));
+					myTransaction.put("receivedAmountNQT", transaction.getAmountNQT());
+					myTransaction.put("feeNQT", transaction.getFeeNQT());
+					myTransaction.put("numberOfConfirmations", blockchainHeight - transaction.getHeight());
+					myTransaction.put("id", transaction.getStringId());
+					myTransaction.put("timestamp", transaction.getTimestamp());
+					myTransactionsSet.add(myTransaction);
+				}
+
 			}
 
 			final Iterator<JSONObject> iterator = myTransactionsSet.iterator();

@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import nxt.Transaction;
+
 import nxt.db.DbIterator;
 import nxt.db.DbUtils;
 import nxt.util.Convert;
@@ -382,25 +384,30 @@ final class BlockchainImpl implements Blockchain {
 	}
 
 	@Override
-	public DbIterator<TransactionImpl> getReferencingTransactions(final long transactionId, final int from,
+	public List<Transaction> getReferencingTransactions(final long transactionId, final int from,
 			final int to) {
-		Connection con = null;
-		try {
-			con = Db.db.getConnection();
+		List<Transaction> ret = new ArrayList<>();
+		try (
+			Connection con = Db.db.getConnection();
 			final PreparedStatement pstmt = con
 					.prepareStatement("SELECT transaction.* FROM transaction, referenced_transaction "
 							+ "WHERE referenced_transaction.referenced_transaction_id = ? "
 							+ "AND referenced_transaction.transaction_id = transaction.id "
 							+ "ORDER BY transaction.block_timestamp DESC, transaction.transaction_index DESC "
-							+ DbUtils.limitsClause(from, to));
+							+ DbUtils.limitsClause(from, to))){
 			int i = 0;
 			pstmt.setLong(++i, transactionId);
 			DbUtils.setLimits(++i, pstmt, from, to);
-			return this.getTransactions(con, pstmt);
+			try(DbIterator<TransactionImpl> dbit = this.getTransactions(con, pstmt)){
+				while(dbit.hasNext()){
+					ret.add(dbit.next());
+				}
+			}
+			
 		} catch (final SQLException e) {
-			DbUtils.close(con);
 			throw new RuntimeException(e.toString(), e);
 		}
+		return ret;
 	}
 
 	@Override

@@ -67,7 +67,7 @@ public interface Blockchain {
 
 	int getLastBlockTimestamp();
 
-	DbIterator<? extends Transaction> getReferencingTransactions(long transactionId, int from, int to);
+	List<Transaction> getReferencingTransactions(long transactionId, int from, int to);
 
 	Transaction getTransaction(long transactionId);
 

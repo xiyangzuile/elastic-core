@@ -413,8 +413,11 @@ public final class Generator implements Comparable<Generator> {
 		final BigInteger effectiveBaseTarget = BigInteger.valueOf(previousBlock.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor));
 		final BigInteger prevTarget = effectiveBaseTarget.multiply(BigInteger.valueOf(elapsedTime - 1));
-		prevTarget.add(effectiveBaseTarget);
-		return (hit.compareTo(prevTarget) >= 0) || (Constants.isTestnet ? elapsedTime > 300 : elapsedTime > 3600);
+		final BigInteger target = prevTarget.add(effectiveBaseTarget);
+		return hit.compareTo(target) < 0
+                && (hit.compareTo(prevTarget) >= 0
+                || (Constants.isTestnet ? elapsedTime > 300 : elapsedTime > 3600)
+                || Constants.isOffline);
 	}
 
 	private final long accountId;
