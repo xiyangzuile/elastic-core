@@ -23,6 +23,7 @@ var NRS = (function(NRS, $, undefined) {
 			"id": sidebarId,
 			"titleHTML": '<i class="fa fa-database"></i> <span data-i18n="work_author">Work Management</span>',
 			"page": 'myownwork',
+			"type":"PAGE",
 			"desiredPosition": 60
 		};
 		NRS.addTreeviewSidebarMenuItem(options);
