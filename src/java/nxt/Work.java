@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.simple.JSONObject;
-import org.nevec.rjm.BigDecimalMath;
 
 import nxt.db.DbClause;
 import nxt.db.DbIterator;
@@ -359,21 +358,7 @@ public final class Work {
         return blex > 0 ? res + blex * LOG2 : res;
     }
     
-    public static BigInteger getFactor(BigInteger targetI){
-    	
-		BigDecimal target = new BigDecimal(targetI);
-		
-		BigInteger least_possible_targetBigint = Constants.least_possible_target;
-		BigDecimal least_possible_target = new BigDecimal(least_possible_targetBigint);
-		
-		BigDecimal quotient = least_possible_target.divide(target,RoundingMode.FLOOR);
-		quotient = BigDecimalMath.root(3, quotient);
-		
-		BigInteger quotientI = quotient.toBigInteger();
-		
-		return quotientI;
-		
-    }
+   
     public void updatePowTarget(Block currentBlock){
     	
     	// Initialize with the blocks base target (this is set in BlockImpl::calculateNextMinPowTarget
