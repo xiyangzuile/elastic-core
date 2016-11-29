@@ -171,7 +171,7 @@ public class APITestServlet extends HttpServlet {
 		buf.append("<h4 class='panel-title'>\n");
 		buf.append("<a data-toggle='collapse' class='collapse-link' data-target='#collapse").append(Escape.html(requestType))
 				.append("' href='#'>");
-		buf.append(requestType);
+		buf.append(Escape.html(requestType));
 		buf.append("</a>\n");
 		buf.append("<span style='float:right;font-weight:normal;font-size:14px;'>\n");
 		if (!singleView) {
@@ -187,11 +187,11 @@ public class APITestServlet extends HttpServlet {
 		APITestServlet.appendWikiLink(className.substring(className.lastIndexOf('.') + 1), buf);
 		buf.append("' target='_blank'>wiki</a>&nbsp;&nbsp;\n");
 		buf.append("&nbsp;&nbsp;&nbsp;\n<input type='checkbox' class='api-call-sel-ALL' ");
-		buf.append("id='api-call-sel-").append(requestType).append("'>\n");
+		buf.append("id='api-call-sel-").append(Escape.html(requestType)).append("'>\n");
 		buf.append("</span>\n");
 		buf.append("</h4>\n");
 		buf.append("</div> <!-- panel-heading -->\n");
-		buf.append("<div id='collapse").append(requestType).append("' class='panel-collapse collapse");
+		buf.append("<div id='collapse").append(Escape.html(requestType)).append("' class='panel-collapse collapse");
 		if (singleView) {
 			buf.append(" in");
 		}
@@ -208,13 +208,13 @@ public class APITestServlet extends HttpServlet {
 			buf.append(", \"").append(fileParameter).append("\"");
 		}
 		buf.append(")'>\n");
-		buf.append("<input type='hidden' id='formAction' value='").append(formAction).append("'/>\n");
-		buf.append("<input type='hidden' name='requestType' value='").append(requestType).append("'/>\n");
+		buf.append("<input type='hidden' id='formAction' value='").append(Escape.html(formAction)).append("'/>\n");
+		buf.append("<input type='hidden' name='requestType' value='").append(Escape.html(requestType)).append("'/>\n");
 		buf.append("<div class='col-xs-12 col-lg-6' style='min-width: 40%;'>\n");
 		buf.append("<table class='table'>\n");
 		if (fileParameter != null) {
 			buf.append("<tr class='api-call-input-tr'>\n");
-			buf.append("<td>").append(fileParameter).append(":</td>\n");
+			buf.append("<td>").append(Escape.html(fileParameter)).append(":</td>\n");
 			buf.append("<td><input type='file' name='").append(Escape.html(fileParameter)).append("' id='").append(Escape.html(fileParameter))
 					.append(Escape.html(requestType)).append("' ");
 			buf.append("style='width:100%;min-width:200px;'/></td>\n");
@@ -232,7 +232,7 @@ public class APITestServlet extends HttpServlet {
 			buf.append("name='").append(Escape.html(parameter)).append("' ");
 			final String value = Convert.emptyToNull(req.getParameter(parameter));
 			if (value != null) {
-				buf.append("value='").append(value.replace("'", "&quot;")).append("' ");
+				buf.append("value='").append(Escape.html(value.replace("'", "&quot;"))).append("' ");
 			}
 			buf.append("style='width:100%;min-width:200px;'");
 			if (APITestServlet.isTextArea(parameter)) {
