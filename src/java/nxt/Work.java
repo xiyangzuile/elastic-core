@@ -688,6 +688,8 @@ public final class Work {
 				PastBlocksMass += b.countNumberPOWPerWorkId(this.getId());
 				PastBlocksTotalMass += b.countNumberPOW();
 				seconds_passed = currentBlock.getTimestamp() - b.getTimestamp();
+				
+				// TODO FIXME: Seconds passed is wrong, because currentBlock and b are the same block, so if current block has 10 POW is assumes 0 seconds have past. Compare to the block before current block
 				if (seconds_passed < 0) {
 					seconds_passed = 60 * counter; // Crippled timestamps,
 													// assume everything went
