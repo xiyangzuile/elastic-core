@@ -656,7 +656,7 @@ public final class Work {
 	}
 	
 	public double kimoto(double x){
-	    return 1 + (0.7084 * Math.pow(((x)/(144.0)), -1.228));
+	    return 1 + (0.7084 * Math.pow(((x)/(28.0)), -1.228));
 	}
 	
 	public void updatePowTarget(final Block currentBlock) {
@@ -692,6 +692,30 @@ public final class Work {
 			int counter = 0;
 			int current_timestamp = b.getTimestamp();
 			double trs_per_second = 1, target_per_second = 1;
+			while (isFull || isEmpty) {
+				if ((b == null) || (b.getId() == this.getBlock_id())) {
+					break;
+				}
+				counter = counter + 1;
+				long num = b.countNumberPOWPerWorkId(this.getId());
+				
+				if (isFull && num == 20)
+					fullCnt+=1;
+				else
+					isFull = false;
+				
+				if (isEmpty && num == 0)
+					emptyCnt+=1;
+				else
+					isEmpty = false;				
+				
+				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max)) {
+					break;
+				}
+				b = b.getPreviousBlock();
+			}
+			b = currentBlock;
+			counter = 0;
 			while (true) {
 				if ((b == null) || (b.getId() == this.getBlock_id())) {
 					break;
@@ -747,6 +771,11 @@ public final class Work {
 				System.out.println("Workid: " + this.getId());
 				System.out.println("Skipped retargeting, no POW received for this job but others!");
 			}
+			
+			if(fullCnt>1)
+				local_adjustment = local_adjustment / (1<<fullCnt);
+			if(emptyCnt>1)
+				local_adjustment = local_adjustment * (1<<emptyCnt);
 			
 			BigDecimal intermediate = new BigDecimal(targetI);
 			intermediate = intermediate.multiply(BigDecimal.valueOf(local_adjustment));
