@@ -46,7 +46,7 @@ public final class Constants {
 	public static final long MIN_XEL_PER_POW = (long) (0.001 * Constants.ONE_NXT);
 	public static final long MIN_XEL_PER_BOUNTY = 1 * Constants.ONE_NXT;
 	public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION = 10 * Constants.ONE_NXT;
-	public static final long MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 64;
+	public static final long MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 32;
 	public static final int DEPOSIT_GRACE_PERIOD = 15 * 60; // 15 minutes
 	public static final int MAX_WORK_BOUNTY_LIMIT = 10;
 	public static final int MAX_INTS_IN_VIRUAL_MACHINE_MEMORY = 262144;
@@ -116,8 +116,8 @@ public final class Constants {
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 
-	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 0, 8, 0 } : new int[] { 1, 0, 0 };
-	public static final int[] MIN_PROXY_VERSION = new int[] { 0, 8, 0 };
+	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 0, 9, 0 } : new int[] { 1, 0, 0 };
+	public static final int[] MIN_PROXY_VERSION = new int[] { 0, 9, 0 };
 
 	static final long UNCONFIRMED_POOL_DEPOSIT_NQT = (Constants.isTestnet ? 50 : 100) * Constants.ONE_NXT;
 

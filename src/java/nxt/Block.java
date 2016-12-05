@@ -73,4 +73,6 @@ public interface Block {
 
 	int getVersion();
 
+	int getTimestampPrevious();
+
 }

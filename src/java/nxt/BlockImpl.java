@@ -601,4 +601,13 @@ public final class BlockImpl implements Block {
 
 	}
 
+	@Override
+	public int getTimestampPrevious() {
+		Block b = this.getPreviousBlock();
+		if (b==null)
+			return this.timestamp;
+		else
+			return b.getTimestamp();
+	}
+
 }

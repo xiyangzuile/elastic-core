@@ -654,7 +654,11 @@ public final class Work {
 
 		return obj;
 	}
-
+	
+	public double kimoto(double x){
+	    return 1 + (0.7084 * Math.pow(((x)/(144.0)), -1.228));
+	}
+	
 	public void updatePowTarget(final Block currentBlock) {
 
 		// Initialize with the blocks base target (this is set in
@@ -674,12 +678,20 @@ public final class Work {
 			// Do standard retargeting (yet to be peer reviewed)
 
 			long PastBlocksMass = 0;
-			final int account_for_blocks_max = 10;
+			final int account_for_blocks_max = 144;
+			final int account_for_blocks_min = 1;
+			final int max_full_check_depth = 10;
 			long seconds_passed = 0;
 			long PastBlocksTotalMass = 0;
-
+			boolean isFull = true;
+			boolean isEmpty = true;
+			int fullCnt = 0;
+			int emptyCnt = 0;
+			double local_adjustment = 1;
 			Block b = currentBlock;
 			int counter = 0;
+			int current_timestamp = b.getTimestamp();
+			double trs_per_second = 1, target_per_second = 1;
 			while (true) {
 				if ((b == null) || (b.getId() == this.getBlock_id())) {
 					break;
@@ -687,98 +699,67 @@ public final class Work {
 				counter = counter + 1;
 				PastBlocksMass += b.countNumberPOWPerWorkId(this.getId());
 				PastBlocksTotalMass += b.countNumberPOW();
-				seconds_passed = currentBlock.getTimestamp() - b.getTimestamp();
 				
-				// TODO FIXME: Seconds passed is wrong, because currentBlock and b are the same block, so if current block has 10 POW is assumes 0 seconds have past. Compare to the block before current block
-				if (seconds_passed < 0) {
-					seconds_passed = 60 * counter; // Crippled timestamps,
-													// assume everything went
-													// smoothly! Should not
-													// happen anyway!
+				
+				if(b.getTimestamp()>current_timestamp)
+					current_timestamp = b.getTimestamp(); // HERE USE PREV BLOCK TIMESTAMP
+				
+				seconds_passed = current_timestamp - b.getTimestampPrevious();
+				
+				if (seconds_passed < 1) {
+					seconds_passed = 1;
 				}
-				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max) || (seconds_passed >= 120)) {
+				
+				trs_per_second = (double)PastBlocksMass / (double)seconds_passed;
+				target_per_second = 10.0/60.0;
+				
+				if(trs_per_second > 0)
+				{
+					local_adjustment = target_per_second / trs_per_second;
+					double kim = kimoto(PastBlocksMass * 30);
+					
+					if (counter >= account_for_blocks_min && (local_adjustment > kim || local_adjustment < 1/kim)){
+						System.out.println("Komoto: kim = " + kim + ", 1/kim = " + (1/kim) + ", trs_per_second = " + trs_per_second + ", adjustment = " + local_adjustment);
+						break;
+					}
+				}else{
+				}
+				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max)) {
 					break;
 				}
 				b = b.getPreviousBlock();
 			}
+			
 
-			// Now see how we would scale the target, this is important because
-			// 3 blocks do not always take the same amount of time
-			if (seconds_passed < 1) {
-				seconds_passed = 1;
-			}
-
-			// Normalize the time span so we always work with "360 second
-			// windows"
-			double pows_per_360_seconds = ((PastBlocksMass * 360.0) / seconds_passed);
-
-			// DIRTY HACK; Assume 0<x<=1 pow is equal to 1 pow, to avoid
-			// calculating with fractions
-			if ((pows_per_360_seconds > 0) && (pows_per_360_seconds < 1)) {
-				pows_per_360_seconds = 1;
-			}
-
-			double factor = 1;
-
-			if (pows_per_360_seconds > 0) {
+			if (!(emptyCnt == 10 && PastBlocksTotalMass>0)) {
 				// We have received at least one POW in the last 60 seconds
 				System.out.println("*** RETARGETING ***");
 				System.out.println("Workid: " + this.getId());
 				System.out.println("Accounted last blocks: " + counter);
 				System.out.println("Blocks span how much time: " + seconds_passed);
 				System.out.println("How many seen POWs: " + PastBlocksMass);
-				System.out.println("Normalized # per 360s: " + pows_per_360_seconds);
-				System.out.println("Wanted # per 360s: " + (10 * 6));
-				factor = (10 * 6) / pows_per_360_seconds;
-				// round the factor to change the diff max 20% per block!
-				if (factor < 0.90) {
-					factor = 0.90;
-				}
-				if (factor > 1.10) {
-					factor = 1.10;
-				}
-
-				System.out.println("Scalingfactor: " + factor);
-			} else if ((pows_per_360_seconds == 0) && (PastBlocksTotalMass == 0)) {
-				// This job did not get any POWs but and others also didnt get
-				// any! Seems the diff is too high!
-				// The best way is to gradually decrease the difficulty
-				// (increase the target value) until the job is mineable again.
-				// As a safe guard, we do not allow "too high" changes in this
-				// case. Lets move by 5% at a time.
-				// Target value should double after ~15 blocks! Let's assume
-				// that this time span will never be reached
-				// as (in the case the job is too difficult) there will be at
-				// least one POW at some point, causing the
-				// above branch of the if statement to apply
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println(
-						"Accounted last blocks: " + counter + "\nNO POW SUBMISSIONS IN LAST " + counter + " BLOCKS!");
-				factor = 1.05;
-				System.out.println("Scalingfactor: " + factor);
+				System.out.println("Scalingfactor: " + local_adjustment);
+				
 			} else {
 				// This job is just too boring, others still get POWs
+				local_adjustment = 1;
 				System.out.println("*** RETARGETING ***");
 				System.out.println("Workid: " + this.getId());
 				System.out.println("Skipped retargeting, no POW received for this job but others!");
 			}
+			
 			BigDecimal intermediate = new BigDecimal(targetI);
-			System.out.println("Factor is: " + factor);
-			intermediate = intermediate.multiply(BigDecimal.valueOf(factor));
+			intermediate = intermediate.multiply(BigDecimal.valueOf(local_adjustment));
 			targetI = intermediate.toBigInteger();
+			
+			
 			if (targetI.compareTo(Constants.least_possible_target) == 1) {
 				targetI = Constants.least_possible_target;
-			} else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) { // safe
-																			// guard,
-																			// should
-																			// never
-																			// happen
-																			// at
-																			// all
+			} else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) { 
 				targetI = BigInteger.valueOf(1L);
 			}
 			System.out.println("New target: " + targetI.toString(16));
+
 
 		} else {
 			// do nothing, especially when its the block where the work was
