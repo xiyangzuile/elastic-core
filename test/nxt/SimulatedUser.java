@@ -20,7 +20,7 @@ import nxt.crypto.Crypto;
 import nxt.util.Convert;
 
 @SuppressWarnings("unused")
-public class Tester {
+public class SimulatedUser {
     private final String secretPhrase;
     private final byte[] privateKey;
     private final byte[] publicKey;
@@ -32,7 +32,7 @@ public class Tester {
     private final long initialUnconfirmedBalance;
     private final long initialEffectiveBalance;
    
-    public Tester(String secretPhrase) {
+    public SimulatedUser(String secretPhrase) {
         this.secretPhrase = secretPhrase;
         this.privateKey = Crypto.getPrivateKey(secretPhrase);
         this.publicKey = Crypto.getPublicKey(secretPhrase);

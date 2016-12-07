@@ -1278,7 +1278,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		}
 	}
 
-	void generateBlock(final String secretPhrase, final int blockTimestamp) throws BlockNotAcceptedException {
+	void generateBlock(final String secretPhrase, int blockTimestamp) throws BlockNotAcceptedException {
 
 		final Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
 
@@ -1291,6 +1291,12 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		long totalAmountNQT = 0;
 		long totalFeeNQT = 0;
 		int payloadLength = 0;
+
+		// Safeguard for timestamp crippling
+		if(blockTimestamp <= previousBlock.getTimestamp()){
+			blockTimestamp = previousBlock.getTimestamp() + 1; // This is useful for fake forging
+		}
+
 		for (final UnconfirmedTransaction unconfirmedTransaction : sortedTransactions) {
 			final TransactionImpl transaction = unconfirmedTransaction.getTransaction();
 			blockTransactions.add(transaction);

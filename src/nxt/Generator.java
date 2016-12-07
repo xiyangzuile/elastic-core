@@ -114,6 +114,8 @@ public final class Generator implements Comparable<Generator> {
 
 	private static final byte[] fakeForgingPublicKey = Nxt.getBooleanProperty("nxt.enableFakeForging")
 			? Account.getPublicKey(Convert.parseAccountId(Nxt.getStringProperty("nxt.fakeForgingAccount"))) : null;
+	private static final String fakeForgingAccountId = Nxt.getBooleanProperty("nxt.enableFakeForging")
+			? Nxt.getStringProperty("nxt.fakeForgingAccount") : null;
 
 	private static final Listeners<Generator, Event> listeners = new Listeners<>();
 	private static final ConcurrentMap<String, Generator> generators = new ConcurrentHashMap<>();
@@ -166,7 +168,8 @@ public final class Generator implements Comparable<Generator> {
 							final List<Generator> forgers = new ArrayList<>();
 							for (final Generator generator : Generator.generators.values()) {
 								generator.setLastBlock(lastBlock);
-								if (generator.effectiveBalance.signum() > 0) {
+
+								if (generator.effectiveBalance.signum() > 0 || Generator.allowsFakeForging(generator.getPublicKey())) {
 									forgers.add(generator);
 								}
 							}
@@ -228,7 +231,8 @@ public final class Generator implements Comparable<Generator> {
 	}
 
 	static boolean allowsFakeForging(final byte[] publicKey) {
-		return Constants.isTestnet && (publicKey != null) && Arrays.equals(publicKey, Generator.fakeForgingPublicKey);
+		boolean result = Constants.isTestnet && (publicKey != null) && fakeForgingAccountId.equals(Convert.toUnsignedLong(Account.getId(publicKey)));
+		return result;
 	}
 
 	public static Collection<Generator> getAllGenerators() {
@@ -262,8 +266,8 @@ public final class Generator implements Comparable<Generator> {
 		final float inverse = (float) (1.0 / scaledHitTIme);
 		final long absolute = (long) inverse;
 		final BigInteger factor = BigInteger.valueOf(absolute);
-		
-		System.out.println("Generator: Hit for [Bal: " + effectiveBalance.toString() + "]: in " + ((block.getTimestamp() + (hit.divide(BigInteger.valueOf(block.getBaseTarget())
+
+		Logger.logInfoMessage("Generator: Hit for [Bal: " + effectiveBalance.toString() + "]: in " + ((block.getTimestamp() + (hit.divide(BigInteger.valueOf(block.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor))).longValue())) - Nxt.getEpochTime()) + "seconds");
 		return block.getTimestamp() + hit.divide(BigInteger.valueOf(block.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor))).longValue();
@@ -361,7 +365,7 @@ public final class Generator implements Comparable<Generator> {
 			return old;
 		}
 		Generator.listeners.notify(generator, Event.START_FORGING);
-		Logger.logDebugMessage(generator + " started");
+		Logger.logInfoMessage(generator + " started");
 		return generator;
 	}
 
@@ -402,7 +406,7 @@ public final class Generator implements Comparable<Generator> {
 			final int timestamp) {
 
 		final float scaledHitTIme = Redeem.getRedeemedPercentage();
-		System.out.println("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
+		Logger.logDebugMessage("[!!] Up to now, " + String.valueOf(scaledHitTIme) + " of all XEL have been redeemed.");
 		final float inverse = (float) (1.0 / scaledHitTIme);
 		final long absolute = (long) inverse;
 		final BigInteger factor = BigInteger.valueOf(absolute);
@@ -462,11 +466,18 @@ public final class Generator implements Comparable<Generator> {
 	boolean forge(final Block lastBlock, final int generationLimit)
 			throws BlockchainProcessor.BlockNotAcceptedException {
 		final int timestamp = this.getTimestamp(generationLimit);
-		if (!Generator.verifyHit(this.hit, this.effectiveBalance, lastBlock, timestamp)) {
-			Logger.logErrorMessage(this.toString() + " failed to forge at " + timestamp + " height "
-					+ lastBlock.getHeight() + " last timestamp " + lastBlock.getTimestamp());
-			return false;
-		}
+
+		// fake forging, skip hit verification
+        if (Generator.allowsFakeForging(this.getPublicKey())){
+            // pass
+        } else {
+            if (!Generator.verifyHit(this.hit, this.effectiveBalance, lastBlock, timestamp)) {
+                Logger.logErrorMessage(this.toString() + " failed to forge at " + timestamp + " height "
+                        + lastBlock.getHeight() + " last timestamp " + lastBlock.getTimestamp());
+                return false;
+            }
+        }
+
 		final int start = Nxt.getEpochTime();
 		while (true) {
 			try {

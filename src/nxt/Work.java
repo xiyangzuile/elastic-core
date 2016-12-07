@@ -722,13 +722,13 @@ public final class Work {
 
 			if (pows_per_360_seconds > 0) {
 				// We have received at least one POW in the last 60 seconds
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println("Accounted last blocks: " + counter);
-				System.out.println("Blocks span how much time: " + seconds_passed);
-				System.out.println("How many seen POWs: " + PastBlocksMass);
-				System.out.println("Normalized # per 360s: " + pows_per_360_seconds);
-				System.out.println("Wanted # per 360s: " + (10 * 6));
+				Logger.logDebugMessage("*** RETARGETING ***");
+				Logger.logDebugMessage("Workid: " + this.getId());
+				Logger.logDebugMessage("Accounted last blocks: " + counter);
+				Logger.logDebugMessage("Blocks span how much time: " + seconds_passed);
+				Logger.logDebugMessage("How many seen POWs: " + PastBlocksMass);
+				Logger.logDebugMessage("Normalized # per 360s: " + pows_per_360_seconds);
+				Logger.logDebugMessage("Wanted # per 360s: " + (10 * 6));
 				factor = (10 * 6) / pows_per_360_seconds;
 				// round the factor to change the diff max 20% per block!
 				if (factor < 0.90) {
@@ -738,7 +738,7 @@ public final class Work {
 					factor = 1.10;
 				}
 
-				System.out.println("Scalingfactor: " + factor);
+				Logger.logDebugMessage("Scalingfactor: " + factor);
 			} else if ((pows_per_360_seconds == 0) && (PastBlocksTotalMass == 0)) {
 				// This job did not get any POWs but and others also didnt get
 				// any! Seems the diff is too high!
@@ -751,20 +751,20 @@ public final class Work {
 				// as (in the case the job is too difficult) there will be at
 				// least one POW at some point, causing the
 				// above branch of the if statement to apply
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println(
+				Logger.logDebugMessage("*** RETARGETING ***");
+				Logger.logDebugMessage("Workid: " + this.getId());
+				Logger.logDebugMessage(
 						"Accounted last blocks: " + counter + "\nNO POW SUBMISSIONS IN LAST " + counter + " BLOCKS!");
 				factor = 1.05;
-				System.out.println("Scalingfactor: " + factor);
+				Logger.logDebugMessage("Scalingfactor: " + factor);
 			} else {
 				// This job is just too boring, others still get POWs
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println("Skipped retargeting, no POW received for this job but others!");
+				Logger.logDebugMessage("*** RETARGETING ***");
+				Logger.logDebugMessage("Workid: " + this.getId());
+				Logger.logDebugMessage("Skipped retargeting, no POW received for this job but others!");
 			}
 			BigDecimal intermediate = new BigDecimal(targetI);
-			System.out.println("Factor is: " + factor);
+			Logger.logDebugMessage("Factor is: " + factor);
 			intermediate = intermediate.multiply(BigDecimal.valueOf(factor));
 			targetI = intermediate.toBigInteger();
 			if (targetI.compareTo(Constants.least_possible_target) == 1) {
@@ -778,7 +778,7 @@ public final class Work {
 																			// all
 				targetI = BigInteger.valueOf(1L);
 			}
-			System.out.println("New target: " + targetI.toString(16));
+			Logger.logDebugMessage("New target: " + targetI.toString(16));
 
 		} else {
 			// do nothing, especially when its the block where the work was
