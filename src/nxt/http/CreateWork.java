@@ -145,7 +145,7 @@ public final class CreateWork extends CreateTransaction {
 			return JSONResponses.INCORRECT_WORK_NAME_LENGTH;
 		}
 
-		final Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte, programCode.getBytes(),
+		final Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte,
 				deadlineInt, bountyLimitInt, xelPerPowInt, xelPerBountyInt);
 		return this.createTransaction(req, account, 0, amountlong, attachment);
 

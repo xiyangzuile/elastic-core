@@ -8,7 +8,7 @@ import nxt.util.Convert;
  */
 public class TransactionBuilder  {
 
-    public static void make(Attachment attachment, String secretPhrase, long recipientId, long amountNQT) throws Exception{
+    public static void make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
 
         final int ecBlockHeight = 1;
         long ecBlockId = 0;
@@ -44,7 +44,22 @@ public class TransactionBuilder  {
             builder.ecBlockId(ecBlockId);
             builder.ecBlockHeight(ecBlockHeight);
         }
+
+        if (appdx != null){
+            if (appdx instanceof Appendix.PrunableSourceCode)
+                builder.appendix((Appendix.PrunableSourceCode)appdx);
+        }
+
         final Transaction transaction = builder.build(secretPhrase);
+
+        if (simPrune){
+            for(Appendix a : transaction.getAppendages()){
+                if (a instanceof Appendix.PrunableSourceCode){
+                    ((Appendix.PrunableSourceCode)a).simulatePruning();
+                }
+            }
+        }
+
         Nxt.getTransactionProcessor().broadcast(transaction);
     }
 

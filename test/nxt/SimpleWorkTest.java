@@ -54,7 +54,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
             final Account fake_from = Account.getAccount(Genesis.REDEEM_ID);
             boolean success = false;
             try {
-                make(attachment, secretPhrase, user.getId(), 353593009707920L);
+                make(attachment, null, secretPhrase, user.getId(), 353593009707920L, false);
                 success = true;
             } catch (Exception e) {
                 Logger.logErrorMessage(e.getMessage());
@@ -73,7 +73,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
             final Account fake_from = Account.getAccount(Genesis.REDEEM_ID);
             boolean success = false;
             try {
-                make(attachment, secretPhrase, user.getId(), 353593009707920L);
+                make(attachment, null, secretPhrase, user.getId(), 353593009707920L, false);
                 success = true;
             } catch (Exception e) {
                 Logger.logErrorMessage(e.getMessage());
@@ -91,6 +91,45 @@ public class SimpleWorkTest extends AbstractForgingTest {
         assertEquals(user.getBalance(),353593009707920L);
         assertEquals(user.getGuaranteedBalance(),353593009707920L);
 
+        // Now create a very simple work (First one that will fail with an illegaly "pruned appendix")
+        {
+            String programCode = "verify m[1]==123;";
+            final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
+                    1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
+            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode.getBytes(), (byte)0x01);
+            boolean success = false;
+            try {
+                make(attachment, appdx, secretPhrase, user.getId(), 12000000000L, true);
+                success = true;
+            } catch (Exception e) {
+                Logger.logErrorMessage(e.getMessage());
+            }
+            assertTrue(!success);
+        }
+
+        // try to confirm work
+        forgeBlocks(1, secretPhrase);
+        assertEquals(user.getBalance(),353593009707920L); // balance not changed due to shitty work creation tx
+
+        // Now create a very simple work that will actually "WORK"
+        {
+            String programCode = "verify m[1]==123;";
+            final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
+                    1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
+            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode.getBytes(), (byte)0x01);
+            boolean success = false;
+            try {
+                make(attachment, appdx, secretPhrase, user.getId(), 12000000000L, false);
+                success = true;
+            } catch (Exception e) {
+                Logger.logErrorMessage(e.getMessage());
+            }
+            assertTrue(success);
+        }
+
+        // try to confirm work
+        forgeBlocks(1, secretPhrase);
+        assertEquals(user.getBalance(),353593009707920L-12000000000L); // now it worked
 
 
     }

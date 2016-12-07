@@ -825,7 +825,7 @@ public interface Attachment extends Appendix {
 
 		}
 
-		public WorkCreation(final String workTitle, final byte workLanguage, final byte[] programmCode,
+		public WorkCreation(final String workTitle, final byte workLanguage,
 				final int deadline, final int bountyLimit, final long xel_per_pow, final long xel_per_bounty) {
 			this.workTitle = workTitle;
 			this.deadline = deadline;

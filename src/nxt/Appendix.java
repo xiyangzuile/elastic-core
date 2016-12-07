@@ -170,8 +170,8 @@ public interface Appendix {
 			return new PrunableSourceCode(attachmentData);
 		}
 
-		private final byte[] hash;
-		private final byte[] source;
+		private byte[] hash;
+		private byte[] source;
 		private final short language;
 
 		private volatile nxt.PrunableSourceCode prunableSourceCode;
@@ -188,6 +188,11 @@ public interface Appendix {
 			buffer.get(this.hash);
 			this.source = null;
 			this.language = 0;
+		}
+
+		public void simulatePruning(){
+			this.hash = getHash();
+			this.source = null;
 		}
 
 		private PrunableSourceCode(final JSONObject attachmentData) {
