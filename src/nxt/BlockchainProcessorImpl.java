@@ -1128,7 +1128,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		
 		// Get statistics
 		final float scaledHitTIme = Redeem.getRedeemedPercentage();
-		System.out.println("[!!] Redeem Statistics: " + String.valueOf(scaledHitTIme) + " % of all XEL have been redeemed.");
+		Logger.logDebugMessage("[!!] Redeem Statistics: " + String.valueOf(scaledHitTIme) + " % of all XEL have been redeemed.");
 
 		// in any case, trigger the TX-processor cleanup routine. Some tx may
 		// have become invalid!
