@@ -235,6 +235,11 @@ public final class Generator implements Comparable<Generator> {
 		return result;
 	}
 
+    static boolean allowsFakeForgingInPrincipal() {
+        boolean result = Constants.isTestnet && fakeForgingAccountId != null;
+        return result;
+    }
+
 	public static Collection<Generator> getAllGenerators() {
 		return Generator.allGenerators;
 	}
@@ -267,7 +272,7 @@ public final class Generator implements Comparable<Generator> {
 		final long absolute = (long) inverse;
 		final BigInteger factor = BigInteger.valueOf(absolute);
 
-		Logger.logInfoMessage("Generator: Hit for [Bal: " + effectiveBalance.toString() + "]: in " + ((block.getTimestamp() + (hit.divide(BigInteger.valueOf(block.getBaseTarget())
+		Logger.logDebugMessage("Generator: Hit for [Bal: " + effectiveBalance.toString() + "]: in " + ((block.getTimestamp() + (hit.divide(BigInteger.valueOf(block.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor))).longValue())) - Nxt.getEpochTime()) + "seconds");
 		return block.getTimestamp() + hit.divide(BigInteger.valueOf(block.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor))).longValue();

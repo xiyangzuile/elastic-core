@@ -92,6 +92,10 @@ public class SimulatedUser {
         return Account.getAccount(id).getUnconfirmedBalanceNQT() - initialUnconfirmedBalance;
     }
 
+    public long getUnconfirmedBalance() {
+        return Account.getAccount(id).getUnconfirmedBalanceNQT();
+    }
+
     public long getInitialBalance() {
         return initialBalance;
     }

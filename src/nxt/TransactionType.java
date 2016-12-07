@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import nxt.util.Logger;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.params.MainNetParams;
 import org.json.simple.JSONObject;
@@ -370,6 +371,8 @@ public abstract class TransactionType {
 						duplicates, true);
 				if (duplicate == false) {
 					duplicate = Redeem.isAlreadyRedeemed(attachment.getAddress());
+					if(duplicate)
+						transaction.setExtraInfo("Genesis entry already redeemed.");
 				}
 				return duplicate;
 			}
@@ -459,20 +462,20 @@ public abstract class TransactionType {
 							+ " signatures, you provided " + gotsigs);
 				}
 
-				System.out.println("Found REDEEM transaction");
-				System.out.println("========================");
+				Logger.logDebugMessage("Found REDEEM transaction");
+				Logger.logDebugMessage("========================");
 				final String message = "I hereby confirm to redeem "
 						+ String.valueOf(transaction.getAmountNQT()).replace("L", "") + " NQT-XEL from genesis entry "
 						+ attachment.getAddress() + " to account "
 						+ Convert.toUnsignedLong(transaction.getRecipientId()).replace("L", "");
-				System.out.println("String to sign:\t" + message);
-				System.out.println("We need " + String.valueOf(need) + " signatures from these addresses:");
+				Logger.logDebugMessage("String to sign:\t" + message);
+				Logger.logDebugMessage("We need " + String.valueOf(need) + " signatures from these addresses:");
 				for (int i = 0; i < addresses.size(); ++i) {
-					System.out.println(" -> " + addresses.get(i));
+					Logger.logDebugMessage(" -> " + addresses.get(i));
 				}
-				System.out.println("We got " + String.valueOf(gotsigs) + " signatures:");
+				Logger.logDebugMessage("We got " + String.valueOf(gotsigs) + " signatures:");
 				for (int i = 0; i < signatures.size(); ++i) {
-					System.out.println(
+					Logger.logDebugMessage(
 							" -> " + signatures.get(i).substring(0, Math.min(12, signatures.get(i).length())) + "...");
 					ECKey result;
 					try {
@@ -490,18 +493,18 @@ public abstract class TransactionType {
 					signedBy.add(add);
 
 				}
-				System.out.println("These addresses seem to have signed:");
+				Logger.logDebugMessage("These addresses seem to have signed:");
 				for (int i = 0; i < signedBy.size(); ++i) {
-					System.out.println(" -> " + signedBy.get(i));
+					Logger.logDebugMessage(" -> " + signedBy.get(i));
 				}
 
 				addresses.retainAll(signedBy);
-				System.out.println("We matched " + String.valueOf(need) + " signatures from these addresses:");
+				Logger.logDebugMessage("We matched " + String.valueOf(need) + " signatures from these addresses:");
 				for (int i = 0; i < addresses.size(); ++i) {
-					System.out.println(" -> " + addresses.get(i));
+					Logger.logDebugMessage(" -> " + addresses.get(i));
 				}
 				if (addresses.size() != need) {
-					System.out.println(
+					Logger.logDebugMessage(
 							"== " + String.valueOf(addresses.size()) + " out of " + String.valueOf(need) + " matched!");
 					throw new NxtException.NotValidException(
 							"You have to provide exactly " + String.valueOf(need) + " correct signatures");

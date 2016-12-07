@@ -106,7 +106,7 @@ public abstract class AbstractBlockchainTest {
         }
         Assert.assertTrue(blockchain.getHeight() < endHeight);
         Listener<Block> stopListener = block -> {
-            Logger.logMessage("Forged block " + blockchain.getHeight());
+            Logger.logMessage("Forged block " + blockchain.getHeight() + ", #tx: " + block.getTransactions().size() +  ", unconf. still waiting: " + TransactionProcessorImpl.getInstance().getAllWaitingTransactions().length);
             if (blockchain.getHeight() == endHeight) {
                 synchronized (doneLock) {
                     done = true;

@@ -1918,8 +1918,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					continue;
 				}
 				if ((blockTimestamp > 0)
-						&& ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT))
-								|| (unconfirmedTransaction.getExpiration() < blockTimestamp))) {
+						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||((unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
+					System.out.println("Fucked up TX inclusion, timedrift!ts was " + unconfirmedTransaction.getTimestamp() + ", and was higher than " + (blockTimestamp + Constants.MAX_TIMEDRIFT));
+
 					continue;
 				}
 				try {
@@ -2011,7 +2012,37 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		long calculatedTotalFee = 0;
 		final MessageDigest digest = Crypto.sha256();
 		boolean hasPrunedTransactions = false;
+
+		// Here, make sure that not too many POW transactions end up in this block!
+		// The unconf/conf duplicate barrier does not guarantee that.
+		HashMap<Long, Integer> powCounterMap = new HashMap<>();
+
 		for (final TransactionImpl transaction : block.getTransactions()) {
+
+			if (transaction.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK){
+				try {
+					Attachment.PiggybackedProofOfWork att = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
+					long workId = att.getWorkId();
+					if (powCounterMap.containsKey(workId) == false){
+						powCounterMap.put(workId, 1);
+					}
+					else{
+						Integer cnt = powCounterMap.get(workId);
+						cnt ++;
+						if(cnt > 20){
+							throw new TransactionNotAcceptedException(
+									"Invalid block, too many POW for work " + Convert.toUnsignedLong(workId),
+									transaction);
+						}else{
+							powCounterMap.put(workId, cnt);
+						}
+					}
+				}catch(Exception e){
+					throw new TransactionNotAcceptedException(
+							"Invalid attachment: " + e.getMessage(), transaction);
+				}
+			}
+
 			if (transaction.getTimestamp() > (curTime + Constants.MAX_TIMEDRIFT)) {
 				throw new BlockOutOfOrderException(
 						"Invalid transaction timestamp: " + transaction.getTimestamp() + ", current time is " + curTime,
@@ -2023,11 +2054,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 						transaction);
 			}
 			if (fullValidation) {
-				// cfb: Block 303 contains a transaction which expired before
-				// the block timestamp
-				if ((transaction.getTimestamp() > (block.getTimestamp() + Constants.MAX_TIMEDRIFT))
-						|| ((transaction.getExpiration() < block.getTimestamp())
-								&& (previousLastBlock.getHeight() != 303))) {
+				if (( !Generator.allowsFakeForgingInPrincipal() && (transaction.getTimestamp() > (block.getTimestamp() + Constants.MAX_TIMEDRIFT))
+				) || ((transaction.getExpiration() < block.getTimestamp()))) {
 					throw new TransactionNotAcceptedException(
 							"Invalid transaction timestamp " + transaction.getTimestamp() + ", current time is "
 									+ curTime + ", block timestamp is " + block.getTimestamp(),
