@@ -71,8 +71,8 @@ public final class Constants {
 					Nxt.getStringProperty("nxt.testnetMinForgingBalance", String.valueOf(1000 * Constants.ONE_NXT)))
 			: 1000 * Constants.ONE_NXT;;
 	public static final int MAX_WORK_ROLLBACK_HEIGHT = 1441;
-	public static final int MAX_TIMEDRIFT = 15; // allow up to 15 s clock
-												// difference
+	public static final int MAX_TIMEDRIFT = 15; // allow up to 15 s clock difference
+	public static final int FIRST_X_BLOCKS_PSEUDO_EFFECTIVE_BALANCE = 5000;
 	public static final int FORGING_DELAY = Nxt.getIntProperty("nxt.forgingDelay");
 	public static final int FORGING_SPEEDUP = Nxt.getIntProperty("nxt.forgingSpeedup");
 	public static final int MAX_REFERENCED_TRANSACTION_TIMESPAN = 60 * 1440 * 60;

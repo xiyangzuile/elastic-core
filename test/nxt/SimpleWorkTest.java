@@ -25,6 +25,8 @@ public class SimpleWorkTest extends AbstractForgingTest {
         Properties properties = AbstractForgingTest.newTestProperties();
         properties.setProperty("nxt.disableGenerateBlocksThread", "false");
         properties.setProperty("nxt.enableFakeForging", "true");
+        properties.setProperty("nxt.testnetGuaranteedBalanceConfirmations", "10"); // set this in conf-default-file (here, it doesnt suffice)
+
         properties.setProperty("nxt.timeMultiplier", "1");
         properties.setProperty("nxt.fakeForgingAccount", Convert.toUnsignedLong(Account.getId(Crypto.getPublicKey(secretPhrase))));
         AbstractForgingTest.init(properties);
@@ -59,7 +61,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
             }
             assertTrue(success);
         }
-        Logger.logMessage("Account " + user.getRsAccount() + " before-redeem-in-block-balance " + user.getBalance() + " / unconfirmed: " + user.getUnconfirmedBalance());
+        Logger.logMessage("Account " + user.getRsAccount() + " Bal:" + user.getBalance() + " / U: " + user.getUnconfirmedBalance() + " / G: " + user.getGuaranteedBalance());
 
         // forge a few more blocks, so the next tx has a different timestamp
         forgeBlocks(6, secretPhrase);
@@ -78,8 +80,16 @@ public class SimpleWorkTest extends AbstractForgingTest {
             }
             assertTrue(!success);
         }
-        Logger.logMessage("Account " + user.getRsAccount() + " after-redeem-balance " + user.getBalance() + " / unconfirmed: " + user.getUnconfirmedBalance());
+        Logger.logMessage("Account " + user.getRsAccount() + " Bal:" + user.getBalance() + " / U: " + user.getUnconfirmedBalance() + " / G: " + user.getGuaranteedBalance());
         assertEquals(user.getBalance(),353593009707920L);
+        assertEquals(user.getGuaranteedBalance(),0L);
+
+        // forge again few more blocks, unconfirmed should turn confirmed
+        forgeBlocks(6, secretPhrase);
+
+        Logger.logMessage("Account " + user.getRsAccount() + " Bal:" + user.getBalance() + " / U: " + user.getUnconfirmedBalance() + " / G: " + user.getGuaranteedBalance());
+        assertEquals(user.getBalance(),353593009707920L);
+        assertEquals(user.getGuaranteedBalance(),353593009707920L);
 
 
 

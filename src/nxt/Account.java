@@ -913,6 +913,21 @@ public final class Account {
 		}
 	}
 
+	public long getPseudoEffectiveBalanceNXT(final int height) {
+
+		Nxt.getBlockchain().readLock();
+		try {
+			long effectiveBalanceNQT = this.getLessorsGuaranteedBalanceNQT(height);
+			if (this.activeLesseeId == 0) {
+				effectiveBalanceNQT += this.getBalanceNQT();
+			}
+			return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0
+					: effectiveBalanceNQT / Constants.ONE_NXT;
+		} finally {
+			Nxt.getBlockchain().readUnlock();
+		}
+	}
+
 	public long getForgedBalanceNQT() {
 		return this.forgedBalanceNQT;
 	}
