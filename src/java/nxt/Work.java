@@ -678,7 +678,7 @@ public final class Work {
 			// Do standard retargeting (yet to be peer reviewed)
 
 			long PastBlocksMass = 0;
-			final int account_for_blocks_max = 144;
+			final int account_for_blocks_max = 28;
 			final int account_for_blocks_min = 1;
 			final int max_full_check_depth = 10;
 			long seconds_passed = 0;
