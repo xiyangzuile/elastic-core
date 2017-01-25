@@ -5,12 +5,11 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
+import com.elastic.grammar.*;
 
 import org.json.simple.JSONStreamAware;
 
-import elastic.pl.interpreter.ASTCompilationUnit;
-import elastic.pl.interpreter.ElasticPLParser;
-import elastic.pl.interpreter.RuntimeEstimator;
+
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;

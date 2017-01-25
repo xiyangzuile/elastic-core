@@ -5,7 +5,6 @@ import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 
-import elastic.pl.interpreter.ParseException;
 import nxt.crypto.Crypto;
 import nxt.db.DbIterator;
 import nxt.util.Logger;
@@ -204,7 +203,7 @@ public class GigaflopEstimator {
 			final double stretch_factor = dur / GigaflopEstimator.baseline_duration_mseconds;
 			GigaflopEstimator.stretch_factor_map.put(workid, stretch_factor);
 
-		} catch (final ParseException e) {
+		} catch (final Exception e) {
 			// pass
 		}
 	}
@@ -217,7 +216,7 @@ public class GigaflopEstimator {
 						.measure_source(GigaflopEstimator.simple_source, true);
 				Logger.logInfoMessage("We measured, that the simplest program executed in "
 						+ GigaflopEstimator.baseline_duration_mseconds + " MILLISECONDS on this machine ...");
-			} catch (final ParseException e) {
+			} catch (final Exception e) {
 				GigaflopEstimator.failed = true;
 				GigaflopEstimator.last_failed = System.currentTimeMillis();
 				GigaflopEstimator.baseline_duration_mseconds = 0;
@@ -227,7 +226,7 @@ public class GigaflopEstimator {
 		}
 	}
 
-	private static double measure_source(final byte[] src, final boolean debug) throws ParseException {
+	private static double measure_source(final byte[] src, final boolean debug) throws Exception {
 		double dur = 0;
 
 		long startTime = System.currentTimeMillis();

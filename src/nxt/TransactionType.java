@@ -24,12 +24,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.elastic.grammar.elasticplExecutionUnit.POW_CHECK_RESULT;
 import nxt.util.Logger;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.params.MainNetParams;
 import org.json.simple.JSONObject;
 
-import elastic.pl.interpreter.ASTCompilationUnit.POW_CHECK_RESULT;
 import nxt.AccountLedger.LedgerEvent;
 import nxt.NxtException.NotValidException;
 import nxt.util.Convert;

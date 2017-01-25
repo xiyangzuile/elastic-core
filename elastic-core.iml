@@ -13,7 +13,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.coverity.security:coverity-escapers:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
-    <orderEntry type="library" name="Maven: elastic-pl:elastic-pl:0.0.2" level="project" />
+    <orderEntry type="library" name="Maven: elastic-grammar:elastic-grammar:0.2.1" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-jdk14:1.7.21" level="project" />
     <orderEntry type="library" name="Maven: org.apache.tika:tika-core:1.13" level="project" />
     <orderEntry type="library" name="Maven: org.apache.tika:tika-parsers:1.13" level="project" />

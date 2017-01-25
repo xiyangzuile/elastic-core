@@ -118,9 +118,9 @@
             <version>1.7.21</version>
         </dependency>
         <dependency>
-            <groupId>elastic-pl</groupId>
-            <artifactId>elastic-pl</artifactId>
-            <version>0.0.2</version>
+            <groupId>elastic-grammar</groupId>
+            <artifactId>elastic-grammar</artifactId>
+            <version>0.2.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
