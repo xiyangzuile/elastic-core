@@ -40,105 +40,88 @@ public final class Genesis {
 
 
 
+
 	/* VOLATILE PART BEGIN */
-    public static final long GENESIS_BLOCK_ID = 445516706271790606L;
-    public static final long CREATOR_ID = 4823535488705771609L;
+    public static final byte[] CREATOR_PUBLIC_KEY = { (byte)0xad, (byte)0x32, (byte)0x35, (byte)0x04, (byte)0x55, (byte)0xad, (byte)0xe2, (byte)0x6b, (byte)0x9d, (byte)0xc5, (byte)0xc8, (byte)0xa2, (byte)0xf9, (byte)0x13, (byte)0x13, (byte)0xa4, (byte)0x72, (byte)0x4a, (byte)0x18, (byte)0x53, (byte)0xa9, (byte)0x9e, (byte)0x39, (byte)0xaa, (byte)0x07, (byte)0x0b, (byte)0xaf, (byte)0x4a, (byte)0x9e, (byte)0xc9, (byte)0xa5, (byte)0x3f, };
+    public static final long CREATOR_ID = -1340397127567038869L;
+    public static final byte[][] GENESIS_SIGNATURES = new byte[][] {
+            {110 ,-60 ,111 ,50 ,-58 ,-7 ,-6 ,-85 ,-11 ,111 ,-64 ,-76 ,-25 ,81 ,127 ,98 ,42 ,-74 ,86 ,-44 ,-81 ,2 ,-58 ,-70 ,-44 ,-77 ,-21 ,108 ,114 ,94 ,-11 ,5 ,30 ,-91 ,-62 ,94 ,-35 ,-123 ,1 ,-66 ,-112 ,104 ,91 ,-47 ,17 ,-91 ,-59 ,78 ,62 ,-87 ,-104 ,24 ,-35 ,-17 ,-9 ,-59 ,68 ,-28 ,29 ,-21 ,-79 ,-54 ,11 ,94},
+    }
+            ;
+    public static final long GENESIS_BLOCK_ID = 6438387248299498698L;
+    public static final byte[] GENESIS_GENERATION_SIGNATURE = { (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x00, };
+    public static final byte[] GENESIS_BLOCK_SIGNATURE = { (byte)0x92, (byte)0x9a, (byte)0x3a, (byte)0x85, (byte)0xb2, (byte)0x46, (byte)0xb8, (byte)0x7a, (byte)0x35, (byte)0x1e, (byte)0x12, (byte)0x7b, (byte)0xb2, (byte)0x15, (byte)0xd4, (byte)0xab, (byte)0xe9, (byte)0x43, (byte)0x94, (byte)0x09, (byte)0x2c, (byte)0xeb, (byte)0x98, (byte)0x37, (byte)0x2f, (byte)0xa0, (byte)0x47, (byte)0x2a, (byte)0x09, (byte)0x43, (byte)0x07, (byte)0x00, (byte)0xcd, (byte)0x93, (byte)0xb4, (byte)0x35, (byte)0xc3, (byte)0xd7, (byte)0x94, (byte)0x84, (byte)0x4a, (byte)0x73, (byte)0xa4, (byte)0x10, (byte)0x7d, (byte)0xf0, (byte)0x0a, (byte)0x5a, (byte)0xae, (byte)0x6c, (byte)0x57, (byte)0xbc, (byte)0xb0, (byte)0x32, (byte)0x61, (byte)0x5b, (byte)0xb1, (byte)0xac, (byte)0x3c, (byte)0x21, (byte)0xd6, (byte)0x36, (byte)0x82, (byte)0x8c, };
 
-    public static final byte[][] GENESIS_SIGNATURES = {
-            { 77, 89, -11, 88, -121, -99, 83, -3, 56, 23, 93, 79, 115, -122, 6, 107, -55, -113, 43, 77, -60, 113, 77,
-                    112, 36, -81, -43, 39, 9, 47, 28, 13, -98, -32, -69, -120, -43, -17, -58, 12, 77, 86, 80, 4, 72,
-                    -117, 126, 42, 20, 29, -78, -101, 71, 104, -30, 125, 89, 124, -58, 118, -51, -97, -38, 61 } };
-
-    public static final byte[] CREATOR_PUBLIC_KEY = new byte[] { (byte) 0xf1, (byte) 0xb3, (byte) 0x03, (byte) 0xe3, (byte) 0x8c,
-            (byte) 0x3c, (byte) 0x29, (byte) 0x34, (byte) 0x7a, (byte) 0x89, (byte) 0x6c, (byte) 0x85, (byte) 0x7e,
-            (byte) 0x29, (byte) 0x88, (byte) 0x32, (byte) 0x3f, (byte) 0x40, (byte) 0x66, (byte) 0x75, (byte) 0x22,
-            (byte) 0xa1, (byte) 0x0b, (byte) 0x6f, (byte) 0xeb, (byte) 0x46, (byte) 0xc0, (byte) 0xaf, (byte) 0x2f,
-            (byte) 0x2c, (byte) 0x13, (byte) 0x59 };
-
-    public static final byte[] GENESIS_GENERATION_SIGNATURE = new byte[] { (byte) 0x59, (byte) 0x38, (byte) 0xcc,
-			(byte) 0x85, (byte) 0xf8, (byte) 0xa3, (byte) 0xf0, (byte) 0x42, (byte) 0x3c, (byte) 0x21, (byte) 0x1e,
-			(byte) 0x27, (byte) 0x41, (byte) 0x36, (byte) 0xb2, (byte) 0x2e, (byte) 0x74, (byte) 0xbe, (byte) 0x51,
-			(byte) 0x77, (byte) 0x1f, (byte) 0xab, (byte) 0xb7, (byte) 0xa2, (byte) 0x8a, (byte) 0x09, (byte) 0x5b,
-			(byte) 0x07, (byte) 0x2f, (byte) 0xae, (byte) 0x8b, (byte) 0xdc };
-
-	public static final byte[] GENESIS_BLOCK_SIGNATURE = new byte[] { (byte) 0x65, (byte) 0xf2, (byte) 0xed,
-			(byte) 0xd7, (byte) 0x32, (byte) 0x09, (byte) 0xcc, (byte) 0x68, (byte) 0x3f, (byte) 0x86, (byte) 0xf0,
-			(byte) 0x14, (byte) 0x50, (byte) 0x43, (byte) 0xd3, (byte) 0x53, (byte) 0xd6, (byte) 0xad, (byte) 0x7d,
-			(byte) 0x97, (byte) 0xf0, (byte) 0x1f, (byte) 0x3b, (byte) 0xe8, (byte) 0x2d, (byte) 0x7c, (byte) 0x7c,
-			(byte) 0x9a, (byte) 0xd6, (byte) 0xb6, (byte) 0xe1, (byte) 0x0a, (byte) 0x7e, (byte) 0x75, (byte) 0xbf,
-			(byte) 0x42, (byte) 0x1b, (byte) 0x04, (byte) 0x1d, (byte) 0xf8, (byte) 0xe4, (byte) 0x1a, (byte) 0x87,
-			(byte) 0x11, (byte) 0x0b, (byte) 0xef, (byte) 0xeb, (byte) 0x0a, (byte) 0xa3, (byte) 0x67, (byte) 0x75,
-			(byte) 0x8d, (byte) 0xe8, (byte) 0xdf, (byte) 0x5f, (byte) 0x08, (byte) 0x91, (byte) 0x4a, (byte) 0x1b,
-			(byte) 0x25, (byte) 0x5a, (byte) 0x08, (byte) 0x12, (byte) 0x4a };
 	/* VOLATILE PART END */
 
 	private Genesis() {
 	} // never
 
+    public static BlockImpl getGenesis(String genesisSecretKey) throws Exception {
+        byte[] genesisAccount = Crypto.getPublicKey(genesisSecretKey);
+        long id = Account.getId(genesisAccount);
+        System.out.print("public static final byte[] CREATOR_PUBLIC_KEY = { ");
+        for (byte c : genesisAccount) {
+            System.out.format("(byte)0x%02x, ", c);
+        }
+        System.out.println("};");
+
+        System.out.println("public static final long CREATOR_ID = " + Long.toString(id) + "L;");
+
+
+        final List<TransactionImpl> transactions = new ArrayList<>();
+        for (int i = 0; i < Genesis.GENESIS_RECIPIENTS.length; i++) {
+            final TransactionImpl transaction = new TransactionImpl.BuilderImpl((byte) 0,
+                    Genesis.CREATOR_PUBLIC_KEY, Genesis.GENESIS_AMOUNTS[i] * Constants.ONE_NXT, 0, (short) 0,
+                    Attachment.ORDINARY_PAYMENT).timestamp(0).recipientId(Genesis.GENESIS_RECIPIENTS[i])
+                    .height(0).ecBlockHeight(0).ecBlockId(0)
+                    .build(genesisSecretKey);
+            transactions.add(transaction);
+        }
+        Collections.sort(transactions, Comparator.comparingLong(Transaction::getId));
+
+            String signatures = "{\n";
+            for (int i = 0; i < Genesis.GENESIS_RECIPIENTS.length; i++) {
+
+                signatures += "{";
+                for (int s = 0; s < transactions.get(i).getSignature().length; ++s) {
+                    signatures += String.valueOf((int) transactions.get(i)
+                            .getSignature()[s]);
+                    if (s < transactions.get(i).getSignature().length - 1) {
+                        signatures += " ,";
+                    }
+                }
+                signatures += "},\n";
+
+            }
+            signatures += "}\n";
+            System.out.println("public static final byte[][] GENESIS_SIGNATURES = new byte[][] " + signatures + ";");
+
+            Collections.sort(transactions, new Comparator<TransactionImpl>() {
+                @Override
+                public int compare(TransactionImpl o1, TransactionImpl o2) {
+                    return Long.compare(o1.getId(), o2.getId());
+                }
+            });
+            MessageDigest digest = Crypto.sha256();
+            for (Transaction transaction : transactions) {
+                digest.update(transaction.getBytes());
+            }
+
+
+            BlockImpl genesisBlock = new BlockImpl(0, 0, 0,
+                    Constants.MAX_BALANCE_NQT, 0, transactions.size() * 128,
+                    digest.digest(), genesisAccount, new byte[32],
+                    new byte[32], transactions, genesisSecretKey, Constants.least_possible_target);
+            return genesisBlock;
+
+    }
 	public static void mineGenesis() throws Exception {
-		String genesisSecretKey = "";
-		byte[] genesisAccount = Crypto.getPublicKey(genesisSecretKey);
-		long id = Account.getId(genesisAccount);
-		System.out.print("public static final byte[] CREATOR_PUBLIC_KEY = { ");
-		for(byte c : genesisAccount) {
-			System.out.format("(byte)0x%02x, ", c);
-		}
-		System.out.println("};");
+	    try{
+		    String genesisSecretKey = "Test123";
 
-		System.out.println("public static final long CREATOR_ID = " + Long.toString(id) + "L;");
+		    BlockImpl genesisBlock = getGenesis(genesisSecretKey);
 
-
-
-		try {
-			List<TransactionImpl> transactions = new ArrayList<>();
-			String signatures = "{\n";
-			for (int i = 0; i < Genesis.GENESIS_RECIPIENTS.length; i++) {
-				TransactionImpl transaction = new TransactionImpl.BuilderImpl(
-						(byte) 0, Genesis.CREATOR_PUBLIC_KEY,
-						Genesis.GENESIS_AMOUNTS[i] * Constants.ONE_NXT, 0,
-						(short) 0, Attachment.ORDINARY_PAYMENT).timestamp(0)
-						.recipientId(Genesis.GENESIS_RECIPIENTS[i]).height(0)
-						.ecBlockHeight(0).ecBlockId(0).build();
-				transaction.sign(genesisSecretKey);
-
-				signatures += "{";
-				for (int s = 0; s < transaction.getSignature().length; ++s) {
-					signatures += String.valueOf((int) transaction
-							.getSignature()[s]);
-					if (s < transaction.getSignature().length - 1) {
-						signatures += " ,";
-					}
-				}
-				signatures += "},\n";
-				transactions.add(transaction);
-
-			}
-			signatures += "}\n";
-			System.out.println("public static final byte[][] GENESIS_SIGNATURES = " + signatures + ";");
-
-			Collections.sort(transactions, new Comparator<TransactionImpl>() {
-				@Override
-				public int compare(TransactionImpl o1, TransactionImpl o2) {
-					return Long.compare(o1.getId(), o2.getId());
-				}
-			});
-			MessageDigest digest = Crypto.sha256();
-			for (Transaction transaction : transactions) {
-				digest.update(transaction.getBytes());
-			}
-			/*
-			BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
-			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
-			final byte[] generationSignature, final byte[] blockSignature, final byte[] previousBlockHash,
-			final List<TransactionImpl> transactions, final BigInteger min_pow_target) {
-	}
-			 */
-			BlockImpl genesisBlock = new BlockImpl(-1, 0, 0,
-					Constants.MAX_BALANCE_NQT, 0, transactions.size() * 128,
-					digest.digest(), genesisAccount, new byte[32],
-                    null, new byte[32], transactions, Constants.least_possible_target);
-
-			genesisBlock.sign(genesisSecretKey);
             System.out.println("public static final long GENESIS_BLOCK_ID = " + Long.toString(genesisBlock.getId()) + "L;");
 
 
@@ -154,7 +137,10 @@ public final class Genesis {
             }
             System.out.println("};");
 
+
+
 			Logger.logMessage("VERIFYBLOCKSIGNATURE: " + String.valueOf(genesisBlock.verifyBlockSignature()));
+            Logger.logMessage("VERIFYGENERATIONSIGNATURE: " + String.valueOf(genesisBlock.verifyGenerationSignature()));
 
 		} catch (NxtException.ValidationException e) {
 			Logger.logMessage(e.getMessage());

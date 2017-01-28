@@ -318,6 +318,7 @@ final class BlockDb {
 	}
 
 	static boolean hasBlock(final long blockId, final int height) {
+
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);

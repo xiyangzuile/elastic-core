@@ -161,6 +161,7 @@ public final class BlockImpl implements Block {
 			final String secretPhrase, final BigInteger min_pow_target) {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
+
 		if (secretPhrase != null) {
 			this.blockSignature = Crypto.sign(this.bytes(), secretPhrase);
 		}
@@ -291,13 +292,12 @@ public final class BlockImpl implements Block {
 		return this.hasValidSignature;
 	}
 
-	public void sign(String secretPhrase) throws Exception {
+	public byte[] sign(String secretPhrase) throws Exception {
 		if (this.blockSignature != null) {
 			throw new Exception("Don't sign what is already signed!");
 		}
 		final byte[] data = this.bytes();
-		this.blockSignature = Crypto.sign(data, secretPhrase);
-		this.bytes = null; // reset
+		return Crypto.sign(data, secretPhrase);
 	}
 
 	@Override

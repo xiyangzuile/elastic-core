@@ -1144,14 +1144,16 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			Logger.logMessage("Last block height: " + lastBlock.getHeight());
 			return false;
 		}
-		Logger.logMessage("Genesis block not in database, starting from scratch");
+		Logger.logMessage("Genesis block (" + Genesis.GENESIS_BLOCK_ID + ") not in database, starting from scratch");
 
-		try {
+
+		/*try {
 			Genesis.mineGenesis();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.exit(0);
+		System.exit(0);*/
+
 
 		try {
 			final List<TransactionImpl> transactions = new ArrayList<>();
@@ -1168,6 +1170,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			for (final TransactionImpl transaction : transactions) {
 				digest.update(transaction.bytes());
 			}
+
 			final BlockImpl genesisBlock = new BlockImpl(0, 0, 0, Constants.MAX_BALANCE_NQT, 0,
 					transactions.size() * 128, digest.digest(), Genesis.CREATOR_PUBLIC_KEY,
 					Genesis.GENESIS_GENERATION_SIGNATURE, Genesis.GENESIS_BLOCK_SIGNATURE, new byte[32], transactions,
