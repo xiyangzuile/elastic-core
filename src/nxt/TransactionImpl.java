@@ -536,6 +536,7 @@ final class TransactionImpl implements Transaction {
 				buffer.putInt(this.timestamp);
 				buffer.putShort(this.deadline);
 				buffer.put(this.getSenderPublicKey());
+				buffer.put(this.superNodePublicKey != null ? this.superNodePublicKey : new byte[32]);
 				buffer.putLong(this.type.canHaveRecipient() ? this.recipientId : Genesis.CREATOR_ID);
 				if (this.useNQT()) {
 					buffer.putLong(this.amountNQT);
@@ -959,7 +960,7 @@ final class TransactionImpl implements Transaction {
 	}
 
 	private int signatureOffset() {
-		return 1 + 1 + 4 + 2 + 32 + 8 + (this.useNQT() ? 8 + 8 + 32 : 4 + 4 + 8);
+		return 1 + 1 + 4 + 2 + 32 + 32 + 8 + (this.useNQT() ? 8 + 8 + 32 : 4 + 4 + 8); // two public keys, sender and supernode
 	}
 
 	void undoUnconfirmed() {

@@ -1146,8 +1146,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		}
 		Logger.logMessage("Genesis block (" + Genesis.GENESIS_BLOCK_ID + ") not in database, starting from scratch");
 
-
-		/*try {
+/*
+		try {
 			Genesis.mineGenesis();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -238,7 +238,7 @@ public final class Generator implements Comparable<Generator> {
 	}
 
 	static boolean allowsFakeForging(final byte[] publicKey) {
-		boolean result = Constants.isTestnet && (publicKey != null) && fakeForgingAccountId.equals(Convert.toUnsignedLong(Account.getId(publicKey)));
+		boolean result = Constants.isTestnet && (publicKey != null) && (fakeForgingAccountId != null) && fakeForgingAccountId.equals(Convert.toUnsignedLong(Account.getId(publicKey)));
 		return result;
 	}
 
