@@ -3,13 +3,8 @@ package nxt.http;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-
 import javax.servlet.http.HttpServletRequest;
-import com.elastic.grammar.*;
-
 import org.json.simple.JSONStreamAware;
-
-
 import nxt.Account;
 import nxt.Attachment;
 import nxt.Constants;
@@ -64,7 +59,7 @@ public final class CreateWork extends CreateTransaction {
 		int deadlineInt;
 		try {
 			deadlineInt = Integer.parseInt(deadline);
-			if ((deadlineInt > Constants.MAX_DEADLINE_FOR_WORK) || (deadlineInt < Constants.MIN_DEADLINE_FOR_WORK)) {
+			if (deadlineInt > Constants.MAX_DEADLINE_FOR_WORK || deadlineInt < Constants.MIN_DEADLINE_FOR_WORK) {
 				return JSONResponses.INCORRECT_DEADLINE;
 			}
 
@@ -103,40 +98,6 @@ public final class CreateWork extends CreateTransaction {
 			return JSONResponses.INCORRECT_XEL_PER_BOUNTY;
 		}
 
-		// Now we parse the given sourcecode once and check for syntax errors
-		// and for the number of input vars
-		final byte[] byteCode = programCode.getBytes(StandardCharsets.UTF_8);
-		final InputStream stream = new ByteArrayInputStream(byteCode);
-		final ElasticPLParser parser = new ElasticPLParser(stream);
-		long WCET = 0L;
-		boolean stackExceeded = false;
-		// Differentiate between different languages
-		// if (workLanguageByte == 0x01) {
-		try {
-			parser.CompilationUnit();
-
-			// Check worst case execution time
-			final ASTCompilationUnit rootNode = ((ASTCompilationUnit) parser.rootNode());
-			stackExceeded = RuntimeEstimator.exceedsStackUsage(rootNode);
-
-			WCET = RuntimeEstimator.worstWeight(rootNode);
-			if (stackExceeded) {
-				return JSONResponses.INCORRECT_AST_RECURSION;
-			} else {
-				// all went well
-			}
-			if (WCET > Constants.MAX_WORK_WCET_TIME) {
-				return JSONResponses.INCORRECT_EXECUTION_TIME;
-			} else {
-				// all went well
-			}
-			rootNode.reset();
-		} catch (final Exception e) {
-			e.printStackTrace(System.out);
-			return JSONResponses.INCORRECT_SYNTAX;
-		}
-		// }
-
 		// More boundary checks
 		final long amountlong = ParameterParser.getAmountNQT(req);
 
@@ -147,7 +108,6 @@ public final class CreateWork extends CreateTransaction {
 		final Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte,
 				deadlineInt, bountyLimitInt, xelPerPowInt, xelPerBountyInt);
 		return this.createTransaction(req, account, 0, amountlong, attachment);
-
 	}
 
 }

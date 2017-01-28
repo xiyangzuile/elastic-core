@@ -451,9 +451,6 @@ public final class Work {
 			return;
 		}
 
-		// Prune from gigaflop estimator
-		GigaflopEstimator.purge_by_id(this.work_id);
-
 		if ((this.close_pending == false) && (this.closed == false)) {
 			// Check if cancelled or timedout
 			if ((this.blocksRemaining == 0) && (this.balance_pow_fund >= this.xel_per_pow)

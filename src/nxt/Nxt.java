@@ -84,8 +84,6 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
-				// Invoke measurement for gigaflop estimator
-				GigaflopEstimator.measure_baseline();
 
 				int configuredMultiplier = Nxt.getIntProperty("nxt.timeMultiplier");
 				if (configuredMultiplier < 1) configuredMultiplier = 1;
@@ -139,7 +137,7 @@ public final class Nxt {
 
 	}
 
-	public static final String VERSION = "0.9.0";
+	public static final String VERSION = "0.9.1";
 
 	public static final String APPLICATION = "Elastic";
 

@@ -1146,8 +1146,12 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		}
 		Logger.logMessage("Genesis block not in database, starting from scratch");
 
-		// Genesis.mineGenesis();
-		// System.exit(0);
+		try {
+			Genesis.mineGenesis();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.exit(0);
 
 		try {
 			final List<TransactionImpl> transactions = new ArrayList<>();

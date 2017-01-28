@@ -26,7 +26,6 @@ import org.json.simple.JSONStreamAware;
 import nxt.Account;
 import nxt.Constants;
 import nxt.Generator;
-import nxt.GigaflopEstimator;
 import nxt.Nxt;
 import nxt.PrunableSourceCode;
 import nxt.Work;
@@ -62,7 +61,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 		response.put("numberOfActivePeers", Peers.getActivePeers().size());
 		response.put("numberOpenWorks", Work.getActiveCount());
 		response.put("numberClosedWorks", Work.getCount() - Work.getActiveCount());
-		response.put("estimatedComputationPower", GigaflopEstimator.estimateText());
+		response.put("estimatedComputationPower", "TODO"); // Todo: do a real gigaflop estmation here
 		response.put("openWorkMoney", Work.getActiveMoney());
 
 		response.put("numberOfUnlockedAccounts", Generator.getAllGenerators().size());

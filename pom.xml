@@ -118,11 +118,6 @@
             <version>1.7.21</version>
         </dependency>
         <dependency>
-            <groupId>elastic-grammar</groupId>
-            <artifactId>elastic-grammar</artifactId>
-            <version>0.2.1</version>
-        </dependency>
-        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.21</version>

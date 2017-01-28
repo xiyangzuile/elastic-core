@@ -332,21 +332,7 @@ public interface Appendix {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
 
-				if (this.language == 0x01) {
-					try {
-						if (src != null) {
-							Executioner.checkSyntax(src);
-						} else {
-							throw new NxtException.NotValidException("Source code unavailable");
-						}
-					} catch (final Exception e) {
-						e.printStackTrace();
-						throw new NxtException.NotValidException(e.getMessage());
-					}
-				} else {
-					throw new NxtException.NotValidException("Source code language is not supported");
-				}
-				// OTHER LANGUAGES MUST BE APPENDED HERE IF ADDED LATER ON!!
+				// TODO: Think about some source code checks here
 			}
 		}
 	}

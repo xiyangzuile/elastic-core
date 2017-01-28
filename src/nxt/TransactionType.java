@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.elastic.grammar.elasticplExecutionUnit.POW_CHECK_RESULT;
 import nxt.util.Logger;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.params.MainNetParams;
@@ -678,11 +676,8 @@ public abstract class TransactionType {
 				// evaluation during blockchain sync)
 				if (transaction.getPrunableSourceCode().hasPrunableData() && !(transaction
 						.getTimestamp() < (Nxt.getEpochTime() - Constants.EVAL_WORK_EXEC_TIME_AGE_SECONDS))) {
-
 					final byte[] source = transaction.getPrunableSourceCode().getSource();
 					final long wid = transaction.getId();
-					GigaflopEstimator.measure_and_store_source(wid, source);
-
 				}
 
 			}
@@ -952,48 +947,9 @@ public abstract class TransactionType {
 									+ " already has this submission, dropping duplicate");
 				}
 
-				final BigInteger real_block_target = w.getWork_min_pow_target_bigint();
+				// final BigInteger real_block_target = w.getWork_min_pow_target_bigint();
 
-				POW_CHECK_RESULT valid = POW_CHECK_RESULT.ERROR;
 
-				if (PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())) {
-					// If the tx is already pruned AND the transaction timestamp
-					// is old enough, we assume POW is valid!
-					// no need to execute after all! We assume that the pruning
-					// is happened long enough ago
-					// This is valid, because MIN_PRUNABLE_LIFETIME is longer
-					// than the maximum work timeout length! We are just
-					// catching up the blockchain here, not actually "submitting
-					// live work"
-					if (transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)) {
-						valid = POW_CHECK_RESULT.OK;
-					} else {
-						// Otherwise a script kiddie is trying to be an uber
-						// haxx0r:
-						throw new NxtException.NotValidException(
-								"Proof of work is invalid: references a pruned source code when it should not be pruned");
-					}
-
-				} else {
-					final PrunableSourceCode code = nxt.PrunableSourceCode
-							.getPrunableSourceCodeByWorkId(attachment.getWorkId());
-					try {
-						valid = Executioner.executeProofOfWork(code.getSource(),
-								attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()),
-								real_block_target,
-								real_block_target /* deprecated soft unblock */);
-					} catch (final Exception e1) {
-						e1.printStackTrace();
-						throw new NxtException.NotCurrentlyValidException(
-								"Proof of work is invalid: causes ElasticPL function to crash");
-					}
-					if (valid == POW_CHECK_RESULT.ERROR) {
-						throw new NxtException.LostValidityException(
-								"Proof of work is invalid: does not anylonger meet target "
-										+ real_block_target.toString(16) + " for work_id = "
-										+ Convert.toUnsignedLong((w.getWork_id())));
-					}
-				}
 			}
 
 			@Override
@@ -1279,42 +1235,6 @@ public abstract class TransactionType {
 				}
 
 				transaction.getBlockId();
-				boolean valid = false;
-
-				if (PrunableSourceCode.isPrunedByWorkId(attachment.getWorkId())) {
-					// If the tx is already pruned AND the transaction timestamp
-					// is old enough, we assume POW is valid!
-					// no need to execute after all! We assume that the pruning
-					// is happened long enough ago
-					// This is valid, because MIN_PRUNABLE_LIFETIME is longer
-					// than the maximum work timeout length! We are just
-					// catching up the blockchain here, not actually "submitting
-					// live work"
-					if (transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)) {
-						valid = true;
-					} else {
-						// Otherwise a script kiddie is trying to be an uber
-						// haxx0r:
-						throw new NxtException.NotValidException(
-								"Bounty is invalid: references a pruned source code when it should not be pruned");
-					}
-				} else {
-					final PrunableSourceCode code = nxt.PrunableSourceCode
-							.getPrunableSourceCodeByWorkId(attachment.getWorkId());
-					try {
-						valid = Executioner.executeBountyHooks(code.getSource(),
-								attachment.personalizedIntStream(transaction.getSenderPublicKey(), w.getBlock_id()));
-					} catch (final Exception e1) {
-						e1.printStackTrace();
-						throw new NxtException.NotCurrentlyValidException(
-								"Bounty is invalid: causes ElasticPL function to crash");
-					}
-					if (!valid) {
-						System.err.println("POW was not valid!!");
-						throw new NxtException.NotValidException("Bounty is invalid: does not meet requirement");
-					}
-				}
-
 			}
 
 			@Override
@@ -1551,9 +1471,13 @@ public abstract class TransactionType {
 		return false;
 	}
 
+	public boolean mustHaveSupernodeSignature() {
+		return false;
+	}
+
 	public boolean mustHaveRecipient() {
 		return this.canHaveRecipient();
-	}
+	} // TODO :check
 
 	abstract Attachment.AbstractAttachment parseAttachment(ByteBuffer buffer, byte transactionVersion)
 			throws NxtException.NotValidException;

@@ -165,7 +165,6 @@ public final class BlockImpl implements Block {
 			this.blockSignature = Crypto.sign(this.bytes(), secretPhrase);
 		}
 		this.bytes = null;
-
 	}
 
 	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
@@ -275,7 +274,7 @@ public final class BlockImpl implements Block {
 		boolean is_special_case = false;
 		for (final Transaction t : this.blockTransactions) {
 			if (t.getType() == Payment.REDEEM) {
-				is_special_case = true;
+				is_special_case = true; // TODO: check if correct
 				break;
 			}
 		}
@@ -290,6 +289,15 @@ public final class BlockImpl implements Block {
 					&& Crypto.verify(this.blockSignature, data, this.getGeneratorPublicKey(), true);
 		}
 		return this.hasValidSignature;
+	}
+
+	public void sign(String secretPhrase) throws Exception {
+		if (this.blockSignature != null) {
+			throw new Exception("Don't sign what is already signed!");
+		}
+		final byte[] data = this.bytes();
+		this.blockSignature = Crypto.sign(data, secretPhrase);
+		this.bytes = null; // reset
 	}
 
 	@Override

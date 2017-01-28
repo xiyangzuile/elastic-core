@@ -41,6 +41,7 @@ final class TransactionImpl implements Transaction {
 
 		private final short deadline;
 		private final byte[] senderPublicKey;
+		private byte[] superNodePublicKey;
 		private final long amountNQT;
 		private final long feeNQT;
 		private final TransactionType type;
@@ -50,6 +51,7 @@ final class TransactionImpl implements Transaction {
 		private long recipientId;
 		private byte[] referencedTransactionFullHash;
 		private byte[] signature;
+		private byte[] supernode_signature;
 
 		private Appendix.PublicKeyAnnouncement publicKeyAnnouncement;
 		private Appendix.PrunableSourceCode prunableSourceCode;
@@ -182,6 +184,12 @@ final class TransactionImpl implements Transaction {
 			return this;
 		}
 
+		BuilderImpl supernode_signature(final byte[] pubkey, final byte[] signature) {
+			this.supernode_signature = signature;
+			this.superNodePublicKey = pubkey;
+			return this;
+		}
+
 		@Override
 		public BuilderImpl timestamp(final int timestamp) {
 			this.timestamp = timestamp;
@@ -214,6 +222,10 @@ final class TransactionImpl implements Transaction {
 			final short deadline = buffer.getShort();
 			final byte[] senderPublicKey = new byte[32];
 			buffer.get(senderPublicKey);
+			byte[] superNodePublicKey = new byte[32];
+			buffer.get(superNodePublicKey);
+			superNodePublicKey = Convert.emptyToNull(superNodePublicKey);
+
 			final long recipientId = buffer.getLong();
 			final long amountNQT = buffer.getLong();
 			final long feeNQT = buffer.getLong();
@@ -221,8 +233,11 @@ final class TransactionImpl implements Transaction {
 			buffer.get(referencedTransactionFullHash);
 			referencedTransactionFullHash = Convert.emptyToNull(referencedTransactionFullHash);
 			byte[] signature = new byte[64];
+			byte[] supernode_signature = new byte[64];
 			buffer.get(signature);
 			signature = Convert.emptyToNull(signature);
+			buffer.get(supernode_signature);
+			supernode_signature = Convert.emptyToNull(supernode_signature);
 			int flags = 0;
 			int ecBlockHeight = 0;
 			long ecBlockId = 0;
@@ -237,7 +252,7 @@ final class TransactionImpl implements Transaction {
 
 			final TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
 					deadline, transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
-							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
+							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature).supernode_signature(superNodePublicKey, supernode_signature)
 							.ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId);
 			if (transactionType.canHaveRecipient()) {
 				builder.recipientId(recipientId);
@@ -283,10 +298,12 @@ final class TransactionImpl implements Transaction {
 			final int timestamp = ((Long) transactionData.get("timestamp")).intValue();
 			final short deadline = ((Long) transactionData.get("deadline")).shortValue();
 			final byte[] senderPublicKey = Convert.parseHexString((String) transactionData.get("senderPublicKey"));
+			final byte[] superNodePublicKey = Convert.parseHexString((String) transactionData.get("superNodePublicKey"));
 			final long amountNQT = Convert.parseLong(transactionData.get("amountNQT"));
 			final long feeNQT = Convert.parseLong(transactionData.get("feeNQT"));
 			final String referencedTransactionFullHash = (String) transactionData.get("referencedTransactionFullHash");
 			final byte[] signature = Convert.parseHexString((String) transactionData.get("signature"));
+			final byte[] supernode_signature = Convert.parseHexString((String) transactionData.get("supernode_signature"));
 			final Long versionValue = (Long) transactionData.get("version");
 			final byte version = versionValue == null ? 0 : versionValue.byteValue();
 			final JSONObject attachmentData = (JSONObject) transactionData.get("attachment");
@@ -301,7 +318,7 @@ final class TransactionImpl implements Transaction {
 			}
 			final TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
 					deadline, transactionType.parseAttachment(attachmentData)).timestamp(timestamp)
-							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
+							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature).supernode_signature(superNodePublicKey, supernode_signature)
 							.ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId);
 			if (transactionType.canHaveRecipient()) {
 				final long recipientId = Convert.parseUnsignedLong((String) transactionData.get("recipient"));
@@ -320,16 +337,18 @@ final class TransactionImpl implements Transaction {
 
 	static TransactionImpl parseTransaction(final JSONObject transactionData) throws NxtException.NotValidException {
 		final TransactionImpl transaction = TransactionImpl.newTransactionBuilder(transactionData).build();
-		if ((transaction.getSignature() != null) && !transaction.checkSignature()) {
 
+		if ((transaction.getSignature() != null) && !transaction.checkSignature()) {
 			throw new NxtException.NotValidException(
 					"Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
 		}
+
 		return transaction;
 	}
 
 	private final short deadline;
 	private volatile byte[] senderPublicKey;
+	private volatile byte[] superNodePublicKey;
 	private final long recipientId;
 	private final long amountNQT;
 	private final long feeNQT;
@@ -341,7 +360,8 @@ final class TransactionImpl implements Transaction {
 	private final byte version;
 	private final int timestamp;
 
-	private final byte[] signature;
+	private volatile byte[] signature;
+	private volatile byte[] supernode_signature;
 	private final Attachment.AbstractAttachment attachment;
 	private final Appendix.PublicKeyAnnouncement publicKeyAnnouncement;
 	private final Appendix.PrunableSourceCode prunableSourceCode;
@@ -369,12 +389,15 @@ final class TransactionImpl implements Transaction {
 
 	private volatile boolean hasValidSignature = false;
 
+	private volatile boolean hasValidSupernodeSignature = false;
+
 	private TransactionImpl(final BuilderImpl builder, final String secretPhrase)
 			throws NxtException.NotValidException {
 
 		this.timestamp = builder.timestamp;
 		this.deadline = builder.deadline;
 		this.senderPublicKey = builder.senderPublicKey;
+		this.superNodePublicKey = builder.superNodePublicKey;
 		this.recipientId = builder.recipientId;
 		this.amountNQT = builder.amountNQT;
 		this.referencedTransactionFullHash = builder.referencedTransactionFullHash;
@@ -425,6 +448,10 @@ final class TransactionImpl implements Transaction {
 			this.feeNQT = builder.feeNQT;
 		}
 
+		// save supernode sig
+		if(builder.supernode_signature!=null)
+			this.supernode_signature = builder.supernode_signature;
+
 		if ((builder.signature != null) && (secretPhrase != null)) {
 			throw new NxtException.NotValidException("Transaction is already signed");
 		} else if (builder.signature != null) {
@@ -447,7 +474,16 @@ final class TransactionImpl implements Transaction {
 			this.signature = null;
 		}
 
+		this.supernode_signature = null;
+
 	}
+
+	void signSuperNode(String secretPhrase) {
+		this.supernode_signature = Crypto.sign(this.bytes(), secretPhrase);
+	}
+	void sign(String secretPhrase){
+		this.signature = Crypto.sign(this.bytes(), secretPhrase);
+	} // Only for genesis block creation
 
 	void apply() throws NotValidException {
 		final Account senderAccount = Account.getAccount(this.getSenderId());
@@ -519,6 +555,7 @@ final class TransactionImpl implements Transaction {
 					}
 				}
 				buffer.put(this.signature != null ? this.signature : new byte[64]);
+				buffer.put(this.supernode_signature != null ? this.supernode_signature : new byte[64]);
 				buffer.putInt(this.getFlags());
 				buffer.putInt(this.ecBlockHeight);
 				buffer.putLong(this.ecBlockId);
@@ -538,6 +575,10 @@ final class TransactionImpl implements Transaction {
 		return this.bytes;
 	}
 
+	public byte[] getSuperNodePublicKey() {
+		return superNodePublicKey;
+	}
+
 	private boolean checkSignature() {
 		if (!this.hasValidSignature) {
 			if (this.getAttachment() instanceof Attachment.RedeemAttachment) {
@@ -547,9 +588,15 @@ final class TransactionImpl implements Transaction {
 				this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
 						this.zeroSignature(this.getBytes()), this.getSenderPublicKey(), this.useNQT());
 			}
-
 		}
 		return this.hasValidSignature;
+	}
+
+	private boolean checkSuperNodeSignature() {
+		if (!this.hasValidSupernodeSignature) {
+			this.hasValidSupernodeSignature = (this.supernode_signature != null) && Crypto.verify(this.supernode_signature, this.zeroSignature(this.getBytes()), this.getSuperNodePublicKey(), this.useNQT());
+		}
+		return this.hasValidSupernodeSignature;
 	}
 
 	@Override
@@ -840,7 +887,7 @@ final class TransactionImpl implements Transaction {
 	}
 
 	private int getSize() {
-		return this.signatureOffset() + 64 + 4 + 4 + 8 + this.appendagesSize;
+		return this.signatureOffset() + 64 + 64 + 4 + 4 + 8 + this.appendagesSize; // 2*64 for both sig and supernode_sig
 	}
 
 	@Override
@@ -992,6 +1039,19 @@ final class TransactionImpl implements Transaction {
 			}
 		}
 
+		if(this.type.mustHaveSupernodeSignature()){
+			if(this.supernode_signature == null || this.superNodePublicKey == null) {
+				throw new NxtException.NotValidException("The transaction must be signed by a supernode");
+			}else{
+				// check signature in verifySignatue() routine ... if it is there.
+			}
+		}else{
+			// This type does not require any supernode sig
+			if(this.supernode_signature != null || this.superNodePublicKey != null){
+				throw new NxtException.NotValidException("The transaction must not be signed by any supernode");
+			}
+		}
+
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
 			if (!appendage.verifyVersion(this.version)) {
@@ -1034,16 +1094,25 @@ final class TransactionImpl implements Transaction {
 
 	@Override
 	public boolean verifySignature() {
+
+		boolean result = false;
+
 		if (this.getAttachment() instanceof Attachment.RedeemAttachment) {
-			return this.checkSignature();
+			result = this.checkSignature();// TODO: check redeem
 		} else {
-			return this.checkSignature() && Account.setOrVerify(this.getSenderId(), this.getSenderPublicKey());
+			result = this.checkSignature() && Account.setOrVerify(this.getSenderId(), this.getSenderPublicKey());
 		}
+
+		if(result && this.supernode_signature != null){
+			result = this.checkSuperNodeSignature();
+		}
+
+		return result;
 	}
 
 	private byte[] zeroSignature(final byte[] data) {
 		final int start = this.signatureOffset();
-		for (int i = start; i < (start + 64); i++) {
+		for (int i = start; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
 			data[i] = 0;
 		}
 		return data;
