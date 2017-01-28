@@ -894,6 +894,10 @@ public final class Account {
 			this.publicKey = Account.publicKeyTable.get(Account.accountDbKeyFactory.newKey(this));
 		}
 
+		if(height <= Constants.FIRST_X_BLOCKS_PSEUDO_EFFECTIVE_BALANCE){
+			return this.getPseudoEffectiveBalanceNXT(height);
+		}
+
 		/*
 		 * STRIPPED || height - this.publicKey.height <= 1440) { return 0; //
 		 * cfb: Accounts with the public key revealed less than // 1440 blocks
@@ -913,7 +917,7 @@ public final class Account {
 		}
 	}
 
-	public long getPseudoEffectiveBalanceNXT(final int height) {
+	private long getPseudoEffectiveBalanceNXT(final int height) {
 
 		Nxt.getBlockchain().readLock();
 		try {

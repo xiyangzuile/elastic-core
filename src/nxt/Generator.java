@@ -96,12 +96,7 @@ public final class Generator implements Comparable<Generator> {
 				return;
 			}
 
-			// For the first X blocks, do not use effective but pseudo-effective balance. This helps the system to bootstrap.
-            // Here, no confirmations are needed (but leasing is accounted for)
-            if(height > Constants.FIRST_X_BLOCKS_PSEUDO_EFFECTIVE_BALANCE)
-			    this.effectiveBalanceNXT = Math.max(account.getEffectiveBalanceNXT(height), 0);
-            else
-                this.effectiveBalanceNXT = Math.max(account.getPseudoEffectiveBalanceNXT(height), 0);
+			this.effectiveBalanceNXT = Math.max(account.getEffectiveBalanceNXT(height), 0);
 
 			if (this.effectiveBalanceNXT == 0) {
 				this.hitTime = Long.MAX_VALUE;
