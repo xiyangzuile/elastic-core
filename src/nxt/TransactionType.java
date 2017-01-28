@@ -579,6 +579,10 @@ public abstract class TransactionType {
 				return "WorkCreation";
 			}
 
+			@Override public boolean mustHaveSupernodeSignature() {
+				return true; // NEW WORK must go through supernode
+			}
+
 			@Override
 			public final byte getSubtype() {
 				return TransactionType.SUBTYPE_WORK_CONTROL_NEW_TASK;
