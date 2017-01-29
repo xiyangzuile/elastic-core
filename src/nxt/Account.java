@@ -48,6 +48,7 @@ import nxt.util.Logger;
 
 public final class Account {
 
+
 	public static final class AccountInfo {
 
 		private final long accountId;
@@ -513,6 +514,13 @@ public final class Account {
 					confirmed, unconfirmed);
 		}
 	}
+
+	public boolean isSuperNode() {
+		boolean res = false;
+
+		return res;
+	}
+
 
 	public static byte[] decryptFrom(final byte[] publicKey, final EncryptedData encryptedData,
 			final String recipientSecretPhrase, final boolean uncompress) {

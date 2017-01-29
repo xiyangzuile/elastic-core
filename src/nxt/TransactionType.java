@@ -829,6 +829,10 @@ public abstract class TransactionType {
 				return false;
 			}
 
+			@Override public boolean mustHaveSupernodeSignature() {
+				return true; // NEW WORK must go through supernode
+			}
+
 			@Override
 			public LedgerEvent getLedgerEvent() {
 				return LedgerEvent.WORK_POW;
@@ -1131,6 +1135,10 @@ public abstract class TransactionType {
 				} catch (final Exception e) {
 					throw new NotValidException(e.getMessage());
 				}
+			}
+
+			@Override public boolean mustHaveSupernodeSignature() {
+				return true; // NEW WORK must go through supernode
 			}
 
 			@Override

@@ -1044,7 +1044,15 @@ final class TransactionImpl implements Transaction {
 			if(this.supernode_signature == null || this.superNodePublicKey == null) {
 				throw new NxtException.NotValidException("The transaction must be signed by a supernode");
 			}else{
-				// check signature in verifySignatue() routine ... if it is there.
+				// check signature in verifySignature() routine ... if it is there. Just make sure now that the public key actually belongs to a supernode
+				long accountId = Account.getId(this.superNodePublicKey);
+				Account snode = Account.getAccount(accountId);
+				if(snode == null){
+					throw new NxtException.NotValidException("The super node is unknown");
+				}
+				if(snode.isSuperNode() == false){
+					throw new NxtException.NotValidException("The super node is not a super node");
+				}
 			}
 		}else{
 			// This type does not require any supernode sig
