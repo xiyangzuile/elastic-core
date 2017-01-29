@@ -184,6 +184,56 @@ public final class Account {
 
 	}
 
+	public static final class AccountSupernodeDeposit {
+
+		private final long lessorId;
+		private final DbKey dbKey;
+		private int currentDepositHeightFrom;
+		private int currentDepositHeightTo;
+
+
+		private AccountSupernodeDeposit(final long lessorId, final int currentDepositHeightFrom, final int currentDepositHeightTo) {
+			this.lessorId = lessorId;
+			this.dbKey = Account.accountSupernodeDepositDbKeyFactory.newKey(this.lessorId);
+			this.currentDepositHeightFrom = currentDepositHeightFrom;
+			this.currentDepositHeightTo = currentDepositHeightTo;
+		}
+
+		private AccountSupernodeDeposit(final ResultSet rs, final DbKey dbKey) throws SQLException {
+			this.lessorId = rs.getLong("lessor_id");
+			this.dbKey = dbKey;
+			this.currentDepositHeightFrom = rs.getInt("current_deposit_height_from");
+			this.currentDepositHeightTo = rs.getInt("current_deposit_height_to");
+
+		}
+
+		public long getLessorId() {
+			return this.lessorId;
+		}
+
+		public int getCurrentDepositHeightFrom() {
+			return currentDepositHeightFrom;
+		}
+
+		public int getCurrentDepositHeightTo() {
+			return currentDepositHeightTo;
+		}
+
+		private void save(final Connection con) throws SQLException {
+			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO account_supernode_deposit "
+					+ "(lessor_id, current_leasing_height_from, current_leasing_height_to, height, latest) "
+					+ "KEY (lessor_id, height) VALUES (?, ?, ?, ?, TRUE)")) {
+				int i = 0;
+				pstmt.setLong(++i, this.lessorId);
+				DbUtils.setIntZeroToNull(pstmt, ++i, this.currentDepositHeightFrom);
+				DbUtils.setIntZeroToNull(pstmt, ++i, this.currentDepositHeightTo);
+				pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
+				pstmt.executeUpdate();
+			}
+		}
+
+	}
+
 	public enum ControlType {
 		PHASING_ONLY
 	}
@@ -204,7 +254,7 @@ public final class Account {
 	}
 
 	public enum Event {
-		BALANCE, UNCONFIRMED_BALANCE, ASSET_BALANCE, UNCONFIRMED_ASSET_BALANCE, CURRENCY_BALANCE, UNCONFIRMED_CURRENCY_BALANCE, LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED, SET_PROPERTY, DELETE_PROPERTY
+		BALANCE, UNCONFIRMED_BALANCE, ASSET_BALANCE, UNCONFIRMED_ASSET_BALANCE, CURRENCY_BALANCE, UNCONFIRMED_CURRENCY_BALANCE, LEASE_SCHEDULED, LEASE_STARTED, LEASE_ENDED, SET_PROPERTY, DELETE_PROPERTY, SUPERNODE_CHANGED, SUPERNODE_EXPIRED
 	}
 
 	public static final class PublicKey {
@@ -319,6 +369,31 @@ public final class Account {
 
 	};
 
+	private static final DbKey.LongKeyFactory<AccountSupernodeDeposit> accountSupernodeDepositDbKeyFactory = new DbKey.LongKeyFactory<AccountSupernodeDeposit>(
+			"lessor_id") {
+
+		@Override
+		public DbKey newKey(final AccountSupernodeDeposit accountLease) {
+			return accountLease.dbKey;
+		}
+
+	};
+
+	private static final VersionedEntityDbTable<AccountSupernodeDeposit> accountSupernodeDepositTable = new VersionedEntityDbTable<AccountSupernodeDeposit>(
+			"account_supernode_deposit", Account.accountSupernodeDepositDbKeyFactory) {
+
+		@Override
+		protected AccountSupernodeDeposit load(final Connection con, final ResultSet rs, final DbKey dbKey) throws SQLException {
+			return new AccountSupernodeDeposit(rs, dbKey);
+		}
+
+		@Override
+		protected void save(final Connection con, final AccountSupernodeDeposit accountLease) throws SQLException {
+			accountLease.save(con);
+		}
+
+	};
+
 	private static final VersionedEntityDbTable<AccountInfo> accountInfoTable = new VersionedEntityDbTable<AccountInfo>(
 			"account_info", Account.accountInfoDbKeyFactory, "name,description") {
 
@@ -386,8 +461,8 @@ public final class Account {
 			.getBooleanProperty("nxt.enablePublicKeyCache") ? new ConcurrentHashMap<>() : null;
 
 	private static final Listeners<Account, Event> listeners = new Listeners<>();
-
 	private static final Listeners<AccountLease, Event> leaseListeners = new Listeners<>();
+	private static final Listeners<AccountSupernodeDeposit, Event> supernodeListeners = new Listeners<>();
 
 	static {
 
@@ -429,6 +504,26 @@ public final class Account {
 				}
 				lessor.save();
 			}
+
+			// Now handle all supernode deposit events
+			final List<AccountSupernodeDeposit> changingDeposits = new ArrayList<>();
+			try (DbIterator<AccountSupernodeDeposit> deposits = Account.getRelevantSupernodeDepositEvents(height)) {
+				while (deposits.hasNext()) {
+					changingDeposits.add(deposits.next());
+				}
+			}
+
+			for (final AccountSupernodeDeposit deposit : changingDeposits) {
+				final Account lessor = Account.getAccount(deposit.lessorId);
+				if (height == deposit.currentDepositHeightFrom) {
+					lessor.supernodeDepositBlocked = true;
+					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
+				} else if (height == deposit.currentDepositHeightTo) {
+					lessor.supernodeDepositBlocked = false;
+					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_EXPIRED);
+				}
+				lessor.save();
+			}
 		}, BlockchainProcessor.Event.AFTER_BLOCK_APPLY);
 
 		if (Account.publicKeyCache != null) {
@@ -455,6 +550,10 @@ public final class Account {
 
 	public static boolean addLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
 		return Account.leaseListeners.addListener(listener, eventType);
+	}
+
+	public static boolean addSupernodeListener(final Listener<AccountSupernodeDeposit> listener, final Event eventType) {
+		return Account.supernodeListeners.addListener(listener, eventType);
 	}
 
 	public static boolean addListener(final Listener<Account> listener, final Event eventType) {
@@ -617,6 +716,24 @@ public final class Account {
 		}
 	}
 
+	private static DbIterator<AccountSupernodeDeposit> getRelevantSupernodeDepositEvents(final int height) {
+		Connection con = null;
+		try {
+			con = Db.db.getConnection();
+			final PreparedStatement pstmt = con.prepareStatement(
+					"SELECT * FROM account_supernode_deposit WHERE current_deposit_height_from = ? AND latest = TRUE "
+							+ "UNION ALL SELECT * FROM account_lease WHERE current_deposit_height_to = ? AND latest = TRUE "
+							+ "ORDER BY current_lessee_id, lessor_id");
+			int i = 0;
+			pstmt.setInt(++i, height);
+			pstmt.setInt(++i, height);
+			return Account.accountSupernodeDepositTable.getManyBy(con, pstmt, true);
+		} catch (final SQLException e) {
+			DbUtils.close(con);
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
 	public static byte[] getPublicKey(final long id) {
 		final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(id);
 		byte[] key = null;
@@ -640,6 +757,10 @@ public final class Account {
 
 	public static boolean removeLeaseListener(final Listener<AccountLease> listener, final Event eventType) {
 		return Account.leaseListeners.removeListener(listener, eventType);
+	}
+
+	public static boolean removeSupernodeListener(final Listener<AccountSupernodeDeposit> listener, final Event eventType) {
+		return Account.supernodeListeners.removeListener(listener, eventType);
 	}
 
 	public static boolean removeListener(final Listener<Account> listener, final Event eventType) {
@@ -670,10 +791,10 @@ public final class Account {
 	private long balanceNQT;
 
 	private long unconfirmedBalanceNQT;
-
 	private long forgedBalanceNQT;
-
 	private long activeLesseeId;
+
+	private boolean supernodeDepositBlocked;
 
 	private Set<ControlType> controls;
 
@@ -693,6 +814,7 @@ public final class Account {
 		this.unconfirmedBalanceNQT = rs.getLong("unconfirmed_balance");
 		this.forgedBalanceNQT = rs.getLong("forged_balance");
 		this.activeLesseeId = rs.getLong("active_lessee_id");
+		this.supernodeDepositBlocked = rs.getBoolean("supernode_deposit_blocked");
 		if (rs.getBoolean("has_control_phasing")) {
 			this.controls = Collections.unmodifiableSet(EnumSet.of(ControlType.PHASING_ONLY));
 		} else {
@@ -884,6 +1006,10 @@ public final class Account {
 		return Account.accountLeaseTable.get(Account.accountDbKeyFactory.newKey(this));
 	}
 
+	public AccountSupernodeDeposit getAccountSupernodeDeposit() {
+		return Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
+	}
+
 	public long getBalanceNQT() {
 		return this.balanceNQT;
 	}
@@ -918,6 +1044,8 @@ public final class Account {
 			if (this.activeLesseeId == 0) {
 				effectiveBalanceNQT += this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height);
 			}
+			// Subtract supernode deposit if there!
+			dd
 			return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0
 					: effectiveBalanceNQT / Constants.ONE_NXT;
 		} finally {
@@ -1064,6 +1192,30 @@ public final class Account {
 		Account.leaseListeners.notify(accountLease, Event.LEASE_SCHEDULED);
 	}
 
+	void refreshSupernodeDeposit() {
+
+		// Do nothing if the current guaranteed balance is lower than the minimum amount of supernode deposit
+		if(this.getGuaranteedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
+			return;
+		}
+
+		final int height = Nxt.getBlockchain().getHeight();
+		AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
+		if (deposit == null) {
+			deposit = new AccountSupernodeDeposit(this.id, height + 1,
+					height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD);
+		}
+		else{
+			// Only update height if the other supernode thing already times out, otherwise it is just an extension which does not need a "begin" event triggered
+			if(deposit.currentDepositHeightTo < height) // TODO: < or <= ??
+				deposit.currentDepositHeightFrom = height + 1;
+
+			deposit.currentDepositHeightTo = height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD;
+		}
+		Account.accountSupernodeDepositTable.insert(deposit);
+		Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
+	}
+
 	void removeControl(final ControlType control) {
 		if (!this.controls.contains(control)) {
 			return;
@@ -1076,7 +1228,7 @@ public final class Account {
 
 	private void save() {
 		if ((this.balanceNQT == 0) && (this.unconfirmedBalanceNQT == 0) && (this.forgedBalanceNQT == 0)
-				&& (this.activeLesseeId == 0) && this.controls.isEmpty()) {
+				&& (this.activeLesseeId == 0) && (this.supernodeDepositBlocked == false) && this.controls.isEmpty()) {
 			Account.accountTable.delete(this, true);
 		} else {
 			Account.accountTable.insert(this);
@@ -1086,7 +1238,7 @@ public final class Account {
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con
 				.prepareStatement("MERGE INTO account (id, " + "balance, unconfirmed_balance, forged_balance, "
-						+ "active_lessee_id, has_control_phasing, height, latest) "
+						+ "active_lessee_id, supernode_deposit_blocked, has_control_phasing, height, latest) "
 						+ "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
@@ -1095,6 +1247,7 @@ public final class Account {
 			pstmt.setLong(++i, this.forgedBalanceNQT);
 			DbUtils.setLongZeroToNull(pstmt, ++i, this.activeLesseeId);
 			pstmt.setBoolean(++i, this.controls.contains(ControlType.PHASING_ONLY));
+			pstmt.setBoolean(++i, this.supernodeDepositBlocked);
 			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 			pstmt.executeUpdate();
 		}

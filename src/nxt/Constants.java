@@ -103,6 +103,12 @@ public final class Constants {
 
 	public static final int MAX_POWS_PER_BLOCK = 20;
 
+
+	// Supernode stuff
+	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = 1440;
+	public static final int SUPERNODE_DEPOSIT_BINDING_GRACE_DELAY_PERIOD = 10;
+	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
+
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 

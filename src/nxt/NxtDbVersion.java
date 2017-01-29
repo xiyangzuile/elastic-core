@@ -1031,7 +1031,8 @@ class NxtDbVersion extends DbVersion {
 		case 392:
 			this.apply("CREATE INDEX IF NOT EXISTS exchange_request_height_idx ON exchange_request (height)");
 		case 393:
-			this.apply(null);
+			this.apply("CREATE TABLE IF NOT EXISTS account_supernode_deposit (db_id IDENTITY, lessor_id BIGINT NOT NULL, "
+					+ "current_deposit_height_from INT, current_deposit_height_to INT, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
 		case 394:
 			this.apply("CREATE TABLE IF NOT EXISTS account_ledger (db_id IDENTITY, account_id BIGINT NOT NULL, "
 					+ "event_type TINYINT NOT NULL, event_id BIGINT NOT NULL, holding_type TINYINT NOT NULL, "
