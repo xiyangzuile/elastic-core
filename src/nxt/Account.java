@@ -1239,7 +1239,7 @@ public final class Account {
 		try (PreparedStatement pstmt = con
 				.prepareStatement("MERGE INTO account (id, " + "balance, unconfirmed_balance, forged_balance, "
 						+ "active_lessee_id, supernode_deposit_blocked, has_control_phasing, height, latest) "
-						+ "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+						+ "KEY (id, height) VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setLong(++i, this.balanceNQT);
