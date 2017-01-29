@@ -615,9 +615,7 @@ public final class Account {
 	}
 
 	public boolean isSuperNode() {
-		boolean res = false;
-
-		return res;
+		return this.supernodeDepositBlocked; // todo if checking the height is required ... I guess not
 	}
 
 
@@ -722,8 +720,8 @@ public final class Account {
 			con = Db.db.getConnection();
 			final PreparedStatement pstmt = con.prepareStatement(
 					"SELECT * FROM account_supernode_deposit WHERE current_deposit_height_from = ? AND latest = TRUE "
-							+ "UNION ALL SELECT * FROM account_lease WHERE current_deposit_height_to = ? AND latest = TRUE "
-							+ "ORDER BY current_lessee_id, lessor_id");
+							+ "UNION ALL SELECT * FROM account_supernode_deposit WHERE current_deposit_height_to = ? AND latest = TRUE "
+							+ "ORDER BY lessor_id");
 			int i = 0;
 			pstmt.setInt(++i, height);
 			pstmt.setInt(++i, height);
@@ -1044,8 +1042,7 @@ public final class Account {
 			if (this.activeLesseeId == 0) {
 				effectiveBalanceNQT += this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height);
 			}
-			// Subtract supernode deposit if there!
-			dd
+			// Subtract supernode deposit if there! TODO TODO
 			return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0
 					: effectiveBalanceNQT / Constants.ONE_NXT;
 		} finally {

@@ -1177,6 +1177,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					Constants.least_possible_target);
 			genesisBlock.setPrevious(null);
 			this.addBlock(genesisBlock);
+			Logger.logMessage("Genesis block (" + genesisBlock.getId() + ") recreated and added to our fresh blockchain");
 			return true;
 		} catch (final NxtException.ValidationException e) {
 			Logger.logMessage(e.getMessage());

@@ -51,6 +51,7 @@ public abstract class DbVersion {
 		}
 	}
 
+
 	void init(final BasicDb db) {
 		this.db = db;
 		Connection con = null;
