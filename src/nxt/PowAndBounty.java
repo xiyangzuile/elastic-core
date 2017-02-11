@@ -219,9 +219,15 @@ public final class PowAndBounty {
 			// Immediate payout incl. the bounty deposit
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
 			final Account participantAccount = Account.getAccount(this.accountId);
+			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+				throw new IOException("Something went wrong with the deposit account, shouldn't happen");
+			}
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
-			// Reduce bounty fund entirely
+			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+					-1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+
 			w.kill_bounty_fund(bl);
 		} else {
 			this.too_late = true;

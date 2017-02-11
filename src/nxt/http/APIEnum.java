@@ -26,6 +26,7 @@ public enum APIEnum {
 	// To preserve compatibility, please add new APIs to the end of the enum.
 	// When an API is deleted, set its name to empty string and handler to null.
 	BROADCAST_TRANSACTION("broadcastTransaction", BroadcastTransaction.instance),
+	BROADCAST_SUPERNODE_TRANSACTION("broadcastSupernodeSignedTransaction", BroadcastSupernodeSignedTransaction.instance),
 	GET_WORK("getWork", GetWork.instance),CALCULATE_FULL_HASH(
 			"calculateFullHash",
 			CalculateFullHash.instance), DECRYPT_FROM("decryptFrom", DecryptFrom.instance), DECODE_HALLMARK(

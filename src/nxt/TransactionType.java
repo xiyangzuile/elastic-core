@@ -1080,7 +1080,7 @@ public abstract class TransactionType {
 						Nxt.getBlockchain().getHeight()) < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
 					throw new NxtException.NotValidException(
 							"You cannot cover the " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION
-									+ " NQT deposit fee for your bounty announcement.");
+									+ " NQT deposit fee for your bounty announcement with confirmed funds.");
 				}
 
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());

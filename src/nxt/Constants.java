@@ -22,6 +22,10 @@ import java.util.TimeZone;
 
 public final class Constants {
 
+
+	public static final long DEPOSITS_ACCOUNT = 123456789; // Here, this account holds all deposits
+	public static final long FORFEITED_DEPOSITS_ACCOUNT = 123456788; // Here, all finally forfeited coins arrive
+
 	public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
 	public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
 	public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");

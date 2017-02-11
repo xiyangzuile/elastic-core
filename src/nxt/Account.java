@@ -250,7 +250,6 @@ public final class Account {
 			super(message + " account: " + Long.toUnsignedString(accountId) + " confirmed: " + confirmed
 					+ " unconfirmed: " + unconfirmed);
 		}
-
 	}
 
 	public enum Event {
@@ -560,23 +559,19 @@ public final class Account {
 		return Account.listeners.addListener(listener, eventType);
 	}
 
+	public static Account newAccount(DbKey dbKey){
+		Account account = Account.accountTable.newEntity(dbKey);
+		PublicKey publicKey = Account.publicKeyTable.get(dbKey);
+		if (publicKey == null) {
+			publicKey = Account.publicKeyTable.newEntity(dbKey);
+			Account.publicKeyTable.insert(publicKey);
+		}
+		account.publicKey = publicKey;
+		return account;
+	}
 	public static Account addOrGetAccount(final byte[] pubkey) {
 		final long id = Account.getId(pubkey);
-		if (id == 0) {
-			throw new IllegalArgumentException("Invalid accountId 0");
-		}
-		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
-		Account account = Account.accountTable.get(dbKey);
-		if (account == null) {
-			account = Account.accountTable.newEntity(dbKey);
-			PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-			if (publicKey == null) {
-				publicKey = Account.publicKeyTable.newEntity(dbKey);
-				Account.publicKeyTable.insert(publicKey);
-			}
-			account.publicKey = publicKey;
-		}
-		return account;
+		return addOrGetAccount(id);
 	}
 
 	public static Account addOrGetAccount(final long id) {
@@ -585,15 +580,7 @@ public final class Account {
 		}
 		final DbKey dbKey = Account.accountDbKeyFactory.newKey(id);
 		Account account = Account.accountTable.get(dbKey);
-		if (account == null) {
-			account = Account.accountTable.newEntity(dbKey);
-			PublicKey publicKey = Account.publicKeyTable.get(dbKey);
-			if (publicKey == null) {
-				publicKey = Account.publicKeyTable.newEntity(dbKey);
-				Account.publicKeyTable.insert(publicKey);
-			}
-			account.publicKey = publicKey;
-		}
+		if (account == null) account = newAccount(dbKey);
 		return account;
 	}
 
@@ -1042,7 +1029,9 @@ public final class Account {
 			if (this.activeLesseeId == 0) {
 				effectiveBalanceNQT += this.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height);
 			}
-			// Subtract supernode deposit if there! TODO TODO
+
+			// Do not subtract the supernode deposit, because we do not want to lower the "forging weight".
+
 			return (effectiveBalanceNQT < Constants.MIN_FORGING_BALANCE_NQT) ? 0
 					: effectiveBalanceNQT / Constants.ONE_NXT;
 		} finally {
@@ -1078,11 +1067,10 @@ public final class Account {
 		Nxt.getBlockchain().readLock();
 		try {
 			final int height = currentHeight - numberOfConfirmations;
-			if (((height + Constants.GUARANTEED_BALANCE_CONFIRMATIONS) < Nxt.getBlockchainProcessor()
-					.getMinRollbackHeight()) || (height > Nxt.getBlockchain().getHeight())) {
-				throw new IllegalArgumentException(
-						"Height " + height + " not available for guaranteed balance calculation");
-			}
+			if (height + Constants.GUARANTEED_BALANCE_CONFIRMATIONS < Nxt.getBlockchainProcessor()
+					.getMinRollbackHeight() || height > Nxt.getBlockchain().getHeight())
+                throw new IllegalArgumentException(
+                        "Height " + height + " not available for guaranteed balance calculation");
 			try (Connection con = Db.db.getConnection();
 					PreparedStatement pstmt = con.prepareStatement("SELECT SUM (additions) AS additions "
 							+ "FROM account_guaranteed_balance WHERE account_id = ? AND height > ? AND height <= ?")) {
@@ -1187,6 +1175,20 @@ public final class Account {
 		}
 		Account.accountLeaseTable.insert(accountLease);
 		Account.leaseListeners.notify(accountLease, Event.LEASE_SCHEDULED);
+	}
+
+
+	Pair<Integer, Integer> getSupernodeTimeframe(){
+		if(this.isSuperNode()==false){
+		    return new Pair<>(0,0);
+        }else{
+            AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
+            if (deposit == null) {
+                return new Pair<>(0,0);
+            }else{
+                return new Pair<>(deposit.currentDepositHeightFrom, deposit.currentDepositHeightTo);
+            }
+        }
 	}
 
 	void refreshSupernodeDeposit() {

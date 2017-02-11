@@ -140,8 +140,16 @@ public final class PowAndBountyAnnouncements {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
 			final Account participantAccount = Account.getAccount(this.accountId);
+			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+
+			if (participantAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+				throw new IOException("Insufficient funds for deposit");
+			}
+
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					-1 * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+					Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			w.register_bounty_announcement(bl);
 		} else {
 			this.too_late = true;

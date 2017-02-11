@@ -478,9 +478,10 @@ final class TransactionImpl implements Transaction {
 
 	}
 
-	void signSuperNode(String secretPhrase) {
+	public void signSuperNode(String secretPhrase) {
 		this.supernode_signature = Crypto.sign(this.bytes(), secretPhrase);
 	}
+
 	void sign(String secretPhrase){
 		this.signature = Crypto.sign(this.bytes(), secretPhrase);
 	} // Only for genesis block creation

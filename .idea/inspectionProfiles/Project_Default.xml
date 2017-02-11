@@ -52,7 +52,7 @@
     <inspection_tool class="ArrayObjectsEquals" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="ArraysAsListWithZeroOrOneArgument" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="AssertAsName" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="AssertEqualsBetweenInconvertibleTypes" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="AssertEqualsBetweenInconvertibleTypes" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="AssertEqualsBetweenInconvertibleTypesTestNG" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="AssertEqualsCalledOnArray" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="AssertEqualsMayBeAssertSame" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
@@ -313,7 +313,7 @@
     <inspection_tool class="CyclomaticComplexity" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="m_limit" value="10" />
     </inspection_tool>
-    <inspection_tool class="DanglingJavadoc" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="DanglingJavadoc" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="DataProviderReturnType" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="DateToString" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="DeclareCollectionAsInterface" enabled="false" level="WEAK WARNING" enabled_by_default="false">
@@ -581,7 +581,7 @@
     </inspection_tool>
     <inspection_tool class="JUnit3MethodNamingConvention" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="JUnit3StyleTestMethodInJUnit4Class" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="JUnit4AnnotatedMethodInJUnit3TestCase" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="JUnit4AnnotatedMethodInJUnit3TestCase" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="JUnit4MethodNamingConvention" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="JUnitAbstractTestClassNamingConvention" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="m_regex" value="[A-Z][A-Za-z\d]*TestCase" />
@@ -600,7 +600,7 @@
     <inspection_tool class="Java8CollectionsApi" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="Java8ListSort" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="Java8ReplaceMapGet" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="JavaDoc" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+    <inspection_tool class="JavaDoc" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="TOP_LEVEL_CLASS_OPTIONS">
         <value>
           <option name="ACCESS_JAVADOC_REQUIRED_FOR" value="none" />
@@ -634,7 +634,7 @@
     <inspection_tool class="JavaLangImport" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="JavacQuirks" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="JavadocHtmlLint" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="JavadocReference" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="JavadocReference" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="KeySetIterationMayUseEntrySet" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="LabeledStatement" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="LambdaBodyCanBeCodeBlock" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
@@ -1278,7 +1278,7 @@
     </inspection_tool>
     <inspection_tool class="TypeParameterExtendsFinalClass" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="TypeParameterExtendsObject" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
-    <inspection_tool class="TypeParameterHidesVisibleType" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="TypeParameterHidesVisibleType" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="TypeParameterNamingConvention" enabled="false" level="WEAK WARNING" enabled_by_default="false">
       <option name="m_regex" value="[A-Z][A-Za-z\d]*" />
       <option name="m_minLength" value="1" />

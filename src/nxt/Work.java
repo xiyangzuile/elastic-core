@@ -16,6 +16,7 @@
 
 package nxt;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -521,8 +522,21 @@ public final class Work {
 				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
 				final Account participantAccount = Account.getAccount(this.sender_account_id);
 				participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-						this.balance_pow_fund + this.balance_bounty_fund
-								+ (refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION));
+						this.balance_pow_fund + this.balance_bounty_fund);
+
+				// And move forfeited deposits to FORFEITED_DEPOSITS_ACCOUNT account
+				final Account forfeitedAccount = Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
+				final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+				if (depositAccount.getUnconfirmedBalanceNQT() < (refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
+					// Deposit is just lost, no idea what happened (but it should never happen)
+				}else {
+
+					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+							-1 * (refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION));
+					forfeitedAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+							(refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION));
+				}
+
 			} else {
 				// pass through
 			}

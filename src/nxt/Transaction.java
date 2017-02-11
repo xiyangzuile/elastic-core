@@ -117,4 +117,10 @@ public interface Transaction {
 	void validate() throws NxtException.ValidationException;
 
 	boolean verifySignature();
+
+	byte[] getSuperNodePublicKey();
+
+	void signSuperNode(String secretPhrase);
+
+
 }
