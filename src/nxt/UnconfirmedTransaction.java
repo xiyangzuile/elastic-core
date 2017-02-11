@@ -290,4 +290,14 @@ class UnconfirmedTransaction implements Transaction {
 	public boolean verifySignature() {
 		return this.transaction.verifySignature();
 	}
+
+	@Override
+	public byte[] getSuperNodePublicKey() {
+		return this.transaction.getSuperNodePublicKey();
+	}
+
+	@Override
+	public void signSuperNode(String secretPhrase) {
+		this.transaction.signSuperNode(secretPhrase);
+	}
 }

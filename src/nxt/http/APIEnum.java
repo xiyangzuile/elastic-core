@@ -182,9 +182,7 @@ public enum APIEnum {
 																																																																																																																																																																	"sendTransaction",
 																																																																																																																																																																	SendTransaction.instance), BLACKLIST_API_PROXY_PEER(
 																																																																																																																																																																			"blacklistAPIProxyPeer",
-																																																																																																																																																																			BlacklistAPIProxyPeer.instance), GET_NEXT_BLOCK_GENERATORS(
-																																																																																																																																																																					"getNextBlockGenerators",
-																																																																																																																																																																					GetNextBlockGeneratorsTemp.instance), CREATE_WORK(
+																																																																																																																																																																			BlacklistAPIProxyPeer.instance), CREATE_WORK(
 																																																																																																																																																																							"createWork",
 																																																																																																																																																																							CreateWork.instance), CANCEL_WORK(
 																																																																																																																																																																									"cancelWork",

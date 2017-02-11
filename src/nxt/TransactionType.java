@@ -135,7 +135,8 @@ public abstract class TransactionType {
 					final Account recipientAccount) {
 				final Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction
 						.getAttachment();
-				Hub.addOrUpdateHub(transaction, attachment);
+				// TODO FIX HUB TO URL OF SUPERNODE
+				
 			}
 
 			@Override

@@ -71,7 +71,6 @@ public final class Nxt {
 				BlockchainProcessorImpl.getInstance();
 				Account.init();
 				AccountLedger.init();
-				Hub.init();
 				PrunableSourceCode.init();
 				Redeem.init();
 				Work.init();
