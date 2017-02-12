@@ -419,7 +419,7 @@ public class AccountLedger {
 		ORDINARY_PAYMENT(3, true),
 		// TYPE_MESSAGING
 		ACCOUNT_INFO(4, true), ALIAS_ASSIGNMENT(5, true), ALIAS_BUY(6, true), ALIAS_DELETE(7, true), ALIAS_SELL(8,
-				true), ARBITRARY_MESSAGE(9, true), HUB_ANNOUNCEMENT(10, true), PHASING_VOTE_CASTING(11,
+				true), ARBITRARY_MESSAGE(9, true), SUPERNODE_ANNOUNCEMENT(10, true), PHASING_VOTE_CASTING(11,
 						true), POLL_CREATION(12, true), VOTE_CASTING(13,
 								true), ACCOUNT_PROPERTY(56, true), ACCOUNT_PROPERTY_DELETE(57, true),
 		// TYPE_COLORED_COINS
@@ -447,7 +447,7 @@ public class AccountLedger {
 				true), SHUFFLING_DISTRIBUTION(54, true), WORK_CREATION(100, true), WORK_CANCELLATION_REQUEST(101,
 						true), WORK_CANCELLATION(102, true), WORK_BOUNTY(103, true), WORK_BOUNTY_PAYOUT(104,
 								true), WORK_POW(105,
-										true), WORK_BOUNTY_ANNOUNCEMENT(106, true), REDEEM_PAYMENT(107, true);
+										true), WORK_BOUNTY_ANNOUNCEMENT(106, true), REDEEM_PAYMENT(107, true), SUPERNODE_DEPOSIT(108, true);
 		;
 
 		/** Event code mapping */

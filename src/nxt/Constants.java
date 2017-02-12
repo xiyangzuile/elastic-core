@@ -76,10 +76,8 @@ public final class Constants {
 	public static final int MAX_ARBITRARY_MESSAGE_LENGTH = 160;
 
 	public static final int MAX_PRUNABLE_MESSAGE_LENGTH = 42 * 1024;
-
-	public static final int MAX_HUB_ANNOUNCEMENT_URIS = 100;
-	public static final int MAX_HUB_ANNOUNCEMENT_URI_LENGTH = 1000;
-	public static final long MIN_HUB_EFFECTIVE_BALANCE = 100000;
+	public static final int MAX_SUPERNODE_ANNOUNCEMENT_URIS = 3;
+	public static final int MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH = 255;
 	public static final int MIN_PRUNABLE_LIFETIME = Constants.isTestnet ? 1440 * 60 : 14 * 1440 * 60;
 	public static final int MAX_PRUNABLE_LIFETIME;
 	public static final boolean ENABLE_PRUNING;
@@ -109,8 +107,8 @@ public final class Constants {
 
 
 	// Supernode stuff
-	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = 1440;
-	public static final int SUPERNODE_DEPOSIT_BINDING_GRACE_DELAY_PERIOD = 10;
+	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = Constants.isTestnet ? Nxt.getIntProperty("nxt.supernodeBinding", 4)
+			: 512;
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
 
 	public static final int LAST_CHECKSUM_BLOCK = 0;

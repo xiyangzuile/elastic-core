@@ -222,28 +222,25 @@ public interface Attachment extends Appendix {
 
 	}
 
-	final class MessagingHubAnnouncement extends AbstractAttachment {
+	final class MessagingSupernodeAnnouncement extends AbstractAttachment {
 
-		private final long minFeePerByteNQT;
 		private final String[] uris;
 
-		MessagingHubAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
+		MessagingSupernodeAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
-			this.minFeePerByteNQT = buffer.getLong();
 			final int numberOfUris = buffer.get();
-			if (numberOfUris > Constants.MAX_HUB_ANNOUNCEMENT_URIS) {
+			if (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0) {
 				throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
 			}
 			this.uris = new String[numberOfUris];
 			for (int i = 0; i < this.uris.length; i++) {
-				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH);
+				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH);
 			}
 		}
 
-		MessagingHubAnnouncement(final JSONObject attachmentData) throws NxtException.NotValidException {
+		MessagingSupernodeAnnouncement(final JSONObject attachmentData) throws NxtException.NotValidException {
 			super(attachmentData);
-			this.minFeePerByteNQT = (Long) attachmentData.get("minFeePerByte");
 			try {
 				final JSONArray urisData = (JSONArray) attachmentData.get("uris");
 				this.uris = new String[urisData.size()];
@@ -255,18 +252,13 @@ public interface Attachment extends Appendix {
 			}
 		}
 
-		public MessagingHubAnnouncement(final long minFeePerByteNQT, final String[] uris) {
-			this.minFeePerByteNQT = minFeePerByteNQT;
+		public MessagingSupernodeAnnouncement(final String[] uris) {
 			this.uris = uris;
-		}
-
-		public long getMinFeePerByteNQT() {
-			return this.minFeePerByteNQT;
 		}
 
 		@Override
 		int getMySize() {
-			int size = 8 + 1;
+			int size = 1;
 			for (final String uri : this.uris) {
 				size += 2 + Convert.toBytes(uri).length;
 			}
@@ -275,7 +267,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		public TransactionType getTransactionType() {
-			return TransactionType.Messaging.HUB_ANNOUNCEMENT;
+			return TransactionType.Messaging.SUPERNODE_ANNOUNCEMENT;
 		}
 
 		public String[] getUris() {
@@ -284,7 +276,6 @@ public interface Attachment extends Appendix {
 
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
-			buffer.putLong(this.minFeePerByteNQT);
 			buffer.put((byte) this.uris.length);
 			for (final String uri : this.uris) {
 				final byte[] uriBytes = Convert.toBytes(uri);
@@ -295,7 +286,6 @@ public interface Attachment extends Appendix {
 
 		@Override
 		void putMyJSON(final JSONObject attachment) {
-			attachment.put("minFeePerByteNQT", this.minFeePerByteNQT);
 			final JSONArray uris = new JSONArray();
 			Collections.addAll(uris, this.uris);
 			attachment.put("uris", uris);

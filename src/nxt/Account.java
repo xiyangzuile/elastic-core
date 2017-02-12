@@ -16,10 +16,8 @@
 
 package nxt;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -188,23 +186,45 @@ public final class Account {
 
 		private final long lessorId;
 		private final DbKey dbKey;
+		private ArrayList<String> uris;
 		private int currentDepositHeightFrom;
 		private int currentDepositHeightTo;
 
 
-		private AccountSupernodeDeposit(final long lessorId, final int currentDepositHeightFrom, final int currentDepositHeightTo) {
+		private AccountSupernodeDeposit(final long lessorId, final int currentDepositHeightFrom, final int currentDepositHeightTo, final String[] uris) {
 			this.lessorId = lessorId;
 			this.dbKey = Account.accountSupernodeDepositDbKeyFactory.newKey(this.lessorId);
 			this.currentDepositHeightFrom = currentDepositHeightFrom;
 			this.currentDepositHeightTo = currentDepositHeightTo;
+			this.uris = new ArrayList<>();
+			for(String x : uris){
+				this.uris.add(x);
+			}
 		}
+
+		private void setUris(String[] uris){
+            this.uris = new ArrayList<>();
+            for(String x : uris){
+                this.uris.add(x);
+            }
+        }
 
 		private AccountSupernodeDeposit(final ResultSet rs, final DbKey dbKey) throws SQLException {
 			this.lessorId = rs.getLong("lessor_id");
 			this.dbKey = dbKey;
 			this.currentDepositHeightFrom = rs.getInt("current_deposit_height_from");
 			this.currentDepositHeightTo = rs.getInt("current_deposit_height_to");
+			this.uris = new ArrayList<>();
+			String a = rs.getString("uris");
+			for(String x : a.split(",")){
+				this.uris.add(x);
+			}
 
+
+		}
+
+		public ArrayList<String> getUris() {
+			return uris;
 		}
 
 		public long getLessorId() {
@@ -221,17 +241,21 @@ public final class Account {
 
 		private void save(final Connection con) throws SQLException {
 			try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO account_supernode_deposit "
-					+ "(lessor_id, current_leasing_height_from, current_leasing_height_to, height, latest) "
-					+ "KEY (lessor_id, height) VALUES (?, ?, ?, ?, TRUE)")) {
+					+ "(lessor_id, current_deposit_height_from, current_deposit_height_to, uris, height, latest) "
+					+ "KEY (lessor_id, height) VALUES (?, ?, ?, ?, ?, TRUE)")) {
 				int i = 0;
 				pstmt.setLong(++i, this.lessorId);
 				DbUtils.setIntZeroToNull(pstmt, ++i, this.currentDepositHeightFrom);
 				DbUtils.setIntZeroToNull(pstmt, ++i, this.currentDepositHeightTo);
+
+
+				String uris_joined = String.join(",", this.uris);
+				DbUtils.setString(pstmt, ++i, uris_joined);
+
 				pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 				pstmt.executeUpdate();
 			}
 		}
-
 	}
 
 	public enum ControlType {
@@ -517,9 +541,25 @@ public final class Account {
 				if (height == deposit.currentDepositHeightFrom) {
 					lessor.supernodeDepositBlocked = true;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
+					System.out.println("DETECTED SUPERNODE LOCK AT " + height);
 				} else if (height == deposit.currentDepositHeightTo) {
+
+                    System.out.println("DETECTED SUPERNODE UNLOCK AT " + height);
 					lessor.supernodeDepositBlocked = false;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_EXPIRED);
+
+					final Account participantAccount = Account.getAccount(lessor.getId());
+					final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+
+					if (depositAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+						// Cannot give back SN deposit, this should not happen at all actually
+					}else {
+						final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
+						participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
+								1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+						depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
+								-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+					}
 				}
 				lessor.save();
 			}
@@ -1191,23 +1231,55 @@ public final class Account {
         }
 	}
 
-	void refreshSupernodeDeposit() {
+	void refreshSupernodeDeposit(String[] uris) throws IOException {
 
 		// Do nothing if the current guaranteed balance is lower than the minimum amount of supernode deposit
-		if(this.getGuaranteedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
+		// Since supernode already have their balance deducted, only do this checks for guys that do not refresh
+		// but who become new supernodes
+		if(this.isSuperNode() == false && this.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
 			return;
 		}
 
 		final int height = Nxt.getBlockchain().getHeight();
 		AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
 		if (deposit == null) {
-			deposit = new AccountSupernodeDeposit(this.id, height + 1,
-					height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD);
+			deposit = new AccountSupernodeDeposit(this.id, height,height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD, uris);
+            final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
+            final Account participantAccount = Account.getAccount(this.getId());
+            final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+
+            if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+                // cannot afford this
+                throw new IOException("Not enough funds for supernode deposit");
+
+            }else {
+                participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+                        -1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+                depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+                        1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+            }
 		}
 		else{
 			// Only update height if the other supernode thing already times out, otherwise it is just an extension which does not need a "begin" event triggered
 			if(deposit.currentDepositHeightTo < height) // TODO: < or <= ??
-				deposit.currentDepositHeightFrom = height + 1;
+			{
+				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
+				final Account participantAccount = Account.getAccount(this.getId());
+				final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+
+				if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+					// cannot afford this
+					throw new IOException("Not enough funds for supernode deposit");
+
+				}else {
+					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+							-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+							1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+				}
+				deposit.currentDepositHeightFrom = height;
+				deposit.setUris(uris);
+			}
 
 			deposit.currentDepositHeightTo = height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD;
 		}
@@ -1245,8 +1317,8 @@ public final class Account {
 			pstmt.setLong(++i, this.unconfirmedBalanceNQT);
 			pstmt.setLong(++i, this.forgedBalanceNQT);
 			DbUtils.setLongZeroToNull(pstmt, ++i, this.activeLesseeId);
-			pstmt.setBoolean(++i, this.controls.contains(ControlType.PHASING_ONLY));
-			pstmt.setBoolean(++i, this.supernodeDepositBlocked);
+            pstmt.setBoolean(++i, this.supernodeDepositBlocked);
+            pstmt.setBoolean(++i, this.controls.contains(ControlType.PHASING_ONLY));
 			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 			pstmt.executeUpdate();
 		}

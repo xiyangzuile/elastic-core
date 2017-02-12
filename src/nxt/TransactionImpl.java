@@ -480,6 +480,7 @@ final class TransactionImpl implements Transaction {
 
 	public void signSuperNode(String secretPhrase) {
 		this.supernode_signature = Crypto.sign(this.bytes(), secretPhrase);
+		this.superNodePublicKey = Crypto.getPublicKey(secretPhrase);
 	}
 
 	void sign(String secretPhrase){
@@ -596,7 +597,9 @@ final class TransactionImpl implements Transaction {
 
 	private boolean checkSuperNodeSignature() {
 		if (!this.hasValidSupernodeSignature) {
-			this.hasValidSupernodeSignature = (this.supernode_signature != null) && Crypto.verify(this.supernode_signature, this.zeroSignature(this.getBytes()), this.getSuperNodePublicKey(), this.useNQT());
+			byte[] zerobytes = this.zeroPartSignature(this.getBytes());
+
+			this.hasValidSupernodeSignature = (this.supernode_signature != null) && Crypto.verify(this.supernode_signature, zerobytes, this.getSuperNodePublicKey(), this.useNQT());
 		}
 		return this.hasValidSupernodeSignature;
 	}
@@ -1123,6 +1126,13 @@ final class TransactionImpl implements Transaction {
 	private byte[] zeroSignature(final byte[] data) {
 		final int start = this.signatureOffset();
 		for (int i = start; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
+			data[i] = 0;
+		}
+		return data;
+	}
+	private byte[] zeroPartSignature(final byte[] data) {
+		final int start = this.signatureOffset();
+		for (int i = start + 64; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
 			data[i] = 0;
 		}
 		return data;

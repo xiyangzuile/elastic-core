@@ -16,6 +16,7 @@
 
 package nxt;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.SignatureException;
@@ -128,16 +129,22 @@ public abstract class TransactionType {
 
 	public static abstract class Messaging extends TransactionType {
 
-		public static final TransactionType HUB_ANNOUNCEMENT = new Messaging() {
+		public static final TransactionType SUPERNODE_ANNOUNCEMENT = new Messaging() {
 
 			@Override
 			void applyAttachment(final Transaction transaction, final Account senderAccount,
 					final Account recipientAccount) {
-				final Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction
+				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
 						.getAttachment();
-				// TODO FIX HUB TO URL OF SUPERNODE
-				
-			}
+
+                Account senderAcc = Account.getAccount(transaction.getSenderId());
+
+                try {
+                    senderAcc.refreshSupernodeDeposit(attachment.getUris());
+                } catch (IOException e) {
+                    // abviously, this failed! Just pass through .. was a nonsense transaction without any impact
+                }
+            }
 
 			@Override
 			public boolean canHaveRecipient() {
@@ -146,7 +153,7 @@ public abstract class TransactionType {
 
 			@Override
 			public LedgerEvent getLedgerEvent() {
-				return LedgerEvent.HUB_ANNOUNCEMENT;
+				return LedgerEvent.SUPERNODE_ANNOUNCEMENT;
 			}
 
 			@Override
@@ -156,38 +163,46 @@ public abstract class TransactionType {
 
 			@Override
 			public final byte getSubtype() {
-				return TransactionType.SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT;
+				return TransactionType.SUBTYPE_MESSAGING_SUPERNODE_ANNOUNCEMENT;
 			}
 
 			@Override
-			Attachment.MessagingHubAnnouncement parseAttachment(final ByteBuffer buffer, final byte transactionVersion)
+			Attachment.MessagingSupernodeAnnouncement parseAttachment(final ByteBuffer buffer, final byte transactionVersion)
 					throws NxtException.NotValidException {
-				return new Attachment.MessagingHubAnnouncement(buffer, transactionVersion);
+				return new Attachment.MessagingSupernodeAnnouncement(buffer, transactionVersion);
 			}
 
 			@Override
-			Attachment.MessagingHubAnnouncement parseAttachment(final JSONObject attachmentData)
+			Attachment.MessagingSupernodeAnnouncement parseAttachment(final JSONObject attachmentData)
 					throws NxtException.NotValidException {
-				return new Attachment.MessagingHubAnnouncement(attachmentData);
+				return new Attachment.MessagingSupernodeAnnouncement(attachmentData);
 			}
 
 			@Override
 			void validateAttachment(final Transaction transaction) throws NxtException.ValidationException {
-				final Attachment.MessagingHubAnnouncement attachment = (Attachment.MessagingHubAnnouncement) transaction
+				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
 						.getAttachment();
-				if ((attachment.getMinFeePerByteNQT() < 0)
-						|| (attachment.getMinFeePerByteNQT() > Constants.MAX_BALANCE_NQT)
-						|| (attachment.getUris().length > Constants.MAX_HUB_ANNOUNCEMENT_URIS)) {
-					// cfb: "0" is allowed to show that another way to determine
-					// the min fee should be used
-					throw new NxtException.NotValidException(
-							"Invalid hub terminal announcement: " + attachment.getJSONObject());
+
+				int howManyUrls = attachment.getUris().length;
+				if(howManyUrls<=0 || howManyUrls > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS){
+					throw new NxtException.NotValidException("Invalid URI number");
 				}
+
 				for (final String uri : attachment.getUris()) {
-					if (uri.length() > Constants.MAX_HUB_ANNOUNCEMENT_URI_LENGTH) {
+					if (uri.length() > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH) {
 						throw new NxtException.NotValidException("Invalid URI length: " + uri.length());
 					}
 				}
+
+				// Check if this node either is already a supernode (extend SN membership)
+				// or if it has enough funds to cover the amount required to become a super node
+				Account senderAcc = Account.getAccount(transaction.getSenderId());
+				if(senderAcc == null)
+					throw new NxtException.NotValidException("Sender account had no activity before. Please do something else first!");
+				if(!senderAcc.isSuperNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
+					throw new NxtException.NotValidException("Your guaranteed balance does not cover the required super node deposit");
+				}
+
 			}
 		};
 
@@ -1281,7 +1296,7 @@ public abstract class TransactionType {
 	private static final byte TYPE_WORK_CONTROL = 3;
 	private static final byte SUBTYPE_PAYMENT_ORDINARY_PAYMENT = 0;
 	private static final byte SUBTYPE_PAYMENT_REDEEM = 1;
-	private static final byte SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT = 1;
+	private static final byte SUBTYPE_MESSAGING_SUPERNODE_ANNOUNCEMENT = 1;
 	private static final byte SUBTYPE_MESSAGING_ACCOUNT_INFO = 2;
 	private static final byte SUBTYPE_ACCOUNT_CONTROL_EFFECTIVE_BALANCE_LEASING = 0;
 	private static final byte SUBTYPE_WORK_CONTROL_NEW_TASK = 0;
@@ -1307,8 +1322,8 @@ public abstract class TransactionType {
 			}
 		case TYPE_MESSAGING:
 			switch (subtype) {
-			case SUBTYPE_MESSAGING_HUB_ANNOUNCEMENT:
-				return Messaging.HUB_ANNOUNCEMENT;
+			case SUBTYPE_MESSAGING_SUPERNODE_ANNOUNCEMENT:
+				return Messaging.SUPERNODE_ANNOUNCEMENT;
 			case SUBTYPE_MESSAGING_ACCOUNT_INFO:
 				return Messaging.ACCOUNT_INFO;
 
