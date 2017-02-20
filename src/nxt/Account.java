@@ -759,6 +759,40 @@ public final class Account {
 		}
 	}
 
+	public static DbIterator<AccountSupernodeDeposit> getActiveSupernodes(final int height) {
+		Connection con = null;
+		try {
+			con = Db.db.getConnection();
+			final PreparedStatement pstmt = con.prepareStatement(
+					"SELECT * FROM account_supernode_deposit WHERE current_deposit_height_from <= ? AND current_deposit_height_to >= ? AND latest = TRUE "
+							+ "ORDER BY lessor_id");
+			int i = 0;
+			pstmt.setInt(++i, height);
+			pstmt.setInt(++i, height);
+			return Account.accountSupernodeDepositTable.getManyBy(con, pstmt, true);
+		} catch (final SQLException e) {
+			DbUtils.close(con);
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
+	public static int countSuperNodes(final int height) {
+		Connection con = null;
+		try {
+			con = Db.db.getConnection();
+			final PreparedStatement pstmt = con.prepareStatement(
+					"SELECT COUNT(*) FROM account_supernode_deposit WHERE current_deposit_height_from <= ? AND current_deposit_height_to >= ? AND latest = TRUE "
+							+ "ORDER BY lessor_id");
+			int i = 0;
+			pstmt.setInt(++i, height);
+			pstmt.setInt(++i, height);
+			return Account.accountSupernodeDepositTable.getCount(pstmt);
+		} catch (final SQLException e) {
+			DbUtils.close(con);
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
 	public static byte[] getPublicKey(final long id) {
 		final DbKey dbKey = Account.publicKeyDbKeyFactory.newKey(id);
 		byte[] key = null;

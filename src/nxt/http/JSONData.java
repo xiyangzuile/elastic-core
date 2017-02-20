@@ -80,6 +80,15 @@ public final class JSONData {
 		return json;
 	}
 
+	static JSONObject superNode(final Account.AccountSupernodeDeposit handler) {
+		final JSONObject json = new JSONObject();
+		json.put("uris", handler.getUris());
+		json.put("height_from", handler.getCurrentDepositHeightFrom());
+		json.put("height_to", handler.getCurrentDepositHeightTo());
+		// TODO, think about WCET limit on individual level
+		return json;
+	}
+
 	static JSONObject block(final Block block, final boolean includeTransactions, final boolean includeExecutedPhased) {
 		final JSONObject json = new JSONObject();
 		json.put("block", block.getStringId());

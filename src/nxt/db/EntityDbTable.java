@@ -274,7 +274,7 @@ public abstract class EntityDbTable<T> extends DerivedDbTable {
 		}
 	}
 
-	private int getCount(final PreparedStatement pstmt) throws SQLException {
+	public int getCount(final PreparedStatement pstmt) throws SQLException {
 		try (ResultSet rs = pstmt.executeQuery()) {
 			rs.next();
 			return rs.getInt(1);
