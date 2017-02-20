@@ -111,6 +111,10 @@ public final class Constants {
 			: 512;
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
 
+	// Guard stuff (Hardcoded Guard Nodes)
+	public static final long[] GUARD_NODES = new long[]{1234999999L, 5678999999L};
+
+
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 
