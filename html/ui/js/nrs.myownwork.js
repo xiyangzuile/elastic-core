@@ -32,12 +32,7 @@ var NRS = (function(NRS, $, undefined) {
 			"type": 'PAGE',
 			"page": 'myownwork'
 		};
-		NRS.appendMenuItemToTSMenuItem(sidebarId, options);
-		options = {
-			"titleHTML": '<span data-i18n="work_worker">Mining Overview</span>',
-			"type": 'PAGE',
-			"page": 'myforeignwork'
-		};
+		
 		NRS.appendMenuItemToTSMenuItem(sidebarId, options);
 	};
 
