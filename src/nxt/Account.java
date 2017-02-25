@@ -47,6 +47,19 @@ import nxt.util.Logger;
 public final class Account {
 
 
+	public boolean isGuardNode() {
+		boolean guardNode = false;
+		long myId = this.getId();
+		for(long g : Constants.GUARD_NODES){
+			if(g == myId){
+				guardNode=true;
+				break;
+			}
+		}
+
+		return guardNode;
+	}
+
 	public static final class AccountInfo {
 
 		private final long accountId;
@@ -777,19 +790,16 @@ public final class Account {
 	}
 
 	public static int countSuperNodes(final int height) {
-		Connection con = null;
-		try {
-			con = Db.db.getConnection();
-			final PreparedStatement pstmt = con.prepareStatement(
-					"SELECT COUNT(*) FROM account_supernode_deposit WHERE current_deposit_height_from <= ? AND current_deposit_height_to >= ? AND latest = TRUE "
-							+ "ORDER BY lessor_id");
-			int i = 0;
-			pstmt.setInt(++i, height);
-			pstmt.setInt(++i, height);
-			return Account.accountSupernodeDepositTable.getCount(pstmt);
-		} catch (final SQLException e) {
-			DbUtils.close(con);
-			throw new RuntimeException(e.toString(), e);
+		int count = 0;
+		try{
+			DbIterator<AccountSupernodeDeposit> it = getActiveSupernodes(height);
+			while(it.hasNext()){
+				count++;
+				it.next();
+			}
+		}
+		finally{
+			return count;
 		}
 	}
 
@@ -1265,6 +1275,30 @@ public final class Account {
         }
 	}
 
+
+	public void invalidateSupernodeDeposit() {
+		if(this.isSuperNode() == false){
+			return;
+		}
+
+		final int height = Nxt.getBlockchain().getHeight();
+		AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
+		if (deposit == null) {
+			// nothing to do here, should never happen though, since every SN has a linked deposit
+		}else{
+			// Deposit forfeited
+			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+			final Account collectorAccount = Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
+			final AccountLedger.LedgerEvent event = LedgerEvent.SUPERNODE_FORFEIT;
+			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+					-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+			collectorAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+					1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+			Account.accountSupernodeDepositTable.delete(deposit);
+		}
+	}
+
+
 	void refreshSupernodeDeposit(String[] uris) throws IOException {
 
 		// Do nothing if the current guaranteed balance is lower than the minimum amount of supernode deposit
@@ -1273,6 +1307,7 @@ public final class Account {
 		if(this.isSuperNode() == false && this.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
 			return;
 		}
+
 
 		final int height = Nxt.getBlockchain().getHeight();
 		AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));

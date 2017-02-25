@@ -225,18 +225,28 @@ public interface Attachment extends Appendix {
 	final class MessagingSupernodeAnnouncement extends AbstractAttachment {
 
 		private final String[] uris;
+		private long guardNodeBlockId = 0;
+
+		public long getGuardNodeBlockId() {
+			return guardNodeBlockId;
+		}
 
 		MessagingSupernodeAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
+
 			final int numberOfUris = buffer.get();
-			if (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0) {
+			if (guardNodeBlockId == 0 && (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0)) {
 				throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
+			}
+			if (guardNodeBlockId != 0 && (numberOfUris != 0)) {
+				throw new NxtException.NotValidException("Guardnode block must not have any IDs");
 			}
 			this.uris = new String[numberOfUris];
 			for (int i = 0; i < this.uris.length; i++) {
 				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH);
 			}
+			this.guardNodeBlockId = buffer.getLong();
 		}
 
 		MessagingSupernodeAnnouncement(final JSONObject attachmentData) throws NxtException.NotValidException {
@@ -247,13 +257,15 @@ public interface Attachment extends Appendix {
 				for (int i = 0; i < this.uris.length; i++) {
 					this.uris[i] = (String) urisData.get(i);
 				}
+				this.guardNodeBlockId = (Long)attachmentData.get("guardNodeBlockId");
 			} catch (final RuntimeException e) {
-				throw new NxtException.NotValidException("Error parsing hub terminal announcement parameters", e);
+				throw new NxtException.NotValidException("Error parsing SN announcement parameters", e);
 			}
 		}
 
-		public MessagingSupernodeAnnouncement(final String[] uris) {
+		public MessagingSupernodeAnnouncement(final String[] uris, final long guardNodeBlockId) {
 			this.uris = uris;
+			this.guardNodeBlockId = guardNodeBlockId;
 		}
 
 		@Override
@@ -262,6 +274,7 @@ public interface Attachment extends Appendix {
 			for (final String uri : this.uris) {
 				size += 2 + Convert.toBytes(uri).length;
 			}
+			size += 8; // guardNodeBlockId
 			return size;
 		}
 
@@ -282,6 +295,7 @@ public interface Attachment extends Appendix {
 				buffer.putShort((short) uriBytes.length);
 				buffer.put(uriBytes);
 			}
+			buffer.putLong(this.guardNodeBlockId);
 		}
 
 		@Override
@@ -289,6 +303,7 @@ public interface Attachment extends Appendix {
 			final JSONArray uris = new JSONArray();
 			Collections.addAll(uris, this.uris);
 			attachment.put("uris", uris);
+			attachment.put("guardNodeBlockId", guardNodeBlockId);
 		}
 
 	}

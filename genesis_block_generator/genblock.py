@@ -179,6 +179,13 @@ ensure_is_present_with_offset(url4, file_name4)
 
 
 
+# Manual Mappings
+mappings = {}
+#cryptodv
+# 1Co9JKogApt7EfCr9n6GVxnEAL7nXT65Q2, signed "Cryptodv": HL5G1AGgEIMoSNChv5wgmOaSlBYULbNJQaVHAVPxc0Y1ZJcprYOn9QIj2kGrPpohwcgPy1KSuSNfdxV 
+mappings["03f4592e1ec1ab1b57b13f0ace4d3da67b90a1eebfac32db6c2e7cfe042fdb5053"] = "0478e93b487a3e2ba63f496275a514587a6400eefb0c44a14117d6dd4200309a4c9a670bc5053dd1cc6696cc8300b92ad012f740e7ea7c1f288915a8048dbaec16"
+
+
 # Did the loading go well?
 print "Checking if the downloaded json files from blockchain.info are correct"
 for x in estimations:
@@ -227,7 +234,7 @@ hashes_missing_in_history = []
 btc_not_counted_in_genesis = 0.0
 hashes_missing_in_genesis_block = []
 loaded_hashes = []
-
+override_cnt = 0
 btc_normal = 0
 with open(file_name) as data_file:    
     data = json.load(data_file)
@@ -241,6 +248,10 @@ with open(file_name) as data_file:
         if pubkey[0:2]=="02" or pubkey[0:2]=="03" or pubkey[0:2]=="04" and ' ' not in pubkey:
             # print "Pubkey [%s...] burned for [%.6f] XEL" % (pubkey[0:12], amount)
             btc_normal += float(x["btc_amount"])
+
+            if pubkey in mappings:
+                pubkey = mappings[pubkey]
+                override_cnt = override_cnt + 1
 
             address = P2PKHBitcoinAddress.from_pubkey(pubkey.decode("hex"))
             a = str(address)
@@ -281,6 +292,7 @@ print "Hashes in blockchain but not in genesis block:"
 for x in hashes_missing_in_genesis_block:
     print "  ->",x,"[" + missing_addresses[x] + "] =",missing_amounts_per_address[missing_addresses[x]],"BTC in total (dont count addrs twice)"
 print "  =","total missing:",btc_not_counted_in_genesis,"BTC"
+print "We had",override_cnt,"overrides of pubkeys"
 print "Hashes in genesis block but never seen on blockchain:"
 
 
@@ -416,6 +428,6 @@ print "\n\n\n"
 print "AMOUNTS ARRAY"
 print ", ".join(str(d) + "L" for d in normal_addresses_xel) 
 
-print "\n\nVerify:",total
-for i in range(len(normal_addresses)):
-    print normal_addresses[i] + "\t\t"+str(normal_addresses_xel[i]/100000000.0) + " XEL"
+#print "\n\nVerify:",total
+#for i in range(len(normal_addresses)):
+#    print normal_addresses[i] + "\t\t"+str(normal_addresses_xel[i]/100000000.0) + " XEL"

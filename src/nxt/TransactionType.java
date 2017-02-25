@@ -137,13 +137,18 @@ public abstract class TransactionType {
 				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
 						.getAttachment();
 
-                Account senderAcc = Account.getAccount(transaction.getSenderId());
+				Account senderAcc = Account.getAccount(transaction.getSenderId());
 
-                try {
-                    senderAcc.refreshSupernodeDeposit(attachment.getUris());
-                } catch (IOException e) {
-                    // abviously, this failed! Just pass through .. was a nonsense transaction without any impact
-                }
+				if(attachment.getGuardNodeBlockId()!=0){
+					Account blockAccount = Account.getAccount(attachment.getGuardNodeBlockId());
+					blockAccount.invalidateSupernodeDeposit();
+				}else {
+					try {
+						senderAcc.refreshSupernodeDeposit(attachment.getUris());
+					} catch (IOException e) {
+						// abviously, this failed! Just pass through .. was a nonsense transaction without any impact
+					}
+				}
             }
 
 			@Override
@@ -184,8 +189,15 @@ public abstract class TransactionType {
 						.getAttachment();
 
 				int howManyUrls = attachment.getUris().length;
-				if(howManyUrls<=0 || howManyUrls > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS){
+				long guard_id = attachment.getGuardNodeBlockId();
+
+				if(guard_id == 0 && (howManyUrls<=0 || howManyUrls > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS))
+				{
 					throw new NxtException.NotValidException("Invalid URI number");
+				}
+				else if(guard_id != 0 && (howManyUrls!=0))
+				{
+					throw new NxtException.NotValidException("Invalid URI number, must be 0 for guard node block");
 				}
 
 				for (final String uri : attachment.getUris()) {
@@ -199,8 +211,12 @@ public abstract class TransactionType {
 				Account senderAcc = Account.getAccount(transaction.getSenderId());
 				if(senderAcc == null)
 					throw new NxtException.NotValidException("Sender account had no activity before. Please do something else first!");
-				if(!senderAcc.isSuperNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
+
+				if(guard_id == 0 && (!senderAcc.isSuperNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
 					throw new NxtException.NotValidException("Your guaranteed balance does not cover the required super node deposit");
+				}
+				if(guard_id != 0 && (!senderAcc.isGuardNode())){
+					throw new NxtException.NotValidException("Invalid guard node");
 				}
 
 			}

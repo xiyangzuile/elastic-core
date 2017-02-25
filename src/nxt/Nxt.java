@@ -83,6 +83,11 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
+				// Create accounts for guard and deposit nodes
+				for(long h : Constants.GUARD_NODES)
+					Account.addOrGetAccount(h);
+				Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
+				Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
 				int configuredMultiplier = Nxt.getIntProperty("nxt.timeMultiplier");
 				if (configuredMultiplier < 1) configuredMultiplier = 1;

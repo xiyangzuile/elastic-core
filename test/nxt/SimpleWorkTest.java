@@ -91,7 +91,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         {
             String[] uris = new String[1];
             uris[0] = "http://127.0.0.1:6877";
-            final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris);
+            final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {
                 make(sn, null, secretPhrase, user.getId(), 0, false);
