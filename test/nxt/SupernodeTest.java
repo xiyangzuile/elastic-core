@@ -131,7 +131,7 @@ public class SupernodeTest extends AbstractForgingTest {
             assertTrue(success);
         }
 
-        // NExt block is number 8
+        // Next block is number 8
         Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
         forgeBlocks(1, secretPhrase);
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());

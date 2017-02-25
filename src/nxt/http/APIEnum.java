@@ -27,6 +27,9 @@ public enum APIEnum {
 	// When an API is deleted, set its name to empty string and handler to null.
 	BROADCAST_TRANSACTION("broadcastTransaction", BroadcastTransaction.instance),
 	BROADCAST_SUPERNODE_TRANSACTION("broadcastSupernodeSignedTransaction", BroadcastSupernodeSignedTransaction.instance),
+	BECOME_SUPERNODE("becomeSupernode", BecomeSupernode.instance),
+	BLOCK_SHENANIGAN("blockByGuardNode", BlockByGuardNode.instance),
+	GET_SUPERNODE_TRANSACTION("getSupernodeSignedTransaction", GetSupernodeSignedTransaction.instance),
 	GET_WORK("getWork", GetWork.instance),GET_SUPERNODES("getSupernodes", GetSupernodes.instance),CALCULATE_FULL_HASH(
 			"calculateFullHash",
 			CalculateFullHash.instance), DECRYPT_FROM("decryptFrom", DecryptFrom.instance), DECODE_HALLMARK(
