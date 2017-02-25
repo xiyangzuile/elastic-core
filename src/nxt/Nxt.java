@@ -83,11 +83,22 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
-				// Create accounts for guard and deposit nodes
-				for(long h : Constants.GUARD_NODES)
-					Account.addOrGetAccount(h);
-				Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
-				Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+				try {
+					Db.db.beginTransaction();
+					// Create accounts for guard and deposit nodes
+					for (long h : Constants.GUARD_NODES)
+						Account.addOrGetAccount(h);
+					Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
+					Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+				}catch(Exception e){
+					// For consensus reasons, this must work!!!
+					Db.db.endTransaction();
+					e.printStackTrace();
+					System.exit(1);
+				} finally {
+					Db.db.endTransaction();
+				}
+
 
 				int configuredMultiplier = Nxt.getIntProperty("nxt.timeMultiplier");
 				if (configuredMultiplier < 1) configuredMultiplier = 1;

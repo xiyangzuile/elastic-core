@@ -32,7 +32,7 @@ var NRS = (function(NRS, $, undefined) {
 			"type": 'PAGE',
 			"page": 'myownwork'
 		};
-		
+
 		NRS.appendMenuItemToTSMenuItem(sidebarId, options);
 	};
 
