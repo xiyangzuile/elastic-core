@@ -112,7 +112,7 @@ public final class Constants {
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
 
 	// Guard stuff (Hardcoded Guard Nodes)
-	public static final long[] GUARD_NODES = new long[]{1234999999L, 5678999999L};
+	public static final long[] GUARD_NODES = new long[]{8473660669446786780L, -6336019433117180774L};
 
 
 	public static final int LAST_CHECKSUM_BLOCK = 0;

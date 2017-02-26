@@ -152,6 +152,11 @@ public abstract class TransactionType {
             }
 
 			@Override
+			public boolean zeroFeeTransaction() {
+				return true;
+			}
+
+			@Override
 			public boolean canHaveRecipient() {
 				return false;
 			}
@@ -210,7 +215,7 @@ public abstract class TransactionType {
 				// or if it has enough funds to cover the amount required to become a super node
 				Account senderAcc = Account.getAccount(transaction.getSenderId());
 				if(senderAcc == null)
-					throw new NxtException.NotValidException("Sender account had no activity before. Please do something else first!");
+					throw new NxtException.NotValidException("Sender account " + transaction.getSenderId() + " had no activity before. Please do something else first!");
 
 				if(guard_id == 0 && (!senderAcc.isSuperNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
 					throw new NxtException.NotValidException("Your guaranteed balance does not cover the required super node deposit");

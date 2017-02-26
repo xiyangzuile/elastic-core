@@ -1102,7 +1102,6 @@ final class TransactionImpl implements Transaction {
 								+ Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
 			}
 		}
-
 	}
 
 	@Override

@@ -1286,7 +1286,13 @@ public final class Account {
 		if (deposit == null) {
 			// nothing to do here, should never happen though, since every SN has a linked deposit
 		}else{
+
+
 			// Deposit forfeited
+
+			this.supernodeDepositBlocked = false;
+			this.save(); // TODO: is this the correct way to save?
+
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 			final Account collectorAccount = Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
 			final AccountLedger.LedgerEvent event = LedgerEvent.SUPERNODE_FORFEIT;
@@ -1295,6 +1301,8 @@ public final class Account {
 			collectorAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
 					1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
 			Account.accountSupernodeDepositTable.delete(deposit);
+
+
 		}
 	}
 
@@ -1366,9 +1374,27 @@ public final class Account {
 		Account.accountTable.insert(this);
 	}
 
+	private boolean isRelevant(){
+		boolean relevant = false;
+		long thisid = this.getId();
+
+		for(long sn : Constants.GUARD_NODES){
+			if(thisid == sn){
+				relevant = true;
+				break;
+			}
+		}
+
+		if(!relevant && (thisid == Constants.DEPOSITS_ACCOUNT || thisid == Constants.FORFEITED_DEPOSITS_ACCOUNT)){
+			relevant = true;
+		}
+
+		return relevant;
+	}
+
 	private void save() {
-		if ((this.balanceNQT == 0) && (this.unconfirmedBalanceNQT == 0) && (this.forgedBalanceNQT == 0)
-				&& (this.activeLesseeId == 0) && (this.supernodeDepositBlocked == false) && this.controls.isEmpty()) {
+		if ((!isRelevant()) && ((this.balanceNQT == 0) && (this.unconfirmedBalanceNQT == 0) && (this.forgedBalanceNQT == 0)
+				&& (this.activeLesseeId == 0) && (this.supernodeDepositBlocked == false) && this.controls.isEmpty())) {
 			Account.accountTable.delete(this, true);
 		} else {
 			Account.accountTable.insert(this);

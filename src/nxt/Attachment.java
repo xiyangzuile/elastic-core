@@ -236,17 +236,19 @@ public interface Attachment extends Appendix {
 			super(buffer, transactionVersion);
 
 			final int numberOfUris = buffer.get();
+
+			this.uris = new String[numberOfUris];
+			for (int i = 0; i < this.uris.length; i++) {
+				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH);
+			}
+			this.guardNodeBlockId = buffer.getLong();
+
 			if (guardNodeBlockId == 0 && (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0)) {
 				throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
 			}
 			if (guardNodeBlockId != 0 && (numberOfUris != 0)) {
 				throw new NxtException.NotValidException("Guardnode block must not have any IDs");
 			}
-			this.uris = new String[numberOfUris];
-			for (int i = 0; i < this.uris.length; i++) {
-				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH);
-			}
-			this.guardNodeBlockId = buffer.getLong();
 		}
 
 		MessagingSupernodeAnnouncement(final JSONObject attachmentData) throws NxtException.NotValidException {

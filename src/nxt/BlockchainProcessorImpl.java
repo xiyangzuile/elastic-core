@@ -1038,6 +1038,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		this.blockListeners.addListener(block -> Db.db.analyzeTables(), Event.RESCAN_END);
 
 		ThreadPool.runBeforeStart(() -> {
+
+
+
 			this.alreadyInitialized = true;
 			if (this.addGenesisBlock()) {
 				this.scan(0, false);
@@ -1061,6 +1064,25 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					this.scan(height, validate);
 				}
 			}
+
+			// Also here, ensure important accounts are there
+			try {
+				Db.db.beginTransaction();
+				// Create accounts for guard and deposit nodes
+				for (long h : Constants.GUARD_NODES)
+					Account.addOrGetAccount(h);
+				Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
+				Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+			}catch(Exception e){
+				// For consensus reasons, this must work!!!
+				Db.db.endTransaction();
+				e.printStackTrace();
+				System.exit(1);
+			} finally {
+				Db.db.commitTransaction();
+				Db.db.endTransaction();
+			}
+
 		}, false);
 
 		if (!Constants.isLightClient && !Constants.isOffline) {
@@ -1136,6 +1158,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 	}
 
 	private boolean addGenesisBlock() {
+
 		if (BlockDb.hasBlock(Genesis.GENESIS_BLOCK_ID, 0)) {
 			Logger.logMessage("Genesis block already in database");
 			final BlockImpl lastBlock = BlockDb.findLastBlock();
@@ -1183,6 +1206,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			Logger.logMessage(e.getMessage());
 			throw new RuntimeException(e.toString(), e);
 		}
+
+
 	}
 
 	@Override
