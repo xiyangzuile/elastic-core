@@ -23,18 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -1951,7 +1940,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					continue;
 				}
 				if ((blockTimestamp > 0)
-						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||((unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
+						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||(!Objects.equals(unconfirmedTransaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
 					System.out.println("Fucked up TX inclusion, timedrift!ts was " + unconfirmedTransaction.getTimestamp() + ", and was higher than " + (blockTimestamp + Constants.MAX_TIMEDRIFT));
 
 					continue;
@@ -2088,7 +2077,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			}
 			if (fullValidation) {
 				if (( !Generator.allowsFakeForgingInPrincipal() && (transaction.getTimestamp() > (block.getTimestamp() + Constants.MAX_TIMEDRIFT))
-				) || ((transaction.getExpiration() < block.getTimestamp()))) {
+				) || (!Objects.equals(transaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (transaction.getExpiration() < block.getTimestamp()))) {
 					throw new TransactionNotAcceptedException(
 							"Invalid transaction timestamp " + transaction.getTimestamp() + ", current time is "
 									+ curTime + ", block timestamp is " + block.getTimestamp(),

@@ -769,6 +769,17 @@ public interface Attachment extends Appendix {
 			this.secp_length = (short) this.secp_signatures.length();
 		}
 
+		public int getRequiredTimestamp(){
+			int timestamp = 0;
+			for(int i=0;i<Redeem.listOfAddresses.length;++i){
+				if(Redeem.listOfAddresses[i].equalsIgnoreCase(this.address)){
+					timestamp = Redeem.times[i];
+				}
+			}
+
+			return timestamp;
+		}
+
 		public String getAddress() {
 			return this.address;
 		}

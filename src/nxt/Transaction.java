@@ -34,6 +34,8 @@ public interface Transaction {
 
 		Transaction build(String secretPhrase) throws NxtException.NotValidException;
 
+		Transaction buildUnixTimeStamped(final String secretPhrase, final int unixTimestamp) throws NxtException.NotValidException;
+
 		Builder ecBlockHeight(int height);
 
 		Builder ecBlockId(long blockId);

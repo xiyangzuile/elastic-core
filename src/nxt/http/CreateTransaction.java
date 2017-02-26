@@ -17,6 +17,7 @@
 package nxt.http;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -159,7 +160,12 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				builder.ecBlockId(ecBlockId);
 				builder.ecBlockHeight(ecBlockHeight);
 			}
-			final Transaction transaction = builder.build(secretPhrase);
+			Transaction transaction = null;
+			if(attachment!=null && Objects.equals(attachment.getTransactionType(), Payment.REDEEM)){
+				transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
+			}else{
+				transaction = builder.build(secretPhrase);
+			}
 			try {
 				if (Math.addExact(amountNQT, transaction.getFeeNQT()) > senderAccount.getUnconfirmedBalanceNQT()) {
 					return JSONResponses.NOT_ENOUGH_FUNDS;

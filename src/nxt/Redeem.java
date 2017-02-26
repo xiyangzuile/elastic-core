@@ -74,7 +74,7 @@ public final class Redeem {
 			prunableSourceCode.save(con);
 		}
 	};
-	private static int[] times;
+	public  static int[] times;
 
 	static void add(final TransactionImpl transaction) {
 		Redeem.add(transaction, Nxt.getBlockchain().getLastBlockTimestamp(), Nxt.getBlockchain().getHeight());

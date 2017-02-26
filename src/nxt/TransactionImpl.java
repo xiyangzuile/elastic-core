@@ -20,11 +20,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.json.simple.JSONObject;
 
@@ -114,6 +110,19 @@ final class TransactionImpl implements Transaction {
 		public TransactionImpl build(final String secretPhrase) throws NxtException.NotValidException {
 			if (this.timestamp == Integer.MAX_VALUE) {
 				this.timestamp = Nxt.getEpochTime();
+			}
+			if (!this.ecBlockSet) {
+				final Block ecBlock = BlockchainImpl.getInstance().getECBlock(this.timestamp);
+				this.ecBlockHeight = ecBlock.getHeight();
+				this.ecBlockId = ecBlock.getId();
+			}
+			return new TransactionImpl(this, secretPhrase);
+		}
+
+		@Override
+		public TransactionImpl buildUnixTimeStamped(final String secretPhrase, final int unixTimestamp) throws NxtException.NotValidException {
+			if (this.timestamp == Integer.MAX_VALUE) {
+				this.timestamp = Convert.toEpochTime(unixTimestamp * 1000L);
 			}
 			if (!this.ecBlockSet) {
 				final Block ecBlock = BlockchainImpl.getInstance().getECBlock(this.timestamp);
@@ -1026,9 +1035,17 @@ final class TransactionImpl implements Transaction {
 		}
 
 		// just another safe guard, better be safe than sorry
-		if ((this.type != TransactionType.Payment.REDEEM) && (this.getAttachment() != null)
+		if (!Objects.equals(this.type, TransactionType.Payment.REDEEM) && this.getAttachment() != null
 				&& (this.getAttachment() instanceof Attachment.RedeemAttachment)) {
 			throw new NxtException.NotValidException("Keep out, script kiddie.");
+		}
+
+		// Check redeem timestamp validity
+		if (Objects.equals(this.type, TransactionType.Payment.REDEEM)){
+			Attachment.RedeemAttachment att = (Attachment.RedeemAttachment) this.getAttachment();
+			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp()){
+				throw new NxtException.NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
+			}
 		}
 
 		if (!this.type.canHaveRecipient()) {

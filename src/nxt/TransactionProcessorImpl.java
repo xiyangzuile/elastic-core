@@ -20,19 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.simple.JSONArray;
@@ -686,8 +674,8 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		final TransactionImpl transaction = unconfirmedTransaction.getTransaction();
 		final int curTime = Nxt.getEpochTime();
 		if ((transaction.getTimestamp() > (curTime + Constants.MAX_TIMEDRIFT))
-				|| (transaction.getExpiration() < curTime)) {
-			throw new NxtException.NotCurrentlyValidException("Invalid transaction timestamp");
+				|| ((transaction.getExpiration() < curTime) && !Objects.equals(transaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM))) {
+			throw new NxtException.NotCurrentlyValidException("Invalid transaction timestamp: Bigger than timedrift = " + ((transaction.getTimestamp() > (curTime + Constants.MAX_TIMEDRIFT))) + ", expiration lower than currTime = " + (transaction.getExpiration() < curTime));
 		}
 		if (transaction.getVersion() < 1) {
 			throw new NxtException.NotValidException("Invalid transaction version");
