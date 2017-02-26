@@ -227,7 +227,7 @@ public final class PowAndBounty {
 
 			long payUser = w.getXel_per_bounty();
 			long paySn = (payUser * Constants.SUPERNODE_PERCENTAGE_EARNINGS) / 100;
-
+			payUser = payUser - paySn;
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					payUser + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
