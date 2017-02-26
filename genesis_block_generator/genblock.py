@@ -40,6 +40,7 @@ internals_ignore = ["1NETgKnhsGzpN3sW3vid6bhTjBM4o2iaKi","3AVhok6gvrgSbTXfGEksYK
 ignore_because_refunded = ["1AKo8QK11FurGNvCnKuHvDFEFdavDRMZGo","16MmuQWvJuNqJRLgoYfwvBeqVHr3BqmFwk","13HfJkxPLJhTrCJEQSP3h6AZ23f63HpRGM"]
 
 estimations = {}
+timestamps = {}
 loaded = {}
 outgoing = []
 incoming = []
@@ -55,6 +56,7 @@ def ensure_is_present_with_offset(url, file_name, offset=0):
     global incoming
     global ignored
     global failures
+    global timestamps
 
     innerfname = "offset-" + str(offset) + "-" + file_name
     exists = os.path.isfile(innerfname) 
@@ -95,6 +97,8 @@ def ensure_is_present_with_offset(url, file_name, offset=0):
         for x in data["txs"]:
             is_outgoing = False
             is_ignored = False
+
+            timestamps[x["hash"]] = x["time"]
 
             hash_to_script[x["hash"]] = x["inputs"][0]["script"]
 
@@ -230,6 +234,8 @@ normal_addresses = []
 abnormal_addresses_xel = []
 normal_addresses_xel = []
 
+normal_addresses_times = []
+
 hashes_missing_in_history = []
 btc_not_counted_in_genesis = 0.0
 hashes_missing_in_genesis_block = []
@@ -257,6 +263,7 @@ with open(file_name) as data_file:
             a = str(address)
             normal_addresses.append(a)
             normal_addresses_xel.append(str(int(float(amount)*100000000)))
+            normal_addresses_times.append(timestamps[x["btc_tx"]])
         else:
             abnormal.append(x)
 
@@ -366,6 +373,7 @@ for x in abnormal:
                 have = kk
                 normal_addresses.append(str(want)+"-"+reas[:-1])
                 normal_addresses_xel.append(str(int(float(x["mir_amount"])*100000000)))
+                normal_addresses_times.append(timestamps[x["btc_tx"]])
                 break
 
         cnt = cnt + 1
@@ -400,20 +408,25 @@ for ft in normal_addresses_xel:
 print "Total scaled amount of XEL available:",t/100000000.0
 
 
-
+# CONSOLIDATION
 addrset={}
+timeset={}
 for i in range(len(normal_addresses)):
     add = normal_addresses[i]
     if add not in addrset:
         addrset[add]=0
+    if add not in timeset:
+        timeset[add]=0
     addrset[add] += normal_addresses_xel[i]
+    timeset[add] = max(timeset[add] , normal_addresses_times[i] )
 
 normal_addresses = []
 normal_addresses_xel = []
-
+normal_addresses_times = []
 for key in addrset:
     normal_addresses.append(key)
     normal_addresses_xel.append(addrset[key])
+    normal_addresses_times.append(timeset[key])
 
 total = 0
 for i in range(len(normal_addresses_xel)):
@@ -427,6 +440,11 @@ print ", ".join("\"" + d + "\"" for d in normal_addresses)
 print "\n\n\n"
 print "AMOUNTS ARRAY"
 print ", ".join(str(d) + "L" for d in normal_addresses_xel) 
+
+
+print "\n\n\n"
+print "TIMES ARRAY"
+print ", ".join(str(d)  for d in normal_addresses_times) 
 
 #print "\n\nVerify:",total
 #for i in range(len(normal_addresses)):
