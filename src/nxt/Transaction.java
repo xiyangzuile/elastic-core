@@ -46,6 +46,7 @@ public interface Transaction {
 
 		Builder timestamp(int timestamp);
 
+
 	}
 
 	long getAmountNQT();
@@ -57,6 +58,8 @@ public interface Transaction {
 	List<? extends Appendix> getAppendages(Filter<Appendix> filter, boolean includeExpiredPrunable);
 
 	Attachment getAttachment();
+
+	long getSupernodeId();
 
 	Block getBlock();
 

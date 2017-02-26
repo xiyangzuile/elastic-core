@@ -110,6 +110,7 @@ public final class Constants {
 	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = Constants.isTestnet ? Nxt.getIntProperty("nxt.supernodeBinding", 4)
 			: 512;
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
+	public static final int SUPERNODE_PERCENTAGE_EARNINGS = 10; // Supernodes get this much in percent from what is paid out as a reward to the workers
 
 	// Guard stuff (Hardcoded Guard Nodes)
 	public static final long[] GUARD_NODES = new long[]{8473660669446786780L, -6336019433117180774L};

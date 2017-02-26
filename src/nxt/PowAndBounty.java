@@ -210,7 +210,7 @@ public final class PowAndBounty {
 		this.too_late = false;
 	}
 
-	public void applyBounty(final Block bl) throws IOException {
+	public void applyBounty(final Block bl, long supernodeId) throws IOException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 		if (w == null) {
 			throw new IOException("No such work found");
@@ -220,14 +220,19 @@ public final class PowAndBounty {
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
 			final Account participantAccount = Account.getAccount(this.accountId);
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+			final Account snAccount = Account.getAccount(supernodeId);
 			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
 				throw new IOException("Something went wrong with the deposit account, shouldn't happen");
 			}
+
+			long payUser = w.getXel_per_bounty();
+			long paySn = (payUser * Constants.SUPERNODE_PERCENTAGE_EARNINGS) / 100;
+
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-					w.getXel_per_bounty() + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+					payUser + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					-1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
-
+			snAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, paySn);
 			w.kill_bounty_fund(bl);
 		} else {
 			this.too_late = true;
@@ -235,7 +240,7 @@ public final class PowAndBounty {
 		}
 	}
 
-	public void applyPowPayment(final Block bl) throws IOException {
+	public void applyPowPayment(final Block bl, long supernodeId) throws IOException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 
 		if (w == null) {
@@ -246,7 +251,13 @@ public final class PowAndBounty {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
 			final Account participantAccount = Account.getAccount(this.accountId);
-			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, w.getXel_per_pow());
+			final Account snAccount = Account.getAccount(supernodeId);
+			long payUser =  w.getXel_per_pow();
+			long paySn = (payUser * Constants.SUPERNODE_PERCENTAGE_EARNINGS) / 100;
+			payUser = payUser - paySn;
+			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, payUser);
+			snAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, paySn);
+
 			// Reduce work remaining xel
 			w.reduce_one_pow_submission(bl);
 		} else {

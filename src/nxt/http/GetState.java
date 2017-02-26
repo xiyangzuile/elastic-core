@@ -59,6 +59,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 		}
 		response.put("numberOfPeers", Peers.getAllPeers().size());
 		response.put("numberOfSupernodes", GetSupernodes.countSupernodes());
+		response.put("numberOfGuardnodes", Constants.GUARD_NODES.length);
 		response.put("numberOfActivePeers", Peers.getActivePeers().size());
 		response.put("numberOpenWorks", Work.getActiveCount());
 		response.put("numberClosedWorks", Work.getCount() - Work.getActiveCount());

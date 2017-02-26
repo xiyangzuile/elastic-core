@@ -137,8 +137,8 @@ var NRS = (function(NRS, $, undefined) {
 					
 				}
 
-				if(key == "estimatedComputationPower"){
-					NRS.updateHashpower(response[key]);
+				if(key == "numberOfSupernodes"){
+					NRS.updateHashpower(response[key] + " / " + response["numberOfGuardnodes"]);
 				}
 				if(key == "openWorkMoney"){
 					NRS.updateClaim(response[key]);
@@ -396,8 +396,8 @@ var NRS = (function(NRS, $, undefined) {
 					NRS.closedWorkCount = response[key];
 						NRS.updateWorkCount(response[key],false);
 				}
-				if(key == "estimatedComputationPower"){
-					NRS.updateHashpower(response[key]);
+				if(key == "numberOfSupernodes"){
+					NRS.updateHashpower(response[key] + " / " + response["numberOfGuardnodes"]);
 				}
 				if(key == "openWorkMoney"){
 					NRS.updateClaim(response[key]);

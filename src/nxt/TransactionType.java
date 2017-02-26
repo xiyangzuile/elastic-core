@@ -854,7 +854,7 @@ public abstract class TransactionType {
 				PowAndBounty.addPow(transaction, attachment);
 				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
 				try {
-					obj.applyPowPayment(transaction.getBlock());
+					obj.applyPowPayment(transaction.getBlock(), transaction.getSupernodeId());
 				} catch (final Exception e) {
 					throw new NotValidException(e.getMessage());
 				}
@@ -1168,7 +1168,7 @@ public abstract class TransactionType {
 				PowAndBounty.addBounty(transaction, attachment);
 				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
 				try {
-					obj.applyBounty(transaction.getBlock());
+					obj.applyBounty(transaction.getBlock(), transaction.getSupernodeId());
 				} catch (final Exception e) {
 					throw new NotValidException(e.getMessage());
 				}

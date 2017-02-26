@@ -68,6 +68,11 @@ class UnconfirmedTransaction implements Transaction {
 	}
 
 	@Override
+	public long getSupernodeId(){
+		return this.transaction.getSupernodeId();
+	}
+
+	@Override
 	public long getAmountNQT() {
 		return this.transaction.getAmountNQT();
 	}

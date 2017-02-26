@@ -996,6 +996,13 @@ final class TransactionImpl implements Transaction {
 	}
 
 	@Override
+	public long getSupernodeId(){
+		if(superNodePublicKey == null) return 0;
+		long accountId = Account.getId(this.superNodePublicKey);
+		return accountId;
+	}
+
+	@Override
 	public void validate() throws NxtException.ValidationException {
 		if (this.type == null) {
 			throw new NxtException.NotValidException("Invalid transaction type");
