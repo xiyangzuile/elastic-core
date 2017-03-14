@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import nxt.util.*;
 import org.json.simple.JSONObject;
 
 import nxt.addons.AddOns;
@@ -45,16 +46,13 @@ import nxt.http.API;
 import nxt.http.APIProxy;
 import nxt.peer.Peers;
 import nxt.user.Users;
-import nxt.util.Convert;
-import nxt.util.Logger;
-import nxt.util.ThreadPool;
-import nxt.util.Time;
 
 public final class Nxt {
 
     public static boolean becomeSupernodeNow = false;
     public static boolean isSupernode = false;
     public static String supernodePass = "";
+    public static String externalIPSN = "";
     public static Account getSnAccount(){ return Account.getAccount(Crypto.getPublicKey(Nxt.supernodePass)); };
 
     private static class Init {
@@ -91,6 +89,13 @@ public final class Nxt {
 				// Do a supernode check
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
 				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
+				Nxt.externalIPSN = Nxt.getStringProperty("nxt.superNodeExternalIP","");
+
+				if(IPValidator.getInstance().validate(Nxt.externalIPSN)==false){
+                    Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");
+                    System.exit(1);
+                }
+
 				if(snpass.length()!=0){
 					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
 					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+
+import nxt.util.IPValidator;
 import nxt.util.Logger;
 import org.bitcoinj.core.ECKey;
 import org.bitcoinj.params.MainNetParams;
@@ -208,6 +210,11 @@ public abstract class TransactionType {
 				for (final String uri : attachment.getUris()) {
 					if (uri.length() > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH) {
 						throw new NxtException.NotValidException("Invalid URI length: " + uri.length());
+					}
+
+					// Check if URL has the correct format (IPv4 address)
+					if(IPValidator.getInstance().validate(uri) == false){
+						throw new NxtException.NotValidException("URIs contain invalid SN IP-addresses");
 					}
 				}
 
