@@ -569,10 +569,10 @@ public final class Account {
 					final Account participantAccount = Account.getAccount(lessor.getId());
 					final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-					if (!participantAccount.isGuardNode() && depositAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
-						// Cannot give back SN deposit, this should not happen at all actually
-					}else {
-						if(!participantAccount.isGuardNode()) {
+					if(!participantAccount.isGuardNode()) {
+						if (depositAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+							// Cannot give back SN deposit, this should not happen at all actually
+						} else {
 							final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
 							participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
 									1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
@@ -1339,20 +1339,20 @@ public final class Account {
             final Account participantAccount = Account.getAccount(this.getId());
             final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-            if (!this.isGuardNode() && participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
-                // cannot afford this
-                throw new IOException("Not enough funds for supernode deposit");
+            if(this.isGuardNode() == false) {
+				if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+					// cannot afford this
+					throw new IOException("Not enough funds for supernode deposit");
 
-            }else {
+				} else {
 
-            	// Workaround, do not do this for guard nodes that become SN
-				if(!this.isGuardNode()) {
+					// Workaround, do not do this for guard nodes that become SN
 					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
 							-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
 					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
 							1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
 				}
-            }
+			}
 		}
 		else{
 			// Only update height if the other supernode thing already times out, otherwise it is just an extension which does not need a "begin" event triggered
@@ -1362,16 +1362,17 @@ public final class Account {
 				final Account participantAccount = Account.getAccount(this.getId());
 				final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-				if (!this.isGuardNode() && participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
-					// cannot afford this
-					throw new IOException("Not enough funds for supernode deposit");
+				if(this.isGuardNode() == false) {
+					if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+						// cannot afford this
+						throw new IOException("Not enough funds for supernode deposit");
 
-				}else {
-					if(!this.isGuardNode()) {
+					} else {
 						participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
 								-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
 						depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
 								1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+
 					}
 				}
 				deposit.currentDepositHeightFrom = height;
