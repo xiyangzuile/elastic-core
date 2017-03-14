@@ -52,7 +52,12 @@ import nxt.util.Time;
 
 public final class Nxt {
 
-	private static class Init {
+    public static boolean becomeSupernodeNow = false;
+    public static boolean isSupernode = false;
+    public static String supernodePass = "";
+    public static Account getSnAccount(){ return Account.getAccount(Crypto.getPublicKey(Nxt.supernodePass)); };
+
+    private static class Init {
 
 		private static volatile boolean initialized = false;
 
@@ -82,6 +87,40 @@ public final class Nxt {
 				AddOns.init();
 				API.init();
 				Users.init();
+
+				// Do a supernode check
+				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
+				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
+				if(snpass.length()!=0){
+					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
+					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){
+						Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Please fund your account first, and try again later.");
+						System.exit(1);
+					}else if((!sn.isSuperNode() && sn.canBecomeSupernode())){
+						// Check if autorenew is on if the node is not yet a supernode
+						if(snrenew==false){
+							Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
+							System.exit(1);
+						}
+					}
+
+					if(sn.isSuperNode()){
+						Nxt.isSupernode = true;
+						Nxt.supernodePass = snpass;
+						Nxt.becomeSupernodeNow = false;
+						Logger.logInfoMessage("YOU ARE A SUPERNODE RIGHT NOW!");
+						SupernodeMagicManager.getInstance().initialized();
+					} else if(sn.canBecomeSupernode()){
+                        Nxt.isSupernode = true;
+                        Nxt.supernodePass = snpass;
+                        Nxt.becomeSupernodeNow = true;
+                        Logger.logInfoMessage("YOU WILL BECOME A SUPERNODE SHORTLY!");
+                        SupernodeMagicManager.getInstance().initialized();
+                    }
+
+
+
+				}
 
 
 

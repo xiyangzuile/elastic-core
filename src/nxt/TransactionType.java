@@ -217,7 +217,7 @@ public abstract class TransactionType {
 				if(senderAcc == null)
 					throw new NxtException.NotValidException("Sender account " + transaction.getSenderId() + " had no activity before. Please do something else first!");
 
-				if(guard_id == 0 && (!senderAcc.isSuperNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
+				if(guard_id == 0 && (!senderAcc.isSuperNode() && !senderAcc.isGuardNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
 					throw new NxtException.NotValidException("Your guaranteed balance does not cover the required super node deposit");
 				}
 				if(guard_id != 0 && (!senderAcc.isGuardNode())){

@@ -107,7 +107,7 @@ public final class Constants {
 
 
 	// Supernode stuff
-	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = Constants.isTestnet ? Nxt.getIntProperty("nxt.supernodeBinding", 4)
+	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = Constants.isTestnet ? Nxt.getIntProperty("nxt.supernodeBinding", 20)
 			: 512;
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;
 	public static final int SUPERNODE_PERCENTAGE_EARNINGS = 10; // Supernodes get this much in percent from what is paid out as a reward to the workers

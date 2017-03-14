@@ -60,6 +60,11 @@ public final class Account {
 		return guardNode;
 	}
 
+	public int supernodeExpires() {
+		Pair<Integer, Integer> pf_tf = Nxt.getSnAccount().getSupernodeTimeframe();
+		return pf_tf.getB() - Nxt.getBlockchain().getHeight();
+	}
+
 	public static final class AccountInfo {
 
 		private final long accountId;
@@ -564,14 +569,16 @@ public final class Account {
 					final Account participantAccount = Account.getAccount(lessor.getId());
 					final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-					if (depositAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+					if (!participantAccount.isGuardNode() && depositAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
 						// Cannot give back SN deposit, this should not happen at all actually
 					}else {
-						final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
-						participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
-								1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
-						depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
-								-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+						if(!participantAccount.isGuardNode()) {
+							final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
+							participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
+									1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+							depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, lessor.getId(),
+									-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+						}
 					}
 				}
 				lessor.save();
@@ -1277,7 +1284,7 @@ public final class Account {
 
 
 	public void invalidateSupernodeDeposit() {
-		if(this.isSuperNode() == false){
+		if(this.isSuperNode() == false || this.isGuardNode() == true){
 			return;
 		}
 
@@ -1307,6 +1314,12 @@ public final class Account {
 	}
 
 
+	boolean canBecomeSupernode(){
+		if(this.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT){
+			return false;
+		}
+		return true;
+	}
 	void refreshSupernodeDeposit(String[] uris) throws IOException {
 
 		// Do nothing if the current guaranteed balance is lower than the minimum amount of supernode deposit
@@ -1321,19 +1334,24 @@ public final class Account {
 		AccountSupernodeDeposit deposit = Account.accountSupernodeDepositTable.get(Account.accountDbKeyFactory.newKey(this));
 		if (deposit == null) {
 			deposit = new AccountSupernodeDeposit(this.id, height,height + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD, uris);
-            final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
+
+			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
             final Account participantAccount = Account.getAccount(this.getId());
             final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-            if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+            if (!this.isGuardNode() && participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
                 // cannot afford this
                 throw new IOException("Not enough funds for supernode deposit");
 
             }else {
-                participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
-                        -1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
-                depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
-                        1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+
+            	// Workaround, do not do this for guard nodes that become SN
+				if(!this.isGuardNode()) {
+					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+							-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+							1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+				}
             }
 		}
 		else{
@@ -1344,15 +1362,17 @@ public final class Account {
 				final Account participantAccount = Account.getAccount(this.getId());
 				final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-				if (participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
+				if (!this.isGuardNode() && participantAccount.getUnconfirmedBalanceNQT() < Constants.SUPERNODE_DEPOSIT_AMOUNT) {
 					// cannot afford this
 					throw new IOException("Not enough funds for supernode deposit");
 
 				}else {
-					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
-							-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
-					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
-							1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+					if(!this.isGuardNode()) {
+						participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+								-1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+						depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.getId(),
+								1 * Constants.SUPERNODE_DEPOSIT_AMOUNT);
+					}
 				}
 				deposit.currentDepositHeightFrom = height;
 				deposit.setUris(uris);
