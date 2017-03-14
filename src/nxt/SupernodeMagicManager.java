@@ -101,7 +101,7 @@ public class SupernodeMagicManager {
                     lastSent = Nxt.getBlockchain().getHeight();
                     Logger.logInfoMessage("*** WE ARE TRYING TO OBTAIN/Refresh SUPERNODE STATUS NOW ***");
                             String[] uris = new String[1];
-                            uris[0] = "127.0.0.1";
+                            uris[0] = Nxt.externalIPSN;
                             final Attachment sna = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
                             boolean success = false;
                             try {
