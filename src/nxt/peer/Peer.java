@@ -51,6 +51,8 @@ public interface Peer extends Comparable<Peer> {
 		NON_CONNECTED, CONNECTED, DISCONNECTED
 	}
 
+	boolean isSupernode();
+
 	void blacklist(Exception cause);
 
 	void blacklist(String cause);

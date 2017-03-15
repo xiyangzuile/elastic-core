@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+import nxt.db.DbIterator;
+import nxt.http.JSONData;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 import org.json.simple.JSONValue;
@@ -200,6 +202,20 @@ final class PeerImpl implements Peer {
 		this.unsetHallmark();
 		return false;
 
+	}
+
+	@Override
+	public boolean isSupernode() {
+		try (DbIterator<? extends Account.AccountSupernodeDeposit> iterator = Account.getActiveSupernodes(Nxt.getBlockchain().getHeight());) {
+			while (iterator.hasNext()) {
+				final Account.AccountSupernodeDeposit b = iterator.next();
+				for (String u : b.getUris()) {
+					if (u.equalsIgnoreCase(this.getHost()) || u.equalsIgnoreCase(this.getAnnouncedAddress()))
+						return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -514,6 +514,9 @@ public final class Peers {
 			try {
 
 				final int now = Nxt.getEpochTime();
+
+				
+
 				if (!Peers.hasEnoughConnectedPublicPeers(Peers.maxNumberOfConnectedPublicPeers)) {
 					final List<Future<?>> futures = new ArrayList<>();
 					final List<Peer> hallmarkedPeers = Peers.getPeers(peer1 -> !peer1.isBlacklisted()
@@ -956,8 +959,13 @@ public final class Peers {
 		}
 	}
 
+
 	public static List<Peer> getActivePeers() {
 		return Peers.getPeers(peer -> peer.getState() != Peer.State.NON_CONNECTED);
+	}
+
+	public static List<Peer> getActiveSnPeers() {
+		return Peers.getSnPeers(peer -> peer.getState() != Peer.State.NON_CONNECTED);
 	}
 
 	public static Collection<? extends Peer> getAllPeers() {
@@ -997,6 +1005,29 @@ public final class Peers {
 	public static List<Peer> getPeers(final Filter<Peer> filter, final int limit) {
 		final List<Peer> result = new ArrayList<>();
 		for (final Peer peer : Peers.peers.values()) {
+			if(peer.isSupernode()) continue;
+			if (filter.ok(peer)) {
+				result.add(peer);
+				if (result.size() >= limit) {
+					break;
+				}
+			}
+		}
+		return result;
+	}
+
+	public static List<Peer> getSnPeers(final Filter<Peer> filter) {
+		return Peers.getSnPeers(filter, Integer.MAX_VALUE);
+	}
+
+	public static List<Peer> getConnectedSnPeers(){
+		return getSnPeers(peer -> peer.getState() == Peer.State.CONNECTED);
+	}
+
+	public static List<Peer> getSnPeers(final Filter<Peer> filter, final int limit) {
+		final List<Peer> result = new ArrayList<>();
+		for (final Peer peer : Peers.peers.values()) {
+			if(!peer.isSupernode()) continue;
 			if (filter.ok(peer)) {
 				result.add(peer);
 				if (result.size() >= limit) {
@@ -1060,17 +1091,27 @@ public final class Peers {
 				limit).size() >= limit;
 	}
 
+	private static boolean hasEnoughSupernodePeers(final int limit) {
+		return Peers.getSnPeers(peer -> !peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED),
+				limit).size() >= limit;
+	}
+
 	public static boolean hasTooFewKnownPeers() {
-		return Peers.peers.size() < Peers.minNumberOfKnownPeers;
+		// Ugly hack (to mix SN and NON-SN Peers)
+		return Peers.getPeers(peer -> !peer.isBlacklisted() || peer.isBlacklisted()).size() < Peers.minNumberOfKnownPeers;
 	}
 
 	public static boolean hasTooManyInboundPeers() {
+		// This check is only active if we are NOT a supernode
+		if(Nxt.isSupernode) return false;
+
 		return Peers.getPeers(Peer::isInbound, Peers.maxNumberOfInboundConnections)
 				.size() >= Peers.maxNumberOfInboundConnections;
 	}
 
 	public static boolean hasTooManyKnownPeers() {
-		return Peers.peers.size() > Peers.maxNumberOfKnownPeers;
+		// Dirty hack
+		return Peers.getPeers(peer -> !peer.isBlacklisted() || peer.isBlacklisted()).size() > Peers.maxNumberOfKnownPeers;
 	}
 
 	public static boolean hasTooManyOutboundConnections() {
