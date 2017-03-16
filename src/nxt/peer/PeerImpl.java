@@ -95,6 +95,7 @@ final class PeerImpl implements Peer {
 	private volatile long services;
 	private volatile BlockchainState blockchainState;
 
+
 	PeerImpl(final String host, final String announcedAddress) {
 		this.host = host;
 		this.announcedAddress = announcedAddress;
@@ -206,17 +207,9 @@ final class PeerImpl implements Peer {
 
 	@Override
 	public boolean isSupernode() {
-		try (DbIterator<? extends Account.AccountSupernodeDeposit> iterator = Account.getActiveSupernodes(Nxt.getBlockchain().getHeight());) {
-			while (iterator.hasNext()) {
-				final Account.AccountSupernodeDeposit b = iterator.next();
-				for (String u : b.getUris()) {
-					if (u.equalsIgnoreCase(this.getHost()) || u.equalsIgnoreCase(this.getAnnouncedAddress()))
-						return true;
-				}
-			}
-		}
-		return false;
+		return Peers.getPotentialSNPeers().contains(this.getAnnouncedAddress()) || Peers.getPotentialSNPeers().contains(this.getHost());
 	}
+
 
 	@Override
 	public void blacklist(final Exception cause) {

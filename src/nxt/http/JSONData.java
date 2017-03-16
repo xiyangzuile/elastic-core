@@ -203,6 +203,7 @@ public final class JSONData {
 		final JSONObject json = new JSONObject();
 		json.put("address", peer.getHost());
 		json.put("port", peer.getPort());
+		json.put("supernode", peer.isSupernode());
 		json.put("state", peer.getState().ordinal());
 		json.put("announcedAddress", peer.getAnnouncedAddress());
 		json.put("shareAddress", peer.shareAddress());

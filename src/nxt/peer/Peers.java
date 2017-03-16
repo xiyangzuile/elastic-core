@@ -46,6 +46,7 @@ import java.util.concurrent.TimeoutException;
 
 import javax.servlet.DispatcherType;
 
+import nxt.db.DbIterator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -77,6 +78,11 @@ import nxt.util.ThreadPool;
 import nxt.util.UPnP;
 
 public final class Peers {
+
+	private static List<String> cachedSnPeers = null;
+	private static int lastCacheTime = 0;
+
+
 
 	public enum Event {
 		BLACKLIST, UNBLACKLIST, DEACTIVATE, REMOVE, DOWNLOADED_VOLUME, UPLOADED_VOLUME, WEIGHT, ADDED_ACTIVE_PEER, CHANGED_ACTIVE_PEER, NEW_PEER, ADD_INBOUND, REMOVE_INBOUND, CHANGED_SERVICES
@@ -608,6 +614,20 @@ public final class Peers {
 					}
 				}
 
+				// Handle SN Peers in the same way we handle well known peers
+				if(Nxt.connectToSupernodes && !Peers.hasEnoughSupernodePeers(Constants.SUPERNODE_CONNECTED_NODES_ARE_ENOUGH)){
+					// Our goal are #SUPERNODE_CONNECTED_NODES_ARE_ENOUGH SN connections. Let us try to connect to more
+					for (final String snPeer : Peers.getPotentialSNPeers()) {
+						final PeerImpl peer6 = Peers.findOrCreatePeer(snPeer, true);
+						if ((peer6 != null) && ((now - peer6.getLastConnectAttempt()) > 600)) {
+							Peers.peersService.submit(() -> {
+								Peers.addPeer(peer6);
+								Peers.connectPeer(peer6);
+							});
+						}
+					}
+				}
+
 			} catch (final Exception e) {
 				Logger.logDebugMessage("Error connecting to peer", e);
 			}
@@ -968,8 +988,13 @@ public final class Peers {
 		return Peers.getSnPeers(peer -> peer.getState() != Peer.State.NON_CONNECTED);
 	}
 
+	// The following two are implemented very shittily, but it works
 	public static Collection<? extends Peer> getAllPeers() {
-		return Peers.allPeers;
+		return Peers.getPeers(peer -> peer.getState() != Peer.State.NON_CONNECTED || peer.getState() == Peer.State.NON_CONNECTED);
+	}
+
+	public static Collection<? extends Peer> getAllSNPeers() {
+		return Peers.getSnPeers(peer -> peer.getState() != Peer.State.NON_CONNECTED || peer.getState() == Peer.State.NON_CONNECTED);
 	}
 
 	public static Peer getAnyPeer(final Peer.State state, final boolean applyPullThreshold) {
@@ -1038,8 +1063,20 @@ public final class Peers {
 		return result;
 	}
 
+	public static List<String> getPotentialSNPeers(){
+		if(Peers.cachedSnPeers == null || Peers.lastCacheTime < Nxt.getBlockchain().getHeight()) {
+			Peers.cachedSnPeers = Peers.getPotentialSNPeers();
+			Peers.lastCacheTime = Nxt.getBlockchain().getHeight();
+		}
+		return Peers.cachedSnPeers;
+	}
+
 	public static List<Peer> getPeers(final Peer.State state) {
 		return Peers.getPeers(peer -> peer.getState() == state);
+	}
+
+	public static List<Peer> getSnPeers(final Peer.State state) {
+		return Peers.getSnPeers(peer -> peer.getState() == state);
 	}
 
 	public static List<Peer> getPublicPeers(final Peer.State state, final boolean applyPullThreshold) {

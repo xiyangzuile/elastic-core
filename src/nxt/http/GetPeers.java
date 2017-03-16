@@ -69,6 +69,7 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 			}
 		}
 
+
 		final Collection<? extends Peer> peers = active ? Peers.getActivePeers()
 				: state != null ? Peers.getPeers(state) : Peers.getAllPeers();
 		final JSONArray peersJSON = new JSONArray();
@@ -76,12 +77,38 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 			final long services = serviceCodes;
 			if (includePeerInfo) {
 				peers.forEach(peer -> {
-					if (peer.providesServices(services)) {
+					if (peer.providesServices(services) && peer.isSupernode()==false) {
 						peersJSON.add(JSONData.peer(peer));
 					}
 				});
 			} else {
 				peers.forEach(peer -> {
+					if (peer.providesServices(services) && peer.isSupernode()==false) {
+						peersJSON.add(peer.getHost());
+					}
+				});
+			}
+		} else {
+			if (includePeerInfo) {
+				peers.forEach(peer -> {if (peer.isSupernode()==false) peersJSON.add(JSONData.peer(peer));});
+			} else {
+				peers.forEach(peer -> {if (peer.isSupernode()==false) peersJSON.add(peer.getHost()); });
+			}
+		}
+
+		// Also add all SN peers to the list
+		final Collection<? extends Peer> peers_sn = active ? Peers.getActiveSnPeers()
+				: state != null ? Peers.getSnPeers(state) : Peers.getAllSNPeers();
+		if (serviceCodes != 0) {
+			final long services = serviceCodes;
+			if (includePeerInfo) {
+				peers_sn.forEach(peer -> {
+					if (peer.providesServices(services)) {
+						peersJSON.add(JSONData.peer(peer));
+					}
+				});
+			} else {
+				peers_sn.forEach(peer -> {
 					if (peer.providesServices(services)) {
 						peersJSON.add(peer.getHost());
 					}
@@ -89,11 +116,13 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 			}
 		} else {
 			if (includePeerInfo) {
-				peers.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
+				peers_sn.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
 			} else {
-				peers.forEach(peer -> peersJSON.add(peer.getHost()));
+				peers_sn.forEach(peer -> peersJSON.add(peer.getHost()));
 			}
 		}
+
+
 
 		final JSONObject response = new JSONObject();
 		response.put("peers", peersJSON);

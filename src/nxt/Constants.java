@@ -107,6 +107,7 @@ public final class Constants {
 
 
 	// Supernode stuff
+	public static final int SUPERNODE_CONNECTED_NODES_ARE_ENOUGH = 5;
 	public static final int SUPERNODE_DEPOSIT_BINDING_PERIOD = Constants.isTestnet ? Nxt.getIntProperty("nxt.supernodeBinding", 20)
 			: 512;
 	public static final long SUPERNODE_DEPOSIT_AMOUNT = 250000*ONE_NXT;

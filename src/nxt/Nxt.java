@@ -53,6 +53,7 @@ public final class Nxt {
     public static boolean isSupernode = false;
     public static String supernodePass = "";
     public static String externalIPSN = "";
+    public static boolean connectToSupernodes = false;
     public static Account getSnAccount(){ return Account.getAccount(Crypto.getPublicKey(Nxt.supernodePass)); };
 
     private static class Init {
@@ -90,6 +91,7 @@ public final class Nxt {
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
 				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
 				Nxt.externalIPSN = Nxt.getStringProperty("nxt.superNodeExternalIP","");
+				Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");
 
 				if(IPValidator.getInstance().validate(Nxt.externalIPSN)==false){
                     Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");
