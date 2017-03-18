@@ -516,6 +516,9 @@ var NRS = (function (NRS, $, undefined) {
                                 }
                             },
                             function (callback) {
+                                // We do not want the byte validation stuff here
+                                // TODO: redo some time later
+                                
                                 if (response.unsignedTransactionBytes &&
                                     !NRS.verifyTransactionBytes(converters.hexStringToByteArray(response.unsignedTransactionBytes), requestType, data, response.transactionJSON.attachment, isVolatile)) {
                                     callback({
@@ -602,7 +605,8 @@ var NRS = (function (NRS, $, undefined) {
         transaction.amountNQT = String(converters.byteArrayToBigInteger(byteArray, 48));
         transaction.feeNQT = String(converters.byteArrayToBigInteger(byteArray, 56));
 
-        var refHash = byteArray.slice(64, 96);
+        // Here, slice the original signature as well as the new SN signature
+        var refHash = byteArray.slice(64, 96 + 32);
         transaction.referencedTransactionFullHash = converters.byteArrayToHexString(refHash);
         if (transaction.referencedTransactionFullHash == "0000000000000000000000000000000000000000000000000000000000000000") {
             transaction.referencedTransactionFullHash = "";
