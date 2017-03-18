@@ -351,8 +351,25 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		return this.transactionListeners.addListener(listener, eventType);
 	}
 
+	public void broadcast_specialcase_supernode(final Transaction transaction) throws NxtException.ValidationException {
+		if(Peers.hasConnectedSnPeers(1)==false){
+			throw new NxtException.NotCurrentlyValidException("You are not connected to any supernode");
+		}
+		List<Transaction> lst = new ArrayList<Transaction>();
+		lst.add(transaction);
+		Peers.sendToSomeSnPeers(lst);
+	}
 	@Override
 	public void broadcast(final Transaction transaction) throws NxtException.ValidationException {
+
+		// Relay SN relevant transactions to the connected supernodes.
+		// If none are present, just go ahead and cancel this request
+
+		if(transaction.getType().mustHaveSupernodeSignature() && transaction.getSupernodeSig()==null){
+			broadcast_specialcase_supernode(transaction);
+			return;
+		}
+
 		BlockchainImpl.getInstance().writeLock();
 		try {
 			if (TransactionDb.hasTransaction(transaction.getId())) {

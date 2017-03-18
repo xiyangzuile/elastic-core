@@ -36,6 +36,11 @@ class UnconfirmedTransaction implements Transaction {
 	private final long feePerByte;
 	private String extraInfo = "";
 
+	@Override
+	public byte[] getSupernodeSig() {
+		return transaction.getSupernodeSig();
+	}
+
 	UnconfirmedTransaction(final ResultSet rs) throws SQLException {
 		try {
 			final byte[] transactionBytes = rs.getBytes("transaction_bytes");

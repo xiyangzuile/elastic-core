@@ -31,7 +31,7 @@ import nxt.util.Convert;
 import nxt.util.Filter;
 import nxt.util.Logger;
 
-final class TransactionImpl implements Transaction {
+public final class TransactionImpl implements Transaction {
 
 	static final class BuilderImpl implements Builder {
 
@@ -344,7 +344,7 @@ final class TransactionImpl implements Transaction {
 		}
 	}
 
-	static TransactionImpl parseTransaction(final JSONObject transactionData) throws NxtException.NotValidException {
+	public static TransactionImpl parseTransaction(final JSONObject transactionData) throws NxtException.NotValidException {
 		final TransactionImpl transaction = TransactionImpl.newTransactionBuilder(transactionData).build();
 
 		if ((transaction.getSignature() != null) && !transaction.checkSignature()) {
@@ -535,6 +535,14 @@ final class TransactionImpl implements Transaction {
 		}
 		// non-phased at acceptance height, and phased at execution height
 		return this.type.isDuplicate(this, duplicates);
+	}
+
+	@Override
+	public byte[] getSupernodeSig() {
+		if(this.supernode_signature == null || this.supernode_signature == new byte[32]){
+			return null;
+		}
+		return this.supernode_signature;
 	}
 
 	byte[] bytes() {

@@ -203,6 +203,7 @@ public final class Peers {
 	private static final int pushThreshold;
 	private static final int pullThreshold;
 	private static final int sendToPeersLimit;
+	private static final int sendToSnPeersLimit;
 	private static final boolean usePeersDb;
 	private static final boolean savePeers;
 	static final boolean ignorePeerAnnouncedAddress;
@@ -423,6 +424,7 @@ public final class Peers {
 		blacklistingPeriod = Nxt.getIntProperty("nxt.blacklistingPeriod") / 1000;
 		Peers.communicationLoggingMask = Nxt.getIntProperty("nxt.communicationLoggingMask");
 		sendToPeersLimit = Nxt.getIntProperty("nxt.sendToPeersLimit");
+		sendToSnPeersLimit = Constants.Supernode_Push_Limit;
 		usePeersDb = Nxt.getBooleanProperty("nxt.usePeersDb") && !Constants.isOffline;
 		savePeers = Peers.usePeersDb && Nxt.getBooleanProperty("nxt.savePeers");
 		getMorePeers = Nxt.getBooleanProperty("nxt.getMorePeers");
@@ -1045,10 +1047,6 @@ public final class Peers {
 		return Peers.getSnPeers(filter, Integer.MAX_VALUE);
 	}
 
-	public static List<Peer> getConnectedSnPeers(){
-		return getSnPeers(peer -> peer.getState() == Peer.State.CONNECTED);
-	}
-
 	public static List<Peer> getSnPeers(final Filter<Peer> filter, final int limit) {
 		final List<Peer> result = new ArrayList<>();
 		for (final Peer peer : Peers.peers.values()) {
@@ -1141,6 +1139,18 @@ public final class Peers {
 		return Peers.getPeers(peer -> !peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED)
 				&& (peer.getAnnouncedAddress() != null) && (!Peers.enableHallmarkProtection || (peer.getWeight() > 0)),
 				limit).size() >= limit;
+	}
+
+	public static List<Peer> getConnectedSnPeers(){
+		List<Peer> sn = Peers.getSnPeers(peer -> !peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED));
+		Collections.shuffle(sn);
+		return sn;
+		// We shuffle to achieve some sort of "load balancing"
+	}
+
+	public static boolean hasConnectedSnPeers(final int limit) {
+		return Peers.getSnPeers(peer -> !peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED),
+				limit).size()>0;
 	}
 
 	private static boolean hasEnoughSupernodePeers(final int limit) {
@@ -1285,6 +1295,41 @@ public final class Peers {
 		});
 	}
 
+	private static void sendToSomeSnPeers(final JSONObject request) {
+		Peers.sendingService.submit(() -> {
+			final JSONStreamAware jsonRequest = JSON.prepareRequest(request);
+
+			int successful = 0;
+			final List<Future<JSONObject>> expectedResponses = new ArrayList<>();
+			for (final Peer peer : Peers.getConnectedSnPeers()) {
+				if (!peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED)
+						&& (peer.getAnnouncedAddress() != null)) {
+					final Future<JSONObject> futureResponse = Peers.peersService.submit(() -> peer.send(jsonRequest));
+					expectedResponses.add(futureResponse);
+				}
+
+				if (expectedResponses.size() >= (Peers.sendToSnPeersLimit - successful)) {
+					for (final Future<JSONObject> future : expectedResponses) {
+						try {
+							final JSONObject response = future.get();
+							if ((response != null) && (response.get("error") == null)) {
+								successful += 1;
+							}
+						} catch (final InterruptedException e) {
+							Thread.currentThread().interrupt();
+						} catch (final ExecutionException e) {
+							Logger.logDebugMessage("Error in sendToSomePeers", e);
+						}
+					}
+					expectedResponses.clear();
+				}
+				if (successful >= Peers.sendToSnPeersLimit) {
+					return;
+				}
+			}
+		});
+	}
+
 	public static void sendToSomePeers(final List<? extends Transaction> transactions) {
 		int nextBatchStart = 0;
 		while (nextBatchStart < transactions.size()) {
@@ -1297,6 +1342,22 @@ public final class Peers {
 			request.put("requestType", "processTransactions");
 			request.put("transactions", transactionsData);
 			Peers.sendToSomePeers(request);
+			nextBatchStart += Peers.sendTransactionsBatchSize;
+		}
+	}
+
+	public static void sendToSomeSnPeers(final List<? extends Transaction> transactions) {
+		int nextBatchStart = 0;
+		while (nextBatchStart < transactions.size()) {
+			final JSONObject request = new JSONObject();
+			final JSONArray transactionsData = new JSONArray();
+			for (int i = nextBatchStart; (i < (nextBatchStart + Peers.sendTransactionsBatchSize))
+					&& (i < transactions.size()); i++) {
+				transactionsData.add(transactions.get(i).getJSONObject());
+			}
+			request.put("requestType", "processSupernodeTransactions");
+			request.put("transactions", transactionsData);
+			Peers.sendToSomeSnPeers(request);
 			nextBatchStart += Peers.sendTransactionsBatchSize;
 		}
 	}

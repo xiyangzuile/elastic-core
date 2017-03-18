@@ -81,6 +81,8 @@ public final class Constants {
 	public static final int MIN_PRUNABLE_LIFETIME = Constants.isTestnet ? 1440 * 60 : 14 * 1440 * 60;
 	public static final int MAX_PRUNABLE_LIFETIME;
 	public static final boolean ENABLE_PRUNING;
+	public static int Supernode_Push_Limit = 2;
+
 	static {
 		final int maxPrunableLifetime = Nxt.getIntProperty("nxt.maxPrunableLifetime");
 		ENABLE_PRUNING = maxPrunableLifetime >= 0;

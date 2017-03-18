@@ -94,6 +94,12 @@ public final class PeerServlet extends WebSocketServlet {
 		map.put("getUnconfirmedTransactions", GetUnconfirmedTransactions.instance);
 		map.put("processBlock", ProcessBlock.instance);
 		map.put("processTransactions", ProcessTransactions.instance);
+
+		// Only activate that servlet command, if we truly intend to become a supernode. Further checks are done deeper in the code
+		if(Nxt.supernodePass.length()>0){
+			map.put("processSupernodeTransactions", ProcessSupernodeTransactions.instance);
+		}
+
 		peerRequestHandlers = Collections.unmodifiableMap(map);
 	}
 	static final JSONStreamAware UNSUPPORTED_REQUEST_TYPE;

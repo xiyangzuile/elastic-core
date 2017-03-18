@@ -24,7 +24,9 @@ import nxt.util.Filter;
 
 public interface Transaction {
 
-	interface Builder {
+    byte[] getSupernodeSig();
+
+    interface Builder {
 
 		Builder appendix(Appendix.PrunableSourceCode prunableSourceCode);
 
