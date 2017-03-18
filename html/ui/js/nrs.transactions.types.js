@@ -46,7 +46,7 @@ var NRS = (function(NRS, $, undefined) {
             'iconHTML': "<i class='fa fa-envelope-square'></i>",
             'subTypes': {
                 1: {
-                    'title': "Hub Announcement",
+                    'title': "Supernode Announcement",
                     'i18nKeyTitle': 'hub_announcement',
                     'iconHTML': "<i class='ion-radio-waves'></i>"
                 },

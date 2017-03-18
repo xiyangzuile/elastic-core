@@ -103,7 +103,9 @@ var NRS = (function(NRS, $, undefined) {
 		}, function (response) {
 			var isTestnet = false;
 			var isOffline = false;
+			var isSN = false;
 			var peerPort = 0;
+			console.log(response);
 			for (var key in response) {
                 if (!response.hasOwnProperty(key)) {
                     continue;
@@ -143,6 +145,15 @@ var NRS = (function(NRS, $, undefined) {
 				if(key == "openWorkMoney"){
 					NRS.updateClaim(response[key]);
 				}
+				if(key=="youAreSupernode"){
+					isSN = response[key];
+					console.log("SN check: you are one = " + isSN);
+					if(isSN){
+						$("#supernode_warning").show();
+					}else{
+						$("#supernode_warning").hide();
+					}
+				}
 			}
 
 			if (!isTestnet) {
@@ -155,6 +166,8 @@ var NRS = (function(NRS, $, undefined) {
 				testnetWarningDiv.text(warningText);
 				$(".testnet_only, #testnet_login, #testnet_warning").show();
 			}
+
+			
 
             NRS.printEnvInfo();
 		});
@@ -383,8 +396,11 @@ var NRS = (function(NRS, $, undefined) {
 		}, function (response) {
 			var isTestnet = false;
 			var isOffline = false;
+			var isSN = false;
 			var peerPort = 0;
+			console.log(response);
 			for (var key in response) {
+
                 if (!response.hasOwnProperty(key)) {
                     continue;
                 }
@@ -402,7 +418,14 @@ var NRS = (function(NRS, $, undefined) {
 				if(key == "openWorkMoney"){
 					NRS.updateClaim(response[key]);
 				}
-				
+				if(key=="youAreSupernode"){
+					isSN = response[key];
+					if(isSN){
+						$("#supernode_warning").show();
+					}else{
+						$("#supernode_warning").hide();
+					}
+				}
 
 			}
 		});

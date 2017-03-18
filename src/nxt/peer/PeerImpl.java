@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
-import nxt.db.DbIterator;
-import nxt.http.JSONData;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 import org.json.simple.JSONValue;

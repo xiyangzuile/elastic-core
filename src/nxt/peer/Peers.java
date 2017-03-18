@@ -1063,9 +1063,23 @@ public final class Peers {
 		return result;
 	}
 
+
+	public static List<String> getPotentialSNPeersInternal(){
+		List<String> rslt = new ArrayList<String>();
+		try (DbIterator<? extends Account.AccountSupernodeDeposit> iterator = Account.getActiveSupernodes(Nxt.getBlockchain().getHeight());) {
+			while (iterator.hasNext()) {
+				final Account.AccountSupernodeDeposit b = iterator.next();
+				for (String u : b.getUris()) {
+					rslt.add(u);
+				}
+			}
+		}
+		return rslt;
+	}
+
 	public static List<String> getPotentialSNPeers(){
 		if(Peers.cachedSnPeers == null || Peers.lastCacheTime < Nxt.getBlockchain().getHeight()) {
-			Peers.cachedSnPeers = Peers.getPotentialSNPeers();
+			Peers.cachedSnPeers = Peers.getPotentialSNPeersInternal();
 			Peers.lastCacheTime = Nxt.getBlockchain().getHeight();
 		}
 		return Peers.cachedSnPeers;

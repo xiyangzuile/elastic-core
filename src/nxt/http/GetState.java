@@ -58,6 +58,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 			response.put("numberOfActiveAccountLeases", Account.getActiveLeaseCount());
 		}
 		response.put("numberOfPeers", Peers.getAllPeers().size());
+		response.put("youAreSupernode", Nxt.supernodePass!=null && Nxt.supernodePass.length()>0);
 		response.put("numberOfSupernodes", GetSupernodes.countSupernodes());
 		response.put("numberOfGuardnodes", Constants.GUARD_NODES.length);
 		response.put("numberOfActivePeers", Peers.getActivePeers().size());

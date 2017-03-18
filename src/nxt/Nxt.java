@@ -93,12 +93,15 @@ public final class Nxt {
 				Nxt.externalIPSN = Nxt.getStringProperty("nxt.superNodeExternalIP","");
 				Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");
 
-				if(IPValidator.getInstance().validate(Nxt.externalIPSN)==false){
-                    Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");
-                    System.exit(1);
-                }
+
 
 				if(snpass.length()!=0){
+
+					if(IPValidator.getInstance().validate(Nxt.externalIPSN)==false){
+						Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");
+						System.exit(1);
+					}
+
 					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
 					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){
 						Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Please fund your account first, and try again later.");
