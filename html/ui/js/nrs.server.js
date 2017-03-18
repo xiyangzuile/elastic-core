@@ -601,12 +601,12 @@ var NRS = (function (NRS, $, undefined) {
         transaction.timestamp = String(converters.byteArrayToSignedInt32(byteArray, 2));
         transaction.deadline = String(converters.byteArrayToSignedShort(byteArray, 6));
         transaction.publicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
-        transaction.recipient = String(converters.byteArrayToBigInteger(byteArray, 40));
-        transaction.amountNQT = String(converters.byteArrayToBigInteger(byteArray, 48));
-        transaction.feeNQT = String(converters.byteArrayToBigInteger(byteArray, 56));
+        transaction.snpublicKey = converters.byteArrayToHexString(byteArray.slice(40, 72));
+        transaction.recipient = String(converters.byteArrayToBigInteger(byteArray, 40+32));
+        transaction.amountNQT = String(converters.byteArrayToBigInteger(byteArray, 48+32));
+        transaction.feeNQT = String(converters.byteArrayToBigInteger(byteArray, 56+32));
 
-        // Here, slice the original signature as well as the new SN signature
-        var refHash = byteArray.slice(64, 96);
+        var refHash = byteArray.slice(64+32, 96+32);
         transaction.referencedTransactionFullHash = converters.byteArrayToHexString(refHash);
         if (transaction.referencedTransactionFullHash == "0000000000000000000000000000000000000000000000000000000000000000") {
             transaction.referencedTransactionFullHash = "";
@@ -614,9 +614,9 @@ var NRS = (function (NRS, $, undefined) {
         transaction.flags = 0;
         if (transaction.version > 0) {
             // IMPORTANT, 64bit offset for SN signature
-            transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160+64);
-            transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164+64));
-            transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168+64));
+            transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160+64+32);
+            transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164+64+32));
+            transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168+64+32));
             console.log(transaction);
             if (isVerifyECBlock) {
                 var ecBlock = NRS.getECBlock(NRS.isTestNet);
