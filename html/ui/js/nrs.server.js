@@ -606,16 +606,17 @@ var NRS = (function (NRS, $, undefined) {
         transaction.feeNQT = String(converters.byteArrayToBigInteger(byteArray, 56));
 
         // Here, slice the original signature as well as the new SN signature
-        var refHash = byteArray.slice(64, 96 + 32);
+        var refHash = byteArray.slice(64, 96);
         transaction.referencedTransactionFullHash = converters.byteArrayToHexString(refHash);
         if (transaction.referencedTransactionFullHash == "0000000000000000000000000000000000000000000000000000000000000000") {
             transaction.referencedTransactionFullHash = "";
         }
         transaction.flags = 0;
         if (transaction.version > 0) {
-            transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160);
-            transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164));
-            transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168));
+            // IMPORTANT, 64bit offset for SN signature
+            transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160+64);
+            transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164+64));
+            transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168+64));
             if (isVerifyECBlock) {
                 var ecBlock = NRS.getECBlock(NRS.isTestNet);
                 if (transaction.ecBlockHeight != ecBlock.height) {
