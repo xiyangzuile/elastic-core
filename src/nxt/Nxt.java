@@ -87,6 +87,8 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
+				Logger.logInfoMessage("Genesis ID: " + Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
+
 				// Do a supernode check
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
 				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
