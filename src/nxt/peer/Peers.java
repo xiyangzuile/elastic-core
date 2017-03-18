@@ -1074,6 +1074,7 @@ public final class Peers {
 				}
 			}
 		}
+		Collections.shuffle(rslt);
 		return rslt;
 	}
 
