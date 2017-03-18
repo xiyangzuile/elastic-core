@@ -303,7 +303,7 @@ public final class PeerServlet extends WebSocketServlet {
 			final JSONObject request = (JSONObject) JSONValue.parseWithException(cr);
 			peer.updateDownloadedVolume(cr.getCount());
 			if ((request.get("protocol") == null) || (((Number) request.get("protocol")).intValue() != 1)) {
-				Logger.logDebugMessage("Unsupported protocol " + request.get("protocol"));
+				Logger.logInfoMessage("Unsupported protocol " + request.get("protocol"));
 				return PeerServlet.UNSUPPORTED_PROTOCOL;
 			}
 			final PeerRequestHandler peerRequestHandler = PeerServlet.peerRequestHandlers
@@ -334,7 +334,7 @@ public final class PeerServlet extends WebSocketServlet {
 			}
 			return peerRequestHandler.processRequest(request, peer);
 		} catch (RuntimeException | ParseException | IOException e) {
-			Logger.logDebugMessage("Error processing POST request: " + e.toString());
+			Logger.logInfoMessage("Error processing POST request: " + e.toString());
 			peer.blacklist(e);
 			return PeerServlet.error(e);
 		}

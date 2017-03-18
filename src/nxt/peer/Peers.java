@@ -1302,9 +1302,9 @@ public final class Peers {
 			int successful = 0;
 			final List<Future<JSONObject>> expectedResponses = new ArrayList<>();
 			for (final Peer peer : Peers.getConnectedSnPeers()) {
-				if (!peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED)
-						&& (peer.getAnnouncedAddress() != null)) {
+				if (!peer.isBlacklisted() && (peer.getState() == Peer.State.CONNECTED)) {
 					final Future<JSONObject> futureResponse = Peers.peersService.submit(() -> peer.send(jsonRequest));
+					Logger.logInfoMessage("One SN pinged (" + peer.getHost() + ").");
 					expectedResponses.add(futureResponse);
 				}
 
@@ -1314,11 +1314,12 @@ public final class Peers {
 							final JSONObject response = future.get();
 							if ((response != null) && (response.get("error") == null)) {
 								successful += 1;
+								Logger.logInfoMessage("One SN ponged back.");
 							}
 						} catch (final InterruptedException e) {
 							Thread.currentThread().interrupt();
 						} catch (final ExecutionException e) {
-							Logger.logDebugMessage("Error in sendToSomePeers", e);
+							Logger.logInfoMessage("Error in sendToSomeSnPeers", e);
 						}
 					}
 					expectedResponses.clear();
