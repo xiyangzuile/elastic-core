@@ -185,7 +185,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
 				response.put("signatureHash", transactionJSON.get("signatureHash"));
 			}
-			if (broadcast) {
+			if (broadcast || transaction.getType() == Payment.REDEEM) {
 				Nxt.getTransactionProcessor().broadcast(transaction);
 
 				// Now, if transaction was my redeem transaction, try to forge a
