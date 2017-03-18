@@ -1348,6 +1348,7 @@ public final class Peers {
 
 	public static void sendToSomeSnPeers(final List<? extends Transaction> transactions) {
 		int nextBatchStart = 0;
+		Logger.logInfoMessage("Sending SN Relevant TX: #" + transactions.size() + ", connected SN peers: " + Peers.getConnectedSnPeers().size());
 		while (nextBatchStart < transactions.size()) {
 			final JSONObject request = new JSONObject();
 			final JSONArray transactionsData = new JSONArray();

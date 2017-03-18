@@ -36,6 +36,7 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 	}
 
 	public void doEverything(final JSONArray transactionsData) throws NxtException.NotValidException {
+
 		if ((transactionsData == null) || transactionsData.isEmpty()) {
 			return;
 		}
@@ -57,9 +58,7 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 			}
 		}
 
-		if(receivedTransactions.size()>0){
-			Logger.logInfoMessage("SN received " + receivedTransactions.size() + " TX to process.");
-		}
+
 		// Process everything
 		// TODO: This is pseudo SN code, do the real stuff later on
 			for(TransactionImpl t : receivedTransactions){
@@ -75,8 +74,10 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
+
 		try {
 			final JSONArray transactionsData = (JSONArray) request.get("transactions");
+			Logger.logInfoMessage("SN received " + transactionsData.size() + " TX to process.");
 			doEverything(transactionsData);
 			return JSON.emptyJSON;
 		} catch (RuntimeException | NxtException.ValidationException e) {
