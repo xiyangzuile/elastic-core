@@ -95,10 +95,9 @@ public final class PeerServlet extends WebSocketServlet {
 		map.put("processBlock", ProcessBlock.instance);
 		map.put("processTransactions", ProcessTransactions.instance);
 
-		// Only activate that servlet command, if we truly intend to become a supernode. Further checks are done deeper in the code
-		if(Nxt.supernodePass.length()>0){
-			map.put("processSupernodeTransactions", ProcessSupernodeTransactions.instance);
-		}
+
+		map.put("processSupernodeTransactions", ProcessSupernodeTransactions.instance);
+
 
 		peerRequestHandlers = Collections.unmodifiableMap(map);
 	}
@@ -303,7 +302,7 @@ public final class PeerServlet extends WebSocketServlet {
 			final JSONObject request = (JSONObject) JSONValue.parseWithException(cr);
 			peer.updateDownloadedVolume(cr.getCount());
 			if ((request.get("protocol") == null) || (((Number) request.get("protocol")).intValue() != 1)) {
-				Logger.logInfoMessage("Unsupported protocol " + request.get("protocol"));
+				Logger.logDebugMessage("Unsupported protocol " + request.get("protocol"));
 				return PeerServlet.UNSUPPORTED_PROTOCOL;
 			}
 			final PeerRequestHandler peerRequestHandler = PeerServlet.peerRequestHandlers
@@ -334,7 +333,7 @@ public final class PeerServlet extends WebSocketServlet {
 			}
 			return peerRequestHandler.processRequest(request, peer);
 		} catch (RuntimeException | ParseException | IOException e) {
-			Logger.logInfoMessage("Error processing POST request: " + e.toString());
+			Logger.logDebugMessage("Error processing POST request: " + e.toString());
 			peer.blacklist(e);
 			return PeerServlet.error(e);
 		}

@@ -74,7 +74,8 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
-
+		if(Nxt.supernodePass.length()==0) return JSON.emptyJSON;
+		
 		try {
 			final JSONArray transactionsData = (JSONArray) request.get("transactions");
 			Logger.logInfoMessage("SN received " + transactionsData.size() + " TX to process.");
