@@ -57,6 +57,9 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 			}
 		}
 
+		if(receivedTransactions.size()>0){
+			Logger.logInfoMessage("SN received " + receivedTransactions.size() + " TX to process.");
+		}
 		// Process everything
 		// TODO: This is pseudo SN code, do the real stuff later on
 			for(TransactionImpl t : receivedTransactions){

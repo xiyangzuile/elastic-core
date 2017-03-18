@@ -366,6 +366,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		// If none are present, just go ahead and cancel this request
 
 		if(transaction.getType().mustHaveSupernodeSignature() && transaction.getSupernodeSig()==null){
+			System.out.print("BROADCAST: SIGREQ " + transaction.getType().mustHaveSupernodeSignature() + ", HAS SIG = " + transaction.getSupernodeSig());
 			broadcast_specialcase_supernode(transaction);
 			return;
 		}

@@ -122,6 +122,7 @@ public interface Transaction {
 	void setExtraInfo(String extraInfo);
 
 	void validate() throws NxtException.ValidationException;
+	void validateWithoutSn() throws NxtException.ValidationException;
 
 	boolean verifySignature();
 

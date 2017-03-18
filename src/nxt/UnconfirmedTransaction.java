@@ -33,6 +33,12 @@ class UnconfirmedTransaction implements Transaction {
 
 	private final TransactionImpl transaction;
 	private final long arrivalTimestamp;
+
+	@Override
+	public void validateWithoutSn() throws NxtException.ValidationException {
+		transaction.validateWithoutSn();
+	}
+
 	private final long feePerByte;
 	private String extraInfo = "";
 

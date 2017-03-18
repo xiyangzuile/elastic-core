@@ -202,7 +202,12 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 
 				response.put("broadcasted", true);
 			} else {
-				transaction.validate();
+				// No full validation here for SN tx, since it would naturally fail
+				if(transaction.getType().mustHaveSupernodeSignature()==false)
+					transaction.validate();
+				else
+					transaction.validateWithoutSn();
+
 				response.put("broadcasted", false);
 			}
 		} catch (final NxtException.NotYetEnabledException e) {

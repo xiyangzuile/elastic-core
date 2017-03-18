@@ -1011,6 +1011,118 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	@Override
+	public void validateWithoutSn() throws NxtException.ValidationException {
+		if (this.type == null) {
+			throw new NxtException.NotValidException("Invalid transaction type");
+		}
+		if (this.timestamp == 0 ? ((this.deadline != 0) || (this.feeNQT != 0))
+				: ((this.deadline < 1) || ((this.type.zeroFeeTransaction() == false) && (this.feeNQT <= 0))
+				|| ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)))
+				|| (this.feeNQT > Constants.MAX_BALANCE_NQT) || (this.amountNQT < 0)
+				|| (this.amountNQT > Constants.MAX_BALANCE_NQT) || (this.type == null)) {
+			throw new NxtException.NotValidException(
+					"Invalid transaction parameters:\n type: " + this.type + ", timestamp: " + this.timestamp
+							+ ", deadline: " + this.deadline + ", fee: " + this.feeNQT + ", amount: " + this.amountNQT);
+		}
+
+		// Just a safe guard, should never be fulfilled actually
+		final long maxMangle = Math.max(this.amountNQT, this.feeNQT);
+		if ((this.amountNQT + this.feeNQT) < maxMangle) {
+			throw new NxtException.NotValidException("Keep out, script kiddie.");
+		}
+
+		if ((this.referencedTransactionFullHash != null) && (this.referencedTransactionFullHash.length != 32)) {
+			throw new NxtException.NotValidException("Invalid referenced transaction full hash "
+					+ Convert.toHexString(this.referencedTransactionFullHash));
+		}
+
+		if ((this.attachment == null) || (this.type != this.attachment.getTransactionType())) {
+			throw new NxtException.NotValidException(
+					"Invalid attachment " + this.attachment + " for transaction of type " + this.type);
+		}
+
+		// Redeemer-Account is not allowed to do any transaction whatsoever
+		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM)) {
+			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
+		}
+		if (this.getRecipientId() == Genesis.REDEEM_ID) {
+			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
+		}
+
+		// just another safe guard, better be safe than sorry
+		if (!Objects.equals(this.type, TransactionType.Payment.REDEEM) && this.getAttachment() != null
+				&& (this.getAttachment() instanceof Attachment.RedeemAttachment)) {
+			throw new NxtException.NotValidException("Keep out, script kiddie.");
+		}
+
+		// Check redeem timestamp validity
+		if (Objects.equals(this.type, TransactionType.Payment.REDEEM)){
+			Attachment.RedeemAttachment att = (Attachment.RedeemAttachment) this.getAttachment();
+			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp()){
+				throw new NxtException.NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
+			}
+		}
+
+		if (!this.type.canHaveRecipient()) {
+			if (this.recipientId != 0) {
+				throw new NxtException.NotValidException(
+						"Transactions of this type must have recipient == 0, amount == 0");
+			}
+		}
+
+		if (this.type.mustHaveRecipient() && (this.version > 0)) {
+			if (this.recipientId == 0) {
+				throw new NxtException.NotValidException("Transactions of this type must have a valid recipient");
+			}
+		}
+
+
+		// This type does not require any supernode sig
+		if(this.supernode_signature != null || this.superNodePublicKey != null){
+			throw new NxtException.NotValidException("The transaction must not be signed by any supernode at this stage!");
+		}
+
+
+		for (final Appendix.AbstractAppendix appendage : this.appendages) {
+			appendage.loadPrunable(this);
+			if (!appendage.verifyVersion(this.version)) {
+				throw new NxtException.NotValidException("Invalid attachment version " + appendage.getVersion()
+						+ " for transaction version " + this.version);
+			}
+
+			appendage.validate(this);
+		}
+
+		if (this.getFullSize() > Constants.MAX_PAYLOAD_LENGTH) {
+			throw new NxtException.NotValidException(
+					"Transaction size " + this.getFullSize() + " exceeds maximum payload size");
+		}
+
+		final int blockchainHeight = Nxt.getBlockchain().getHeight();
+		final long minimumFeeNQT = this.getMinimumFeeNQT(blockchainHeight);
+		if ((this.type.zeroFeeTransaction() == false) && (this.feeNQT < minimumFeeNQT)) {
+			throw new NxtException.NotCurrentlyValidException(
+					String.format("Transaction fee %f NXT less than minimum fee %f NXT at height %d",
+							((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
+							blockchainHeight));
+		}
+		if ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)) {
+			throw new NxtException.NotValidException(String.format("Transaction fee must be zero for zeroFeeTx!"));
+		}
+		if (this.ecBlockId != 0) {
+			if (blockchainHeight < this.ecBlockHeight) {
+				throw new NxtException.NotCurrentlyValidException(
+						"ecBlockHeight " + this.ecBlockHeight + " exceeds blockchain height " + blockchainHeight);
+			}
+			if (BlockDb.findBlockIdAtHeight(this.ecBlockHeight) != this.ecBlockId) {
+				throw new NxtException.NotCurrentlyValidException(
+						"ecBlockHeight " + this.ecBlockHeight + " does not match ecBlockId "
+								+ Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
+			}
+		}
+	}
+
+	@Override
 	public void validate() throws NxtException.ValidationException {
 		if (this.type == null) {
 			throw new NxtException.NotValidException("Invalid transaction type");
