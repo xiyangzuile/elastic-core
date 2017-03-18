@@ -580,7 +580,8 @@ var NRS = (function (NRS, $, undefined) {
             }, data);
             return;
         }
-        var payload = transactionBytes.substr(0, 192) + signature + transactionBytes.substr(320);
+        // 32*2 offset for tring value of SN public key
+        var payload = transactionBytes.substr(0, 192 + 32*2) + signature + transactionBytes.substr(320 + 32*2);
         if (data.broadcast == "false") {
             response.transactionBytes = payload;
             response.transactionJSON.signature = signature;
