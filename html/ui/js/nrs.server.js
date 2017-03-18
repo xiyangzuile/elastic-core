@@ -617,6 +617,7 @@ var NRS = (function (NRS, $, undefined) {
             transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160+64);
             transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164+64));
             transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168+64));
+            console.log(transaction);
             if (isVerifyECBlock) {
                 var ecBlock = NRS.getECBlock(NRS.isTestNet);
                 if (transaction.ecBlockHeight != ecBlock.height) {
