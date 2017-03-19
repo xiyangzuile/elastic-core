@@ -77,7 +77,7 @@ public class SupernodeMagicManager {
                     return;
                 }
 
-                if(Nxt.getSnAccount().isSuperNode()==false && Nxt.getSnAccount().canBecomeSupernode()==false){
+                if(Nxt.getSnAccount() == null || (Nxt.getSnAccount().isSuperNode()==false && Nxt.getSnAccount().canBecomeSupernode()==false)){
                     Logger.logInfoMessage("SuperNode Logic Delayed: Please fund your account as soon as possible.");
                     return;
                 }
