@@ -490,6 +490,7 @@ public final class TransactionImpl implements Transaction {
 	public void signSuperNode(String secretPhrase) {
 		this.supernode_signature = Crypto.sign(this.bytes(), secretPhrase);
 		this.superNodePublicKey = Crypto.getPublicKey(secretPhrase);
+		this.bytes = null;
 	}
 
 	void sign(String secretPhrase){
