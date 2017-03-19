@@ -479,7 +479,7 @@ public abstract class TransactionType {
 				final String addy = attachment.getAddress();
 				final String sigs = attachment.getSecp_signatures();
 				if (addy.indexOf("-") >= 0) {
-					final String[] multiples = addy.split("-");
+					final String[] multiples = addy.split(";")[0].split("-");
 					need = Integer.valueOf(multiples[0]);
 					for (int i = 1; i < multiples.length; ++i) {
 						addresses.add(multiples[i]);

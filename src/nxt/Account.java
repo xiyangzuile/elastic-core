@@ -559,10 +559,9 @@ public final class Account {
 				if (height == deposit.currentDepositHeightFrom) {
 					lessor.supernodeDepositBlocked = true;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
-					System.out.println("DETECTED SUPERNODE LOCK AT " + height);
+
 				} else if (height == deposit.currentDepositHeightTo) {
 
-                    System.out.println("DETECTED SUPERNODE UNLOCK AT " + height);
 					lessor.supernodeDepositBlocked = false;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_EXPIRED);
 

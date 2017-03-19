@@ -34,7 +34,7 @@ var NRS = (function(NRS, $, undefined) {
 
         if (redeemEntry.indexOf("-")>=0){
             $("#redeemfieldsign2").show();
-            var tt = res[1].split("-");
+            var tt = res[1].splot(";")[0].split("-");
             $("#exactlynr").html(tt[0]);
             tt.shift();
             $("#exactlyaddr").html(tt.join("<br>"));
@@ -70,13 +70,21 @@ var NRS = (function(NRS, $, undefined) {
                                         x.add(option);
                                     }else{
                                         console.log("Found multisig entry: "  + elem.split(",")[1] );
-                                        var t = elem.split(",")[1].split("-");
+                                        var t = elem.split(",")[1].split(";")[0].split("-");
+                                        var txxx = elem.split(",")[1].split(";")[1];
                                         for(var i=1;i<t.length;++i){
                                             var option = document.createElement("option");
                                             option.value = elem;
                                             option.text = t[i] + ": " + NRS.formatAmount((elem.split(",")[2])) + " XEL   (" + t[0] + "-of-Multisig)";
                                             x.add(option);
                                         }
+
+                                        // also, add the multisig address entry itself (so it becomes easier to find the redeem)
+                                        var option = document.createElement("option");
+                                        option.value = elem;
+                                        option.text = txxx + ": " + NRS.formatAmount((elem.split(",")[2])) + " XEL   (" + t[0] + "-of-Multisig)";
+                                        x.add(option);
+                                        
                                     }
                                 });
                                 var my_options = $("#redeem_address option");

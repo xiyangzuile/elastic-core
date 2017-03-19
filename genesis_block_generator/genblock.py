@@ -3,9 +3,36 @@ import os.path
 import json
 import time
 import sys
+import bitcoin
+
 from bitcoin.wallet import CBitcoinSecret, P2PKHBitcoinAddress
 from bitcoin.core import x, CScript
 from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
+from bitcoin.core.script import CScript,OP_CHECKMULTISIG, OP_CHECKSIGVERIFY
+
+from bitcoin.wallet import CBitcoinAddress
+
+
+def parse_script(text):
+    parsed = bitcoin.core.script.CScript(bitcoin.core.x(text))
+   
+
+    if parsed.is_valid():
+        # return as array of strings
+        as_array = []
+        for i in parsed:
+            as_array.append(i)
+        return as_array
+    else:
+        return False
+
+def parse_script_add(xs):
+    y = parse_script(xs)
+    txin_redeemScript = CScript(y)
+    txin_scriptPubKey = txin_redeemScript.to_p2sh_scriptPubKey()
+    txin_p2sh_address = CBitcoinAddress.from_scriptPubKey(txin_scriptPubKey)
+    return txin_p2sh_address
+
 def ensure_is_present(url, file_name):
     exists = os.path.isfile(file_name) 
     if not exists:
@@ -363,6 +390,10 @@ for x in abnormal:
     want = 0
     have = 0
     cnt=0
+    lastpart=str(x["owner_pubkey"].split(" ")[-1])
+    print "PARSING",x["btc_tx"],"->",x["owner_pubkey"]
+    readdr = parse_script_add(lastpart)
+
     for kk in iter(scr2):
         if cnt==0:
             want=kk
@@ -371,14 +402,14 @@ for x in abnormal:
                 reas += str(P2PKHBitcoinAddress.from_pubkey(kk)) + "-"
             else:
                 have = kk
-                normal_addresses.append(str(want)+"-"+reas[:-1])
+                normal_addresses.append(str(want)+"-"+reas[:-1]+";"+str(readdr))
                 normal_addresses_xel.append(str(int(float(x["mir_amount"])*100000000)))
                 normal_addresses_times.append(timestamps[x["btc_tx"]])
                 break
 
         cnt = cnt + 1
 
-    print " --> abnormal: ",want,"out of",have,"required",reas
+    print " --> abnormal: ",want,"out of",have,"required",reas,"3-ADDR:",readdr
 
 
 
