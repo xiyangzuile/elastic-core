@@ -77,6 +77,12 @@ public class SupernodeMagicManager {
                     return;
                 }
 
+                if(Nxt.getSnAccount().isSuperNode()==false && Nxt.getSnAccount().canBecomeSupernode()==false){
+                    Logger.logInfoMessage("SuperNode Logic Delayed: Please fund your account as soon as possible.");
+                    return;
+                }
+
+
                 Account sn = Nxt.getSnAccount();
                 // Check if we should fire the "update callback right now!"
                 // This happens either when requested or when there are only 6 blocks left in the SN status

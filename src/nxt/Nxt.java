@@ -106,8 +106,12 @@ public final class Nxt {
 
 					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
 					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){
-						Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Please fund your account first, and try again later.");
-						System.exit(1);
+                        if(snrenew==false){
+                            Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
+                            System.exit(1);
+                        }else {
+                            Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Fund your account as quick as possible. Retrying soon.");
+                        }
 					}else if((!sn.isSuperNode() && sn.canBecomeSupernode())){
 						// Check if autorenew is on if the node is not yet a supernode
 						if(snrenew==false){
@@ -122,7 +126,7 @@ public final class Nxt {
 						Nxt.becomeSupernodeNow = false;
 						Logger.logInfoMessage("YOU ARE A SUPERNODE RIGHT NOW!");
 						SupernodeMagicManager.getInstance().initialized();
-					} else if(sn.canBecomeSupernode()){
+					} else{
                         Nxt.isSupernode = true;
                         Nxt.supernodePass = snpass;
                         Nxt.becomeSupernodeNow = true;

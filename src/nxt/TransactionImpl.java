@@ -807,7 +807,7 @@ public final class TransactionImpl implements Transaction {
 		json.put("deadline", this.deadline);
 		json.put("senderPublicKey", Convert.toHexString(this.getSenderPublicKey()));
 
-		if(this.getSenderPublicKey()!=null)
+		if(this.superNodePublicKey()!=null)
 			json.put("superNodePublicKey", Convert.toHexString(this.getSuperNodePublicKey()));
 
 		if (this.type.canHaveRecipient()) {
