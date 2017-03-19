@@ -993,6 +993,10 @@ public final class TransactionImpl implements Transaction {
 		return 1 + 1 + 4 + 2 + 32 + 32 + 8 + (this.useNQT() ? 8 + 8 + 32 : 4 + 4 + 8); // two public keys, sender and supernode
 	}
 
+	private int snPubkeyOffset() {
+		return 1 + 1 + 4 + 2 + 32;
+	}
+
 	void undoUnconfirmed() {
 		final Account senderAccount = Account.getAccount(this.getSenderId());
 		this.type.undoUnconfirmed(this, senderAccount);
@@ -1280,6 +1284,13 @@ public final class TransactionImpl implements Transaction {
 		for (int i = start; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
 			data[i] = 0;
 		}
+
+		// Also, important, do not forget to zero the SN public key
+		final int start_snpubkey = this.snPubkeyOffset();
+		for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
+			data[i] = 0;
+		}
+
 		return data;
 	}
 	private byte[] zeroPartSignature(final byte[] data) {
@@ -1287,6 +1298,14 @@ public final class TransactionImpl implements Transaction {
 		for (int i = start + 64; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
 			data[i] = 0;
 		}
+
+		// Also, important, do not forget to zero the SN public key
+		// Also, important, do not forget to zero the SN public key
+		final int start_snpubkey = this.snPubkeyOffset();
+		for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
+			data[i] = 0;
+		}
+
 		return data;
 	}
 

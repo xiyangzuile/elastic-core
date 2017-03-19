@@ -87,7 +87,7 @@ public class SupernodeMagicManager {
                 // Check if we should fire the "update callback right now!"
                 // This happens either when requested or when there are only 6 blocks left in the SN status
                 // Also, always leave 2 blocks space between such tries
-                if((sn.isSuperNode() && sn.supernodeExpires()<=6 && (Nxt.getBlockchain().getHeight()-this.lastSent)>=2) || Nxt.becomeSupernodeNow){
+                if((sn.isSuperNode() && sn.supernodeExpires()<=6 && (Nxt.getBlockchain().getHeight()-this.lastSent)>=2) || Nxt.becomeSupernodeNow || (sn.isSuperNode()==false && sn.canBecomeSupernode()==true)){
                     Nxt.becomeSupernodeNow = false;
                     lastSent = Nxt.getBlockchain().getHeight();
                     Logger.logInfoMessage("*** WE ARE TRYING TO OBTAIN/Refresh SUPERNODE STATUS NOW ***");
