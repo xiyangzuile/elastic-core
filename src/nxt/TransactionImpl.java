@@ -806,6 +806,10 @@ public final class TransactionImpl implements Transaction {
 		json.put("timestamp", this.timestamp);
 		json.put("deadline", this.deadline);
 		json.put("senderPublicKey", Convert.toHexString(this.getSenderPublicKey()));
+
+		if(this.getSenderPublicKey()!=null)
+			json.put("superNodePublicKey", Convert.toHexString(this.getSuperNodePublicKey()));
+
 		if (this.type.canHaveRecipient()) {
 			json.put("recipient", Long.toUnsignedString(this.recipientId));
 		}
@@ -817,6 +821,10 @@ public final class TransactionImpl implements Transaction {
 		json.put("ecBlockHeight", this.ecBlockHeight);
 		json.put("ecBlockId", Long.toUnsignedString(this.ecBlockId));
 		json.put("signature", Convert.toHexString(this.signature));
+		if(this.getSupernodeSig() != null)
+			json.put("supernode_signature", Convert.toHexString(this.supernode_signature));
+
+
 		final JSONObject attachmentJSON = new JSONObject();
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
