@@ -85,7 +85,7 @@ var NRS = (function(NRS, $) {
 			$("#user_info_modal_account_name").html(NRS.escapeRespStr(account.name));
 			$("#user_info_modal_account_name_container").show();
 		} else {
-			$("#user_info_modal_account_name").html(NRS.accountRS);
+			$("#user_info_modal_account_name").html(account.accountRS);
 			$("#user_info_modal_account_name_container").show();
 		}
 
