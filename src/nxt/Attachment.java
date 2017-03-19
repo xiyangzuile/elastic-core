@@ -839,9 +839,14 @@ public interface Attachment extends Appendix {
 			this.deadline = ((Long) attachmentData.get("deadline")).intValue();
 			this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
 
-			// Long is always in quotes
-			this.xelPerPow = Long.parseLong((String)attachmentData.get("xel_per_pow"));
-			this.xelPerBounty = Long.parseLong((String)attachmentData.get("xel_per_bounty"));
+			// Sometimes it comes with quotes, sometimes not! Why?
+			if(attachmentData.get("xel_per_pow") instanceof String) {
+				this.xelPerPow = Long.parseLong((String) attachmentData.get("xel_per_pow"));
+				this.xelPerBounty = Long.parseLong((String) attachmentData.get("xel_per_bounty"));
+			}else{
+				this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
+				this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
+			}
 
 		}
 
