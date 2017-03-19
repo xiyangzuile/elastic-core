@@ -458,8 +458,7 @@ public final class TransactionImpl implements Transaction {
 		}
 
 		// save supernode sig
-		if(builder.supernode_signature!=null)
-			this.supernode_signature = builder.supernode_signature;
+		this.supernode_signature = builder.supernode_signature;
 
 		if ((builder.signature != null) && (secretPhrase != null)) {
 			throw new NxtException.NotValidException("Transaction is already signed");
@@ -482,9 +481,6 @@ public final class TransactionImpl implements Transaction {
 		} else {
 			this.signature = null;
 		}
-
-		this.supernode_signature = null;
-
 	}
 
 	public void signSuperNode(String secretPhrase) {
