@@ -1032,7 +1032,7 @@ public final class Peers {
 	public static List<Peer> getPeers(final Filter<Peer> filter, final int limit) {
 		final List<Peer> result = new ArrayList<>();
 		for (final Peer peer : Peers.peers.values()) {
-			if(peer.isSupernode()) continue;
+			// if(peer.isSupernode()) continue; TODO: Check if this is the correct way, i.e., all SN eers are also normal peers!
 			if (filter.ok(peer)) {
 				result.add(peer);
 				if (result.size() >= limit) {
