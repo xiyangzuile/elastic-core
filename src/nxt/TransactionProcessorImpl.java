@@ -655,7 +655,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 						arrivalTimestamp);
 				this.processTransaction(unconfirmedTransaction);
 				if (this.broadcastedTransactions.contains(transaction)) {
-					Logger.logDebugMessage("Received back transaction " + transaction.getStringId()
+					Logger.logInfoMessage("Received back transaction " + transaction.getStringId()
 							+ " that we broadcasted, will not forward again to peers");
 				} else {
 					sendToPeersTransactions.add(transaction);
@@ -665,7 +665,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			} catch (final NxtException.NotCurrentlyValidException ignore) {
 			} catch (final NxtException.LostValidityException ignore) {
 			} catch (NxtException.ValidationException | RuntimeException e) {
-				Logger.logDebugMessage(String.format("Invalid transaction from peer: %s",
+				Logger.logInfoMessage(String.format("Invalid transaction from peer: %s",
 						((JSONObject) transactionData).toJSONString()), e);
 				exceptions.add(e);
 			}
@@ -678,6 +678,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		}
 		this.broadcastedTransactions.removeAll(receivedTransactions);
 		if (!exceptions.isEmpty()) {
+			Logger.logInfoMessage("Peer sends invalid transactions: " + exceptions.toString());
 			throw new NxtException.NotValidException("Peer sends invalid transactions: " + exceptions.toString());
 		}
 	}
