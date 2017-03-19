@@ -104,7 +104,7 @@ public final class Nxt {
 						System.exit(1);
 					}
 
-					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
+					Account sn = Account.addOrGetAccount(Crypto.getPublicKey(snpass));
 					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){
                         if(snrenew==false){
                             Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
