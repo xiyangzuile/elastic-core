@@ -19,10 +19,12 @@ public class txtests {
         JSONParser parser = new JSONParser();
         JSONObject txobj = (JSONObject)parser.parse(txraw);
         final TransactionImpl transaction2 = TransactionImpl.parseTransaction(txobj);
-        transaction2.validateWithoutSn();
+        //transaction2.validateWithoutSn();
+        System.out.println("TX attachment: " + transaction2.getAttachment().getAppendixName());
+        transaction2.getAttachment().validate(transaction2);
 
 
-        final String transactionJSON = Convert.emptyToNull("");
+        /*final String transactionJSON = Convert.emptyToNull("");
         final String transactionBytes = Convert.emptyToNull("03102a713b06a005d9d5c57971eefb085e3abaf7a5a4a6cdb8185f30105583cdb09ad8f61886ec6500000000000000000000000000000000000000000000000000000000000000006ba66909eaf365ed00e876481700000000e1f505000000000000000000000000000000000000000000000000000000000000000000000000c05a4d10662d91711556380f1cc2ba3cb9199dc102821b20f32e4aa0860d0d0d270df53292931dec38da8c1e051c11842c33e6e4c644672c236dc66160ba2dc5000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000618e19af1ec34ffa01040074657374fa0000000a00000000ca9a3b0000000000e1f5050000000001416f1a1b62ad7669ac386f1047cefde765fd100530d52873dfb85f2e5d4d8e3e");
         final String prunableAttachmentJSON = Convert.emptyToNull("");
 
@@ -38,6 +40,6 @@ public class txtests {
         } catch (NxtException.ValidationException | RuntimeException e) {
             JSONData.putException(response, e, "Failed to broadcast transaction");
         }
-        System.out.println(response.toJSONString());
+        System.out.println(response.toJSONString());*/
     }
 }

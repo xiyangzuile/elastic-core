@@ -95,7 +95,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				.emptyToNull(req.getParameter("referencedTransactionFullHash"));
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, false);
 		final String publicKeyValue = Convert.emptyToNull(req.getParameter("publicKey"));
-		final boolean broadcast = !"false".equalsIgnoreCase(req.getParameter("broadcast")) && (secretPhrase != null) && (!attachment.getTransactionType().mustHaveSupernodeSignature());
+		final boolean broadcast = !"false".equalsIgnoreCase(req.getParameter("broadcast")) && (secretPhrase != null);
 
 		Appendix.PrunableSourceCode prunableSourceCode = null;
 		if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK) {

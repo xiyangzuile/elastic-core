@@ -61,15 +61,17 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 
 		// Process everything
 		// TODO: This is pseudo SN code, do the real stuff later on
-			for(TransactionImpl t : receivedTransactions){
+		for(TransactionImpl t : receivedTransactions){
 				t.signSuperNode(Nxt.supernodePass);
 				try {
+					t.validate(); // Validate if everything is working fine with this TX
+					System.out.println("  -> handling TX " + t.getId() + " (" + t.getType().getName() + "). Validates: true");
 					Nxt.getTransactionProcessor().broadcast(t);
 				} catch (NxtException.ValidationException e) {
 						// TODO: Check some deeper stuff here
 					e.printStackTrace();
 				}
-			}
+		}
 	}
 
 	@Override
