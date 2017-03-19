@@ -838,8 +838,10 @@ public interface Attachment extends Appendix {
 			this.workTitle = ((String) attachmentData.get("title")).trim();
 			this.deadline = ((Long) attachmentData.get("deadline")).intValue();
 			this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
-			this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
-			this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
+
+			// Long is always in quotes
+			this.xelPerPow = Long.parseLong((String)attachmentData.get("xel_per_pow"));
+			this.xelPerBounty = Long.parseLong((String)attachmentData.get("xel_per_bounty"));
 
 		}
 

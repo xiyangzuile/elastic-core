@@ -250,7 +250,7 @@ public final class JSONData {
 		JSONData.putException(json, e, "");
 	}
 
-	static void putException(final JSONObject json, final Exception e, String error) {
+	public static void putException(final JSONObject json, final Exception e, String error) {
 		json.put("errorCode", 4);
 		if (error.length() > 0) {
 			error += ": ";
