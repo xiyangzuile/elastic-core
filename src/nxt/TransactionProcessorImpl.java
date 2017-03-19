@@ -366,6 +366,8 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		// If none are present, just go ahead and cancel this request
 
 		if(transaction.getType().mustHaveSupernodeSignature() && transaction.getSupernodeSig()==null){
+			Logger.logInfoMessage("Transaction " + transaction.getStringId()
+					+ " is relayed to SN.");
 			broadcast_specialcase_supernode(transaction);
 			return;
 		}
@@ -373,17 +375,17 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 		BlockchainImpl.getInstance().writeLock();
 		try {
 			if (TransactionDb.hasTransaction(transaction.getId())) {
-				Logger.logMessage("Transaction " + transaction.getStringId()
+				Logger.logInfoMessage("Transaction " + transaction.getStringId()
 						+ " already in blockchain, will not broadcast again");
 				return;
 			}
 			if (this.getUnconfirmedTransaction(((TransactionImpl) transaction).getDbKey()) != null) {
 				if (TransactionProcessorImpl.enableTransactionRebroadcasting) {
 					this.broadcastedTransactions.add((TransactionImpl) transaction);
-					Logger.logMessage("Transaction " + transaction.getStringId()
+					Logger.logInfoMessage("Transaction " + transaction.getStringId()
 							+ " already in unconfirmed pool, will re-broadcast");
 				} else {
-					Logger.logMessage("Transaction " + transaction.getStringId()
+					Logger.logInfoMessage("Transaction " + transaction.getStringId()
 							+ " already in unconfirmed pool, will not broadcast again");
 				}
 				return;
@@ -395,10 +397,10 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			if (broadcastLater) {
 				this.waitingTransactions.add(unconfirmedTransaction);
 				this.broadcastedTransactions.add((TransactionImpl) transaction);
-				Logger.logDebugMessage("Will broadcast new transaction later " + transaction.getStringId());
+				Logger.logInfoMessage("Will broadcast new transaction later " + transaction.getStringId());
 			} else {
 				this.processTransaction(unconfirmedTransaction);
-				Logger.logDebugMessage("Accepted new transaction " + transaction.getStringId());
+				Logger.logInfoMessage("Accepted new transaction " + transaction.getStringId());
 				final List<Transaction> acceptedTransactions = Collections.singletonList(transaction);
 				Peers.sendToSomePeers(acceptedTransactions);
 				this.transactionListeners.notify(acceptedTransactions, Event.ADDED_UNCONFIRMED_TRANSACTIONS);
