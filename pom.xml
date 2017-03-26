@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>elastic-core</groupId>
   <artifactId>elastic-core</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
   
   <build>

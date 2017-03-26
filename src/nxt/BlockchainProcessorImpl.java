@@ -963,7 +963,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					}
 					final int chainHeight = BlockchainProcessorImpl.this.blockchain.getHeight();
 					this.downloadPeer();
+					//System.out.println("Check if still downloading: myheight = " + BlockchainProcessorImpl.this.blockchain.getHeight() + " their height = " + chainHeight);
 					if (BlockchainProcessorImpl.this.blockchain.getHeight() == chainHeight) {
+						//System.out.println(" -> seems finished: isDownloading = " + BlockchainProcessorImpl.this.isDownloading + ", endlessDownload = " + BlockchainProcessorImpl.this.simulateEndlessDownload);
 						if (BlockchainProcessorImpl.this.isDownloading
 								&& !BlockchainProcessorImpl.this.simulateEndlessDownload) {
 							Logger.logMessage("Finished blockchain download");
