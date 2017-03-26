@@ -271,6 +271,8 @@ final class TransactionDb {
 			final int ecBlockHeight = rs.getInt("ec_block_height");
 			final long ecBlockId = rs.getLong("ec_block_id");
 			final byte[] signature = rs.getBytes("signature");
+			final byte[] supernode_signature = rs.getBytes("supernode_signature");
+			final byte[] superNodePublicKey = rs.getBytes("superNodePublicKey");
 			final long blockId = rs.getLong("block_id");
 			final int height = rs.getInt("height");
 			final long id = rs.getLong("id");
@@ -294,7 +296,7 @@ final class TransactionDb {
 					feeNQT, deadline, transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
 							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature)
 							.blockId(blockId).height(height).id(id).senderId(senderId).blockTimestamp(blockTimestamp)
-							.fullHash(fullHash).ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId)
+							.fullHash(fullHash).ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId).supernode_signature(superNodePublicKey, supernode_signature)
 							.index(transactionIndex);
 			if (transactionType.canHaveRecipient()) {
 				final long recipientId = rs.getLong("recipient_id");
@@ -320,7 +322,7 @@ final class TransactionDb {
 			for (final TransactionImpl transaction : transactions) {
 				try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO transaction (id, deadline, "
 						+ "recipient_id, amount, fee, referenced_transaction_full_hash, height, "
-						+ "block_id, signature, timestamp, type, subtype, sender_id, attachment_bytes, "
+						+ "block_id, signature, superNodePublicKey, supernode_signature, timestamp, type, subtype, sender_id, attachment_bytes, "
 						+ "block_timestamp, full_hash, version, has_message, has_encrypted_message, has_public_key_announcement, "
 						+ "has_encrypttoself_message, has_prunable_message, has_prunable_source_code, has_prunable_encrypted_message, "
 						+ "has_prunable_attachment, ec_block_height, ec_block_id, transaction_index) "
@@ -335,6 +337,8 @@ final class TransactionDb {
 					pstmt.setInt(++i, transaction.getHeight());
 					pstmt.setLong(++i, transaction.getBlockId());
 					pstmt.setBytes(++i, transaction.getSignature());
+					pstmt.setBytes(++i, transaction.getSuperNodePublicKey());
+					pstmt.setBytes(++i, transaction.getSupernodeSig());
 					pstmt.setInt(++i, transaction.getTimestamp());
 					pstmt.setByte(++i, transaction.getType().getType());
 					pstmt.setByte(++i, transaction.getType().getSubtype());

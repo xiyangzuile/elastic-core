@@ -594,6 +594,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 							BlockchainProcessorImpl.this.pushBlock(block);
 
 						} catch (final BlockNotAcceptedException e) {
+							//e.printStackTrace();
 							Logger.logDebugMessage("Will blacklist peer " + feederPeer.getAnnouncedAddress()
 									+ " soon, block was not accepted!");
 							peerBlock.getPeer().blacklist(e);
@@ -770,7 +771,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 										/ ((long) this.totalBlocks * 1000 * 60))
 								+ " min left");
 					} else {
-						Logger.logDebugMessage("Did not accept peer's blocks, back to our own fork");
+						Logger.logDebugMessage("Did not accept peer's blocks, back to our own fork (my last id: " + BlockchainProcessorImpl.this.blockchain.getLastBlock().getId() + ", their last id: " + lastBlockId + ")");
 					}
 				} finally {
 					BlockchainProcessorImpl.this.blockchain.updateUnlock();
@@ -907,6 +908,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 							BlockchainProcessorImpl.this.pushBlock(block);
 							pushedForkBlocks += 1;
 						} catch (final BlockNotAcceptedException e) {
+							//e.printStackTrace();
 							Logger.logDebugMessage("Will blacklist peer " + peer.getAnnouncedAddress()
 									+ " soon, block was not accepted!");
 							peer.blacklist(e);
