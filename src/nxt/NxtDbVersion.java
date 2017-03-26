@@ -46,7 +46,7 @@ class NxtDbVersion extends DbVersion {
 					+ "deadline SMALLINT NOT NULL, recipient_id BIGINT, "
 					+ "amount BIGINT NOT NULL, fee BIGINT NOT NULL, full_hash BINARY(32) NOT NULL, "
 					+ "height INT NOT NULL, block_id BIGINT NOT NULL, FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE, "
-					+ "signature BINARY(64) NOT NULL, superNodePublicKey BINARY(32) NOT NULL, supernode_signature BINARY(64) NOT NULL, timestamp INT NOT NULL, type TINYINT NOT NULL, subtype TINYINT NOT NULL, "
+					+ "signature BINARY(64) NOT NULL, superNodePublicKey BINARY(32), supernode_signature BINARY(64), timestamp INT NOT NULL, type TINYINT NOT NULL, subtype TINYINT NOT NULL, "
 					+ "sender_id BIGINT NOT NULL, block_timestamp INT NOT NULL, referenced_transaction_full_hash BINARY(32), "
 					+ "transaction_index SMALLINT NOT NULL, phased BOOLEAN NOT NULL DEFAULT FALSE, "
 					+ "attachment_bytes VARBINARY, version TINYINT NOT NULL, has_message BOOLEAN NOT NULL DEFAULT FALSE, "
