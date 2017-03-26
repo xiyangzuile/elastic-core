@@ -326,7 +326,7 @@ final class TransactionDb {
 						+ "block_timestamp, full_hash, version, has_message, has_encrypted_message, has_public_key_announcement, "
 						+ "has_encrypttoself_message, has_prunable_message, has_prunable_source_code, has_prunable_encrypted_message, "
 						+ "has_prunable_attachment, ec_block_height, ec_block_id, transaction_index) "
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 					int i = 0;
 					pstmt.setLong(++i, transaction.getId());
 					pstmt.setShort(++i, transaction.getDeadline());
