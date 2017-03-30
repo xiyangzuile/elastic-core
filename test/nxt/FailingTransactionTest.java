@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 public class FailingTransactionTest extends AbstractBlockchainTest {
 
 
-    public static Long failing_id = -466278648969419258L;
+    public static Long failing_id = Long.parseUnsignedLong("1330332455186677687");
 
     @Before
     public void init() {
