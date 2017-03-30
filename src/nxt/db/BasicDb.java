@@ -164,7 +164,7 @@ public class BasicDb {
 	}
 
 	public void init(final DbVersion dbVersion) {
-		Logger.logDebugMessage("Database jdbc url set to %s username %s", this.dbUrl, this.dbUsername);
+		Logger.logInfoMessage("Database jdbc url set to %s username %s", this.dbUrl, this.dbUsername);
 		this.cp = JdbcConnectionPool.create(this.dbUrl, this.dbUsername, this.dbPassword);
 		this.cp.setMaxConnections(this.maxConnections);
 		this.cp.setLoginTimeout(this.loginTimeout);

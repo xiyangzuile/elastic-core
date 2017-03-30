@@ -476,7 +476,9 @@ public final class TransactionImpl implements Transaction {
 			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && (this.getSenderPublicKey() == null)) {
 				throw new NxtException.NotValidException("This transaction must be bound to REDEEM_ID public key");
 			}
-			this.signature = Crypto.sign(this.bytes(), secretPhrase);
+			byte[] toSignBytes = this.bytes();
+			Logger.logInfoMessage("Signing HEX: " + Convert.toHexString(toSignBytes));
+			this.signature = Crypto.sign(toSignBytes, secretPhrase);
 			this.bytes = null;
 		} else {
 			this.signature = null;

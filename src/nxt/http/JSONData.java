@@ -274,7 +274,7 @@ public final class JSONData {
 		return json;
 	}
 
-	static JSONObject transaction(final Transaction transaction) {
+	public static JSONObject transaction(final Transaction transaction) {
 		final JSONObject json = JSONData.transaction(transaction, null);
 
 		return json;
