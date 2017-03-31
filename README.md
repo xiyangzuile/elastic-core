@@ -8,7 +8,7 @@
 
 ## Installing and Running Elastic (Testnet) ##
 
-### Preliminaries ###
+### A. Preliminaries ###
 
 First of all, you need Git installed.
 
@@ -17,18 +17,20 @@ Then, if you go the preferred way, all you need is Docker.
 Otherwise, if you want to build everything from scratch, make sure you have Java Development Kit 1.8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed, the JRE will not suffice. If you have only JRE installed, you will get an error, that the `javac` command can't be found. Furthermore, you will need to have Maven installed. Also ... get Linux or macOS ;-) Of course it works on Windows too, the process might however look slightly different.
 
 
-### Using Docker (preferred) ###
+### B. Using Docker (preferred) ###
 
-Get the Docker repository:
+#### On Unix ####
+
+**1.**Get the Docker repository:
 
 `git clone https://github.com/OrdinaryDude/elastic-docker.git`
 
-Now, use the simple scripts to create the docker container and launch an instance.
+**2.**Now, use the simple scripts to create the docker container and launch an instance.
 So, first of all: create the container (this has to be done only once):
 
 `./build_docker.sh`
 
-Now you can use
+**3.**Now you can use
 
 `./run_docker.sh`
 
@@ -44,7 +46,40 @@ If you want to remove Elastic entirely, just do:
 
 `./deinstall_docker.sh`
 
-### Alternative: Compiling from Scratch ###
+#### On Windows ####
+
+**1.**Get the Elastic Docker 
+
+You might be have [Docker Hub](https://hub.docker.com "Docker Hub")  account and you must be [login](https://docs.docker.com/engine/reference/commandline/login/ "Login to your account") on your Docker Terminal
+
+`docker pull ordinarydude/elastic-docker`
+
+(optional) If you don't want to create account, you can use;
+
+`docker build https://github.com/OrdinaryDude/elastic-docker.git`
+
+**2.**Check your docker machine ip
+
+`docker-machine ip`
+ 
+Default docker machine is working on **192.168.99.100**
+
+**3.**Now you can run your elastic-docker image 
+
+`docker run -p 192.168.99.100:6847:6847 ordinarydude/elastic-docker`
+
+The web wallet will listen on http://192.168.99.100:6876
+
+If you want to stop it; List your active containers
+
+`docker ps`
+
+Then copy your elastic-docker container ID. It is look like this: 289f3ec65f6b 
+
+`docker stop 289f3ec65f6b`
+
+
+### D. Alternative: Compiling from Scratch ###
 
 Go to your "Development" folder and issue:
 
@@ -68,11 +103,14 @@ to compile and package the code. Afterwards, you can launch the elastic client b
 
 `java -jar target/elastic-core*.jar`
 
-### Getting Some XEL for Testing ###
+### E. Getting Some XEL for Testing ###
 
 You can obtain some testnet XEL from the faucet located at http://elasticexplorer.org/faucet.
 
-### Updating Source Code to the Latest Version ###
+### F. Updating Source Code to the Latest Version ###
+
+
+#### On Unix ####
 
 If you already have an old elastic version running and you now want to update XEL to the newest version, first stop your node (CTRL + C).
 Go to main directory of XEL and issue the following commands.
@@ -91,5 +129,13 @@ first and (if you need to) unstash them after compiling using
 
 Then, you can run elastic again using
 
-`java -jar target\elastic-core-*.jar
-`
+`java -jar target\elastic-core-*.jar`
+
+
+#### On Windows ####
+
+It is very simple. You can run this command on your Docker Terminal, if it has an update, it will be automatically
+
+`docker pull ordinarydude/elastic-docker`
+
+Then you can run your image.
