@@ -105,9 +105,11 @@ public class TransactionCrippler extends AbstractForgingTest {
             assertTrue(success);
         }
 
+        forgeBlocks(3, secretPhrase);
+
         // Sending some XEL with supernode sig. This should fail!
         {
-            System.out.println("\n(!!) Sending 1000 XEL to " + user2.getRsAccount());
+            System.out.println("\n\n\n(!!) Sending 1000 XEL to " + user2.getRsAccount());
             final Attachment attachment = Attachment.ORDINARY_PAYMENT;
             boolean success = false;
             try {

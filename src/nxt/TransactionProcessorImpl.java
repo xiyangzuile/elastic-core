@@ -362,6 +362,8 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 	@Override
 	public void broadcast(final Transaction transaction) throws NxtException.ValidationException {
 
+		Logger.logSignMessage("Broadcasting TX: "+Convert.toHexString(transaction.getBytes()));
+
 		// Relay SN relevant transactions to the connected supernodes.
 		// If none are present, just go ahead and cancel this request
 
