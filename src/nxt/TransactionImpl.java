@@ -567,7 +567,7 @@ public final class TransactionImpl implements Transaction {
 				buffer.putInt(this.timestamp);
 				buffer.putShort(this.deadline);
 				buffer.put(this.getSenderPublicKey());
-				buffer.put(this.superNodePublicKey != null ? this.superNodePublicKey : new byte[32]);
+				buffer.put(Convert.emptyToNull(this.superNodePublicKey)!= null ? this.superNodePublicKey : new byte[32]);
 				buffer.putLong(this.type.canHaveRecipient() ? this.recipientId : Genesis.CREATOR_ID);
 				if (this.useNQT()) {
 					buffer.putLong(this.amountNQT);
@@ -587,7 +587,7 @@ public final class TransactionImpl implements Transaction {
 					}
 				}
 				buffer.put(this.signature != null ? this.signature : new byte[64]);
-				buffer.put(this.supernode_signature != null ? this.supernode_signature : new byte[64]);
+				buffer.put(Convert.emptyToNull(this.supernode_signature) != null ? this.supernode_signature : new byte[64]);
 				buffer.putInt(this.getFlags());
 				buffer.putInt(this.ecBlockHeight);
 				buffer.putLong(this.ecBlockId);
@@ -608,7 +608,7 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	public byte[] getSuperNodePublicKey() {
-		return superNodePublicKey;
+		return Convert.emptyToNull(this.superNodePublicKey);
 	}
 
 	private boolean checkSignature() {
@@ -633,7 +633,7 @@ public final class TransactionImpl implements Transaction {
 	private boolean checkSuperNodeSignature() {
 		if (!this.hasValidSupernodeSignature) {
 			byte[] zerobytes = this.zeroPartSignature(this.getBytes());
-			this.hasValidSupernodeSignature = (this.supernode_signature != null && this.superNodePublicKey != null) && Crypto.verify(this.supernode_signature, zerobytes, this.getSuperNodePublicKey(), this.useNQT());
+			this.hasValidSupernodeSignature = (Convert.emptyToNull(this.supernode_signature) != null && Convert.emptyToNull(this.superNodePublicKey) != null) && Crypto.verify(this.supernode_signature, zerobytes, this.getSuperNodePublicKey(), this.useNQT());
 		}
 		return this.hasValidSupernodeSignature;
 	}
@@ -796,7 +796,7 @@ public final class TransactionImpl implements Transaction {
 				final byte[] data = this.zeroSignature(this.getBytes());
 				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
 				byte[] supernodeHash = null;
-				if(this.supernode_signature != null)
+				if(Convert.emptyToNull(this.supernode_signature) != null)
 					supernodeHash = Crypto.sha256().digest(this.supernode_signature);
 				final MessageDigest digest = Crypto.sha256();
 				digest.update(data);
@@ -876,7 +876,7 @@ public final class TransactionImpl implements Transaction {
 		json.put("ecBlockId", Long.toUnsignedString(this.ecBlockId));
 		json.put("signature", Convert.toHexString(this.signature));
 		if(this.getSupernodeSig() != null)
-			json.put("supernode_signature", Convert.toHexString(this.supernode_signature));
+			json.put("supernode_signature", Convert.toHexString(Convert.emptyToNull(this.supernode_signature)));
 
 
 		final JSONObject attachmentJSON = new JSONObject();
@@ -1145,8 +1145,8 @@ public final class TransactionImpl implements Transaction {
 
 
 		// This type does not require any supernode sig
-		if(this.supernode_signature != null || this.superNodePublicKey != null){
-			throw new NxtException.NotValidException("The transaction must not be signed by any supernode at this stage!");
+		if(Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null){
+			throw new NxtException.NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
 		}
 
 
@@ -1256,7 +1256,7 @@ public final class TransactionImpl implements Transaction {
 		}
 
 		if(this.type.mustHaveSupernodeSignature()){
-			if(this.supernode_signature == null || this.superNodePublicKey == null) {
+			if(Convert.emptyToNull(this.supernode_signature) == null || Convert.emptyToNull(this.superNodePublicKey) == null){
 				throw new NxtException.NotValidException("The transaction must be signed by a supernode");
 			}else{
 				// check signature in verifySignature() routine ... if it is there. Just make sure now that the public key actually belongs to a supernode
@@ -1271,7 +1271,7 @@ public final class TransactionImpl implements Transaction {
 			}
 		}else{
 			// This type does not require any supernode sig
-			if(this.supernode_signature != null || this.superNodePublicKey != null){
+			if(Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null){
 				throw new NxtException.NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
 			}
 		}
@@ -1326,7 +1326,7 @@ public final class TransactionImpl implements Transaction {
 			result = this.checkSignature() && Account.setOrVerify(this.getSenderId(), this.getSenderPublicKey());
 		}
 
-		if(result && this.supernode_signature != null){
+		if(result && Convert.emptyToNull(this.supernode_signature) != null){
 			result = this.checkSuperNodeSignature();
 		}
 
