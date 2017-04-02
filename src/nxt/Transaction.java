@@ -91,6 +91,8 @@ public interface Transaction {
 
 	long getId();
 
+	long getSNCleanedId();
+
 	short getIndex();
 
 	JSONObject getJSONObject();

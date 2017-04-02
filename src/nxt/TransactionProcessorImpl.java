@@ -80,6 +80,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 	}
 
 	private final Map<DbKey, UnconfirmedTransaction> transactionCache = new HashMap<>();
+	private final Map<Long, UnconfirmedTransaction> SNCleantransactionCache = new HashMap<>();
 
 	private volatile boolean cacheInitialized = false;
 
@@ -118,6 +119,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 						final UnconfirmedTransaction unconfirmedTransaction = this.load(con, rs, null);
 						TransactionProcessorImpl.this.waitingTransactions.add(unconfirmedTransaction);
 						TransactionProcessorImpl.this.transactionCache.remove(unconfirmedTransaction.getDbKey());
+						TransactionProcessorImpl.this.SNCleantransactionCache.remove(unconfirmedTransaction.getSNCleanedId());
 					}
 				}
 			} catch (final SQLException e) {
@@ -134,6 +136,8 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			if (TransactionProcessorImpl.this.transactionCache
 					.size() < TransactionProcessorImpl.maxUnconfirmedTransactions) {
 				TransactionProcessorImpl.this.transactionCache.put(unconfirmedTransaction.getDbKey(),
+						unconfirmedTransaction);
+				TransactionProcessorImpl.this.SNCleantransactionCache.put(unconfirmedTransaction.getSNCleanedId(),
 						unconfirmedTransaction);
 			}
 		}
@@ -495,6 +499,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			this.waitingTransactions.clear();
 			this.broadcastedTransactions.clear();
 			this.transactionCache.clear();
+			this.SNCleantransactionCache.clear();
 			this.transactionListeners.notify(removed, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
 		} finally {
 			BlockchainImpl.getInstance().writeUnlock();
@@ -571,6 +576,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 					while (it.hasNext()) {
 						final UnconfirmedTransaction unconfirmedTransaction = it.next();
 						this.transactionCache.put(unconfirmedTransaction.getDbKey(), unconfirmedTransaction);
+						this.SNCleantransactionCache.put(unconfirmedTransaction.getSNCleanedId(), unconfirmedTransaction);
 					}
 					this.cacheInitialized = true;
 				}
@@ -600,6 +606,20 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			Nxt.getBlockchain().readUnlock();
 		}
 		return this.unconfirmedTransactionTable.get(dbKey);
+	}
+
+	@Override
+	public Transaction getUnconfirmedSNCleanTransaction(final long snclean) {
+		Nxt.getBlockchain().readLock();
+		try {
+			final Transaction transaction = this.SNCleantransactionCache.get(snclean);
+			if (transaction != null) {
+				return transaction;
+			}
+		} finally {
+			Nxt.getBlockchain().readUnlock();
+		}
+		return this.unconfirmedTransactionTable.getBy(new DbClause.LongClause("sncleanid",snclean));
 	}
 
 	@Override
@@ -652,6 +672,12 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 						|| TransactionDb.hasTransaction(transaction.getId())) {
 					continue;
 				}
+
+				if(transaction.getType().mustHaveSupernodeSignature() && (this.getUnconfirmedSNCleanTransaction(transaction.getSNCleanedId()) != null || TransactionDb.hasSNCleanTransaction(transaction.getSNCleanedId())))
+				{
+					continue;
+				}
+
 				transaction.validate();
 				final UnconfirmedTransaction unconfirmedTransaction = new UnconfirmedTransaction(transaction,
 						arrivalTimestamp);
@@ -720,6 +746,11 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 				if ((this.getUnconfirmedTransaction(transaction.getDbKey()) != null)
 						|| TransactionDb.hasTransaction(transaction.getId())) {
 					throw new NxtException.ExistingTransactionException("Transaction already processed");
+				}
+
+				if(transaction.getType().mustHaveSupernodeSignature() && (this.getUnconfirmedSNCleanTransaction(transaction.getSNCleanedId()) != null || TransactionDb.hasSNCleanTransaction(transaction.getSNCleanedId())))
+				{
+					throw new NxtException.ExistingTransactionException("Core-Transaction (SN Cleaned) already processed");
 				}
 
 				if (!transaction.verifySignature()) {
@@ -839,6 +870,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			if (deleted > 0) {
 				transaction.undoUnconfirmed();
 				this.transactionCache.remove(transaction.getDbKey());
+				this.SNCleantransactionCache.remove(transaction.getSNCleanedId());
 				this.transactionListeners.notify(Collections.singletonList(transaction),
 						Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
 			}
@@ -879,6 +911,7 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 			this.unconfirmedTransactionTable.truncate();
 			this.unconfirmedDuplicates.clear();
 			this.transactionCache.clear();
+			this.SNCleantransactionCache.clear();
 			this.transactionListeners.notify(removed, Event.REMOVED_UNCONFIRMED_TRANSACTIONS);
 		} finally {
 			BlockchainImpl.getInstance().writeUnlock();

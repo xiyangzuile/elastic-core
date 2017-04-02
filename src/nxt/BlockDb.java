@@ -40,6 +40,7 @@ final class BlockDb {
 	static final Map<Long, BlockImpl> blockCache = new HashMap<>();
 	static final SortedMap<Integer, BlockImpl> heightMap = new TreeMap<>();
 	static final Map<Long, TransactionImpl> transactionCache = new HashMap<>();
+	static final Map<Long, TransactionImpl> sncleantransactionCache = new HashMap<>();
 	static final Blockchain blockchain = Nxt.getBlockchain();
 	static {
 		Nxt.getBlockchainProcessor().addListener((block) -> {
@@ -51,11 +52,13 @@ final class BlockDb {
 					final int cacheHeight = cacheBlock.getHeight();
 					if ((cacheHeight <= (height - BlockDb.BLOCK_CACHE_SIZE)) || (cacheHeight >= height)) {
 						cacheBlock.getTransactions().forEach((tx) -> BlockDb.transactionCache.remove(tx.getId()));
+						cacheBlock.getTransactions().forEach((tx) -> BlockDb.sncleantransactionCache.remove(tx.getSNCleanedId()));
 						BlockDb.heightMap.remove(cacheHeight);
 						it.remove();
 					}
 				}
 				block.getTransactions().forEach((tx) -> BlockDb.transactionCache.put(tx.getId(), (TransactionImpl) tx));
+				block.getTransactions().forEach((tx) -> BlockDb.sncleantransactionCache.put(tx.getSNCleanedId(), (TransactionImpl) tx));
 				BlockDb.heightMap.put(height, (BlockImpl) block);
 				BlockDb.blockCache.put(block.getId(), (BlockImpl) block);
 			}

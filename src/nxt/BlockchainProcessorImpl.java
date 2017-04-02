@@ -2012,6 +2012,11 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		if ((block.getId() == 0L) || BlockDb.hasBlock(block.getId(), previousLastBlock.getHeight())) {
 			throw new BlockNotAcceptedException("Duplicate block or invalid id", block);
 		}
+
+		if (!block.ensureNoRealOrSNCleanDuplicates()) {
+			throw new BlockNotAcceptedException("Block contains duplicate entries (includes SN Clean elements)", block);
+		}
+
 		if (!block.verifyGenerationSignature() && !Generator.allowsFakeForging(block.getGeneratorPublicKey())) {
 			final Account generatorAccount = Account.getAccount(block.getGeneratorId());
 			final long generatorBalance = generatorAccount == null ? 0 : generatorAccount.getEffectiveBalanceNXT();

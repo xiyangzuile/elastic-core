@@ -191,6 +191,11 @@ class UnconfirmedTransaction implements Transaction {
 	}
 
 	@Override
+	public long getSNCleanedId() {
+		return this.transaction.getSNCleanedId();
+	}
+
+	@Override
 	public short getIndex() {
 		return this.transaction.getIndex();
 	}
@@ -271,11 +276,12 @@ class UnconfirmedTransaction implements Transaction {
 
 	void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con
-				.prepareStatement("INSERT INTO unconfirmed_transaction (id, transaction_height, "
+				.prepareStatement("INSERT INTO unconfirmed_transaction (id, sncleanid, transaction_height, "
 						+ "fee_per_byte, expiration, transaction_bytes, prunable_json, arrival_timestamp, height) "
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.transaction.getId());
+			pstmt.setLong(++i, this.transaction.getSNCleanedId());
 			pstmt.setInt(++i, this.transaction.getHeight());
 			pstmt.setLong(++i, this.feePerByte);
 			pstmt.setInt(++i, this.transaction.getExpiration());

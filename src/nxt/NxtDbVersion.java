@@ -42,7 +42,7 @@ class NxtDbVersion extends DbVersion {
 		case 2:
 			this.apply("CREATE UNIQUE INDEX IF NOT EXISTS block_id_idx ON block (id)");
 		case 3:
-			this.apply("CREATE TABLE IF NOT EXISTS transaction (db_id IDENTITY, id BIGINT NOT NULL, "
+			this.apply("CREATE TABLE IF NOT EXISTS transaction (db_id IDENTITY, id BIGINT NOT NULL, sncleanid BIGINT NOT NULL,"
 					+ "deadline SMALLINT NOT NULL, recipient_id BIGINT, "
 					+ "amount BIGINT NOT NULL, fee BIGINT NOT NULL, full_hash BINARY(32) NOT NULL, "
 					+ "height INT NOT NULL, block_id BIGINT NOT NULL, FOREIGN KEY (block_id) REFERENCES block (id) ON DELETE CASCADE, "
@@ -58,7 +58,7 @@ class NxtDbVersion extends DbVersion {
 		case 5:
 			this.apply("CREATE UNIQUE INDEX IF NOT EXISTS block_height_idx ON block (height)");
 		case 6:
-			this.apply(null);
+			this.apply("CREATE UNIQUE INDEX IF NOT EXISTS transaction_snid_idx ON transaction (sncleanid)");
 		case 7:
 			this.apply("CREATE INDEX IF NOT EXISTS block_generator_id_idx ON block (generator_id)");
 		case 8:
@@ -328,14 +328,15 @@ class NxtDbVersion extends DbVersion {
 					"CREATE INDEX IF NOT EXISTS purchase_public_feedback_id_height_idx ON purchase_public_feedback (id, height DESC)");
 		case 113:
 			this.apply(
-					"CREATE TABLE IF NOT EXISTS unconfirmed_transaction (db_id IDENTITY, id BIGINT NOT NULL, expiration INT NOT NULL, "
+					"CREATE TABLE IF NOT EXISTS unconfirmed_transaction (db_id IDENTITY, id BIGINT NOT NULL, sncleanid BIGINT NOT NULL, expiration INT NOT NULL, "
 							+ "transaction_height INT NOT NULL, fee_per_byte BIGINT NOT NULL, arrival_timestamp BIGINT NOT NULL, "
 							+ "transaction_bytes VARBINARY NOT NULL, height INT NOT NULL)");
 		case 114:
 			this.apply(
 					"CREATE UNIQUE INDEX IF NOT EXISTS unconfirmed_transaction_id_idx ON unconfirmed_transaction (id)");
 		case 115:
-			this.apply(null);
+			this.apply(
+					"CREATE UNIQUE INDEX IF NOT EXISTS unconfirmed_transaction_snid_idx ON unconfirmed_transaction (sncleanid)");
 		case 116:
 			this.apply(
 					"CREATE TABLE IF NOT EXISTS asset_transfer (db_id IDENTITY, id BIGINT NOT NULL, asset_id BIGINT NOT NULL, "

@@ -20,10 +20,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -618,4 +615,23 @@ public final class BlockImpl implements Block {
 			return b.getTimestamp();
 	}
 
+	public boolean ensureNoRealOrSNCleanDuplicates() {
+		boolean ret = true;
+		Set<Long> s = new HashSet<>();
+		for (final TransactionImpl t : this.getTransactions()) {
+			if(s.contains(t.getId())){
+				ret = false;
+				break;
+			}
+			if(t.getType().mustHaveSupernodeSignature() && s.contains(t.getSNCleanedId())){
+				ret = false;
+				break;
+			}
+			s.add(t.getId());
+			if(t.getType().mustHaveSupernodeSignature())
+				s.add(t.getSNCleanedId());
+		}
+		return ret;
+
+	}
 }

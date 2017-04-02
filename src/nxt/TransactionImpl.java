@@ -33,6 +33,7 @@ import nxt.util.Logger;
 
 public final class TransactionImpl implements Transaction {
 
+
 	static final class BuilderImpl implements Builder {
 
 		private final short deadline;
@@ -368,6 +369,7 @@ public final class TransactionImpl implements Transaction {
 
 	private final byte version;
 	private final int timestamp;
+	private long sncleanid = 0;
 
 	private volatile byte[] signature;
 	private volatile byte[] supernode_signature;
@@ -382,7 +384,7 @@ public final class TransactionImpl implements Transaction {
 	private volatile int blockTimestamp = -1;
 	private volatile short index = -1;
 
-	private volatile long id;
+	private volatile long id = 0;
 
 	private volatile String stringId;
 
@@ -480,12 +482,14 @@ public final class TransactionImpl implements Transaction {
 			this.signature = Crypto.sign(toSignBytes, secretPhrase);
 			this.bytes = null;
 			this.id = 0;
+			this.sncleanid = 0;
 			Logger.logSignMessage("Signing HEX:\t" + Convert.toHexString(toSignBytes) +
 					"\nJson Trans.:\t" + this.getJSONObject() + "\nTrans. IDNR:\t"+Convert.toUnsignedLong(this.getId()));
 		} else {
 			this.signature = null;
 			this.bytes = null;
 			this.id = 0;
+			this.sncleanid = 0;
 		}
 	}
 
@@ -494,12 +498,14 @@ public final class TransactionImpl implements Transaction {
 		this.superNodePublicKey = Crypto.getPublicKey(secretPhrase);
 		this.bytes = null;
 		this.id = 0;
+		this.sncleanid = 0;
 	}
 
 	void sign(String secretPhrase){
 		this.signature = Crypto.sign(this.bytes(), secretPhrase);
 		this.bytes = null;
 		this.id = 0;
+		this.sncleanid = 0;
 	} // Only for genesis block creation
 
 	void apply() throws NotValidException {
@@ -807,6 +813,35 @@ public final class TransactionImpl implements Transaction {
 			this.stringId = bigInteger.toString();
 		}
 		return this.id;
+	}
+
+	@Override
+	public long getSNCleanedId() {
+		if (this.sncleanid == 0) {
+			if (this.signature == null) {
+				{
+					IllegalStateException ex = new IllegalStateException("Transaction is not signed yet: " + Convert.toHexString(this.bytes()));
+					ex.printStackTrace();
+					throw ex;
+				}
+			}
+			if (this.useNQT()) {
+				final byte[] data = this.zeroSignature(this.getBytes());
+				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
+
+				final MessageDigest digest = Crypto.sha256();
+				digest.update(data);
+
+				this.fullHash = digest.digest(signatureHash);
+			} else {
+				this.fullHash = Crypto.sha256().digest(this.bytes());
+			}
+			final BigInteger bigInteger = new BigInteger(1,
+					new byte[] { this.fullHash[7], this.fullHash[6], this.fullHash[5], this.fullHash[4],
+							this.fullHash[3], this.fullHash[2], this.fullHash[1], this.fullHash[0] });
+			this.sncleanid = bigInteger.longValue();
+		}
+		return this.sncleanid;
 	}
 
 	@Override

@@ -230,6 +230,30 @@ final class TransactionDb {
 		}
 	}
 
+	static boolean hasSNCleanTransaction(final long transactionId) {
+		return TransactionDb.hasSNCleanTransaction(transactionId, Integer.MAX_VALUE);
+	}
+
+	static boolean hasSNCleanTransaction(final long SNCleantransactionId, final int height) {
+		// Check the block cache
+		synchronized (BlockDb.blockCache) {
+			final TransactionImpl transaction = BlockDb.sncleantransactionCache.get(SNCleantransactionId);
+			if (transaction != null) {
+				return (transaction.getHeight() <= height);
+			}
+		}
+		// Search the database
+		try (Connection con = Db.db.getConnection();
+			 PreparedStatement pstmt = con.prepareStatement("SELECT height FROM transaction WHERE sncleanid = ?")) {
+			pstmt.setLong(1, SNCleantransactionId);
+			try (ResultSet rs = pstmt.executeQuery()) {
+				return rs.next() && (rs.getInt("height") <= height);
+			}
+		} catch (final SQLException e) {
+			throw new RuntimeException(e.toString(), e);
+		}
+	}
+
 	static boolean hasTransactionByFullHash(final byte[] fullHash) {
 		return Arrays.equals(fullHash, TransactionDb.getFullHash(Convert.fullHashToId(fullHash)));
 	}
@@ -320,15 +344,16 @@ final class TransactionDb {
 		try {
 			short index = 0;
 			for (final TransactionImpl transaction : transactions) {
-				try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO transaction (id, deadline, "
+				try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO transaction (id, sncleanid, deadline, "
 						+ "recipient_id, amount, fee, referenced_transaction_full_hash, height, "
 						+ "block_id, signature, superNodePublicKey, supernode_signature, timestamp, type, subtype, sender_id, attachment_bytes, "
 						+ "block_timestamp, full_hash, version, has_message, has_encrypted_message, has_public_key_announcement, "
 						+ "has_encrypttoself_message, has_prunable_message, has_prunable_source_code, has_prunable_encrypted_message, "
 						+ "has_prunable_attachment, ec_block_height, ec_block_id, transaction_index) "
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 					int i = 0;
 					pstmt.setLong(++i, transaction.getId());
+					pstmt.setLong(++i, transaction.getSNCleanedId());
 					pstmt.setShort(++i, transaction.getDeadline());
 					DbUtils.setLongZeroToNull(pstmt, ++i, transaction.getRecipientId());
 					pstmt.setLong(++i, transaction.getAmountNQT());

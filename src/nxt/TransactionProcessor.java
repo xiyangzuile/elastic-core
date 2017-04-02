@@ -38,6 +38,8 @@ public interface TransactionProcessor extends Observable<List<? extends Transact
 
 	void clearUnconfirmedTransactions();
 
+	Transaction getUnconfirmedSNCleanTransaction(final long snclean);
+
 	Transaction[] getAllBroadcastedTransactions();
 
 	DbIterator<? extends Transaction> getAllUnconfirmedTransactions();
