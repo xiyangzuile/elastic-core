@@ -3,10 +3,17 @@ package nxt;
 import nxt.crypto.Crypto;
 import nxt.util.Convert;
 
+import java.util.Objects;
+
 
 public class TransactionBuilder  {
 
-    public static void make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
+
+    public static Transaction make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
+        return make(attachment, appdx,secretPhrase,recipientId,amountNQT,simPrune,true);
+    }
+
+    public static Transaction make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune, boolean broadcast) throws Exception{
 
         final int ecBlockHeight = 1;
         long ecBlockId = 0;
@@ -48,7 +55,12 @@ public class TransactionBuilder  {
                 builder.appendix((Appendix.PrunableSourceCode)appdx);
         }
 
-        final Transaction transaction = builder.build(secretPhrase);
+        Transaction transaction = null;
+        if(attachment!=null && Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM)){
+            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
+        }else{
+            transaction = builder.build(secretPhrase);
+        }
 
         if (simPrune){
             for(Appendix a : transaction.getAppendages()){
@@ -58,10 +70,17 @@ public class TransactionBuilder  {
             }
         }
 
-        Nxt.getTransactionProcessor().broadcast(transaction);
+        if(broadcast)
+            Nxt.getTransactionProcessor().broadcast(transaction);
+
+        return transaction;
     }
 
-    public static void makeSupernodeSigned(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
+    public static Transaction makeSupernodeSigned(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
+        return makeSupernodeSigned(attachment, appdx,secretPhrase,recipientId,amountNQT,simPrune,true);
+    }
+
+    public static Transaction makeSupernodeSigned(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune, boolean broadcast) throws Exception{
 
         final int ecBlockHeight = 1;
         long ecBlockId = 0;
@@ -103,7 +122,12 @@ public class TransactionBuilder  {
                 builder.appendix((Appendix.PrunableSourceCode)appdx);
         }
 
-        final Transaction transaction = builder.build(secretPhrase);
+        Transaction transaction = null;
+        if(attachment!=null && Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM)){
+            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
+        }else{
+            transaction = builder.build(secretPhrase);
+        }
         transaction.signSuperNode(secretPhrase);
 
         if (simPrune){
@@ -114,7 +138,10 @@ public class TransactionBuilder  {
             }
         }
 
-        Nxt.getTransactionProcessor().broadcast(transaction);
+        if(broadcast)
+            Nxt.getTransactionProcessor().broadcast(transaction);
+
+        return transaction;
     }
 
 }

@@ -477,16 +477,17 @@ public final class TransactionImpl implements Transaction {
 				throw new NxtException.NotValidException("This transaction must be bound to REDEEM_ID public key");
 			}
 			byte[] toSignBytes = this.bytes();
-			Logger.logInfoMessage("Signing HEX: " + Convert.toHexString(toSignBytes));
 			this.signature = Crypto.sign(toSignBytes, secretPhrase);
 			this.bytes = null;
+			Logger.logSignMessage("Signing HEX:\t" + Convert.toHexString(toSignBytes) +
+					"\nJson Trans.:\t" + this.getJSONObject() + "\nTrans. IDNR:\t"+this.getId());
 		} else {
 			this.signature = null;
 		}
 	}
 
 	public void signSuperNode(String secretPhrase) {
-		this.supernode_signature = Crypto.sign(this.bytes(), secretPhrase);
+		this.supernode_signature = Crypto.sign(this.zeroPartSignature(this.getBytes()), secretPhrase);
 		this.superNodePublicKey = Crypto.getPublicKey(secretPhrase);
 		this.bytes = null;
 	}
@@ -604,8 +605,14 @@ public final class TransactionImpl implements Transaction {
 				this.hasValidSignature = true; // TODO FIXME! CHECK IF SIGNATURE
 												// BELONGS TO RECEIVER!!!!!
 			} else {
+				byte[] toVerifyBytes = this.bytes();
+
+
 				this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
-						this.zeroSignature(this.getBytes()), this.getSenderPublicKey(), this.useNQT());
+						this.zeroSignature(toVerifyBytes), this.getSenderPublicKey(), this.useNQT());
+				Logger.logSignMessage("Verifying HEX:\t" + Convert.toHexString(toVerifyBytes) +
+						"\nZero'ed HEX:\t" + Convert.toHexString(this.zeroSignature(toVerifyBytes)) +
+						"\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t"+this.hasValidSignature + "\nTrans. IDNR:\t"+this.getId());
 			}
 		}
 		return this.hasValidSignature;
@@ -768,7 +775,11 @@ public final class TransactionImpl implements Transaction {
 	public long getId() {
 		if (this.id == 0) {
 			if (this.signature == null) {
-				throw new IllegalStateException("Transaction is not signed yet");
+				{
+					IllegalStateException ex = new IllegalStateException("Transaction is not signed yet");
+					ex.printStackTrace();
+					throw ex;
+				}
 			}
 			if (this.useNQT()) {
 				final byte[] data = this.zeroSignature(this.getBytes());

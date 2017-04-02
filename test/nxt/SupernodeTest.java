@@ -65,14 +65,20 @@ public class SupernodeTest extends AbstractForgingTest {
         System.out.println("BINDING PERIOD IS: " + Constants.SUPERNODE_DEPOSIT_BINDING_PERIOD);
         SimulatedUser user = new SimulatedUser(secretPhrase);
         Logger.logMessage("Account " + user.getRsAccount() + " starts with balance " + user.getInitialBalance());
+
+
         forgeBlocks(1, secretPhrase);
         assertTrue(user.getInitialBalance() == user.getBalance());
 
 
+
+        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
+        forgeBlocks(1, secretPhrase);
+
         // Extend supernode
         {
             String[] uris = new String[1];
-            uris[0] = "http://127.0.0.1:6877";
+            uris[0] = "192.168.8.104";
             final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {
@@ -86,7 +92,8 @@ public class SupernodeTest extends AbstractForgingTest {
 
         // Redeem some funds
         {
-            String secp_signatures = "IDDqgcqgTtUMqbEn3ACtjlxGSs66fmNRSYiTSHO94C1/L0LA1KFhLR/dt1GN4xT8I9ZNFuTBINre8wwEAmCB2Jg=";
+            System.out.println("Redeeming from: " + Redeem.listOfAddresses[0] + " to " + user.getStrId());
+            String secp_signatures = "IP5OEbIfwKia1zCuigMCZKYTvjWPKmDuZON2Nj/kWD6RE7wxE5PR/ICiGwrqcnvpIjYPg+lx5HTnCufXvmNdG8c=";
             final Attachment attachment = new Attachment.RedeemAttachment(Redeem.listOfAddresses[0], secp_signatures);
             final Account fake_from = Account.getAccount(Genesis.REDEEM_ID);
             boolean success = false;
@@ -99,8 +106,7 @@ public class SupernodeTest extends AbstractForgingTest {
             assertTrue(success);
         }
 
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
-        forgeBlocks(1, secretPhrase);
+
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
         forgeBlocks(1, secretPhrase);
         Logger.logMessage("Account " + user.getRsAccount() + " Bal:" + user.getBalance() + " / U: " + user.getUnconfirmedBalance() + " / G: " + user.getGuaranteedBalance());
@@ -111,7 +117,7 @@ public class SupernodeTest extends AbstractForgingTest {
         // Extend supernode
         {
             String[] uris = new String[1];
-            uris[0] = "http://127.0.0.1:6877";
+            uris[0] = "192.168.8.104";
             final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {
@@ -139,7 +145,7 @@ public class SupernodeTest extends AbstractForgingTest {
         // Extend
         {
             String[] uris = new String[1];
-            uris[0] = "http://127.0.0.1:6877";
+            uris[0] = "192.168.8.104";
             final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {

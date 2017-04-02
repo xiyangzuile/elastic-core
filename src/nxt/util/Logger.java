@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.LogManager;
 
+import nxt.Constants;
 import nxt.Nxt;
 
 /**
@@ -203,6 +204,12 @@ public final class Logger {
 	public static boolean isWarningEnabled() {
 		return Logger.log.isWarnEnabled();
 	}
+
+	public static void logSignMessage(final String message) {
+		if(Constants.logSigningEvents)
+			Logger.doLog(Level.INFO, "[SIGN] " + message, null);
+	}
+
 
 	/**
 	 * Log a debug message

@@ -4,6 +4,7 @@ import nxt.crypto.Crypto;
 import nxt.http.JSONData;
 import nxt.util.Convert;
 import nxt.util.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -18,11 +19,12 @@ import static nxt.TransactionBuilder.make;
 import static nxt.TransactionBuilder.makeSupernodeSigned;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class FailingTransactionTest extends AbstractBlockchainTest {
+public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
 
 
-    public static Long failing_id = Long.parseUnsignedLong("1330332455186677687");
+    public static Long failing_id = Long.parseUnsignedLong("17980465424740132358");
 
     @Before
     public void init() {
@@ -30,6 +32,28 @@ public class FailingTransactionTest extends AbstractBlockchainTest {
         AbstractForgingTest.init(properties);
     }
 
+    public JSONArray getTransactionPeerImpl(long txid){
+        final JSONObject response = new JSONObject();
+        final JSONArray transactionArray = new JSONArray();
+        final JSONArray transactionIds = new JSONArray();
+        transactionIds.add(Convert.toUnsignedLong(txid));
+        final Blockchain blockchain = Nxt.getBlockchain();
+        //
+        // Return the transactions to the caller
+        //
+        if (transactionIds != null) {
+            transactionIds.forEach(transactionId -> {
+                final long id = Long.parseUnsignedLong((String) transactionId);
+                final Transaction transaction = blockchain.getTransaction(id);
+                if (transaction != null) {
+                    transaction.getAppendages(true);
+                    final JSONObject transactionJSON = transaction.getJSONObject();
+                    transactionArray.add(transactionJSON);
+                }
+            });
+        }
+        return transactionArray;
+    }
 
     @Test
     public void fakeForgingTest() throws NxtException.NotValidException, ParseException {
@@ -57,13 +81,20 @@ public class FailingTransactionTest extends AbstractBlockchainTest {
             // Make sender ID appear
             txvalid.getSenderId();
             txvalid.validate();
-            System.out.println("Validates!!!! Is Signature correct? " + txvalid.verifySignature());
+            System.out.println("\nValidates!!!! Is Signature correct? " + txvalid.verifySignature());
 
             System.out.println("Reconstructed Byte-Object transaction has id: " + Convert.toUnsignedLong(txvalid.getId()));
             System.out.println("Dumping raw hex data:\n" + Convert.toHexString(txvalid.getBytes()));
 
+            // Now retrieve from PEER IMPL
+            JSONArray arr = getTransactionPeerImpl(failing_id);
+            System.out.println("\nRetrieved from Peer IMPL:\n" + arr.toJSONString());
+            JSONParser p = new JSONParser();
+            Transaction txpeer = TransactionImpl.parseTransaction((JSONObject) p.parse(((JSONObject)arr.get(0)).toJSONString()));
+            System.out.println("Dumping raw hex data:\n" + Convert.toHexString(txpeer.getBytes()));
+
             // Set breakpoint here to inspect different tx objects
-            System.out.println("Set breakpoint here for TX inspection!");
+            System.out.println("\nSet breakpoint here for TX inspection!");
 
         } catch (NxtException.ValidationException e) {
             e.printStackTrace();

@@ -76,7 +76,7 @@ public class SupernodeForfeitTest extends AbstractForgingTest {
 
         // Redeem some funds
         {
-            String secp_signatures = "IDDqgcqgTtUMqbEn3ACtjlxGSs66fmNRSYiTSHO94C1/L0LA1KFhLR/dt1GN4xT8I9ZNFuTBINre8wwEAmCB2Jg=";
+            String secp_signatures = "IP5OEbIfwKia1zCuigMCZKYTvjWPKmDuZON2Nj/kWD6RE7wxE5PR/ICiGwrqcnvpIjYPg+lx5HTnCufXvmNdG8c=";
             final Attachment attachment = new Attachment.RedeemAttachment(Redeem.listOfAddresses[0], secp_signatures);
             final Account fake_from = Account.getAccount(Genesis.REDEEM_ID);
             boolean success = false;
@@ -101,7 +101,7 @@ public class SupernodeForfeitTest extends AbstractForgingTest {
         // Extend supernode
         {
             String[] uris = new String[1];
-            uris[0] = "http://127.0.0.1:6877";
+            uris[0] = "192.168.8.104";
             final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {
@@ -129,7 +129,7 @@ public class SupernodeForfeitTest extends AbstractForgingTest {
         // Extend
         {
             String[] uris = new String[1];
-            uris[0] = "http://127.0.0.1:6877";
+            uris[0] = "192.168.8.104";
             final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
             boolean success = false;
             try {

@@ -82,8 +82,9 @@ public final class Constants {
 	public static final int MAX_PRUNABLE_LIFETIME;
 	public static final boolean ENABLE_PRUNING;
 	public static int Supernode_Push_Limit = 2;
+    public static boolean logSigningEvents = true;
 
-	static {
+    static {
 		final int maxPrunableLifetime = Nxt.getIntProperty("nxt.maxPrunableLifetime");
 		ENABLE_PRUNING = maxPrunableLifetime >= 0;
 		MAX_PRUNABLE_LIFETIME = Constants.ENABLE_PRUNING
