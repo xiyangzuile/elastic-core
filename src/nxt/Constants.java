@@ -123,8 +123,8 @@ public final class Constants {
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 
-	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 1, 0, 2 } : new int[] { 1, 0, 2 };
-	public static final int[] MIN_PROXY_VERSION = new int[] { 1, 0, 2 };
+	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 1, 0, 3 } : new int[] { 1, 0, 3};
+	public static final int[] MIN_PROXY_VERSION = new int[] { 1, 0, 3 };
 
 	static final long UNCONFIRMED_POOL_DEPOSIT_NQT = (Constants.isTestnet ? 50 : 100) * Constants.ONE_NXT;
 
