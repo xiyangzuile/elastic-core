@@ -481,7 +481,7 @@ public final class TransactionImpl implements Transaction {
 			this.bytes = null;
 			this.id = 0;
 			Logger.logSignMessage("Signing HEX:\t" + Convert.toHexString(toSignBytes) +
-					"\nJson Trans.:\t" + this.getJSONObject() + "\nTrans. IDNR:\t"+this.getId());
+					"\nJson Trans.:\t" + this.getJSONObject() + "\nTrans. IDNR:\t"+Convert.toUnsignedLong(this.getId()));
 		} else {
 			this.signature = null;
 			this.bytes = null;
@@ -611,14 +611,14 @@ public final class TransactionImpl implements Transaction {
 				this.hasValidSignature = true; // TODO FIXME! CHECK IF SIGNATURE
 												// BELONGS TO RECEIVER!!!!!
 			} else {
-				byte[] toVerifyBytes = this.bytes();
+				byte[] toVerifyBytes = this.getBytes();
 
 
 				this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
 						this.zeroSignature(toVerifyBytes), this.getSenderPublicKey(), this.useNQT());
 				Logger.logSignMessage("Verifying HEX:\t" + Convert.toHexString(toVerifyBytes) +
 						"\nZero'ed HEX:\t" + Convert.toHexString(this.zeroSignature(toVerifyBytes)) +
-						"\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t"+this.hasValidSignature + "\nTrans. IDNR:\t"+this.getId());
+						"\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t"+this.hasValidSignature + "\nTrans. IDNR:\t"+Convert.toUnsignedLong(this.getId()));
 			}
 		}
 		return this.hasValidSignature;
