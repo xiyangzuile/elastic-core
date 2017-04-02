@@ -631,6 +631,7 @@ public final class BlockImpl implements Block {
 			if(t.getType().mustHaveSupernodeSignature())
 				s.add(t.getSNCleanedId());
 		}
+		s.clear();
 		return ret;
 
 	}
