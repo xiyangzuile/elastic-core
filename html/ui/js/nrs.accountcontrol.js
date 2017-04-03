@@ -93,7 +93,7 @@ var NRS = (function(NRS, $) {
 			addonI18n: ""
 		}
 		context['inputName'] = 'controlMinBalanceNXT';
-		context['addonText'] = 'NXT';
+		context['addonText'] = 'XEL';
 		context['addonI18n'] = 'nxt_unit';
 		var $elems = NRS.initModalUIElement($modal, '.phasing_only_min_balance_nxt', 'simple_input_with_addon_modal_ui_element', context);
 		$elems.find('input').prop("disabled", true);
