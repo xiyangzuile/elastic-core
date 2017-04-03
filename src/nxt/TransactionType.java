@@ -719,15 +719,6 @@ public abstract class TransactionType {
 											+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))
 									+ " XEL");
 				}
-
-				// Measure work execution time for "new works" (avoid pointless
-				// evaluation during blockchain sync)
-				if (transaction.getPrunableSourceCode().hasPrunableData() && !(transaction
-						.getTimestamp() < (Nxt.getEpochTime() - Constants.EVAL_WORK_EXEC_TIME_AGE_SECONDS))) {
-					final byte[] source = transaction.getPrunableSourceCode().getSource();
-					final long wid = transaction.getId();
-				}
-
 			}
 
 		};
