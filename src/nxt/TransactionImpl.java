@@ -335,7 +335,7 @@ public final class TransactionImpl implements Transaction {
 				builder.recipientId(recipientId);
 			}
 			if (attachmentData != null) {
-				builder.appendix((Appendix.PublicKeyAnnouncement.parse(attachmentData)));
+				builder.appendix(Appendix.PublicKeyAnnouncement.parse(attachmentData));
 				builder.appendix(Appendix.PrunableSourceCode.parse(attachmentData));
 			}
 			return builder;

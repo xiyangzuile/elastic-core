@@ -230,7 +230,7 @@ public final class Logger {
 	 *            Message args
 	 */
 	public static void logDebugMessage(final String format, final Object... args) {
-		Logger.doLog(Level.DEBUG, String.format(format, args), null);
+		Logger.doLog(Level.INFO, String.format(format, args), null);
 	}
 
 	/**
