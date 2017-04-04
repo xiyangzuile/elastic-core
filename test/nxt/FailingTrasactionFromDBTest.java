@@ -67,7 +67,7 @@ public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
             return;
         }
 
-        System.out.println("Javas-Object transaction has id: " + Convert.toUnsignedLong(tx.getId()));
+        System.out.println("Java-Object transaction has id: " + Convert.toUnsignedLong(tx.getId()));
 
         // Check if java object validates
         try {
