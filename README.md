@@ -101,7 +101,7 @@ in order to checkout the fresh source code, followed by going into the elastic-c
 
 to compile and package the code. Afterwards, you can launch the elastic client by running
 
-`java -jar target/elastic-core*.jar`
+`java -jar target/elastic-core-1.0.1.jar`
 
 ### E. Getting Some XEL for Testing ###
 
@@ -129,7 +129,7 @@ first and (if you need to) unstash them after compiling using
 
 Then, you can run elastic again using
 
-`java -jar target\elastic-core-*.jar`
+`java -jar target\elastic-core-1.0.1.jar`
 
 
 #### On Windows ####
