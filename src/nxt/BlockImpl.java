@@ -66,8 +66,7 @@ public final class BlockImpl implements Block {
 
 			BlockImpl.powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
 			return converted_new_pow;
-		} catch (final Exception e) {
-			return Constants.least_possible_target; /* FIXME TODO, check this */
+		} finally {
 		}
 	}
 
@@ -269,22 +268,13 @@ public final class BlockImpl implements Block {
 
 	private boolean checkSignature() {
 
-		boolean is_special_case = false;
-		for (final Transaction t : this.blockTransactions) {
-			if (t.getType() == Payment.REDEEM) {
-				is_special_case = true; // TODO: check if correct
-				break;
-			}
-		}
 
-		if (is_special_case) {
-			this.hasValidSignature = true;
-		}
+		// Blocksignature must be there in any case ... even when a block has been mined using REDEEM-shortcut
 
 		if (!this.hasValidSignature) {
 			final byte[] data = Arrays.copyOf(this.bytes(), this.bytes.length - 64);
 			this.hasValidSignature = (this.blockSignature != null)
-					&& Crypto.verify(this.blockSignature, data, this.getGeneratorPublicKey(), true);
+					&& Crypto.verify(this.blockSignature, data, this.getGeneratorPublicKey());
 		}
 		return this.hasValidSignature;
 	}
@@ -515,7 +505,7 @@ public final class BlockImpl implements Block {
 
 	void loadTransactions() {
 		for (final TransactionImpl transaction : this.getTransactions()) {
-			transaction.bytes();
+			transaction.getBytes();
 			transaction.getAppendages();
 		}
 	}
@@ -563,15 +553,12 @@ public final class BlockImpl implements Block {
 						"Can't verify signature because previous block is missing", this);
 			}
 
-			// Now comes a dirty hack, if the block contains a redeem
-			// transaction, and the blockheight is low enough (1440) then anyone
-			// can mine the block!
-			// This helps bootstrapping the blockchain, as at the beginning
-			// nobody has coins and so nobody could forge
-			// PLEASE DISCUSS THIS IN THE COMMUNITY
-			for (final Transaction t : this.blockTransactions) {
-				if (t.getType() == Payment.REDEEM) {
-					return true;
+			// For first 5000 blocks a block can be mined with at least one redeem transaction in it by anyone!
+			if(this.getPreviousBlock() != null && this.getPreviousBlock().getHeight()<5000) {
+				for (final Transaction t : this.blockTransactions) {
+					if (t.getType() == Payment.REDEEM) {
+						return true;
+					}
 				}
 			}
 

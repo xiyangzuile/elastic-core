@@ -331,9 +331,9 @@ public interface Appendix {
 						&& ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
-
-				// TODO: Think about some source code checks here
 			}
+
+			// Other source code checks are performed by super nodes
 		}
 	}
 

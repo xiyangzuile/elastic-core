@@ -557,7 +557,7 @@ public final class TransactionImpl implements Transaction {
 		return Convert.emptyToNull(this.supernode_signature);
 	}
 
-	byte[] bytes() {
+	private byte[] bytes() {
 		if (this.bytes == null) {
 			try {
 				final ByteBuffer buffer = ByteBuffer.allocate(this.getSize());
@@ -569,7 +569,6 @@ public final class TransactionImpl implements Transaction {
 				buffer.put(this.getSenderPublicKey());
 				buffer.put(Convert.emptyToNull(this.superNodePublicKey)!= null ? this.superNodePublicKey : new byte[32]);
 				buffer.putLong(this.type.canHaveRecipient() ? this.recipientId : Genesis.CREATOR_ID);
-				if (this.useNQT()) {
 					buffer.putLong(this.amountNQT);
 					buffer.putLong(this.feeNQT);
 					if (this.referencedTransactionFullHash != null) {
@@ -577,15 +576,7 @@ public final class TransactionImpl implements Transaction {
 					} else {
 						buffer.put(new byte[32]);
 					}
-				} else {
-					buffer.putInt((int) (this.amountNQT / Constants.ONE_NXT));
-					buffer.putInt((int) (this.feeNQT / Constants.ONE_NXT));
-					if (this.referencedTransactionFullHash != null) {
-						buffer.putLong(Convert.fullHashToId(this.referencedTransactionFullHash));
-					} else {
-						buffer.putLong(0L);
-					}
-				}
+
 				buffer.put(this.signature != null ? this.signature : new byte[64]);
 				buffer.put(Convert.emptyToNull(this.supernode_signature) != null ? this.supernode_signature : new byte[64]);
 				buffer.putInt(this.getFlags());
@@ -621,7 +612,7 @@ public final class TransactionImpl implements Transaction {
 
 
 				this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
-						this.zeroSignature(toVerifyBytes), this.getSenderPublicKey(), this.useNQT());
+						this.zeroSignature(toVerifyBytes), this.getSenderPublicKey());
 				Logger.logSignMessage("Verifying HEX:\t" + Convert.toHexString(toVerifyBytes) +
 						"\nZero'ed HEX:\t" + Convert.toHexString(this.zeroSignature(toVerifyBytes)) +
 						"\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t"+this.hasValidSignature + "\nTrans. IDNR:\t"+Convert.toUnsignedLong(this.getId()));
@@ -633,7 +624,7 @@ public final class TransactionImpl implements Transaction {
 	private boolean checkSuperNodeSignature() {
 		if (!this.hasValidSupernodeSignature) {
 			byte[] zerobytes = this.zeroPartSignature(this.getBytes());
-			this.hasValidSupernodeSignature = (Convert.emptyToNull(this.supernode_signature) != null && Convert.emptyToNull(this.superNodePublicKey) != null) && Crypto.verify(this.supernode_signature, zerobytes, this.getSuperNodePublicKey(), this.useNQT());
+			this.hasValidSupernodeSignature = (Convert.emptyToNull(this.supernode_signature) != null && Convert.emptyToNull(this.superNodePublicKey) != null) && Crypto.verify(this.supernode_signature, zerobytes, this.getSuperNodePublicKey());
 		}
 		return this.hasValidSupernodeSignature;
 	}
@@ -792,7 +783,6 @@ public final class TransactionImpl implements Transaction {
 					throw ex;
 				}
 			}
-			if (this.useNQT()) {
 				final byte[] data = this.zeroSignature(this.getBytes());
 				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
 				byte[] supernodeHash = null;
@@ -803,9 +793,7 @@ public final class TransactionImpl implements Transaction {
 				if(supernodeHash!=null)
 					digest.update(supernodeHash);
 				this.fullHash = digest.digest(signatureHash);
-			} else {
-				this.fullHash = Crypto.sha256().digest(this.bytes());
-			}
+
 			final BigInteger bigInteger = new BigInteger(1,
 					new byte[] { this.fullHash[7], this.fullHash[6], this.fullHash[5], this.fullHash[4],
 							this.fullHash[3], this.fullHash[2], this.fullHash[1], this.fullHash[0] });
@@ -825,7 +813,6 @@ public final class TransactionImpl implements Transaction {
 					throw ex;
 				}
 			}
-			if (this.useNQT()) {
 				final byte[] data = this.zeroSignature(this.getBytes());
 				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
 
@@ -833,9 +820,7 @@ public final class TransactionImpl implements Transaction {
 				digest.update(data);
 
 				this.fullHash = digest.digest(signatureHash);
-			} else {
-				this.fullHash = Crypto.sha256().digest(this.bytes());
-			}
+
 			final BigInteger bigInteger = new BigInteger(1,
 					new byte[] { this.fullHash[7], this.fullHash[6], this.fullHash[5], this.fullHash[4],
 							this.fullHash[3], this.fullHash[2], this.fullHash[1], this.fullHash[0] });
@@ -1044,7 +1029,7 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	private int signatureOffset() {
-		return 1 + 1 + 4 + 2 + 32 + 32 + 8 + (this.useNQT() ? 8 + 8 + 32 : 4 + 4 + 8); // two public keys, sender and supernode
+		return 1 + 1 + 4 + 2 + 32 + 32 + 8 +  8 + 8 + 32 ; // two public keys, sender and supernode
 	}
 
 	private int snPubkeyOffset() {
@@ -1064,10 +1049,6 @@ public final class TransactionImpl implements Transaction {
 		// must keep the height set, as transactions already having been
 		// included in a popped-off block before
 		// get priority when sorted for inclusion in a new block
-	}
-
-	private boolean useNQT() {
-		return true;
 	}
 
 	@Override
@@ -1112,6 +1093,11 @@ public final class TransactionImpl implements Transaction {
 		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM)) {
 			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
 		}
+
+		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM)) {
+			throw new NxtException.NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
+		}
+
 		if (this.getRecipientId() == Genesis.REDEEM_ID) {
 			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
 		}
@@ -1224,6 +1210,10 @@ public final class TransactionImpl implements Transaction {
 		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM)) {
 			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
 		}
+		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM)) {
+			throw new NxtException.NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
+		}
+
 		if (this.getRecipientId() == Genesis.REDEEM_ID) {
 			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
 		}

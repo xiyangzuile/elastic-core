@@ -65,8 +65,9 @@ public class SupernodeMagicManager {
             @Override
             public void run() {
                 // First we have to issue a become supernode TX broadcast as soon as we can
-                if(Nxt.getBlockchainProcessor().isDownloading() == true || Nxt.getBlockchainProcessor().isScanning() == true){
-                    // TODO, in the future check if you are connected here correctly to the network
+
+                if(Nxt.getBlockchainProcessor().isDownloading() == true || Nxt.getBlockchainProcessor().isScanning() == true || Nxt.getBlockchain().getLastBlock() == null || Nxt.getBlockchain().getLastBlock().getTimestamp() < Nxt.getEpochTime() - 15 * 60){
+                    // Assume that Chain is synced if its not downloading and the last known block is not older than 15 minutes
                     Logger.logInfoMessage("SuperNode Logic Delayed: Still Processing the Blockchain.");
                     return;
                 }
