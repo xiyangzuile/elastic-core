@@ -21,16 +21,16 @@ Otherwise, if you want to build everything from scratch, make sure you have Java
 
 #### On Unix ####
 
-**1.**Get the Docker repository:
+**1.** Get the Docker repository:
 
 `git clone https://github.com/OrdinaryDude/elastic-docker.git`
 
-**2.**Now, use the simple scripts to create the docker container and launch an instance.
+**2.** Now, use the simple scripts to create the docker container and launch an instance.
 So, first of all: create the container (this has to be done only once):
 
 `./build_docker.sh`
 
-**3.**Now you can use
+**3.** Now you can use
 
 `./run_docker.sh`
 
@@ -48,7 +48,7 @@ If you want to remove Elastic entirely, just do:
 
 #### On Windows ####
 
-**1.**Get the Elastic Docker 
+**1.** Get the Elastic Docker 
 
 You might be have [Docker Hub](https://hub.docker.com "Docker Hub")  account and you must be [login](https://docs.docker.com/engine/reference/commandline/login/ "Login to your account") on your Docker Terminal
 
@@ -58,15 +58,15 @@ You might be have [Docker Hub](https://hub.docker.com "Docker Hub")  account and
 
 `docker build https://github.com/OrdinaryDude/elastic-docker.git`
 
-**2.**Check your docker machine ip
+**2.** Check your docker machine ip
 
 `docker-machine ip`
  
 Default docker machine is working on **192.168.99.100**
 
-**3.**Now you can run your elastic-docker image 
+**3.** Now you can run your elastic-docker image 
 
-`docker run -p 192.168.99.100:6847:6847 ordinarydude/elastic-docker`
+`docker run -p 192.168.99.100:6876:6876 -p 192.168.99.100:6874:6874 ordinarydude/elastic-docker`
 
 The web wallet will listen on http://192.168.99.100:6876
 

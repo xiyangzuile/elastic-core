@@ -141,7 +141,7 @@ var NRS = (function (NRS, $, undefined) {
                 }
             }
         });
-        //convert NXT to NQT...
+        //convert XEL to NQT...
         var field = "N/A";
         try {
             var nxtFields = [
