@@ -559,10 +559,10 @@ public final class Account {
 				if (height == deposit.currentDepositHeightFrom) {
 					lessor.supernodeDepositBlocked = true;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
-					System.out.println("<!> [SN] supernode status starts at block " + height + " for account " + lessor.getId());
+					Logger.logSignMessage("<!> [SN] supernode status starts at block " + height + " for account " + lessor.getId());
 
 				} else if (height == deposit.currentDepositHeightTo) {
-					System.out.println("<*> [SN] supernode status timing out at block " + height + " for account " + lessor.getId());
+					Logger.logSignMessage("<*> [SN] supernode status timing out at block " + height + " for account " + lessor.getId());
 					lessor.supernodeDepositBlocked = false;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_EXPIRED);
 
@@ -784,7 +784,7 @@ public final class Account {
 		try {
 			con = Db.db.getConnection();
 			final PreparedStatement pstmt = con.prepareStatement(
-					"SELECT * FROM account_supernode_deposit WHERE current_deposit_height_from <= ? AND current_deposit_height_to >= ? AND latest = TRUE "
+					"SELECT * FROM account_supernode_deposit WHERE current_deposit_height_from <= ? AND current_deposit_height_to > ? AND latest = TRUE "
 							+ "ORDER BY lessor_id");
 			int i = 0;
 			pstmt.setInt(++i, height);
