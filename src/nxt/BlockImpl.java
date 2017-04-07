@@ -554,7 +554,7 @@ public final class BlockImpl implements Block {
 			}
 
 			// For first 5000 blocks a block can be mined with at least one redeem transaction in it by anyone!
-			if(this.getPreviousBlock() != null && this.getPreviousBlock().getHeight()<5000) {
+			if(this.getPreviousBlock() == null || this.getPreviousBlock().getHeight()<5000) {
 				for (final Transaction t : this.blockTransactions) {
 					if (t.getType() == Payment.REDEEM) {
 						return true;
