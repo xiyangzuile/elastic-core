@@ -133,10 +133,25 @@ public class SupernodeTest extends AbstractForgingTest {
         // Here, supernodes are active
         Assert.assertTrue(GetSupernodes.getSupernodes().toString().trim().endsWith("[{\"uris\":[\"192.168.8.104\"],\"height_from\":4,\"height_to\":24}]}"));
 
-        forgeBlocks(1, secretPhrase);
+        // Extend status in last membership block
+        {
+            String[] uris = new String[1];
+            uris[0] = "192.168.8.104";
+            final Attachment sn = new Attachment.MessagingSupernodeAnnouncement(uris, 0);
+            boolean success = false;
+            try {
+                make(sn, null, secretPhrase, user.getId(), 0, false);
+                success = true;
+            } catch (Exception e) {
+                Logger.logErrorMessage(e.getMessage());
+            }
+            assertTrue(success);
+        }
+
+        forgeBlocks(21, secretPhrase);
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
 
-        // Here, we have reached block 24. SN List must be empty for sure!
+        // Here, we have reached block 44. SN List must be empty for sure!
         Assert.assertTrue(GetSupernodes.getSupernodes().toString().trim().endsWith("\"supernodes\":[]}"));
 
         forgeBlocks(1, secretPhrase);
