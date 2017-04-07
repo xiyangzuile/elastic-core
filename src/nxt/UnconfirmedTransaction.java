@@ -285,7 +285,7 @@ class UnconfirmedTransaction implements Transaction {
 			pstmt.setInt(++i, this.transaction.getHeight());
 			pstmt.setLong(++i, this.feePerByte);
 			pstmt.setInt(++i, this.transaction.getExpiration());
-			pstmt.setBytes(++i, this.transaction.bytes());
+			pstmt.setBytes(++i, this.transaction.getBytes());
 			final JSONObject prunableJSON = this.transaction.getPrunableAttachmentJSON();
 			if (prunableJSON != null) {
 				pstmt.setString(++i, prunableJSON.toJSONString());

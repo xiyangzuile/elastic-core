@@ -1184,7 +1184,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			Collections.sort(transactions, Comparator.comparingLong(Transaction::getId));
 			final MessageDigest digest = Crypto.sha256();
 			for (final TransactionImpl transaction : transactions) {
-				digest.update(transaction.bytes());
+				digest.update(transaction.getBytes());
 			}
 
 			final BlockImpl genesisBlock = new BlockImpl(0, 0, 0, Constants.MAX_BALANCE_NQT, 0,
@@ -1265,7 +1265,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		for (final UnconfirmedTransaction unconfirmedTransaction : sortedTransactions) {
 			final TransactionImpl transaction = unconfirmedTransaction.getTransaction();
 			blockTransactions.add(transaction);
-			digest.update(transaction.bytes());
+			digest.update(transaction.getBytes());
 			totalAmountNQT += transaction.getAmountNQT();
 			totalFeeNQT += transaction.getFeeNQT();
 			payloadLength += transaction.getFullSize();
@@ -1326,7 +1326,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		for (final UnconfirmedTransaction unconfirmedTransaction : sortedTransactions) {
 			final TransactionImpl transaction = unconfirmedTransaction.getTransaction();
 			blockTransactions.add(transaction);
-			digest.update(transaction.bytes());
+			digest.update(transaction.getBytes());
 			totalAmountNQT += transaction.getAmountNQT();
 			totalFeeNQT += transaction.getFeeNQT();
 			payloadLength += transaction.getFullSize();
@@ -1823,9 +1823,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 									this.validateTransactions(currentBlock, this.blockchain.getLastBlock(), curTime,
 											duplicates, true);
 									for (final TransactionImpl transaction : currentBlock.getTransactions()) {
-										final byte[] transactionBytes = transaction.bytes();
+										final byte[] transactionBytes = transaction.getBytes();
 										if (!Arrays.equals(transactionBytes, TransactionImpl
-												.newTransactionBuilder(transactionBytes).build().bytes())) {
+												.newTransactionBuilder(transactionBytes).build().getBytes())) {
 											throw new NxtException.NotValidException(
 													"Transaction bytes cannot be parsed back to the same transaction: "
 															+ transaction.getJSONObject().toJSONString());
@@ -1833,7 +1833,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 										final JSONObject transactionJSON = (JSONObject) JSONValue
 												.parse(transaction.getJSONObject().toJSONString());
 										if (!Arrays.equals(transactionBytes, TransactionImpl
-												.newTransactionBuilder(transactionJSON).build().bytes())) {
+												.newTransactionBuilder(transactionJSON).build().getBytes())) {
 											throw new NxtException.NotValidException(
 													"Transaction JSON cannot be parsed back to the same transaction: "
 															+ transaction.getJSONObject().toJSONString());
@@ -2129,7 +2129,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			calculatedTotalAmount += transaction.getAmountNQT();
 			calculatedTotalFee += transaction.getFeeNQT();
 			payloadLength += transaction.getFullSize();
-			digest.update(transaction.bytes());
+			digest.update(transaction.getBytes());
 		}
 		if ((calculatedTotalAmount != block.getTotalAmountNQT()) || (calculatedTotalFee != block.getTotalFeeNQT())) {
 			throw new BlockNotAcceptedException("Total amount or fee don't match transaction totals", block);

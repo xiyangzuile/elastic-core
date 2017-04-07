@@ -102,7 +102,7 @@ public final class Hallmark {
 		System.arraycopy(hallmarkBytes, 0, data, 0, data.length);
 
 		final boolean isValid = (host.length() < 100) && (weight > 0) && (weight <= Constants.MAX_BALANCE_NXT)
-				&& Crypto.verify(signature, data, publicKey, true);
+				&& Crypto.verify(signature, data, publicKey);
 		try {
 			return new Hallmark(hallmarkString, publicKey, signature, host, weight, date, isValid);
 		} catch (final URISyntaxException e) {

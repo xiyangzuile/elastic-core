@@ -789,10 +789,7 @@ public abstract class TransactionType {
 				return duplicate;
 			}
 
-			@Override
-			public boolean moneyComesFromNowhere() {
-				return false;
-			}
+
 
 			@Override
 			public boolean mustHaveRecipient() {
@@ -944,10 +941,7 @@ public abstract class TransactionType {
 				return duplicate;
 			}
 
-			@Override
-			public boolean moneyComesFromNowhere() {
-				return true;
-			}
+
 
 			@Override
 			public boolean mustHaveRecipient() {
@@ -1084,10 +1078,7 @@ public abstract class TransactionType {
 				return duplicate;
 			}
 
-			@Override
-			public boolean moneyComesFromNowhere() {
-				return false;
-			}
+
 
 			@Override
 			public boolean mustHaveRecipient() {
@@ -1229,10 +1220,7 @@ public abstract class TransactionType {
 				return duplicate;
 			}
 
-			@Override
-			public boolean moneyComesFromNowhere() {
-				return false;
-			}
+
 
 			@Override
 			public boolean mustHaveRecipient() {
@@ -1511,10 +1499,6 @@ public abstract class TransactionType {
 
 	boolean isUnconfirmedDuplicate(final Transaction transaction,
 			final Map<TransactionType, Map<String, Integer>> duplicates) {
-		return false;
-	}
-
-	public boolean moneyComesFromNowhere() {
 		return false;
 	}
 
