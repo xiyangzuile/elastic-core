@@ -332,6 +332,9 @@ final class TransactionDb {
 			if (rs.getBoolean("has_prunable_source_code")) {
 				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
 			}
+			if (rs.getBoolean("has_public_key_announcement")) {
+				builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
+			}
 
 			return builder.build();
 
@@ -391,7 +394,7 @@ final class TransactionDb {
 					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, transaction.hasPrunableSourceCode());
-					pstmt.setBoolean(++i, false);
+					pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
 					pstmt.setBoolean(++i, transaction.getAttachment() instanceof Appendix.Prunable);
 					pstmt.setInt(++i, transaction.getECBlockHeight());
 					DbUtils.setLongZeroToNull(pstmt, ++i, transaction.getECBlockId());

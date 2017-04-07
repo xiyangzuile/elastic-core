@@ -24,7 +24,7 @@ import static org.junit.Assert.fail;
 public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
 
 
-    public static Long failing_id = Long.parseUnsignedLong("17980465424740132358");
+    public static Long failing_id = Long.parseUnsignedLong("9053406275210142716");
 
     @Before
     public void init() {
