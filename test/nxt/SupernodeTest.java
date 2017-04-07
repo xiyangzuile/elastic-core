@@ -107,10 +107,7 @@ public class SupernodeTest extends AbstractForgingTest {
         }
 
 
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
         forgeBlocks(1, secretPhrase);
-        Logger.logMessage("Account " + user.getRsAccount() + " Bal:" + user.getBalance() + " / U: " + user.getUnconfirmedBalance() + " / G: " + user.getGuaranteedBalance());
-        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
 
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
 
@@ -130,18 +127,20 @@ public class SupernodeTest extends AbstractForgingTest {
         }
         forgeBlocks(1, secretPhrase);
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString() + " COUNTED = " + GetSupernodes.countSupernodes());
-        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
+        forgeBlocks(19, secretPhrase);
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
-        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
-        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
+
+        // Here, supernodes are active
+        Assert.assertTrue(GetSupernodes.getSupernodes().toString().trim().endsWith("[{\"uris\":[\"192.168.8.104\"],\"height_from\":4,\"height_to\":24}]}"));
+
         forgeBlocks(1, secretPhrase);
         System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
 
+        // Here, we have reached block 24. SN List must be empty for sure!
+        Assert.assertTrue(GetSupernodes.getSupernodes().toString().trim().endsWith("\"supernodes\":[]}"));
+
+        forgeBlocks(1, secretPhrase);
+        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
         // Extend
         {
             String[] uris = new String[1];
@@ -157,23 +156,6 @@ public class SupernodeTest extends AbstractForgingTest {
             assertTrue(success);
         }
 
-        // Next block is number 8
-        Logger.logMessage("8 Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
-
-        Logger.logMessage("9 Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        forgeBlocks(1, secretPhrase);
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());        Logger.logMessage("Account " + user.getRsAccount() + " is supernode? " + user.getAccount().isSuperNode() + " [BAL: " + user.getUnconfirmedBalance() + "]");
-        System.out.println("Supernode list: " + GetSupernodes.getSupernodes().toString());
 
     }
 

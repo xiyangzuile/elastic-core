@@ -559,9 +559,10 @@ public final class Account {
 				if (height == deposit.currentDepositHeightFrom) {
 					lessor.supernodeDepositBlocked = true;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_CHANGED);
+					System.out.println("<!> [SN] supernode status starts at block " + height + " for account " + lessor.getId());
 
 				} else if (height == deposit.currentDepositHeightTo) {
-
+					System.out.println("<*> [SN] supernode status timing out at block " + height + " for account " + lessor.getId());
 					lessor.supernodeDepositBlocked = false;
 					Account.supernodeListeners.notify(deposit, Event.SUPERNODE_EXPIRED);
 
@@ -1297,7 +1298,7 @@ public final class Account {
 			// Deposit forfeited
 
 			this.supernodeDepositBlocked = false;
-			this.save(); // TODO: is this the correct way to save?
+			this.save();
 
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 			final Account collectorAccount = Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
@@ -1355,7 +1356,7 @@ public final class Account {
 		}
 		else{
 			// Only update height if the other supernode thing already times out, otherwise it is just an extension which does not need a "begin" event triggered
-			if(deposit.currentDepositHeightTo < height) // TODO: < or <= ??
+			if(deposit.currentDepositHeightTo <= height)
 			{
 				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.SUPERNODE_DEPOSIT;
 				final Account participantAccount = Account.getAccount(this.getId());
