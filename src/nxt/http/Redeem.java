@@ -66,7 +66,7 @@ public final class Redeem extends CreateTransaction {
 
 		final Attachment attachment = new Attachment.RedeemAttachment(address, secp_signatures);
 		final Account fake_from = Account.getAccount(Genesis.REDEEM_ID);
-		return this.createTransaction(req, fake_from, account_to, amountlong, attachment);
+		return createTransaction(req, fake_from, account_to, amountlong, attachment);
 
 	}
 
