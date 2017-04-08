@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
+import nxt.util.Convert;
 import nxt.util.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -287,11 +288,12 @@ class UnconfirmedTransaction implements Transaction {
 			pstmt.setLong(++i, this.feePerByte);
 
 			// Special Treatment for REDEEM Transactions with older timestamp here
+
 			if(this.transaction.getAttachment().getTransactionType() == TransactionType.Payment.REDEEM)
-				pstmt.setInt(++i, this.arrivalTimestamp + (this.transaction.getDeadline() * 60));
+				pstmt.setInt(++i, Convert.toEpochTime(this.arrivalTimestamp) + (this.transaction.getDeadline() * 60));
 			else
 				pstmt.setInt(++i, this.transaction.getExpiration());
-			
+
 			pstmt.setBytes(++i, this.transaction.getBytes());
 			final JSONObject prunableJSON = this.transaction.getPrunableAttachmentJSON();
 			if (prunableJSON != null) {
