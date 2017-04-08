@@ -1249,7 +1249,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		this.scan(0, true, true);
 	}
 
-	public void generateBlock(final byte[] publicKey, final int blockTimestamp) throws BlockNotAcceptedException {
+	public void generateBlock(final byte[] publicKey, final int blockTimestamp, String secretPhrase) throws BlockNotAcceptedException {
 
 		final Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
 
@@ -1277,7 +1277,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
 		final BlockImpl block = new BlockImpl(this.getBlockVersion(previousBlock.getHeight()), blockTimestamp,
 				previousBlock.getId(), totalAmountNQT, totalFeeNQT, payloadLength, payloadHash, publicKey,
-				generationSignature, previousBlockHash, blockTransactions, null,
+				generationSignature, previousBlockHash, blockTransactions, secretPhrase,
 				BlockImpl.calculateNextMinPowTarget(previousBlock.getId()));
 
 		try {

@@ -184,7 +184,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				if ((secretPhrase != null) && (transaction.getType() == Payment.REDEEM) && Nxt.getBlockchain().getHeight()<4998) {
 					try {
 						BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase),
-								Nxt.getEpochTime());
+								Nxt.getEpochTime(), secretPhrase);
 					} catch (final Exception e) {
 						// fall through
 					}
