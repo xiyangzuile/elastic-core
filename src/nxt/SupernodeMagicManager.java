@@ -7,13 +7,21 @@ import nxt.util.Logger;
 import org.bitcoinj.core.BlockChain;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+class SNJob {
+    Peer peer;
+    TransactionImpl t;
+}
 public class SupernodeMagicManager {
 
-
+    static ExecutorService fixedPool;
     private static SupernodeMagicManager instance;
     private  ScheduledExecutorService exec = null;
     private SupernodeMagicManager () {}
@@ -24,6 +32,32 @@ public class SupernodeMagicManager {
             SupernodeMagicManager.instance = new SupernodeMagicManager ();
         }
         return SupernodeMagicManager.instance;
+    }
+
+    public static void add( TransactionImpl t, Peer p){
+        SNJob j = new SNJob();
+        j.peer = p;
+        j.t = t;
+        Runnable aRunnable = () -> {
+            SNJob cop;
+            cop = j;
+            try {
+                // Do dummy work
+                t.signSuperNode(Nxt.supernodePass);
+                boolean wasGood = true;
+
+                if(wasGood)
+                    Nxt.getTransactionProcessor().broadcast(t);
+                else
+                {
+                    // blacklist peer sending garbage
+                    p.blacklist("Sending garbage to supernode");
+                }
+            } catch (NxtException.ValidationException e) {
+                // Did not work after all
+            }
+        };
+        fixedPool.submit(aRunnable); // submit to work pool
     }
     public static void make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT) throws Exception{
 
@@ -58,6 +92,9 @@ public class SupernodeMagicManager {
         Nxt.getTransactionProcessor().broadcast(transaction);
     }
     public void initialized(){
+
+        fixedPool = Executors.newFixedThreadPool(4);
+
         exec = Executors.newSingleThreadScheduledExecutor();
         exec.scheduleAtFixedRate(new Runnable() {
             public int lastSent = 0;

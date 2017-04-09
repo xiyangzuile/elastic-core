@@ -18,6 +18,7 @@ package nxt.peer;
 
 import nxt.Nxt;
 import nxt.NxtException;
+import nxt.SupernodeMagicManager;
 import nxt.TransactionImpl;
 import nxt.util.JSON;
 import nxt.util.Logger;
@@ -35,7 +36,7 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 	private ProcessSupernodeTransactions() {
 	}
 
-	public void doEverything(final JSONArray transactionsData) throws NxtException.NotValidException {
+	public void doEverything(final JSONArray transactionsData, final Peer peer) throws NxtException.NotValidException {
 
 		if ((transactionsData == null) || transactionsData.isEmpty()) {
 			return;
@@ -59,17 +60,18 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 		}
 
 
-		// Process everything
-		// TODO: This is pseudo SN code, do the real stuff later on
+		// TODO: Ratelimiting per peer
+
+		// Process everything by submitting it to the thread pool queue! Will be worked off later on
 		for(TransactionImpl t : receivedTransactions){
-				t.signSuperNode(Nxt.supernodePass);
+
 				try {
-					t.validate(); // Validate if everything is working fine with this TX
+					t.validateWithoutSn(); // Validate if everything is working fine with this TX
 					System.out.println("  -> handling TX " + t.getId() + " (" + t.getType().getName() + "). Validates: true");
-					Nxt.getTransactionProcessor().broadcast(t);
+					SupernodeMagicManager.add(t, peer);
 				} catch (NxtException.ValidationException e) {
-						// TODO: Check some deeper stuff here
-					e.printStackTrace();
+					// Ignore shitty TX that was sent to supernode, also ... blacklist peer
+					peer.blacklist(e);
 				}
 		}
 	}
@@ -82,7 +84,7 @@ final class ProcessSupernodeTransactions extends PeerServlet.PeerRequestHandler 
 		try {
 			final JSONArray transactionsData = (JSONArray) request.get("transactions");
 			Logger.logInfoMessage("SN received " + transactionsData.size() + " TX to process.");
-			doEverything(transactionsData);
+			doEverything(transactionsData, peer);
 			return JSON.emptyJSON;
 		} catch (RuntimeException | NxtException.ValidationException e) {
 			// Logger.logDebugMessage("Failed to parse peer transactions: " +
