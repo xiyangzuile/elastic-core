@@ -25,25 +25,28 @@ var NRS = (function(NRS, $, undefined) {
     var receipient="";
 
     var updateSignatureView = function() {
-        var redeemEntry = $("#redeem_address").val();
-        var res = redeemEntry.split(","); 
+        var redeemEntry = $("#redeem_address_pre").val();
+        var res = redeemEntry.split(",");
+
         console.log("LOADED REDEEM MODAL, entry = " + redeemEntry + ".");
-        $("#redeem_address_field").html(res[1]);
+        // 247,2-1F8kmFiJkFqtbAhkUEDdwipitGNZULGEec-1L6N25HHcUupvb2d89xcrAnsWeuFbBS3k7-14xVGvBQWgDDE8Lr4HBAepA7VHZWsXzJWh;3QA7QDkb5zgRLbkeiZzGp22hD14Qf2Myc8,394673283022
+        $("#redeem_address_field").html(res[1].split(";")[0]);
         $("#redeem_amount_field").html(res[2]);
         $("#redeem_account_field").html(NRS.account);
 
         if (redeemEntry.indexOf("-")>=0){
             $("#redeemfieldsign2").show();
-            var tt = res[1].splot(";")[0].split("-");
+            var tt = res[1].split(";")[0].split("-");
             $("#exactlynr").html(tt[0]);
             tt.shift();
             $("#exactlyaddr").html(tt.join("<br>"));
         }else{
             $("#redeemfieldsign2").hide();
         }
-        address=res[1];
+        address=res[1].split(";")[1];
         amountNQT = res[2];
         receipient = NRS.account;
+        $("#redeem_address").val(res[1]);
         $("#receiver_id").val(receipient);
         $("#amountNQT").val(amountNQT);
     }
@@ -58,9 +61,9 @@ var NRS = (function(NRS, $, undefined) {
     }
 
 	$("#redeem_modal").on("show.bs.modal", function() {
-        document.getElementById("redeem_address").options.length = 0;
+        document.getElementById("redeem_address_pre").options.length = 0;
         NRS.sendRequest("getUnclaimedRedeems", {"nil": "nil"}, function(response) {
-                            var x = document.getElementById("redeem_address");
+                            var x = document.getElementById("redeem_address_pre");
                             if(response.redeems){
                                 response.redeems.forEach(function(elem) {
                                     if(elem.indexOf("-")==-1){
@@ -87,7 +90,7 @@ var NRS = (function(NRS, $, undefined) {
                                         
                                     }
                                 });
-                                var my_options = $("#redeem_address option");
+                                var my_options = $("#redeem_address_pre option");
 
                                 my_options.sort(function(a,b) {
                                     if (a.text > b.text) return 1;
@@ -95,7 +98,7 @@ var NRS = (function(NRS, $, undefined) {
                                     return 0
                                 })
 
-                                $("#redeem_address").empty().append( my_options );
+                                $("#redeem_address_pre").empty().append( my_options );
                             }
                             updateSignatureView();
 
@@ -103,7 +106,7 @@ var NRS = (function(NRS, $, undefined) {
         updateVisibles();
 	});
 
-    $("#redeem_address").on("change", function() {
+    $("#redeem_address_pre").on("change", function() {
 		updateSignatureView();
 	});
 

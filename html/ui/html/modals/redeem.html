@@ -22,7 +22,7 @@
                     <div class="form-group">
                         <div id="redeem_entry" class="form-group">
                             <label for="at_revealed_secret" data-i18n="unclaimed-genesis">Unclaimed genesis block entry</label>
-                            <select name="redeem_address" id="redeem_address" class="form-control" style="width:550px">
+                            <select name="redeem_address_pre" id="redeem_address_pre" class="form-control" style="width:550px">
                             <option value="0,1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T,1419299300000">1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T: 14192.993 XEL</option>
                             <option value="1,1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T,0">1JwSSubhmg6iPtRjtyqhUYYH7bZg3Lfy1T: 0 XEL</option>
 
@@ -66,6 +66,7 @@
                         <label for="redeem_password" data-i18n="passphrase">PASSPHRASE</label>
                         <input type="password" name="secretPhrase" id="redeem_password" class="form-control" placeholder="" tabindex="1">
                     </div>
+                    <input type="hidden" id="redeem_address" name="redeem_address" value="" />
                     <input type="hidden" id="request_type" name="request_type" value="redeem" />
                     <input type="hidden" id="receiver_id" name="receiver_id" value="" />
                     <input type="hidden" id="amountNQT" name="amountNQT" value="" />

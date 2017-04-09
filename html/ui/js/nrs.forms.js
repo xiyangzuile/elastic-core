@@ -406,8 +406,11 @@ var NRS = (function(NRS, $) {
 		}
 
 		if(requestType == "redeem"){
+
 			var solution = $("#solution").val();
 	        var redeemEntry = $("#redeem_type_selector").val();
+	        			        console.log("REDEEMING WITH SIG: " + solution + " ... entry: " + redeemEntry);
+
 	        if(parseInt(redeemEntry) == 0){
 	            data["secp_signatures"] = solution;
 	        }else{
@@ -416,6 +419,7 @@ var NRS = (function(NRS, $) {
 	            NRS.unlockForm($modal, $btn);
 				return;
 	        }
+	        console.log(data);
 		}
 
 		// handle file upload in create work function
