@@ -194,14 +194,7 @@ public abstract class TransactionType {
 			boolean isDuplicate(final Transaction transaction,
 								final Map<TransactionType, Map<String, Integer>> duplicates) {
 
-				final Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
-						.getAttachment();
 
-				boolean duplicate = false;
-
-				// Check if this counts as duplicate here
-
-				if(!duplicate)
 					return TransactionType.isDuplicate(Messaging.SUPERNODE_ANNOUNCEMENT,
 						String.valueOf(transaction.getSenderId()), duplicates, true);
 			}
