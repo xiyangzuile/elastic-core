@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright © 2013-2016 The Nxt Core Developers.                             *
+ * Copyright © 2013-2016 The XEL Core Developers.                             *
  *                                                                            *
  * See the AUTHORS.txt, DEVELOPER-AGREEMENT.txt and LICENSE.txt files at      *
  * the top-level directory of this distribution for the individual copyright  *
  * holder information and the developer policies on copyright and licensing.  *
  *                                                                            *
  * Unless otherwise agreed in a custom licensing agreement, no part of the    *
- * Nxt software, including this file, may be copied, modified, propagated,    *
+ * XEL software, including this file, may be copied, modified, propagated,    *
  * or distributed except according to the terms contained in the LICENSE.txt  *
  * file.                                                                      *
  *                                                                            *
@@ -202,7 +202,7 @@ public class DesktopSystemTray {
 
 		shutdown.addActionListener(e -> {
 			if (JOptionPane.showConfirmDialog(null,
-					"Sure you want to shutdown NXT?\n\nIf you do, this will stop forging, shufflers and account monitors.\n\n",
+					"Sure you want to shutdown XEL?\n\nIf you do, this will stop forging, shufflers and account monitors.\n\n",
 					"Shutdown", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 				Logger.logInfoMessage("Shutdown requested by System Tray");
 				System.exit(0); // Implicitly invokes shutdown using the

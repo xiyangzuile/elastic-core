@@ -1,4 +1,4 @@
-This document describes the agreement between the Nxt core developers
+This document describes the agreement between the XEL Core developers
 regarding copyright and licensing policies.
 
 
@@ -12,7 +12,7 @@ distributed under the MIT license.
 1. Individual copyright.
 
 Each core developer retains full copyright over his contributions to
-the code. The aggregate "Copyright © The Nxt Core Developers" notice
+the code. The aggregate "Copyright © The XEL Core Developers" notice
 can still be used in some places for brevity, but the metadata
 maintained by the version control software (currently Git) about the
 origin and subsequent modifications of each file shall be used as a
