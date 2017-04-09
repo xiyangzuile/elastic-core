@@ -191,6 +191,33 @@ public abstract class TransactionType {
 			}
 
 			@Override
+			boolean isDuplicate(final Transaction transaction,
+								final Map<TransactionType, Map<String, Integer>> duplicates) {
+
+				final Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
+						.getAttachment();
+
+				boolean duplicate = false;
+
+				// Check if this counts as duplicate here
+
+				if(!duplicate)
+					return TransactionType.isDuplicate(Messaging.SUPERNODE_ANNOUNCEMENT,
+						String.valueOf(transaction.getSenderId()), duplicates, true);
+			}
+
+			@Override
+			boolean isUnconfirmedDuplicate(final Transaction transaction,
+										   final Map<TransactionType, Map<String, Integer>> duplicates) {
+				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
+						.getAttachment();
+				final boolean duplicate = TransactionType.isDuplicate(Messaging.SUPERNODE_ANNOUNCEMENT,
+						String.valueOf(transaction.getSenderId()), duplicates, true);
+
+				return duplicate;
+			}
+
+			@Override
 			void validateAttachment(final Transaction transaction) throws NxtException.ValidationException {
 				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
 						.getAttachment();
