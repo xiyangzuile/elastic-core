@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright © 2013-2016 The Nxt Core Developers.                             *
+ * Copyright © 2013-2016 The XEL Core Developers.                             *
  *                                                                            *
  * See the AUTHORS.txt, DEVELOPER-AGREEMENT.txt and LICENSE.txt files at      *
  * the top-level directory of this distribution for the individual copyright  *
  * holder information and the developer policies on copyright and licensing.  *
  *                                                                            *
  * Unless otherwise agreed in a custom licensing agreement, no part of the    *
- * Nxt software, including this file, may be copied, modified, propagated,    *
+ * XEL software, including this file, may be copied, modified, propagated,    *
  * or distributed except according to the terms contained in the LICENSE.txt  *
  * file.                                                                      *
  *                                                                            *
@@ -162,7 +162,7 @@ public final class Nxt {
 				final long currentTime = System.currentTimeMillis();
 				Logger.logMessage("Initialization took " + ((currentTime - startTime) / 1000) + " seconds");
 				Logger.logMessage("Nxt server " + Nxt.VERSION + " started successfully.");
-				Logger.logMessage("Copyright © 2013-2016 The Nxt Core Developers.");
+				Logger.logMessage("Copyright © 2013-2016 The XEL Core Developers.");
 				Logger.logMessage("Distributed under GPLv2, with ABSOLUTELY NO WARRANTY.");
 				if (API.getWelcomePageUri() != null) {
 					Logger.logMessage("Client UI is at " + API.getWelcomePageUri());
@@ -211,7 +211,7 @@ public final class Nxt {
 	static {
 		Nxt.redirectSystemStreams("out");
 		Nxt.redirectSystemStreams("err");
-		System.out.println("Initializing Nxt server version " + Nxt.VERSION);
+		System.out.println("Initializing XEL server version " + Nxt.VERSION);
 		Nxt.printCommandLineArguments();
 		runtimeMode = RuntimeEnvironment.getRuntimeMode();
 		System.out.printf("Runtime mode %s\n", Nxt.runtimeMode.getClass().getName());

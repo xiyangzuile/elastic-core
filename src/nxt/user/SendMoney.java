@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright © 2013-2016 The Nxt Core Developers.                             *
+ * Copyright © 2013-2016 The XEL Core Developers.                             *
  *                                                                            *
  * See the AUTHORS.txt, DEVELOPER-AGREEMENT.txt and LICENSE.txt files at      *
  * the top-level directory of this distribution for the individual copyright  *
  * holder information and the developer policies on copyright and licensing.  *
  *                                                                            *
  * Unless otherwise agreed in a custom licensing agreement, no part of the    *
- * Nxt software, including this file, may be copied, modified, propagated,    *
+ * XEL software, including this file, may be copied, modified, propagated,    *
  * or distributed except according to the terms contained in the LICENSE.txt  *
  * file.                                                                      *
  *                                                                            *
@@ -107,7 +107,7 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 
 			final JSONObject response = new JSONObject();
 			response.put("response", "notifyOfIncorrectTransaction");
-			response.put("message", "\"Fee\" must be at least 1 NXT!");
+			response.put("message", "\"Fee\" must be at least 1 XEL!");
 			response.put("recipient", recipientValue);
 			response.put("amountNXT", amountValue);
 			response.put("feeNXT", feeValue);

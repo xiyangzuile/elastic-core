@@ -1,12 +1,12 @@
 /******************************************************************************
- * Copyright © 2013-2016 The Nxt Core Developers.                             *
+ * Copyright © 2013-2016 The XEL Core Developers.                             *
  *                                                                            *
  * See the AUTHORS.txt, DEVELOPER-AGREEMENT.txt and LICENSE.txt files at      *
  * the top-level directory of this distribution for the individual copyright  *
  * holder information and the developer policies on copyright and licensing.  *
  *                                                                            *
  * Unless otherwise agreed in a custom licensing agreement, no part of the    *
- * Nxt software, including this file, may be copied, modified, propagated,    *
+ * XEL software, including this file, may be copied, modified, propagated,    *
  * or distributed except according to the terms contained in the LICENSE.txt  *
  * file.                                                                      *
  *                                                                            *
@@ -1155,7 +1155,7 @@ public final class TransactionImpl implements Transaction {
 		final long minimumFeeNQT = this.getMinimumFeeNQT(blockchainHeight);
 		if ((this.type.zeroFeeTransaction() == false) && (this.feeNQT < minimumFeeNQT)) {
 			throw new NxtException.NotCurrentlyValidException(
-					String.format("Transaction fee %f NXT less than minimum fee %f NXT at height %d",
+					String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
 							((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
 							blockchainHeight));
 		}
@@ -1285,7 +1285,7 @@ public final class TransactionImpl implements Transaction {
 		final long minimumFeeNQT = this.getMinimumFeeNQT(blockchainHeight);
 		if ((this.type.zeroFeeTransaction() == false) && (this.feeNQT < minimumFeeNQT)) {
 			throw new NxtException.NotCurrentlyValidException(
-					String.format("Transaction fee %f NXT less than minimum fee %f NXT at height %d",
+					String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
 							((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
 							blockchainHeight));
 		}
