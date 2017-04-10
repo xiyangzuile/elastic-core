@@ -332,7 +332,7 @@ final class TransactionDb {
 			if (rs.getBoolean("has_prunable_source_code")) {
 				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
 			}
-			if (rs.getBoolean("has_public_key_announcement")) {
+			if (rs.getBoolean("has_public_key_announcement") || rs.getBoolean("has_prunable_encrypted_message")) { // TODO: Remove the second check, its only there for BUG 1086
 				builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
 			}
 
@@ -390,11 +390,11 @@ final class TransactionDb {
 					pstmt.setByte(++i, transaction.getVersion());
 					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, false);
-					pstmt.setBoolean(++i, false);
+					pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
 					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, transaction.hasPrunableSourceCode());
-					pstmt.setBoolean(++i, transaction.getPublicKeyAnnouncement() != null);
+					pstmt.setBoolean(++i, false);
 					pstmt.setBoolean(++i, transaction.getAttachment() instanceof Appendix.Prunable);
 					pstmt.setInt(++i, transaction.getECBlockHeight());
 					DbUtils.setLongZeroToNull(pstmt, ++i, transaction.getECBlockId());
