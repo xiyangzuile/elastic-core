@@ -465,7 +465,7 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("You have to send a redeem TX without any fees");
 				}
 
-				if (!attachment.getAddress().matches("[a-zA-Z0-9-;]*")) {
+				if (attachment.getAddress().length()>255 /* heuristic */ || !attachment.getAddress().matches("[a-zA-Z0-9-;]*")) {
 					throw new NxtException.NotValidException(
 							"Invalid characters in redeem transaction: fields.address");
 				}
