@@ -1278,8 +1278,8 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException("Work "
 							+ Convert.toUnsignedLong(attachment.getWorkId())
 							+ " has not yet seen a \"counted\" bounty announcement for this submission with work_id "
-							+ attachment.getWorkId() + ", hash " + (new BigInteger(attachment.getHash()).toString(16))
-							+ " and multi " + (new BigInteger(attachment.getMultiplicator()).toString(16)));
+							+ attachment.getWorkId() + ", hash " + Convert.toHexString(attachment.getHash())
+							+ " and multi " + Convert.toHexString(attachment.getMultiplicator()));
 				}
 
 				final byte[] hash = attachment.getHash();

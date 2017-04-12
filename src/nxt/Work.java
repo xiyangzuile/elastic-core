@@ -259,7 +259,7 @@ public final class Work {
 	private boolean cancelled;
 	private boolean timedout;
 	private final String title;
-	private String work_min_pow_target;
+	private BigInteger work_min_pow_target;
 	private final long xel_per_pow;
 	private final long xel_per_bounty;
 	private final int bounty_limit;
@@ -301,7 +301,7 @@ public final class Work {
 		this.originating_height = rs.getInt("originating_height");
 		this.received_bounty_announcements = rs.getInt("received_bounty_announcements");
 		this.closing_timestamp = rs.getInt("closing_timestamp");
-		this.work_min_pow_target = rs.getString("work_min_pow_target");
+		this.work_min_pow_target = new BigInteger(rs.getBytes("work_min_pow_target"));
 	}
 
 	private Work(final Transaction transaction, final Attachment.WorkCreation attachment) {
@@ -329,7 +329,7 @@ public final class Work {
 		this.timedout = false;
 		this.originating_height = transaction.getBlock().getHeight();
 		this.closing_timestamp = 0;
-		this.work_min_pow_target = "";
+		this.work_min_pow_target = BigInteger.ZERO;
 		this.updatePowTarget(transaction.getBlock());
 	}
 
@@ -397,12 +397,8 @@ public final class Work {
 		return this.work_id;
 	}
 
-	public String getWork_min_pow_target() {
+	public BigInteger getWork_min_pow_target() {
 		return this.work_min_pow_target;
-	}
-
-	public BigInteger getWork_min_pow_target_bigint() {
-		return new BigInteger(this.getWork_min_pow_target(), 16);
 	}
 
 	public long getXel_per_bounty() {
@@ -609,7 +605,7 @@ public final class Work {
 			pstmt.setInt(++i, this.bounty_limit);
 			pstmt.setInt(++i, this.originating_height);
 			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
-			pstmt.setString(++i, this.work_min_pow_target);
+			pstmt.setBytes(++i, this.work_min_pow_target.toByteArray());
 
 			pstmt.executeUpdate();
 		}
@@ -649,7 +645,7 @@ public final class Work {
 		response.put("bounty_limit", this.bounty_limit);
 		response.put("sender_account_id", Convert.toUnsignedLong(this.sender_account_id));
 		// response.put("height",this.height);
-		response.put("target", this.work_min_pow_target);
+		response.put("target", Convert.toHexString(this.work_min_pow_target.toByteArray()));
 		return response;
 	}
 
@@ -679,10 +675,10 @@ public final class Work {
 		// yet)
 
 		BigInteger targetI = null;
-		if (this.work_min_pow_target.length() == 0) {
+		if (this.work_min_pow_target != BigInteger.ZERO) {
 			targetI = Nxt.getBlockchain().getBlock(this.getBlock_id()).getMinPowTarget();
 		} else {
-			targetI = new BigInteger(this.work_min_pow_target, 16);
+			targetI = this.work_min_pow_target;
 		}
 
 		if (currentBlock.getId() != this.getBlock_id()) {
@@ -799,14 +795,14 @@ public final class Work {
 			} else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) { 
 				targetI = BigInteger.valueOf(1L);
 			}
-			Logger.logDebugMessage("New target: " + targetI.toString(16));
+			Logger.logDebugMessage("New target: " + Convert.toHexString(targetI.toByteArray()));
 
 
 		} else {
 			// do nothing, especially when its the block where the work was
 			// included
 		}
-		this.work_min_pow_target = targetI.toString(16);
+		this.work_min_pow_target = targetI;
 
 	}
 

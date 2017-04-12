@@ -38,7 +38,7 @@ class NxtDbVersion extends DbVersion {
 					+ "total_fee BIGINT NOT NULL, payload_length INT NOT NULL, "
 					+ "previous_block_hash BINARY(32), cumulative_difficulty VARBINARY NOT NULL, base_target BIGINT NOT NULL, "
 					+ "next_block_id BIGINT, " + "height INT NOT NULL, generation_signature BINARY(64) NOT NULL, "
-					+ "block_signature BINARY(64), payload_hash BINARY(32) NOT NULL, generator_id BIGINT NOT NULL, min_pow_target VARCHAR(255))");
+					+ "block_signature BINARY(64), payload_hash BINARY(32) NOT NULL, generator_id BIGINT NOT NULL, min_pow_target VARBINARY)");
 		case 2:
 			this.apply("CREATE UNIQUE INDEX IF NOT EXISTS block_id_idx ON block (id)");
 		case 3:
@@ -68,7 +68,7 @@ class NxtDbVersion extends DbVersion {
 			this.apply("CREATE INDEX IF NOT EXISTS transaction_recipient_id_idx ON transaction (recipient_id)");
 		case 10:
 			this.apply(
-					"CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, closing_timestamp INT NOT NULL, id BIGINT NOT NULL, work_id BIGINT NOT NULL, block_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, xel_per_pow BIGINT NOT NULL, title VARCHAR NOT NULL, blocks_remaining SMALLINT NOT NULL, closed BOOLEAN NOT NULL DEFAULT FALSE, close_pending BOOLEAN NOT NULL DEFAULT FALSE, cancelled BOOLEAN NOT NULL DEFAULT FALSE, timedout BOOLEAN NOT NULL DEFAULT FALSE, xel_per_bounty BIGINT NOT NULL, balance_pow_fund BIGINT NOT NULL, balance_bounty_fund BIGINT NOT NULL, balance_pow_fund_orig BIGINT NOT NULL, balance_bounty_fund_orig BIGINT NOT NULL,received_bounties INT NOT NULL, received_bounty_announcements INT NOT NULL, received_pows INT NOT NULL, bounty_limit INT NOT NULL, originating_height INT NOT NULL, height INT NOT NULL, work_min_pow_target VARCHAR(255), latest BOOLEAN NOT NULL DEFAULT TRUE) ");
+					"CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, closing_timestamp INT NOT NULL, id BIGINT NOT NULL, work_id BIGINT NOT NULL, block_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, xel_per_pow BIGINT NOT NULL, title VARCHAR NOT NULL, blocks_remaining SMALLINT NOT NULL, closed BOOLEAN NOT NULL DEFAULT FALSE, close_pending BOOLEAN NOT NULL DEFAULT FALSE, cancelled BOOLEAN NOT NULL DEFAULT FALSE, timedout BOOLEAN NOT NULL DEFAULT FALSE, xel_per_bounty BIGINT NOT NULL, balance_pow_fund BIGINT NOT NULL, balance_bounty_fund BIGINT NOT NULL, balance_pow_fund_orig BIGINT NOT NULL, balance_bounty_fund_orig BIGINT NOT NULL,received_bounties INT NOT NULL, received_bounty_announcements INT NOT NULL, received_pows INT NOT NULL, bounty_limit INT NOT NULL, originating_height INT NOT NULL, height INT NOT NULL, work_min_pow_target VARBINARY, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
 		case 11:
 			this.apply(
 					"CREATE TABLE IF NOT EXISTS pow_and_bounty (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, multiplicator VARBINARY NOT NULL, is_pow BOOLEAN NOT NULL DEFAULT TRUE, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");

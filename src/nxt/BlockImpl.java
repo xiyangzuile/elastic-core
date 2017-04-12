@@ -57,7 +57,7 @@ public final class BlockImpl implements Block {
 			} else {
 				while (it.hasNext()) {
 					final Work w = it.next();
-					final BigInteger candidate = w.getWork_min_pow_target_bigint();
+					final BigInteger candidate = w.getWork_min_pow_target();
 					if (candidate.compareTo(converted_new_pow) == 1) {
 						converted_new_pow = candidate;
 					}

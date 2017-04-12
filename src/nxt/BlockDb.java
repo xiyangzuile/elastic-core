@@ -362,7 +362,7 @@ final class BlockDb {
 			final byte[] generationSignature = rs.getBytes("generation_signature");
 			final byte[] blockSignature = rs.getBytes("block_signature");
 			final byte[] payloadHash = rs.getBytes("payload_hash");
-			final BigInteger min_pow_target = new BigInteger(rs.getString("min_pow_target"), 16);
+			final BigInteger min_pow_target = new BigInteger(rs.getBytes("min_pow_target"));
 			final long id = rs.getLong("id");
 			return new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength,
 					payloadHash, generatorId, generationSignature, blockSignature, previousBlockHash,
@@ -396,7 +396,7 @@ final class BlockDb {
 				pstmt.setBytes(++i, block.getBlockSignature());
 				pstmt.setBytes(++i, block.getPayloadHash());
 				pstmt.setLong(++i, block.getGeneratorId());
-				pstmt.setString(++i, block.getMinPowTarget().toString(16));
+				pstmt.setBytes(++i, block.getMinPowTarget().toByteArray());
 				pstmt.executeUpdate();
 				TransactionDb.saveTransactions(con, block.getTransactions());
 			}
