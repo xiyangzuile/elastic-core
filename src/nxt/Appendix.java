@@ -325,6 +325,12 @@ public interface Appendix {
 				byte[] src = this.getSource();
 				byte[] dec = null;
 
+				// Do heuristic precheck here to avoid costly DOS attack on uncompression function
+				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH * 4)) {
+					throw new NxtException.NotValidException(
+							"Source code in compressed form is longer than 4 times the threshold!");
+				}
+
 				// try to decompress
 				if(src!=null) {
 					try {
