@@ -482,7 +482,7 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("You can only claim exactly " + claimableAmount + " NQT");
 				}
 
-				if (!attachment.getSecp_signatures().matches("[a-zA-Z0-9+/=-]*")) {
+				if (attachment.getSecp_signatures().length()>4096 /* heuristic */ || !attachment.getSecp_signatures().matches("[a-zA-Z0-9+/=-]*")) {
 					throw new NxtException.NotValidException(
 							"Invalid characters in redeem transaction: fields.secp_signatures");
 				}
