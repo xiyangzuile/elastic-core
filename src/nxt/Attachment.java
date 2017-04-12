@@ -341,14 +341,12 @@ public interface Attachment extends Appendix {
 
 			final String inputRaw = (String) attachmentData.get("multiplicator");
 
-			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
-				if (multiplicator_byte_representation.length == Constants.WORK_MULTIPLICATOR_BYTES) {
-					for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES; ++i)
-						this.multiplicator[i]=multiplicator_byte_representation[i];
-				}
+				this.multiplicator = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.WORK_MULTIPLICATOR_BYTES);
+			}else{
+				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 			}
 		}
 
@@ -456,7 +454,7 @@ public interface Attachment extends Appendix {
 
 		private final long workId;
 
-		private byte[] hashAnnounced = new byte[32];
+		private byte[] hashAnnounced;
 
 		PiggybackedProofOfBountyAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
@@ -471,14 +469,10 @@ public interface Attachment extends Appendix {
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
 			final String inputRaw = (String) attachmentData.get("hash_announced");
 			if (inputRaw != null) {
-				try {
-					final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
-					if (multiplicator_byte_representation.length == Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES) {
-						this.hashAnnounced = multiplicator_byte_representation.clone();
-					} else {
-					}
-				}catch (Exception e){
-				}
+				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
+				this.hashAnnounced = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
+			}else{
+				this.hashAnnounced = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
 			}
 		}
 
@@ -542,14 +536,11 @@ public interface Attachment extends Appendix {
 
 			final String inputRaw = (String) attachmentData.get("multiplicator");
 
-			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
-				if (multiplicator_byte_representation.length == Constants.WORK_MULTIPLICATOR_BYTES) {
-					for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES; ++i)
-						this.multiplicator[i]=multiplicator_byte_representation[i];
-				}
+				this.multiplicator = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.WORK_MULTIPLICATOR_BYTES);
+			}else{
+				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 			}
 		}
 
