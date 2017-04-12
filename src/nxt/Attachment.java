@@ -332,9 +332,7 @@ public interface Attachment extends Appendix {
 			this.workId = buffer.getLong();
 
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-				this.multiplicator[i] = buffer.get();
-			}
+			buffer.get(this.multiplicator);
 		}
 
 		PiggybackedProofOfBounty(final JSONObject attachmentData) {
@@ -344,32 +342,19 @@ public interface Attachment extends Appendix {
 			final String inputRaw = (String) attachmentData.get("multiplicator");
 
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			// null it first (just to be safe)
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; ++i) {
-				this.multiplicator[i] = 0;
-			}
+
 			if (inputRaw != null) {
-				final BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
-				// restore fixed sized multiplicator array
-				final byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-				int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-				for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
-					this.multiplicator[back_position] = multiplicator_byte_representation[i - 1];
-					back_position--;
+				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
+				if (multiplicator_byte_representation.length == Constants.WORK_MULTIPLICATOR_BYTES) {
+					for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES; ++i)
+						this.multiplicator[i]=multiplicator_byte_representation[i];
 				}
 			}
 		}
 
 		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator) {
 			this.workId = workId;
-			if (multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES) {
-				this.multiplicator = multiplicator;
-			} else {
-				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-				for (int i = 0; i < 32; ++i) {
-					this.multiplicator[i] = 0;
-				}
-			}
+			this.multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
 		}
 
 		@Override
@@ -457,18 +442,13 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-				buffer.put(this.multiplicator[i]);
-			}
+			buffer.put(this.multiplicator);
 		}
 
 		@Override
 		void putMyJSON(final JSONObject attachment) {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
-			final BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
-			final String hex_string = multiplicator_bigint.toString(16);
-
-			attachment.put("multiplicator", hex_string);
+			attachment.put("multiplicator", Convert.toHexString(this.multiplicator));
 		}
 	}
 
@@ -476,50 +456,37 @@ public interface Attachment extends Appendix {
 
 		private final long workId;
 
-		private final byte[] hashAnnounced;
+		private byte[] hashAnnounced = new byte[32];
 
 		PiggybackedProofOfBountyAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
-			final short hashSize = buffer.getShort();
-
-			if ((hashSize > 0) && (hashSize <= Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)) {
-				this.hashAnnounced = new byte[hashSize];
-				buffer.get(this.hashAnnounced, 0, hashSize);
-			} else {
-				this.hashAnnounced = null;
-			}
-
+		    this.hashAnnounced = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
+			buffer.get(this.hashAnnounced);
 		}
 
 		PiggybackedProofOfBountyAnnouncement(final JSONObject attachmentData) {
 			super(attachmentData);
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
 			final String inputRaw = (String) attachmentData.get("hash_announced");
-
 			if (inputRaw != null) {
-				final BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
-				// restore fixed sized multiplicator array
-				final byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-
-				if ((multiplicator_byte_representation.length > 0)
-						&& (multiplicator_byte_representation.length <= Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)) {
-					this.hashAnnounced = new byte[multiplicator_byte_representation.length];
-					for (int i = 0; i < this.hashAnnounced.length; ++i) {
-						this.hashAnnounced[i] = multiplicator_byte_representation[i];
+				try {
+					final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
+					if (multiplicator_byte_representation.length == Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES) {
+						this.hashAnnounced = multiplicator_byte_representation.clone();
+					} else {
 					}
-				} else {
-					this.hashAnnounced = null;
+				}catch (Exception e){
 				}
-			} else {
-				this.hashAnnounced = null;
 			}
 		}
 
 		public PiggybackedProofOfBountyAnnouncement(final long workId, final byte[] hash_assigned) {
 			this.workId = workId;
-			this.hashAnnounced = hash_assigned;
+
+			// Here, make sure that only 32 byte are treated here. This will "deal" with a crippled xel_miner
+			this.hashAnnounced = Convert.toFixedBytesCutter(hash_assigned, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 		}
 
 		public byte[] getHashAnnounced() {
@@ -528,11 +495,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		int getMySize() {
-			if (this.hashAnnounced != null) {
-				return 8 + 2 + this.hashAnnounced.length;
-			} else {
-				return 8 + 2;
-			}
+			return 8 + 2 + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES;
 		}
 
 		@Override
@@ -547,39 +510,20 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
-			if (this.hashAnnounced != null) {
-				buffer.putShort((new Integer(this.hashAnnounced.length)).shortValue());
-				buffer.put(this.hashAnnounced);
-			} else {
-				buffer.putShort((short) 0);
-			}
+			buffer.put(this.hashAnnounced);
 		}
 
 		@Override
 		void putMyJSON(final JSONObject attachment) {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
-			final BigInteger hash = new BigInteger(this.hashAnnounced);
-			final String hex_string = hash.toString(16);
-
-			attachment.put("hash_announced", hex_string);
+			attachment.put("hash_announced", Convert.toHexString(this.hashAnnounced));
 		}
 	}
 
 	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
-		final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
 		public static MessageDigest dig = Crypto.md5();
 
-		public static String bytesToHex(final byte[] bytes) {
-			final char[] hexChars = new char[bytes.length * 2];
-			for (int j = 0; j < bytes.length; j++) {
-				final int v = bytes[j] & 0xFF;
-				hexChars[j * 2] = PiggybackedProofOfWork.hexArray[v >>> 4];
-				hexChars[(j * 2) + 1] = PiggybackedProofOfWork.hexArray[v & 0x0F];
-			}
-			return new String(hexChars);
-		}
 
 		private final long workId;
 		private final byte[] multiplicator;
@@ -588,11 +532,8 @@ public interface Attachment extends Appendix {
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
-
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-				this.multiplicator[i] = buffer.get();
-			}
+			buffer.get(multiplicator);
 		}
 
 		PiggybackedProofOfWork(final JSONObject attachmentData) {
@@ -602,32 +543,19 @@ public interface Attachment extends Appendix {
 			final String inputRaw = (String) attachmentData.get("multiplicator");
 
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			// null it first (just to be safe)
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; ++i) {
-				this.multiplicator[i] = 0;
-			}
+
 			if (inputRaw != null) {
-				final BigInteger multiplicator_bigint = new BigInteger(inputRaw, 16);
-				// restore fixed sized multiplicator array
-				final byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-				int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-				for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
-					this.multiplicator[back_position] = multiplicator_byte_representation[i - 1];
-					back_position--;
+				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
+				if (multiplicator_byte_representation.length == Constants.WORK_MULTIPLICATOR_BYTES) {
+					for(int i=0;i<Constants.WORK_MULTIPLICATOR_BYTES; ++i)
+						this.multiplicator[i]=multiplicator_byte_representation[i];
 				}
 			}
 		}
 
 		public PiggybackedProofOfWork(final long workId, final byte[] multiplicator) {
 			this.workId = workId;
-			if (multiplicator.length == Constants.WORK_MULTIPLICATOR_BYTES) {
-				this.multiplicator = multiplicator;
-			} else {
-				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-				for (int i = 0; i < 32; ++i) {
-					this.multiplicator[i] = 0;
-				}
-			}
+			this.multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
 		}
 
 		@Override
@@ -716,17 +644,13 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
-			for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; i++) {
-				buffer.put(this.multiplicator[i]);
-			}
+			buffer.put(this.multiplicator);
 		}
 
 		@Override
 		void putMyJSON(final JSONObject attachment) {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
-			final BigInteger multiplicator_bigint = new BigInteger(this.multiplicator);
-			final String hex_string = multiplicator_bigint.toString(16);
-			attachment.put("multiplicator", hex_string);
+			attachment.put("multiplicator", Convert.toHexString(this.multiplicator));
 		}
 
 		public int toInt(final byte[] bytes, final int offset) {

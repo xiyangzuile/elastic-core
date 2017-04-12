@@ -208,18 +208,6 @@ public final class TransactionImpl implements Transaction {
 
 	}
 
-	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
-	public static String bytesToHex(final byte[] bytes) {
-		final char[] hexChars = new char[bytes.length * 2];
-		for (int j = 0; j < bytes.length; j++) {
-			final int v = bytes[j] & 0xFF;
-			hexChars[j * 2] = TransactionImpl.hexArray[v >>> 4];
-			hexChars[(j * 2) + 1] = TransactionImpl.hexArray[v & 0x0F];
-		}
-		return new String(hexChars);
-	}
-
 	static TransactionImpl.BuilderImpl newTransactionBuilder(final byte[] bytes) throws NxtException.NotValidException {
 		final byte[] debug_clone = bytes.clone();
 		try {
@@ -277,8 +265,11 @@ public final class TransactionImpl implements Transaction {
 				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
 			}
 			if (buffer.hasRemaining()) {
+				byte[] rem = new byte[buffer.remaining()];
+				buffer.get(rem);
 				throw new NxtException.NotValidException("Transaction bytes too long, " + buffer.remaining()
-						+ " extra bytes, TX type = " + type + ":" + subtype + " => Raw TX: " + Convert.toHexString(debug_clone));
+
+						+ " extra bytes, TX type = " + type + ":" + subtype + " => Raw TX: " + Convert.toHexString(debug_clone) + ", Remaining: " + Convert.toHexString(rem));
 			}
 			return builder;
 		} catch (NxtException.NotValidException | RuntimeException e) {

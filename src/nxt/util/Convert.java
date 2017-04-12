@@ -333,6 +333,19 @@ public final class Convert {
 		}
 	}
 
+	public static byte[] toFixedBytesCutter(byte[] input, int len){
+		byte[] res = new byte[len];
+		if(input.length>=len){
+			for(int i=0;i<len;++i)
+				res[i]=input[i];
+		}
+		else if(input.length<len){
+			for(int i=0;i<input.length; ++i)
+				res[i+(len-input.length)] = input[i];
+		}
+		return res;
+	}
+
 	private Convert() {
 	} // never
 

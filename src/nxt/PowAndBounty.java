@@ -72,7 +72,6 @@ public final class PowAndBounty {
 
 	};
 
-	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
 	static void addBounty(final Transaction transaction, final Attachment.PiggybackedProofOfBounty attachment) {
 		final PowAndBounty shuffling = new PowAndBounty(transaction, attachment);
@@ -91,15 +90,6 @@ public final class PowAndBounty {
 		PowAndBounty.listeners.notify(shuffling, Event.POW_SUBMITTED);
 	}
 
-	public static String bytesToHex(final byte[] bytes) {
-		final char[] hexChars = new char[bytes.length * 2];
-		for (int j = 0; j < bytes.length; j++) {
-			final int v = bytes[j] & 0xFF;
-			hexChars[j * 2] = PowAndBounty.hexArray[v >>> 4];
-			hexChars[(j * 2) + 1] = PowAndBounty.hexArray[v & 0x0F];
-		}
-		return new String(hexChars);
-	}
 
 	static Map<Long, Integer> GetAccountBountyMap(final long wid) {
 		final DbIterator<PowAndBounty> it = PowAndBounty.getBounties(wid);
