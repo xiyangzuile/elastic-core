@@ -4,6 +4,8 @@ import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nxt.Constants;
+import nxt.util.Convert;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
@@ -28,9 +30,10 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 		byte hash[] = null;
 		try {
 			final String readParam = ParameterParser.getAnnouncement(req, true);
-
-			final BigInteger b = new BigInteger(readParam, 16);
-			hash = b.toByteArray();
+			hash = Convert.parseHexString(readParam);
+			if(hash.length> Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)
+				throw new NxtException.NotValidException("One of your requested hashes exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
+			hash = Convert.toFixedBytesCutter(hash, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 		} catch (final Exception e) {
 			hash = null;
 		}

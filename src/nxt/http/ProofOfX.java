@@ -4,6 +4,7 @@ import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nxt.util.Convert;
 import org.json.simple.JSONStreamAware;
 
 import nxt.Account;
@@ -54,21 +55,17 @@ public final class ProofOfX extends CreateTransaction {
 		if ((multiplicator_multipart == null) || (multiplicator_multipart.length() > 65)) {
 			return JSONResponses.INCORRECT_MULTIPLICATOR;
 		}
-		final byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-		// null it first (just to be safe)
-		for (int i = 0; i < Constants.WORK_MULTIPLICATOR_BYTES; ++i) {
-			multiplicator[i] = 0;
-		}
+		byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+
 		if (multiplicator_multipart != null) {
-			final BigInteger multiplicator_bigint = new BigInteger(multiplicator_multipart, 16);
 			// restore fixed sized multiplicator array
-			final byte[] multiplicator_byte_representation = multiplicator_bigint.toByteArray();
-			int back_position = Constants.WORK_MULTIPLICATOR_BYTES - 1;
-			for (int i = Math.min(multiplicator_byte_representation.length, 32); i > 0; --i) {
-				multiplicator[back_position] = multiplicator_byte_representation[i - 1];
-				back_position--;
-			}
+			multiplicator = Convert.parseHexString(multiplicator_multipart);
+			if(multiplicator.length>Constants.WORK_MULTIPLICATOR_BYTES)
+				throw new NxtException.NotValidException("Your multiplicator exceeds the maximum allowed number of bytes: " + Constants.WORK_MULTIPLICATOR_BYTES);
+			multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
 		}
+
+
 
 		if (is_pow) {
 			final Attachment.PiggybackedProofOfWork attachment = new Attachment.PiggybackedProofOfWork(workId,

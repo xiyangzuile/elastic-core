@@ -4,12 +4,10 @@ import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 
+import nxt.*;
+import nxt.util.Convert;
 import org.json.simple.JSONStreamAware;
 
-import nxt.Account;
-import nxt.Attachment;
-import nxt.Db;
-import nxt.NxtException;
 import nxt.util.Logger;
 
 public final class BountyAnnouncement extends CreateTransaction {
@@ -46,13 +44,14 @@ public final class BountyAnnouncement extends CreateTransaction {
 		if (account == null) {
 			return JSONResponses.INCORRECT_ACCOUNT;
 		}
-
+		byte[] hash = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
 		final String multiplicator_multipart = ParameterParser.getAnnouncement(req, true);
-		byte[] hash = null;
 		if (multiplicator_multipart != null) {
-			final BigInteger multiplicator_bigint = new BigInteger(multiplicator_multipart, 16);
 			// restore fixed sized multiplicator array
-			hash = multiplicator_bigint.toByteArray();
+			hash = Convert.parseHexString(multiplicator_multipart);
+			if(hash.length> Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)
+				throw new NxtException.NotValidException("Your announced hash exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
+			hash = Convert.toFixedBytesCutter(hash, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 		}
 
 		final Attachment.PiggybackedProofOfBountyAnnouncement attachment = new Attachment.PiggybackedProofOfBountyAnnouncement(
