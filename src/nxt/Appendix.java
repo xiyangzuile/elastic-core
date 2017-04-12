@@ -412,9 +412,9 @@ public interface Appendix {
 
 		@Override
 		void validate(final Transaction transaction) throws NxtException.ValidationException {
-			if (transaction.getRecipientId() == 0) {
+			if (transaction.getRecipientId() == 0 || transaction.getType().canHaveRecipient() == false || transaction.getType() != TransactionType.Payment.REDEEM) {
 				throw new NxtException.NotValidException(
-						"PublicKeyAnnouncement cannot be attached to transactions with no recipient");
+						"PublicKeyAnnouncement cannot be attached to transactions with no recipient or to redeem transactions");
 			}
 			if (!Crypto.isCanonicalPublicKey(this.publicKey)) {
 				throw new NxtException.NotValidException(
