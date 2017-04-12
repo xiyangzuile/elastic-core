@@ -176,7 +176,7 @@ public interface Appendix {
 
 		private volatile nxt.PrunableSourceCode prunableSourceCode;
 
-		public PrunableSourceCode(final byte[] source, final short language) {
+		private PrunableSourceCode(final byte[] source, final short language) {
 			this.source = source;
 			this.hash = null;
 			this.language = language;
@@ -207,13 +207,13 @@ public interface Appendix {
 				this.language = 0;
 			} else {
 				this.hash = null;
-				this.source = Convert.toBytes(messageString, true);
+				this.source = Convert.compress(Convert.toBytes(messageString, true));
 				this.language = Short.parseShort(languageString);
 			}
 		}
 
 		public PrunableSourceCode(final String source, final short language) {
-			this(Convert.toBytes(source, true), language);
+			this(Convert.compress(Convert.toBytes(source, true)), language);
 		}
 
 		@Override
@@ -293,10 +293,10 @@ public interface Appendix {
 		@Override
 		void putMyJSON(final JSONObject json) {
 			if (this.prunableSourceCode != null) {
-				json.put("source", Convert.toString(this.prunableSourceCode.getSource(), true));
+				json.put("source", Convert.toString(Convert.uncompress(this.prunableSourceCode.getSource()), true));
 				json.put("language", Short.toString(this.prunableSourceCode.getLanguage()));
 			} else if (this.source != null) {
-				json.put("source", Convert.toString(this.source, true));
+				json.put("source", Convert.toString(Convert.uncompress(this.source), true));
 				json.put("language", Short.toString(this.language));
 			}
 			json.put("messageHash", Convert.toHexString(this.getHash()));
@@ -322,15 +322,25 @@ public interface Appendix {
 			}
 
 			if (this.source != null) {
-				final byte[] src = this.getSource();
+				byte[] src = this.getSource();
+				byte[] dec = null;
 
-				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH)) {
-					throw new NxtException.NotValidException("Invalid source code length: " + src.length);
+				// try to decompress
+				if(src!=null) {
+					try {
+						dec = Convert.uncompress(src);
+					} catch (Exception e) {
+						throw new NotValidException(e.toString());
+					}
 				}
 				if ((src == null)
 						&& ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
 				}
+				if ((dec != null) && (dec.length > Constants.MAX_WORK_CODE_LENGTH)) {
+					throw new NxtException.NotValidException("Invalid source code length: " + src.length);
+				}
+
 			}
 
 			// Other source code checks are performed by super nodes

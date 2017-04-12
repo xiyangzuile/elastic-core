@@ -113,7 +113,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
                     1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
-            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode.getBytes(), (byte)0x01);
+            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {
                 makeSupernodeSigned(attachment, appdx, secretPhrase, user.getId(), 12000000000L, true);
@@ -133,7 +133,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
                     1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
-            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode.getBytes(), (byte)0x01);
+            final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {
                 makeSupernodeSigned(attachment, appdx, secretPhrase, user.getId(), 12000000000L, false);
