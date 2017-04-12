@@ -412,10 +412,16 @@ public interface Appendix {
 
 		@Override
 		void validate(final Transaction transaction) throws NxtException.ValidationException {
-			if (transaction.getRecipientId() == 0 || transaction.getType().canHaveRecipient() == false || transaction.getType() != TransactionType.Payment.REDEEM) {
+			if (transaction.getRecipientId() == 0 || transaction.getType().canHaveRecipient() == false || transaction.getType() == TransactionType.Payment.REDEEM) {
 				throw new NxtException.NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions with no recipient or to redeem transactions");
 			}
+
+			if (transaction.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST || transaction.getType() == TransactionType.WorkControl.BOUNTY || transaction.getType() == TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT || transaction.getType() == TransactionType.WorkControl.PROOF_OF_WORK || transaction.getType() == TransactionType.WorkControl.NEW_TASK) {
+				throw new NxtException.NotValidException(
+						"PublicKeyAnnouncement cannot be attached to transactions related to work creation or management");
+			}
+
 			if (!Crypto.isCanonicalPublicKey(this.publicKey)) {
 				throw new NxtException.NotValidException(
 						"Invalid recipient public key: " + Convert.toHexString(this.publicKey));
