@@ -87,8 +87,6 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
-				// TODO: Remove for live (or leave it to avoid garbagging)
-				TransactionProcessorImpl.getInstance().clearUnconfirmedTransactions();
 
 				Logger.logInfoMessage("Genesis ID: " + Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
 
