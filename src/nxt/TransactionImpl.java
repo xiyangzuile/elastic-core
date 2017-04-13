@@ -267,7 +267,7 @@ public final class TransactionImpl implements Transaction {
 			if (buffer.hasRemaining()) {
 				byte[] rem = new byte[buffer.remaining()];
 				buffer.get(rem);
-				throw new NxtException.NotValidException("Transaction bytes too long, " + buffer.remaining()
+				throw new NxtException.NotValidException("Transaction bytes too long, " + rem.length
 
 						+ " extra bytes, TX type = " + type + ":" + subtype + " => Raw TX: " + Convert.toHexString(debug_clone) + ", Remaining: " + Convert.toHexString(rem));
 			}
