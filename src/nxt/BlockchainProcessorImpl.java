@@ -1946,9 +1946,6 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				}
 				if ((blockTimestamp > 0)
 						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||(!Objects.equals(unconfirmedTransaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
-					System.out.println("Fucked up TX inclusion, timedrift!ts was " + unconfirmedTransaction.getTimestamp() + ", and was higher than " + (blockTimestamp + Constants.MAX_TIMEDRIFT));
-					Throwable t = new Throwable();
-					t.printStackTrace();
 					continue;
 				}
 				try {
