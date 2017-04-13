@@ -245,7 +245,7 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("Sender account " + transaction.getSenderId() + " had no activity before. Please do something else first!");
 
 				if(guard_id == 0 && (!senderAcc.isSuperNode() && !senderAcc.isGuardNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
-					throw new NxtException.NotValidException("Your guaranteed balance does not cover the required super node deposit");
+					throw new NxtException.NotValidException("Your balance does not cover the required super node deposit");
 				}
 				if(guard_id != 0 && (!senderAcc.isGuardNode())){
 					throw new NxtException.NotValidException("Invalid guard node");
@@ -858,6 +858,24 @@ public abstract class TransactionType {
 
 		public final static TransactionType PROOF_OF_WORK = new WorkControl() {
 
+
+			@Override
+			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
+				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
+				if(w!=null) {
+						// unconfirmed TX do not add anything to the balance before block inclusion
+						return true;
+				}else {
+					return false;
+				}
+			}
+
+			@Override
+			void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+
+			}
+
 			// private final LRUCache soft_unblock_cache = new LRUCache(50);
 
 			@Override
@@ -868,12 +886,8 @@ public abstract class TransactionType {
 						.getAttachment();
 				PowAndBounty.addPow(transaction, attachment);
 				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				try {
-					obj.applyPowPayment(transaction.getBlock(), transaction.getSupernodeId());
-				} catch (final Exception e) {
-					throw new NotValidException(e.getMessage());
-				}
 
+				obj.applyPowPayment(transaction.getBlock(), transaction.getSupernodeId());
 			}
 
 			@Override
@@ -922,11 +936,13 @@ public abstract class TransactionType {
 					// block.
 					final Work w = Work.getWork(attachment.getWorkId());
 
-					if (w.isClose_pending()) {
+					if(w==null) return true;
+
+					if (w!=null && w.isClose_pending()) {
 						transaction.setExtraInfo("work already closed");
 						return true;
 					}
-					if (w.isClosed()) {
+					if (w!=null && w.isClosed()) {
 						transaction.setExtraInfo("work already closed");
 						return true;
 					}
@@ -1003,10 +1019,6 @@ public abstract class TransactionType {
 							"Work " + Convert.toUnsignedLong(attachment.getWorkId())
 									+ " already has this submission, dropping duplicate");
 				}
-
-				// final BigInteger real_block_target = w.getWork_min_pow_target_bigint();
-
-
 			}
 
 			@Override
@@ -1019,6 +1031,24 @@ public abstract class TransactionType {
 		public final static TransactionType BOUNTY_ANNOUNCEMENT = new WorkControl() {
 
 			@Override
+			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction.getAttachment();
+				long unconfirmedAssetBalance = senderAccount.getUnconfirmedBalanceNQT();
+				if (unconfirmedAssetBalance >= 0 && unconfirmedAssetBalance >= Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+					senderAccount.addToUnconfirmedBalanceNQT(getLedgerEvent(), transaction.getId(), -Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+					return true;
+				}
+				return false;
+			}
+
+			@Override
+			void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+				Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction.getAttachment();
+				senderAccount.addToUnconfirmedBalanceNQT(getLedgerEvent(), transaction.getId(), Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+			}
+
+
+			@Override
 			void applyAttachment(final Transaction transaction, final Account senderAccount,
 					final Account recipientAccount) throws NxtException.NotValidException {
 
@@ -1026,11 +1056,8 @@ public abstract class TransactionType {
 						.getAttachment();
 				final PowAndBountyAnnouncements obj = PowAndBountyAnnouncements.addBountyAnnouncement(transaction,
 						attachment);
-				try {
-					obj.applyBountyAnnouncement(transaction.getBlock());
-				} catch (final Exception e) {
-					throw new NxtException.NotValidException(e.getMessage());
-				}
+
+				obj.applyBountyAnnouncement(transaction.getBlock());
 			}
 
 			@Override
@@ -1077,10 +1104,12 @@ public abstract class TransactionType {
 					// been already confirmed!
 					final Work w = Work.getWork(attachment.getWorkId());
 
-					if (w.isClose_pending()) {
+					if(w == null) return true;
+
+					if (w!=null && w.isClose_pending()) {
 						return true;
 					}
-					if (w.isClosed()) {
+					if (w!=null && w.isClosed()) {
 						return true;
 					}
 
@@ -1122,9 +1151,8 @@ public abstract class TransactionType {
 				final Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
 						.getAttachment();
 				final Account acc = Account.getAccount(transaction.getSenderId());
-				if ((acc == null) || (acc.getGuaranteedBalanceNQT(1,
-						Nxt.getBlockchain().getHeight()) < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
-					throw new NxtException.NotValidException(
+				if ((acc == null) || (acc.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
+					throw new NxtException.NotCurrentlyValidException(
 							"You cannot cover the " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION
 									+ " NQT deposit fee for your bounty announcement with confirmed funds.");
 				}
@@ -1146,7 +1174,7 @@ public abstract class TransactionType {
 					// catching up the blockchain here, not actually "submitting
 					// live work"
 					if (!(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME))) {
-						throw new NxtException.NotValidException(
+						throw new NxtException.NotCurrentlyValidException(
 								"Bounty announcement is invalid: references a work package with pruned source code when it should not be pruned");
 					}
 				}
@@ -1168,6 +1196,34 @@ public abstract class TransactionType {
 
 		public final static TransactionType BOUNTY = new WorkControl() {
 
+
+			@Override
+			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+				Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction.getAttachment();
+				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
+
+				if(w!=null) {
+					// Check if we had an announcement for this workid earlier, if not delay the transaction indefinitely
+					final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
+							attachment.getHash());
+					if (!hadAnnouncement) {
+						return false;
+					} else {
+						// bounties are credited after confirmation!
+						// unconfirmed balance cannot go higher than actual balance
+						return true;
+					}
+				}else {
+					return false;
+				}
+			}
+
+			@Override
+			void undoAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
+
+			}
+
+
 			@Override
 			void applyAttachment(final Transaction transaction, final Account senderAccount,
 					final Account recipientAccount) throws NotValidException {
@@ -1176,11 +1232,8 @@ public abstract class TransactionType {
 						.getAttachment();
 				PowAndBounty.addBounty(transaction, attachment);
 				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
-				try {
-					obj.applyBounty(transaction.getBlock(), transaction.getSupernodeId());
-				} catch (final Exception e) {
-					throw new NotValidException(e.getMessage());
-				}
+				obj.applyBounty(transaction.getBlock(), transaction.getSupernodeId());
+
 			}
 
 			@Override public boolean mustHaveSupernodeSignature() {
@@ -1231,7 +1284,7 @@ public abstract class TransactionType {
 					// been already confirmed!
 					final Work w = Work.getWork(attachment.getWorkId());
 
-					if (w.isClosed()) {
+					if (w != null && w.isClosed()) {
 						transaction.setExtraInfo("work is already closed, you missed the reveal period");
 						return true;
 					}

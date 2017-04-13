@@ -200,10 +200,10 @@ public final class PowAndBounty {
 		this.too_late = false;
 	}
 
-	public void applyBounty(final Block bl, long supernodeId) throws IOException {
+	public void applyBounty(final Block bl, long supernodeId) throws NxtException.NotValidException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 		if (w == null) {
-			throw new IOException("No such work found");
+			throw new NxtException.NotValidException("No such work found");
 		}
 		if (w.isClosed() == false) {
 			// Immediate payout incl. the bounty deposit
@@ -212,7 +212,7 @@ public final class PowAndBounty {
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 			final Account snAccount = Account.getAccount(supernodeId);
 			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
-				throw new IOException("Something went wrong with the deposit account, shouldn't happen");
+				throw new NxtException.NotValidException("Something went wrong with the deposit account, shouldn't happen");
 			}
 
 			long payUser = w.getXel_per_bounty();
@@ -230,11 +230,11 @@ public final class PowAndBounty {
 		}
 	}
 
-	public void applyPowPayment(final Block bl, long supernodeId) throws IOException {
+	public void applyPowPayment(final Block bl, long supernodeId) throws NxtException.NotValidException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 
 		if (w == null) {
-			throw new IOException("Work not found");
+			throw new NxtException.NotValidException("Work not found");
 		}
 
 		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {

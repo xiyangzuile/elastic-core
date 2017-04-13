@@ -131,10 +131,10 @@ public final class PowAndBountyAnnouncements {
 		this.too_late = false;
 	}
 
-	public void applyBountyAnnouncement(final Block bl) throws IOException {
+	public void applyBountyAnnouncement(final Block bl) throws NxtException.NotValidException  {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 		if (w == null) {
-			throw new IOException("Unknown work id!");
+			throw new NxtException.NotValidException("Unknown work id!");
 		}
 		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {
 			// Now create ledger event for "bounty submission"
@@ -142,11 +142,11 @@ public final class PowAndBountyAnnouncements {
 			final Account participantAccount = Account.getAccount(this.accountId);
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-			if (participantAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
-				throw new IOException("Insufficient funds for deposit");
+			if (participantAccount.getBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+				throw new NxtException.NotValidException("Insufficient funds for deposit");
 			}
 
-			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+			participantAccount.addToBalanceNQT(event, this.id,
 					-1 * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
