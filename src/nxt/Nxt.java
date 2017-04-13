@@ -87,6 +87,9 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
+				// TODO: Remove for live
+				TransactionProcessorImpl.getInstance().clearUnconfirmedTransactions();
+
 				Logger.logInfoMessage("Genesis ID: " + Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
 
 				// Do a supernode check
