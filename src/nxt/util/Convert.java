@@ -129,10 +129,11 @@ public final class Convert {
 		}
 	}
 
-	public static byte[] parseHexString(final String hex) {
+	public static byte[] parseHexString(String hex) {
 		if (hex == null) {
 			return null;
 		}
+		hex=hex.toLowerCase();
 		final byte[] bytes = new byte[hex.length() / 2];
 		for (int i = 0; i < bytes.length; i++) {
 			int char1 = hex.charAt(i * 2);

@@ -326,7 +326,7 @@ public interface Appendix {
 				byte[] dec = null;
 
 
-				
+
 				// Do heuristic precheck here to avoid costly DOS attack on uncompression function
 				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH * 4)) {
 					throw new NxtException.NotValidException(

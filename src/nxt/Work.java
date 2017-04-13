@@ -656,7 +656,7 @@ public final class Work {
 		if (p == null) {
 			obj.put("source", "");
 		} else {
-			obj.put("source", Ascii85.encode(p.getSource()));
+			obj.put("source", Ascii85.encode(Convert.uncompress(p.getSource())));
 		}
 
 		return obj;
