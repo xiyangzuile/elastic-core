@@ -476,6 +476,10 @@ public abstract class TransactionType {
 					throw new NxtException.NotValidException("You have no right to claim from genesis");
 				}
 
+				if(Redeem.isAlreadyRedeemed(attachment.getAddress())){
+					throw new NxtException.NotValidException("Come on, just leave!");
+				}
+
 				// Check if the amountNQT matches the "allowed" amount
 				final Long claimableAmount = Redeem.getClaimableAmount(attachment.getAddress());
 				if ((claimableAmount <= 0) || (claimableAmount != transaction.getAmountNQT())) {

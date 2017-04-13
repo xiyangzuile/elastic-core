@@ -1245,10 +1245,10 @@ public final class TransactionImpl implements Transaction {
 				long accountId = Account.getId(this.superNodePublicKey);
 				Account snode = Account.getAccount(accountId);
 				if(snode == null){
-					throw new NxtException.NotValidException("The super node is unknown");
+					throw new NxtException.NotCurrentlyValidException("The super node is unknown");
 				}
 				if(snode.isSuperNode() == false){
-					throw new NxtException.NotValidException("The super node is not a super node");
+					throw new NxtException.NotCurrentlyValidException("The super node is not a super node");
 				}
 			}
 		}else{
