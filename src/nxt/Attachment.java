@@ -489,7 +489,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		int getMySize() {
-			return 8 + 2 + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES;
+			return 8 + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES;
 		}
 
 		@Override
