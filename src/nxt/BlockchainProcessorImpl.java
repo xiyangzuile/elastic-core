@@ -1585,6 +1585,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			} catch (final Exception e) {
 				Db.db.rollbackTransaction();
 				this.blockchain.setLastBlock(previousLastBlock);
+				e.printStackTrace();
 				throw new BlockNotAcceptedException(e.getMessage(), block);
 			} finally {
 				Db.db.endTransaction();
