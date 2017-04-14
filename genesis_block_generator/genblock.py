@@ -450,7 +450,6 @@ print "Total funds double-check:",total/100000000.0
 print "Address\t\t\t\t\t","XEL\t\t","Timestamp (latest)"
 for i in range(len(normal_addresses)):
     print ffmt(normal_addresses[i]),"\t",normal_addresses_xel[i]/100000000.0,"\t",datetime.datetime.fromtimestamp(int(normal_addresses_times[i])).strftime('%Y-%m-%d %H:%M:%S')
-sys.exit(1)
 
 print "\n\n\n"
 print "ADDR ARRAY"
