@@ -310,8 +310,12 @@ public final class PowAndBounty {
 			StringBuilder builder = new StringBuilder();
 			for (int i : ints) {
 				builder.append(i);
+				builder.append(", ");
 			}
+
 			String text = builder.toString();
+			if(ints.length>0)
+				text = text.substring(text.length()-2);
 			response.put("inputs", text);
 		}
 		return response;
