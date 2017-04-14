@@ -315,7 +315,7 @@ public final class PowAndBounty {
 
 			String text = builder.toString();
 			if(ints.length>0)
-				text = text.substring(text.length()-2);
+				text = text.substring(0,text.length()-2);
 			response.put("inputs", text);
 		}
 		return response;
