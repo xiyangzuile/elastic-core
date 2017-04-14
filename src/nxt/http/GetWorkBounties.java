@@ -40,7 +40,7 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 		try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
 			while (iterator.hasNext()) {
 				final PowAndBounty b = iterator.next();
-				bounties.add(b.toJsonObject());
+				bounties.add(b.toJsonObjectWithIntegers());
 			}
 		}
 

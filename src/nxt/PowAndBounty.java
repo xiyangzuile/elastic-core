@@ -41,7 +41,9 @@ import nxt.util.Listeners;
 
 public final class PowAndBounty {
 
-	public enum Event {
+
+
+    public enum Event {
 		POW_SUBMITTED, BOUNTY_SUBMITTED
 	}
 
@@ -293,6 +295,27 @@ public final class PowAndBounty {
 			response.put("error", "Transaction not found");
 		}
 		return response;
+	}
+
+	public Object toJsonObjectWithIntegers() {
+		final JSONObject response = toJsonObject();
+		Attachment.PiggybackedProofOfWork dummy = new Attachment.PiggybackedProofOfWork(this.work_id, this.multiplicator);
+		final Account participantAccount = Account.getAccount(this.accountId);
+		if(participantAccount==null){
+			response.put("inputs", "sender account not yet available");
+		}else if(Account.getPublicKey(participantAccount.getId()) == null){
+			response.put("inputs", "sender account has no public key yet");
+		}else{
+			int[] ints = dummy.personalizedIntStream(Account.getPublicKey(participantAccount.getId()), Work.getWork(this.work_id).getBlock_id());
+			StringBuilder builder = new StringBuilder();
+			for (int i : ints) {
+				builder.append(i);
+			}
+			String text = builder.toString();
+			response.put("inputs", text);
+		}
+		return response;
+
 	}
 
 }
