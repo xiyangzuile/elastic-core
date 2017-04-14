@@ -1521,11 +1521,15 @@ public abstract class TransactionType {
 				&& Arrays.equals(transaction.getSenderPublicKey(), Genesis.CREATOR_PUBLIC_KEY))) {
 			return false;
 		}
-		senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), -amountNQT, -feeNQT);
+
+		if(amountNQT != 0 || feeNQT != 0)
+			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), -amountNQT, -feeNQT);
 		if (!this.applyAttachmentUnconfirmed(transaction, senderAccount)) {
-			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), amountNQT, feeNQT);
+			if(amountNQT != 0 || feeNQT != 0)
+				senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), amountNQT, feeNQT);
 			return false;
 		}
+
 		return true;
 	}
 
@@ -1606,11 +1610,15 @@ public abstract class TransactionType {
 
 	final void undoUnconfirmed(final TransactionImpl transaction, final Account senderAccount) {
 		this.undoAttachmentUnconfirmed(transaction, senderAccount);
-		senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), transaction.getAmountNQT(),
-				transaction.getFeeNQT());
-		if (transaction.referencedTransactionFullHash() != null) {
-			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), 0,
-					Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+		if(transaction.getFeeNQT()==0 && transaction.getAmountNQT()==0){
+			//do nothing
+		}else {
+			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), transaction.getAmountNQT(),
+					transaction.getFeeNQT());
+			if (transaction.referencedTransactionFullHash() != null) {
+				senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), 0,
+						Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
+			}
 		}
 	}
 
