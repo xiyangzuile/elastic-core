@@ -1029,8 +1029,13 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	void undoUnconfirmed() {
+		try {
 		final Account senderAccount = Account.getAccount(this.getSenderId());
 		this.type.undoUnconfirmed(this, senderAccount);
+		}catch(Exception e){
+			System.err.println("Failure undoing unconfirmed TX:\n" + Convert.toHexString(this.getBytes()));
+			throw e; // pass through error
+		}
 	}
 
 	void unsetBlock() {
