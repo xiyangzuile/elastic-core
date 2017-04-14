@@ -16,6 +16,7 @@
 
 package nxt;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.sql.Connection;
@@ -1584,6 +1585,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			} catch (final Exception e) {
 				Db.db.rollbackTransaction();
 				this.blockchain.setLastBlock(previousLastBlock);
+				e.printStackTrace();
 				throw new BlockNotAcceptedException(e.getMessage(), block);
 			} finally {
 				Db.db.endTransaction();
@@ -1945,8 +1947,6 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				}
 				if ((blockTimestamp > 0)
 						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||(!Objects.equals(unconfirmedTransaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
-					System.out.println("Fucked up TX inclusion, timedrift!ts was " + unconfirmedTransaction.getTimestamp() + ", and was higher than " + (blockTimestamp + Constants.MAX_TIMEDRIFT));
-
 					continue;
 				}
 				try {
