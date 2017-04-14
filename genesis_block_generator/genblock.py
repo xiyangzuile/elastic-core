@@ -1,9 +1,9 @@
 import urllib2
 import os.path
-import json
+import json, datetime
 import time
 import sys
-from bitcoin.wallet import CBitcoinSecret, P2PKHBitcoinAddress
+from bitcoin.wallet import CBitcoinSecret, CBitcoinAddress, P2PKHBitcoinAddress
 from bitcoin.core import x, CScript
 from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
 def ensure_is_present(url, file_name):
@@ -251,7 +251,7 @@ with open(file_name) as data_file:
             continue
         loaded_hashes.append(x["btc_tx"])
         pubkey = x["owner_pubkey"]
-        if pubkey[0:2]=="02" or pubkey[0:2]=="03" or pubkey[0:2]=="04" and ' ' not in pubkey:
+        if (pubkey[0:2]=="02" or pubkey[0:2]=="03" or pubkey[0:2]=="04") and ' ' not in pubkey:
             # print "Pubkey [%s...] burned for [%.6f] XEL" % (pubkey[0:12], amount)
             btc_normal += float(x["btc_amount"])
 
@@ -351,6 +351,7 @@ for x in hashes_missing_in_genesis_block:
 
 print "\n\nNow, Handing the Abnormal ..."
 # Now handling the abnormals
+abnormal_add_map = {}
 btc_abnormal = 0
 for x in abnormal:
     btc_abnormal += float(x["btc_amount"])
@@ -378,8 +379,17 @@ for x in abnormal:
 
         cnt = cnt + 1
 
+  
+
+    txin_scriptPubKey = scr2.to_p2sh_scriptPubKey()
+    txin_p2sh_address = CBitcoinAddress.from_scriptPubKey(txin_scriptPubKey)
+    abnormal_add_map[str(want)+"-"+reas[:-1]] = txin_p2sh_address
     print " --> abnormal: ",want,"out of",have,"required",reas
 
+def ffmt(addy):
+    if '-' not in addy:
+        return addy
+    return abnormal_add_map[addy]
 
 
 print ""
@@ -420,6 +430,7 @@ for i in range(len(normal_addresses)):
     addrset[add] += normal_addresses_xel[i]
     timeset[add] = max(timeset[add] , normal_addresses_times[i] )
 
+
 normal_addresses = []
 normal_addresses_xel = []
 normal_addresses_times = []
@@ -431,6 +442,15 @@ for key in addrset:
 total = 0
 for i in range(len(normal_addresses_xel)):
     total += normal_addresses_xel[i]
+
+print "Total funds double-check:",total/100000000.0
+
+# bad counterexample
+# print all addresses
+print "Address\t\t\t\t\t","XEL\t\t","Timestamp (latest)"
+for i in range(len(normal_addresses)):
+    print ffmt(normal_addresses[i]),"\t",normal_addresses_xel[i]/100000000.0,"\t",datetime.datetime.fromtimestamp(int(normal_addresses_times[i])).strftime('%Y-%m-%d %H:%M:%S')
+sys.exit(1)
 
 print "\n\n\n"
 print "ADDR ARRAY"
