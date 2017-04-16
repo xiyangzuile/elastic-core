@@ -23,7 +23,7 @@ import java.util.logging.LogManager;
 /**
  * Java LogManager extension for use with Nxt
  */
-class NxtLogManager extends LogManager {
+public class NxtLogManager extends LogManager {
 
 	/** Logging reconfiguration in progress */
 	private volatile boolean loggingReconfiguration = false;
