@@ -537,7 +537,10 @@ public final class Peers {
 
 				// Handle SN Peers in the same way we handle well known peers
                 // Our goal are #SUPERNODE_CONNECTED_NODES_ARE_ENOUGH SN connections. Let us try to connect to more
-                if(Nxt.connectToSupernodes && !Peers.hasEnoughSupernodePeers(Constants.SUPERNODE_CONNECTED_NODES_ARE_ENOUGH))
+
+				// also, only do it if you are not a SN yourself
+
+                if(Nxt.supernodePass.length()==0 && ( Nxt.connectToSupernodes && !Peers.hasEnoughSupernodePeers(Constants.SUPERNODE_CONNECTED_NODES_ARE_ENOUGH)))
                     for (final String snPeer : Peers.getPotentialSNPeers()) {
                         final PeerImpl peer6 = Peers.findOrCreatePeer(snPeer, true);
                         if (peer6 != null && now - peer6.getLastConnectAttempt() > 600)
