@@ -366,7 +366,12 @@ public final class Peers {
 		useWebSockets = Nxt.getBooleanProperty("nxt.useWebSockets");
 		webSocketIdleTimeout = Nxt.getIntProperty("nxt.webSocketIdleTimeout");
 		isGzipEnabled = Nxt.getBooleanProperty("nxt.enablePeerServerGZIPFilter");
-		blacklistingPeriod = Nxt.getIntProperty("nxt.blacklistingPeriod") / 1000;
+
+		if(Nxt.supernodePass.length()==0)
+			blacklistingPeriod = Nxt.getIntProperty("nxt.blacklistingPeriod") / 1000;
+		else
+			blacklistingPeriod = Nxt.getIntProperty("nxt.blacklistingPeriodSN") / 1000;
+
 		Peers.communicationLoggingMask = Nxt.getIntProperty("nxt.communicationLoggingMask");
 		sendToPeersLimit = Nxt.getIntProperty("nxt.sendToPeersLimit");
 		sendToSnPeersLimit = Constants.Supernode_Push_Limit;
