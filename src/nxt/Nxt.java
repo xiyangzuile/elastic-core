@@ -102,6 +102,7 @@ public final class Nxt {
 							Logger.logErrorMessage("Cannot determine your external IP, please set it in nxt.properties!");
 							System.exit(1);
 						}
+						UPnP.addPort(6876);
 						Nxt.externalIPSN = extAddr.getHostAddress();
 					}
 					Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");
