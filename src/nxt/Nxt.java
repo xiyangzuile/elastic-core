@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -92,12 +93,19 @@ public final class Nxt {
 				// Do a supernode check
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
 				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
-				Nxt.externalIPSN = Nxt.getStringProperty("nxt.superNodeExternalIP","");
-				Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");
-
-
 
 				if(snpass.length()!=0){
+					Nxt.externalIPSN = Convert.emptyToNull(Nxt.getStringProperty("nxt.myAddress", "").trim());
+					if(Nxt.externalIPSN  == null){
+						final InetAddress extAddr = UPnP.getExternalAddress();
+						if (extAddr == null){
+							Logger.logErrorMessage("Cannot determine your external IP, please set it in nxt.properties!");
+							System.exit(1);
+						}
+						Nxt.externalIPSN = extAddr.getHostAddress();
+					}
+					Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");
+					Logger.logInfoMessage("Own IP at early stage: " + Nxt.externalIPSN);
 
 					if(!IPValidator.getInstance().validate(Nxt.externalIPSN)){
 						Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");

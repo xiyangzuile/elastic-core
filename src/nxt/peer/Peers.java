@@ -177,7 +177,7 @@ public final class Peers {
 	private static final int DEFAULT_PEER_PORT = 7874;
 	private static final int TESTNET_PEER_PORT = 6874;
 	private static final String myPlatform;
-	private static final String myAddress;
+	public static final String myAddress;
 	private static final int myPeerServerPort;
 	private static final String myHallmark;
 	private static final boolean shareMyAddress;
