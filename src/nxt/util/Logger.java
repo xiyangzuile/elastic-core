@@ -210,6 +210,10 @@ public final class Logger {
 			Logger.doLog(Level.INFO, "[SIGN] " + message, null);
 	}
 
+	public static void logKomotoMessage(final String message) {
+		if(Constants.logKimotoEvents)
+			Logger.doLog(Level.INFO, "[KIMOTO] " + message, null);
+	}
 
 	/**
 	 * Log a debug message

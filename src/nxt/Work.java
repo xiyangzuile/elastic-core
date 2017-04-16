@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.simple.JSONObject;
 
@@ -604,7 +605,7 @@ public final class Work {
 			pstmt.setInt(++i, this.received_pows);
 			pstmt.setInt(++i, this.bounty_limit);
 			pstmt.setInt(++i, this.originating_height);
-			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
+			pstmt.setInt(++i, Nxt.getBlockchain().getBlock(this.block_id).getHeight());
 			pstmt.setBytes(++i, this.work_min_pow_target.toByteArray());
 
 			pstmt.executeUpdate();
@@ -675,7 +676,7 @@ public final class Work {
 		// yet)
 
 		BigInteger targetI = null;
-		if (this.work_min_pow_target != BigInteger.ZERO) {
+		if (Objects.equals(this.work_min_pow_target, BigInteger.ZERO)) {
 			targetI = Nxt.getBlockchain().getBlock(this.getBlock_id()).getMinPowTarget();
 		} else {
 			targetI = this.work_min_pow_target;
@@ -750,7 +751,7 @@ public final class Work {
 					double kim = kimoto(PastBlocksMass * 30);
 					
 					if (counter >= account_for_blocks_min && (local_adjustment > kim || local_adjustment < 1/kim)){
-						System.out.println("Komoto: kim = " + kim + ", 1/kim = " + (1/kim) + ", trs_per_second = " + trs_per_second + ", adjustment = " + local_adjustment);
+						Logger.logKomotoMessage("Komoto: kim = " + kim + ", 1/kim = " + (1/kim) + ", trs_per_second = " + trs_per_second + ", adjustment = " + local_adjustment);
 						break;
 					}
 				}else{
@@ -764,19 +765,19 @@ public final class Work {
 
 			if (!(emptyCnt == 10 && PastBlocksTotalMass>0)) {
 				// We have received at least one POW in the last 60 seconds
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println("Accounted last blocks: " + counter);
-				System.out.println("Blocks span how much time: " + seconds_passed);
-				System.out.println("How many seen POWs: " + PastBlocksMass);
-				System.out.println("Scalingfactor: " + local_adjustment);
+				Logger.logKomotoMessage("\n\n*** RETARGETING ***");
+				Logger.logKomotoMessage("Workid: " + this.getId());
+				Logger.logKomotoMessage("Accounted last blocks: " + counter);
+				Logger.logKomotoMessage("Blocks span how much time: " + seconds_passed);
+				Logger.logKomotoMessage("How many seen POWs: " + PastBlocksMass);
+				Logger.logKomotoMessage("Scalingfactor: " + local_adjustment + "\n\n");
 				
 			} else {
 				// This job is just too boring, others still get POWs
 				local_adjustment = 1;
-				System.out.println("*** RETARGETING ***");
-				System.out.println("Workid: " + this.getId());
-				System.out.println("Skipped retargeting, no POW received for this job but others!");
+				Logger.logKomotoMessage("\n\n*** RETARGETING ***");
+				Logger.logKomotoMessage("Workid: " + this.getId());
+				Logger.logKomotoMessage("Skipped retargeting, no POW received for this job but others!\n\n");
 
 			}
 			
@@ -795,7 +796,7 @@ public final class Work {
 			} else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) { 
 				targetI = BigInteger.valueOf(1L);
 			}
-			Logger.logDebugMessage("New target: " + Convert.toHexString(targetI.toByteArray()));
+			Logger.logKomotoMessage("New target: " + Convert.toHexString(targetI.toByteArray()));
 
 
 		} else {
