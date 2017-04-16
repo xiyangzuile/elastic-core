@@ -455,7 +455,7 @@ public final class Work {
 					&& (this.received_bounty_announcements < this.bounty_limit)) {
 				// timedout with money remaining and bounty slots remaining
 				this.timedout = true;
-				this.closing_timestamp = Nxt.getEpochTime();
+				this.closing_timestamp = bl.getTimestamp();
 				if (this.received_bounties == this.received_bounty_announcements) {
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the
@@ -473,7 +473,7 @@ public final class Work {
 					&& ((this.balance_pow_fund < this.xel_per_pow) || (this.received_bounties == this.bounty_limit)
 							|| (this.received_bounty_announcements == this.bounty_limit))) {
 				// closed regularily, nothing to bother about
-				this.closing_timestamp = Nxt.getEpochTime();
+				this.closing_timestamp = bl.getTimestamp();
 				if (this.received_bounties == this.received_bounty_announcements) {
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the
@@ -489,7 +489,7 @@ public final class Work {
 			} else {
 				// manual cancellation
 				this.cancelled = true;
-				this.closing_timestamp = Nxt.getEpochTime();
+				this.closing_timestamp = bl.getTimestamp();
 				if (this.received_bounties == this.received_bounty_announcements) {
 					this.closed = true;
 					// Now create ledger event for "refund" what is left in the
