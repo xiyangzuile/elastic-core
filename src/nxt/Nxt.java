@@ -104,7 +104,14 @@ public final class Nxt {
 							Logger.logErrorMessage("Cannot determine your external IP, please set it in nxt.properties!");
 							System.exit(1);
 						}
-						UPnP.addPort(6876);
+
+						// in this case UPNP port must be active, check
+
+						boolean check = Nxt.getBooleanProperty("nxt.enablePeerUPnP");
+						if(!check){
+							Logger.logErrorMessage("Without a statically configured IP, you need to set nxt.enablePeerUPnP = true");
+							System.exit(1);
+						}
 						Nxt.externalIPSN = extAddr.getHostAddress();
 					}
 					Nxt.connectToSupernodes=Nxt.getBooleanProperty("nxt.connectToSupernodes");

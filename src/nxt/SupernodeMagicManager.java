@@ -105,8 +105,6 @@ public class SupernodeMagicManager {
                     return;
                 }
 
-
-
                 Account sn = Nxt.getSnAccount();
                 // Check if we should fire the "update callback right now!"
                 // This happens either when requested or when there are only 6 blocks left in the SN status
