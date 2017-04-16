@@ -53,10 +53,12 @@ public final class Nxt {
     public static String externalIPSN = "";
     public static boolean connectToSupernodes = false;
     public static Account getSnAccount(){ return Account.getAccount(Crypto.getPublicKey(Nxt.supernodePass)); };
+	public static boolean snrenew = false;
 
     private static class Init {
 
 		private static volatile boolean initialized = false;
+
 
 		static {
 			try {
@@ -92,7 +94,7 @@ public final class Nxt {
 
 				// Do a supernode check
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
-				boolean snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
+				snrenew=Nxt.getBooleanProperty("nxt.autoRenewSupernode");
 
 				if(snpass.length()!=0){
 					Nxt.externalIPSN = Convert.emptyToNull(Nxt.getStringProperty("nxt.myAddress", "").trim());
@@ -116,8 +118,7 @@ public final class Nxt {
 					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
 
 					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())) if (!snrenew) {
-                        Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
-                        System.exit(1);
+                        Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true or renew supernode status via API.");
                     } else
                         Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Fund your account as quick as possible. Retrying soon.");
                     else // Check if autorenew is on if the node is not yet a supernode

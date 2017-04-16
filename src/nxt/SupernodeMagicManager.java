@@ -100,6 +100,12 @@ public class SupernodeMagicManager {
                     return;
                 }
 
+                if((Nxt.getSnAccount() == null || (!Nxt.getSnAccount().isSuperNode()) && Nxt.snrenew == false){
+                    Logger.logInfoMessage("SuperNode Logic Delayed: Please become supernode first.");
+                    return;
+                }
+
+
 
                 Account sn = Nxt.getSnAccount();
                 // Check if we should fire the "update callback right now!"
