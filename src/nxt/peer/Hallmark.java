@@ -40,12 +40,10 @@ public final class Hallmark {
 	public static String generateHallmark(final String secretPhrase, final String host, final int weight,
 			final int date) {
 
-		if ((host.length() == 0) || (host.length() > 100)) {
-			throw new IllegalArgumentException("Hostname length should be between 1 and 100");
-		}
-		if ((weight <= 0) || (weight > Constants.MAX_BALANCE_NXT)) {
-			throw new IllegalArgumentException("Weight should be between 1 and " + Constants.MAX_BALANCE_NXT);
-		}
+		if ((host.length() == 0) || (host.length() > 100))
+            throw new IllegalArgumentException("Hostname length should be between 1 and 100");
+		if ((weight <= 0) || (weight > Constants.MAX_BALANCE_NXT))
+            throw new IllegalArgumentException("Weight should be between 1 and " + Constants.MAX_BALANCE_NXT);
 
 		final byte[] publicKey = Crypto.getPublicKey(secretPhrase);
 		final byte[] hostBytes = Convert.toBytes(host);
@@ -74,9 +72,8 @@ public final class Hallmark {
 	public static Hallmark parseHallmark(String hallmarkString) {
 
 		hallmarkString = hallmarkString.trim();
-		if ((hallmarkString.length() % 2) != 0) {
-			throw new IllegalArgumentException("Invalid hallmark string length " + hallmarkString.length());
-		}
+		if ((hallmarkString.length() % 2) != 0)
+            throw new IllegalArgumentException("Invalid hallmark string length " + hallmarkString.length());
 
 		final byte[] hallmarkBytes = Convert.parseHexString(hallmarkString);
 
@@ -86,9 +83,7 @@ public final class Hallmark {
 		final byte[] publicKey = new byte[32];
 		buffer.get(publicKey);
 		final int hostLength = buffer.getShort();
-		if (hostLength > 300) {
-			throw new IllegalArgumentException("Invalid host length");
-		}
+		if (hostLength > 300) throw new IllegalArgumentException("Invalid host length");
 		final byte[] hostBytes = new byte[hostLength];
 		buffer.get(hostBytes);
 		final String host = Convert.toString(hostBytes);

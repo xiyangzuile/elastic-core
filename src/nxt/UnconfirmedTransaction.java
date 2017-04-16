@@ -22,9 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+import java.util.Objects;
 
 import nxt.util.Convert;
-import nxt.util.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
@@ -54,9 +54,7 @@ class UnconfirmedTransaction implements Transaction {
 			final byte[] transactionBytes = rs.getBytes("transaction_bytes");
 			JSONObject prunableAttachments = null;
 			final String prunableJSON = rs.getString("prunable_json");
-			if (prunableJSON != null) {
-				prunableAttachments = (JSONObject) JSONValue.parse(prunableJSON);
-			}
+			if (prunableJSON != null) prunableAttachments = (JSONObject) JSONValue.parse(prunableJSON);
 			final TransactionImpl.BuilderImpl builder = TransactionImpl.newTransactionBuilder(transactionBytes,
 					prunableAttachments);
 			this.transaction = builder.build();
@@ -77,7 +75,7 @@ class UnconfirmedTransaction implements Transaction {
 	@Override
 	public boolean equals(final Object o) {
 		return (o instanceof UnconfirmedTransaction)
-				&& this.transaction.equals(((UnconfirmedTransaction) o).getTransaction());
+				&& Objects.equals(this.transaction, ((UnconfirmedTransaction) o).getTransaction());
 	}
 
 	@Override
@@ -290,17 +288,13 @@ class UnconfirmedTransaction implements Transaction {
 			// Special Treatment for REDEEM Transactions with older timestamp here
 
 			if(this.transaction.getAttachment().getTransactionType() == TransactionType.Payment.REDEEM)
-				pstmt.setInt(++i, Convert.toEpochTime(this.arrivalTimestamp) + (this.transaction.getDeadline() * 60));
-			else
-				pstmt.setInt(++i, this.transaction.getExpiration());
+                pstmt.setInt(++i, Convert.toEpochTime(this.arrivalTimestamp) + (this.transaction.getDeadline() * 60));
+            else pstmt.setInt(++i, this.transaction.getExpiration());
 
 			pstmt.setBytes(++i, this.transaction.getBytes());
 			final JSONObject prunableJSON = this.transaction.getPrunableAttachmentJSON();
-			if (prunableJSON != null) {
-				pstmt.setString(++i, prunableJSON.toJSONString());
-			} else {
-				pstmt.setNull(++i, Types.VARCHAR);
-			}
+			if (prunableJSON != null) pstmt.setString(++i, prunableJSON.toJSONString());
+            else pstmt.setNull(++i, Types.VARCHAR);
 			pstmt.setLong(++i, this.arrivalTimestamp);
 			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 			pstmt.executeUpdate();

@@ -40,13 +40,10 @@ public final class SetAccountInfo extends CreateTransaction {
 		final String name = Convert.nullToEmpty(req.getParameter("name")).trim();
 		final String description = Convert.nullToEmpty(req.getParameter("description")).trim();
 
-		if (name.length() > Constants.MAX_ACCOUNT_NAME_LENGTH) {
-			return JSONResponses.INCORRECT_ACCOUNT_NAME_LENGTH;
-		}
+		if (name.length() > Constants.MAX_ACCOUNT_NAME_LENGTH) return JSONResponses.INCORRECT_ACCOUNT_NAME_LENGTH;
 
-		if (description.length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH) {
-			return JSONResponses.INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
-		}
+		if (description.length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH)
+            return JSONResponses.INCORRECT_ACCOUNT_DESCRIPTION_LENGTH;
 
 		final Account account = ParameterParser.getSenderAccount(req);
 		final Attachment attachment = new Attachment.MessagingAccountInfo(name, description);

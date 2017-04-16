@@ -80,22 +80,16 @@ final class BlockchainImpl implements Blockchain {
 	@Override
 	public BlockImpl getBlock(final long blockId) {
 		final BlockImpl block = this.lastBlock.get();
-		if ((block != null) && (block.getId() == blockId)) {
-			return block;
-		}
+		if ((block != null) && (block.getId() == blockId)) return block;
 		return BlockDb.findBlock(blockId);
 	}
 
 	@Override
 	public BlockImpl getBlockAtHeight(final int height) {
 		final BlockImpl block = this.lastBlock.get();
-		if (height > block.getHeight()) {
-			throw new IllegalArgumentException(
-					"Invalid height " + height + ", current blockchain is at " + block.getHeight());
-		}
-		if (height == block.getHeight()) {
-			return block;
-		}
+		if (height > block.getHeight()) throw new IllegalArgumentException(
+                "Invalid height " + height + ", current blockchain is at " + block.getHeight());
+		if (height == block.getHeight()) return block;
 		return BlockDb.findBlockAtHeight(height);
 	}
 
@@ -118,16 +112,9 @@ final class BlockchainImpl implements Blockchain {
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT height FROM block WHERE ID = ?")) {
 			pstmt.setLong(1, lastBlockId);
-			try (DbIterator<Integer> it = new DbIterator<>(con, pstmt, (con1, rs) -> {
-
-				int height = rs.getInt("height");
-				return height;
-			})) {
-				if (it.hasNext()) {
-					return it.next();
-				} else {
-					return 0;
-				}
+			try (DbIterator<Integer> it = new DbIterator<>(con, pstmt, (con1, rs) -> rs.getInt("height"))) {
+				if (it.hasNext()) return it.next();
+                else return 0;
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -137,13 +124,9 @@ final class BlockchainImpl implements Blockchain {
 	@Override
 	public long getBlockIdAtHeight(final int height) {
 		final Block block = this.lastBlock.get();
-		if (height > block.getHeight()) {
-			throw new IllegalArgumentException(
-					"Invalid height " + height + ", current blockchain is at " + block.getHeight());
-		}
-		if (height == block.getHeight()) {
-			return block.getId();
-		}
+		if (height > block.getHeight()) throw new IllegalArgumentException(
+                "Invalid height " + height + ", current blockchain is at " + block.getHeight());
+		if (height == block.getHeight()) return block.getId();
 		return BlockDb.findBlockIdAtHeight(height);
 	}
 
@@ -156,9 +139,7 @@ final class BlockchainImpl implements Blockchain {
 			if (block != null) {
 				final Collection<BlockImpl> cacheMap = BlockDb.heightMap.tailMap(block.getHeight() + 1).values();
 				for (final BlockImpl cacheBlock : cacheMap) {
-					if (result.size() >= limit) {
-						break;
-					}
+					if (result.size() >= limit) break;
 					result.add(cacheBlock.getId());
 				}
 				return result;
@@ -172,9 +153,7 @@ final class BlockchainImpl implements Blockchain {
 			pstmt.setLong(1, blockId);
 			pstmt.setInt(2, limit);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				while (rs.next()) {
-					result.add(rs.getLong("id"));
-				}
+				while (rs.next()) result.add(rs.getLong("id"));
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -197,11 +176,7 @@ final class BlockchainImpl implements Blockchain {
 			pstmt.setInt(1, blockchainHeight - from);
 			pstmt.setInt(2, blockchainHeight - to);
 			final DbIterator<BlockImpl> idb = this.getBlocks(con, pstmt);
-			if (idb != null) {
-				while (idb.hasNext()) {
-					result.add(idb.next());
-				}
-			}
+			while (idb.hasNext()) result.add(idb.next());
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
@@ -222,16 +197,10 @@ final class BlockchainImpl implements Blockchain {
 								+ "ORDER BY height DESC" + DbUtils.limitsClause(from, to));) {
 			int i = 0;
 			pstmt.setLong(++i, accountId);
-			if (timestamp > 0) {
-				pstmt.setInt(++i, timestamp);
-			}
+			if (timestamp > 0) pstmt.setInt(++i, timestamp);
 			DbUtils.setLimits(++i, pstmt, from, to);
 			final DbIterator<BlockImpl> idb = this.getBlocks(con, pstmt);
-			if (idb != null) {
-				while (idb.hasNext()) {
-					result.add(idb.next());
-				}
-			}
+			while (idb.hasNext()) result.add(idb.next());
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
@@ -241,9 +210,7 @@ final class BlockchainImpl implements Blockchain {
 
 	@Override
 	public List<BlockImpl> getBlocksAfter(final long blockId, final int limit) {
-		if (limit <= 0) {
-			return Collections.emptyList();
-		}
+		if (limit <= 0) return Collections.emptyList();
 		// Check the block cache
 		final List<BlockImpl> result = new ArrayList<>(BlockDb.BLOCK_CACHE_SIZE);
 		synchronized (BlockDb.blockCache) {
@@ -251,9 +218,7 @@ final class BlockchainImpl implements Blockchain {
 			if (block != null) {
 				final Collection<BlockImpl> cacheMap = BlockDb.heightMap.tailMap(block.getHeight() + 1).values();
 				for (final BlockImpl cacheBlock : cacheMap) {
-					if (result.size() >= limit) {
-						break;
-					}
+					if (result.size() >= limit) break;
 					result.add(cacheBlock);
 				}
 				return result;
@@ -267,9 +232,7 @@ final class BlockchainImpl implements Blockchain {
 			pstmt.setLong(1, blockId);
 			pstmt.setInt(2, limit);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				while (rs.next()) {
-					result.add(BlockDb.loadBlock(con, rs, true));
-				}
+				while (rs.next()) result.add(BlockDb.loadBlock(con, rs, true));
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -279,9 +242,7 @@ final class BlockchainImpl implements Blockchain {
 
 	@Override
 	public List<BlockImpl> getBlocksAfter(final long blockId, final List<Long> blockList) {
-		if (blockList.isEmpty()) {
-			return Collections.emptyList();
-		}
+		if (blockList.isEmpty()) return Collections.emptyList();
 		// Check the block cache
 		final List<BlockImpl> result = new ArrayList<>(BlockDb.BLOCK_CACHE_SIZE);
 		synchronized (BlockDb.blockCache) {
@@ -290,9 +251,7 @@ final class BlockchainImpl implements Blockchain {
 				final Collection<BlockImpl> cacheMap = BlockDb.heightMap.tailMap(block.getHeight() + 1).values();
 				int index = 0;
 				for (final BlockImpl cacheBlock : cacheMap) {
-					if ((result.size() >= blockList.size()) || (cacheBlock.getId() != blockList.get(index++))) {
-						break;
-					}
+					if ((result.size() >= blockList.size()) || (cacheBlock.getId() != blockList.get(index++))) break;
 					result.add(cacheBlock);
 				}
 				return result;
@@ -309,9 +268,7 @@ final class BlockchainImpl implements Blockchain {
 				int index = 0;
 				while (rs.next()) {
 					final BlockImpl block = BlockDb.loadBlock(con, rs, true);
-					if (block.getId() != blockList.get(index++)) {
-						break;
-					}
+					if (block.getId() != blockList.get(index++)) break;
 					result.add(block);
 				}
 			}
@@ -324,9 +281,7 @@ final class BlockchainImpl implements Blockchain {
 	@Override
 	public BlockImpl getECBlock(final int timestamp) {
 		final Block block = this.getLastBlock(timestamp);
-		if (block == null) {
-			return this.getBlockAtHeight(0);
-		}
+		if (block == null) return this.getBlockAtHeight(0);
 		return BlockDb.findBlockAtHeight(Math.max(block.getHeight() - 720, 0));
 	}
 
@@ -341,9 +296,7 @@ final class BlockchainImpl implements Blockchain {
 			blockchainProcessor.selectUnconfirmedTransactions(duplicates, this.getLastBlock(), -1)
 					.forEach(unconfirmedTransaction -> {
 						final TransactionImpl transaction = unconfirmedTransaction.getTransaction();
-						if (filter.ok(transaction)) {
-							result.add(transaction);
-						}
+						if (filter.ok(transaction)) result.add(transaction);
 					});
 		} finally {
 			this.readUnlock();
@@ -365,9 +318,7 @@ final class BlockchainImpl implements Blockchain {
 	@Override
 	public BlockImpl getLastBlock(final int timestamp) {
 		final BlockImpl block = this.lastBlock.get();
-		if (timestamp >= block.getTimestamp()) {
-			return block;
-		}
+		if (timestamp >= block.getTimestamp()) return block;
 		return BlockDb.findLastBlock(timestamp);
 	}
 
@@ -399,9 +350,7 @@ final class BlockchainImpl implements Blockchain {
 			pstmt.setLong(++i, transactionId);
 			DbUtils.setLimits(++i, pstmt, from, to);
 			try(DbIterator<TransactionImpl> dbit = this.getTransactions(con, pstmt)){
-				while(dbit.hasNext()){
-					ret.add(dbit.next());
-				}
+				while(dbit.hasNext()) ret.add(dbit.next());
 			}
 			
 		} catch (final SQLException e) {
@@ -452,77 +401,50 @@ final class BlockchainImpl implements Blockchain {
 
 		List<Transaction> ret = new ArrayList<>();
 
-		if (phasedOnly && nonPhasedOnly) {
-			throw new IllegalArgumentException("At least one of phasedOnly or nonPhasedOnly must be false");
-		}
+		if (phasedOnly && nonPhasedOnly)
+            throw new IllegalArgumentException("At least one of phasedOnly or nonPhasedOnly must be false");
 		final int height = numberOfConfirmations > 0 ? this.getHeight() - numberOfConfirmations : Integer.MAX_VALUE;
-		if (height < 0) {
-			throw new IllegalArgumentException("Number of confirmations required " + numberOfConfirmations
-					+ " exceeds current blockchain height " + this.getHeight());
-		}
+		if (height < 0) throw new IllegalArgumentException("Number of confirmations required " + numberOfConfirmations
+                + " exceeds current blockchain height " + this.getHeight());
 		try {
 			final StringBuilder buf = new StringBuilder();
 			buf.append("SELECT transaction.* FROM transaction ");
-			if (executedOnly && !nonPhasedOnly) {
-				buf.append(" LEFT JOIN phasing_poll_result ON transaction.id = phasing_poll_result.id ");
-			}
+			if (executedOnly && !nonPhasedOnly)
+                buf.append(" LEFT JOIN phasing_poll_result ON transaction.id = phasing_poll_result.id ");
 			buf.append("WHERE recipient_id = ? AND sender_id <> ? ");
-			if (blockTimestamp > 0) {
-				buf.append("AND block_timestamp >= ? ");
-			}
+			if (blockTimestamp > 0) buf.append("AND block_timestamp >= ? ");
 			if (type >= 0) {
 				buf.append("AND type = ? ");
-				if (subtype >= 0) {
-					buf.append("AND subtype = ? ");
-				}
+				if (subtype >= 0) buf.append("AND subtype = ? ");
 			}
-			if (height < Integer.MAX_VALUE) {
-				buf.append("AND transaction.height <= ? ");
-			}
+			if (height < Integer.MAX_VALUE) buf.append("AND transaction.height <= ? ");
 			if (withMessage) {
 				buf.append("AND (has_message = TRUE OR has_encrypted_message = TRUE ");
 				buf.append(
 						"OR ((has_prunable_message = TRUE OR has_prunable_encrypted_message = TRUE) AND timestamp > ?)) ");
 			}
-			if (phasedOnly) {
-				buf.append("AND phased = TRUE ");
-			} else if (nonPhasedOnly) {
-				buf.append("AND phased = FALSE ");
-			}
-			if (executedOnly && !nonPhasedOnly) {
-				buf.append("AND (phased = FALSE OR approved = TRUE) ");
-			}
+			if (phasedOnly) buf.append("AND phased = TRUE ");
+            else if (nonPhasedOnly) buf.append("AND phased = FALSE ");
+			if (executedOnly && !nonPhasedOnly) buf.append("AND (phased = FALSE OR approved = TRUE) ");
 			buf.append("UNION ALL SELECT transaction.* FROM transaction ");
-			if (executedOnly && !nonPhasedOnly) {
-				buf.append(" LEFT JOIN phasing_poll_result ON transaction.id = phasing_poll_result.id ");
-			}
+			if (executedOnly && !nonPhasedOnly)
+                buf.append(" LEFT JOIN phasing_poll_result ON transaction.id = phasing_poll_result.id ");
 			buf.append("WHERE sender_id = ? ");
-			if (blockTimestamp > 0) {
-				buf.append("AND block_timestamp >= ? ");
-			}
+			if (blockTimestamp > 0) buf.append("AND block_timestamp >= ? ");
 			if (type >= 0) {
 				buf.append("AND type = ? ");
-				if (subtype >= 0) {
-					buf.append("AND subtype = ? ");
-				}
+				if (subtype >= 0) buf.append("AND subtype = ? ");
 			}
-			if (height < Integer.MAX_VALUE) {
-				buf.append("AND transaction.height <= ? ");
-			}
+			if (height < Integer.MAX_VALUE) buf.append("AND transaction.height <= ? ");
 			if (withMessage) {
 				buf.append(
 						"AND (has_message = TRUE OR has_encrypted_message = TRUE OR has_encrypttoself_message = TRUE ");
 				buf.append(
 						"OR ((has_prunable_message = TRUE OR has_prunable_encrypted_message = TRUE) AND timestamp > ?)) ");
 			}
-			if (phasedOnly) {
-				buf.append("AND phased = TRUE ");
-			} else if (nonPhasedOnly) {
-				buf.append("AND phased = FALSE ");
-			}
-			if (executedOnly && !nonPhasedOnly) {
-				buf.append("AND (phased = FALSE OR approved = TRUE) ");
-			}
+			if (phasedOnly) buf.append("AND phased = TRUE ");
+            else if (nonPhasedOnly) buf.append("AND phased = FALSE ");
+			if (executedOnly && !nonPhasedOnly) buf.append("AND (phased = FALSE OR approved = TRUE) ");
 
 			buf.append("ORDER BY block_timestamp DESC, transaction_index DESC");
 			buf.append(DbUtils.limitsClause(from, to));
@@ -532,45 +454,30 @@ final class BlockchainImpl implements Blockchain {
 				int i = 0;
 				pstmt.setLong(++i, accountId);
 				pstmt.setLong(++i, accountId);
-				if (blockTimestamp > 0) {
-					pstmt.setInt(++i, blockTimestamp);
-				}
+				if (blockTimestamp > 0) pstmt.setInt(++i, blockTimestamp);
 				if (type >= 0) {
 					pstmt.setByte(++i, type);
-					if (subtype >= 0) {
-						pstmt.setByte(++i, subtype);
-					}
+					if (subtype >= 0) pstmt.setByte(++i, subtype);
 				}
-				if (height < Integer.MAX_VALUE) {
-					pstmt.setInt(++i, height);
-				}
+                //noinspection SuspiciousNameCombination
+                if (height < Integer.MAX_VALUE) pstmt.setInt(++i, height);
 				final int prunableExpiration = Math.max(0,
 						Constants.INCLUDE_EXPIRED_PRUNABLE && includeExpiredPrunable
 								? Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME
 								: Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME);
-				if (withMessage) {
-					pstmt.setInt(++i, prunableExpiration);
-				}
+				if (withMessage) pstmt.setInt(++i, prunableExpiration);
 				pstmt.setLong(++i, accountId);
-				if (blockTimestamp > 0) {
-					pstmt.setInt(++i, blockTimestamp);
-				}
+				if (blockTimestamp > 0) pstmt.setInt(++i, blockTimestamp);
 				if (type >= 0) {
 					pstmt.setByte(++i, type);
-					if (subtype >= 0) {
-						pstmt.setByte(++i, subtype);
-					}
+					if (subtype >= 0) pstmt.setByte(++i, subtype);
 				}
-				if (height < Integer.MAX_VALUE) {
-					pstmt.setInt(++i, height);
-				}
-				if (withMessage) {
-					pstmt.setInt(++i, prunableExpiration);
-				}
+                //noinspection SuspiciousNameCombination
+                if (height < Integer.MAX_VALUE) pstmt.setInt(++i, height);
+				if (withMessage) pstmt.setInt(++i, prunableExpiration);
 				DbUtils.setLimits(++i, pstmt, from, to);
 				try(DbIterator<TransactionImpl> it = this.getTransactions(con, pstmt);){
-					while(it.hasNext())
-						ret.add(it.next());
+					while(it.hasNext()) ret.add(it.next());
 				}
 			}
 		} catch (final SQLException e) {

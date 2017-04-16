@@ -20,6 +20,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.InvalidCipherTextException;
@@ -40,26 +42,22 @@ public final class Crypto {
 
 	private static final boolean useStrongSecureRandom = Nxt.getBooleanProperty("nxt.useStrongSecureRandom");
 
-	private static final ThreadLocal<SecureRandom> secureRandom = new ThreadLocal<SecureRandom>() {
-		@Override
-		protected SecureRandom initialValue() {
-			try {
-				final SecureRandom secureRandom = Crypto.useStrongSecureRandom ? SecureRandom.getInstanceStrong()
-						: new SecureRandom();
-				secureRandom.nextBoolean();
-				return secureRandom;
-			} catch (final NoSuchAlgorithmException e) {
-				Logger.logErrorMessage("No secure random provider available");
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
-	};
+	private static final ThreadLocal<SecureRandom> secureRandom = ThreadLocal.withInitial(() -> {
+        try {
+            final SecureRandom secureRandom = Crypto.useStrongSecureRandom ? SecureRandom.getInstanceStrong()
+                    : new SecureRandom();
+            secureRandom.nextBoolean();
+            return secureRandom;
+        } catch (final NoSuchAlgorithmException e) {
+            Logger.logErrorMessage("No secure random provider available");
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    });
 
 	public static byte[] aesDecrypt(final byte[] ivCiphertext, final byte[] key) {
 		try {
-			if ((ivCiphertext.length < 16) || ((ivCiphertext.length % 16) != 0)) {
-				throw new InvalidCipherTextException("invalid ivCiphertext length");
-			}
+			if ((ivCiphertext.length < 16) || ((ivCiphertext.length % 16) != 0))
+                throw new InvalidCipherTextException("invalid ivCiphertext length");
 			final byte[] iv = Arrays.copyOfRange(ivCiphertext, 0, 16);
 			final byte[] ciphertext = Arrays.copyOfRange(ivCiphertext, 16, ivCiphertext.length);
 			final PaddedBufferedBlockCipher aes = new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine()));
@@ -97,9 +95,7 @@ public final class Crypto {
 
 	public static byte[] aesGCMDecrypt(final byte[] ivCiphertext, final byte[] key) {
 		try {
-			if (ivCiphertext.length < 16) {
-				throw new InvalidCipherTextException("invalid ivCiphertext length");
-			}
+			if (ivCiphertext.length < 16) throw new InvalidCipherTextException("invalid ivCiphertext length");
 			final byte[] iv = Arrays.copyOfRange(ivCiphertext, 0, 16);
 			final byte[] ciphertext = Arrays.copyOfRange(ivCiphertext, 16, ivCiphertext.length);
 			final GCMBlockCipher aes = new GCMBlockCipher(new AESEngine());
@@ -142,13 +138,11 @@ public final class Crypto {
 	public static byte[] getKeySeed(final String secretPhrase, final byte[]... nonces) {
 		final MessageDigest digest = Crypto.sha256();
 		digest.update(Convert.toBytes(secretPhrase));
-		for (final byte[] nonce : nonces) {
-			digest.update(nonce);
-		}
+		for (final byte[] nonce : nonces) digest.update(nonce);
 		return digest.digest();
 	}
 
-	public static MessageDigest getMessageDigest(final String algorithm) {
+	private static MessageDigest getMessageDigest(final String algorithm) {
 		try {
 			return MessageDigest.getInstance(algorithm);
 		} catch (final NoSuchAlgorithmException e) {
@@ -191,9 +185,7 @@ public final class Crypto {
 
 	public static byte[] getSharedKey(final byte[] myPrivateKey, final byte[] theirPublicKey, final byte[] nonce) {
 		final byte[] dhSharedSecret = Crypto.getSharedSecret(myPrivateKey, theirPublicKey);
-		for (int i = 0; i < 32; i++) {
-			dhSharedSecret[i] ^= nonce[i];
-		}
+		for (int i = 0; i < 32; i++) dhSharedSecret[i] ^= nonce[i];
 		return Crypto.sha256().digest(dhSharedSecret);
 	}
 
@@ -228,10 +220,8 @@ public final class Crypto {
 		rsString = rsString.toUpperCase();
 		try {
 			final long id = ReedSolomon.decode(rsString);
-			if (!rsString.equals(ReedSolomon.encode(id))) {
-				throw new RuntimeException(
-						"ERROR: Reed-Solomon decoding of " + rsString + " not reversible, decoded to " + id);
-			}
+			if (!Objects.equals(rsString, ReedSolomon.encode(id))) throw new RuntimeException(
+                    "ERROR: Reed-Solomon decoding of " + rsString + " not reversible, decoded to " + id);
 			return id;
 		} catch (final ReedSolomon.DecodeException e) {
 			Logger.logDebugMessage("Reed-Solomon decoding failed for " + rsString + ": " + e.toString());
@@ -279,9 +269,7 @@ public final class Crypto {
 
 	public static boolean verify(final byte[] signature, final byte[] message, final byte[] publicKey) {
 		try {
-			if (signature.length != 64) {
-				return false;
-			}
+			if (signature.length != 64) return false;
 			if (!Curve25519.isCanonicalSignature(signature)) {
 				Logger.logDebugMessage("Rejecting non-canonical signature");
 				return false;

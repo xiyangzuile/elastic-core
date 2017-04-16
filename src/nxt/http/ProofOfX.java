@@ -1,7 +1,5 @@
 package nxt.http;
 
-import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
 
 import nxt.util.Convert;
@@ -32,7 +30,7 @@ public final class ProofOfX extends CreateTransaction {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final long workId = ParameterParser.getUnsignedLong(req, "work_id", true);
-		Account account = null;
+		Account account;
 		try {
 			Db.db.beginTransaction();
 			account = ParameterParser.getOrCreateSenderAccount(req);
@@ -45,26 +43,20 @@ public final class ProofOfX extends CreateTransaction {
 			Db.db.endTransaction();
 		}
 
-		if (account == null) {
-			return JSONResponses.INCORRECT_ACCOUNT;
-		}
+		if (account == null) return JSONResponses.INCORRECT_ACCOUNT;
 
 		final boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
 		final String multiplicator_multipart = ParameterParser.getMultiplicator(req, true);
-		if ((multiplicator_multipart == null) || (multiplicator_multipart.length() > 65)) {
-			return JSONResponses.INCORRECT_MULTIPLICATOR;
-		}
+		if ((multiplicator_multipart == null) || (multiplicator_multipart.length() > 65))
+            return JSONResponses.INCORRECT_MULTIPLICATOR;
 		byte[] multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 
-		if (multiplicator_multipart != null) {
-			// restore fixed sized multiplicator array
-			multiplicator = Convert.parseHexString(multiplicator_multipart);
-			if(multiplicator.length>Constants.WORK_MULTIPLICATOR_BYTES)
-				throw new NxtException.NotValidException("Your multiplicator exceeds the maximum allowed number of bytes: " + Constants.WORK_MULTIPLICATOR_BYTES);
-			multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
-		}
-
+		// restore fixed sized multiplicator array
+		multiplicator = Convert.parseHexString(multiplicator_multipart);
+		if(multiplicator.length>Constants.WORK_MULTIPLICATOR_BYTES)
+            throw new NxtException.NotValidException("Your multiplicator exceeds the maximum allowed number of bytes: " + Constants.WORK_MULTIPLICATOR_BYTES);
+		multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
 
 
 		if (is_pow) {

@@ -19,7 +19,6 @@ package nxt;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -140,9 +139,7 @@ public final class Generator implements Comparable<Generator> {
 					BlockchainImpl.getInstance().updateLock();
 					try {
 						Block lastBlock = Nxt.getBlockchain().getLastBlock();
-						if ((lastBlock == null) || (lastBlock.getHeight() < Constants.LAST_KNOWN_BLOCK)) {
-							return;
-						}
+						if ((lastBlock == null) || (lastBlock.getHeight() < Constants.LAST_KNOWN_BLOCK)) return;
 						final int generationLimit = Nxt.getEpochTime() - Generator.delayTime;
 						if ((lastBlock.getId() != Generator.lastBlockId) || (Generator.sortedForgers == null)) {
 							Generator.lastBlockId = lastBlock.getId();
@@ -157,10 +154,9 @@ public final class Generator implements Comparable<Generator> {
 												+ " will pop off last block " + lastBlock.getStringId());
 										final List<BlockImpl> poppedOffBlock = BlockchainProcessorImpl.getInstance()
 												.popOffTo(previousBlock);
-										for (final BlockImpl block : poppedOffBlock) {
+										for (final BlockImpl block : poppedOffBlock)
 											TransactionProcessorImpl.getInstance()
 													.processLater(block.getTransactions());
-										}
 										lastBlock = previousBlock;
 										Generator.lastBlockId = previousBlock.getId();
 										break;
@@ -171,29 +167,21 @@ public final class Generator implements Comparable<Generator> {
 							for (final Generator generator : Generator.generators.values()) {
 								generator.setLastBlock(lastBlock);
 
-								if (generator.effectiveBalance.signum() > 0 || Generator.allowsFakeForging(generator.getPublicKey())) {
+								if (generator.effectiveBalance.signum() > 0 || Generator.allowsFakeForging(generator.getPublicKey()))
 									forgers.add(generator);
-								}
 							}
 							Collections.sort(forgers);
 							Generator.sortedForgers = Collections.unmodifiableList(forgers);
 							this.logged = false;
 						}
-						if (!this.logged) {
-							for (final Generator generator : Generator.sortedForgers) {
-								if ((generator.getHitTime() - generationLimit) > 60) {
-									break;
-								}
-								Logger.logDebugMessage(generator.toString());
-								this.logged = true;
-							}
+						if (!this.logged) for (final Generator generator : Generator.sortedForgers) {
+							if ((generator.getHitTime() - generationLimit) > 60) break;
+							Logger.logDebugMessage(generator.toString());
+							this.logged = true;
 						}
-						for (final Generator generator : Generator.sortedForgers) {
+						for (final Generator generator : Generator.sortedForgers)
 							if ((generator.getHitTime() > generationLimit)
-									|| generator.forge(lastBlock, generationLimit)) {
-								return;
-							}
-						}
+									|| generator.forge(lastBlock, generationLimit)) return;
 					} finally {
 						BlockchainImpl.getInstance().updateUnlock();
 					}
@@ -211,9 +199,8 @@ public final class Generator implements Comparable<Generator> {
 	};
 
 	static {
-		if (!Constants.isLightClient) {
+		if (!Constants.isLightClient)
 			ThreadPool.scheduleThread("GenerateBlocks", Generator.generateBlocksThread, 500, TimeUnit.MILLISECONDS);
-		}
 	}
 
 	/** Active block generators */
@@ -233,13 +220,11 @@ public final class Generator implements Comparable<Generator> {
 	}
 
 	static boolean allowsFakeForging(final byte[] publicKey) {
-		boolean result = Constants.isTestnet && (publicKey != null) && (fakeForgingAccountId != null) && fakeForgingAccountId.equals(Convert.toUnsignedLong(Account.getId(publicKey)));
-		return result;
+		return Constants.isTestnet && (publicKey != null) && (fakeForgingAccountId != null) && fakeForgingAccountId.equals(Convert.toUnsignedLong(Account.getId(publicKey)));
 	}
 
     static boolean allowsFakeForgingInPrincipal() {
-        boolean result = Constants.isTestnet && fakeForgingAccountId != null;
-        return result;
+		return Constants.isTestnet && fakeForgingAccountId != null;
     }
 
 	public static Collection<Generator> getAllGenerators() {
@@ -254,10 +239,8 @@ public final class Generator implements Comparable<Generator> {
 		return Generator.generators.size();
 	}
 
-	static BigInteger getHit(final byte[] publicKey, final Block block) {
-		if (Generator.allowsFakeForging(publicKey)) {
-			return BigInteger.ZERO;
-		}
+	private static BigInteger getHit(final byte[] publicKey, final Block block) {
+		if (Generator.allowsFakeForging(publicKey)) return BigInteger.ZERO;
 
 		final MessageDigest digest = Crypto.sha256();
 		digest.update(block.getGenerationSignature());
@@ -268,7 +251,7 @@ public final class Generator implements Comparable<Generator> {
 						generationSignatureHash[1], generationSignatureHash[0] });
 	}
 
-	static long getHitTime(final BigInteger effectiveBalance, final BigInteger hit, final Block block) {
+	private static long getHitTime(final BigInteger effectiveBalance, final BigInteger hit, final Block block) {
 		final float scaledHitTIme = Redeem.getRedeemedPercentage();
 		final float inverse = (float) (1.0 / scaledHitTIme);
 		final long absolute = (long) inverse;
@@ -293,9 +276,8 @@ public final class Generator implements Comparable<Generator> {
 			if (!Generator.generatorsInitialized) {
 				Generator.activeGeneratorIds
 						.addAll(BlockDb.getBlockGenerators(Math.max(1, blockchain.getHeight() - 10000)));
-				for (final Long activeGeneratorId : Generator.activeGeneratorIds) {
+				for (final Long activeGeneratorId : Generator.activeGeneratorIds)
 					Generator.activeGenerators.add(new ActiveGenerator(activeGeneratorId));
-				}
 				Logger.logDebugMessage(Generator.activeGeneratorIds.size() + " block generators found");
 				Nxt.getBlockchainProcessor().addListener(block -> {
 					final long generatorId = block.getGeneratorId();
@@ -312,9 +294,7 @@ public final class Generator implements Comparable<Generator> {
 			if (blockId != Generator.activeBlockId) {
 				Generator.activeBlockId = blockId;
 				final Block lastBlock = blockchain.getLastBlock();
-				for (final ActiveGenerator generator : Generator.activeGenerators) {
-					generator.setLastBlock(lastBlock);
-				}
+				for (final ActiveGenerator generator : Generator.activeGenerators) generator.setLastBlock(lastBlock);
 				Collections.sort(Generator.activeGenerators);
 			}
 			generatorList = new ArrayList<>(Generator.activeGenerators);
@@ -325,14 +305,9 @@ public final class Generator implements Comparable<Generator> {
 	public static long getNextHitTime(final long lastBlockId, final int curTime) {
 		BlockchainImpl.getInstance().readLock();
 		try {
-			if ((lastBlockId == Generator.lastBlockId) && (Generator.sortedForgers != null)) {
-				for (final Generator generator : Generator.sortedForgers) {
-					if (generator.getHitTime() >= (curTime - Constants.FORGING_DELAY)) {
-						return generator.getHitTime();
-					}
-				}
-			}
-			return 0;
+			if ((lastBlockId == Generator.lastBlockId) && (Generator.sortedForgers != null))
+				return Generator.sortedForgers.stream().filter(generator -> generator.getHitTime() >= (curTime - Constants.FORGING_DELAY)).findFirst().map(Generator::getHitTime).orElse(0L);
+			return 0L;
 		} finally {
 			BlockchainImpl.getInstance().readUnlock();
 		}
@@ -355,15 +330,11 @@ public final class Generator implements Comparable<Generator> {
 	}
 
 	public static Generator startForging(final String secretPhrase) {
-		if (Generator.generators.size() >= Generator.MAX_FORGERS) {
-			throw new RuntimeException(
-					"Cannot forge with more than " + Generator.MAX_FORGERS + " accounts on the same node");
-		}
+		if (Generator.generators.size() >= Generator.MAX_FORGERS) throw new RuntimeException(
+				"Cannot forge with more than " + Generator.MAX_FORGERS + " accounts on the same node");
 
 		final long id = Account.getId(Crypto.getPublicKey(secretPhrase));
-		if (id == Genesis.REDEEM_ID) {
-			throw new RuntimeException("Cannot forge with REDEEM account");
-		}
+		if (id == Genesis.REDEEM_ID) throw new RuntimeException("Cannot forge with REDEEM account");
 
 		final Generator generator = new Generator(secretPhrase);
 		final Generator old = Generator.generators.putIfAbsent(secretPhrase, generator);
@@ -419,9 +390,7 @@ public final class Generator implements Comparable<Generator> {
 		final BigInteger factor = BigInteger.valueOf(absolute);
 
 		final int elapsedTime = timestamp - previousBlock.getTimestamp();
-		if (elapsedTime <= 0) {
-			return false;
-		}
+		if (elapsedTime <= 0) return false;
 		final BigInteger effectiveBaseTarget = BigInteger.valueOf(previousBlock.getBaseTarget())
 				.multiply(effectiveBalance.multiply(factor));
 		final BigInteger prevTarget = effectiveBaseTarget.multiply(BigInteger.valueOf(elapsedTime - 1));
@@ -452,9 +421,8 @@ public final class Generator implements Comparable<Generator> {
 		this.accountId = Account.getId(this.publicKey);
 		Nxt.getBlockchain().updateLock();
 		try {
-			if (Nxt.getBlockchain().getHeight() >= Constants.LAST_KNOWN_BLOCK) {
+			if (Nxt.getBlockchain().getHeight() >= Constants.LAST_KNOWN_BLOCK)
 				this.setLastBlock(Nxt.getBlockchain().getLastBlock());
-			}
 			Generator.sortedForgers = null;
 		} finally {
 			Nxt.getBlockchain().updateUnlock();
@@ -464,40 +432,33 @@ public final class Generator implements Comparable<Generator> {
 	@Override
 	public int compareTo(final Generator g) {
 		final int i = this.hit.multiply(g.effectiveBalance).compareTo(g.hit.multiply(this.effectiveBalance));
-		if (i != 0) {
-			return i;
-		}
+		if (i != 0) return i;
 		return Long.compare(this.accountId, g.accountId);
 	}
 
-	boolean forge(final Block lastBlock, final int generationLimit)
+	private boolean forge(final Block lastBlock, final int generationLimit)
 			throws BlockchainProcessor.BlockNotAcceptedException {
 		final int timestamp = this.getTimestamp(generationLimit);
 
 		// fake forging, skip hit verification
         if (Generator.allowsFakeForging(this.getPublicKey())){
             // pass
-        } else {
-            if (!Generator.verifyHit(this.hit, this.effectiveBalance, lastBlock, timestamp)) {
-                Logger.logErrorMessage(this.toString() + " failed to forge at " + timestamp + " height "
-                        + lastBlock.getHeight() + " last timestamp " + lastBlock.getTimestamp());
-                return false;
-            }
-        }
+        } else if (!Generator.verifyHit(this.hit, this.effectiveBalance, lastBlock, timestamp)) {
+			Logger.logErrorMessage(this.toString() + " failed to forge at " + timestamp + " height "
+					+ lastBlock.getHeight() + " last timestamp " + lastBlock.getTimestamp());
+			return false;
+		}
 
 		final int start = Nxt.getEpochTime();
-		while (true) {
-			try {
-				BlockchainProcessorImpl.getInstance().generateBlock(this.secretPhrase, timestamp);
-				Generator.setDelay(Constants.FORGING_DELAY);
-				return true;
-			} catch (final BlockchainProcessor.TransactionNotAcceptedException e) {
-				// the bad transaction has been expunged, try again
-				if ((Nxt.getEpochTime() - start) > 10) { // give up after trying
-															// for 10 s
-					throw e;
-				}
-			}
+		while (true) try {
+			BlockchainProcessorImpl.getInstance().generateBlock(this.secretPhrase, timestamp);
+			Generator.setDelay(Constants.FORGING_DELAY);
+			return true;
+		} catch (final BlockchainProcessor.TransactionNotAcceptedException e) {
+			// the bad transaction has been expunged, try again
+			// give up after trying
+// for 10 s
+			if ((Nxt.getEpochTime() - start) > 10) throw e;
 		}
 	}
 
@@ -524,11 +485,8 @@ public final class Generator implements Comparable<Generator> {
 	private void setLastBlock(final Block lastBlock) {
 		final int height = lastBlock.getHeight();
 		final Account account = Account.getAccount(this.accountId, height);
-		if (account == null) {
-			this.effectiveBalance = BigInteger.ZERO;
-		} else {
-			this.effectiveBalance = BigInteger.valueOf(Math.max(account.getEffectiveBalanceNXT(height), 0));
-		}
+		if (account == null) this.effectiveBalance = BigInteger.ZERO;
+		else this.effectiveBalance = BigInteger.valueOf(Math.max(account.getEffectiveBalanceNXT(height), 0));
 		if (this.effectiveBalance.signum() == 0) {
 			this.hitTime = 0;
 			this.hit = BigInteger.ZERO;

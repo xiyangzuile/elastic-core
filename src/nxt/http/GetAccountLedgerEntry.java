@@ -214,9 +214,7 @@ public class GetAccountLedgerEntry extends APIServlet.APIRequestHandler {
 		// Get the ledger entry
 		//
 		final LedgerEntry ledgerEntry = AccountLedger.getEntry(ledgerId);
-		if (ledgerEntry == null) {
-			return JSONResponses.UNKNOWN_ENTRY;
-		}
+		if (ledgerEntry == null) return JSONResponses.UNKNOWN_ENTRY;
 		//
 		// Return the response
 		//

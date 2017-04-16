@@ -25,7 +25,7 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.peer.Peer;
 
-public final class RemoveKnownPeer extends UserServlet.UserRequestHandler {
+final class RemoveKnownPeer extends UserServlet.UserRequestHandler {
 
 	static final RemoveKnownPeer instance = new RemoveKnownPeer();
 
@@ -34,14 +34,12 @@ public final class RemoveKnownPeer extends UserServlet.UserRequestHandler {
 
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user) throws IOException {
-		if ((Users.allowedUserHosts == null) && !InetAddress.getByName(req.getRemoteAddr()).isLoopbackAddress()) {
-			return JSONResponses.LOCAL_USERS_ONLY;
-		} else {
+		if ((Users.allowedUserHosts == null) && !InetAddress.getByName(req.getRemoteAddr()).isLoopbackAddress())
+            return JSONResponses.LOCAL_USERS_ONLY;
+        else {
 			final int index = Integer.parseInt(req.getParameter("peer"));
 			final Peer peer = Users.getPeer(index);
-			if (peer != null) {
-				peer.remove();
-			}
+			if (peer != null) peer.remove();
 		}
 		return null;
 	}

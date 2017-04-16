@@ -49,9 +49,7 @@ public final class CalculateFullHash extends APIServlet.APIRequestHandler {
 		final String signatureHashString = Convert.emptyToNull(req.getParameter("signatureHash"));
 		final String unsignedTransactionJSONString = Convert.emptyToNull(req.getParameter("unsignedTransactionJSON"));
 
-		if (signatureHashString == null) {
-			return JSONResponses.MISSING_SIGNATURE_HASH;
-		}
+		if (signatureHashString == null) return JSONResponses.MISSING_SIGNATURE_HASH;
 		final JSONObject response = new JSONObject();
 		try {
 			final Transaction transaction = ParameterParser

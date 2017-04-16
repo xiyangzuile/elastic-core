@@ -43,9 +43,7 @@ public final class GetAccountPublicKey extends APIServlet.APIRequestHandler {
 			final JSONObject response = new JSONObject();
 			response.put("publicKey", Convert.toHexString(publicKey));
 			return response;
-		} else {
-			return JSON.emptyJSON;
-		}
+		} else return JSON.emptyJSON;
 	}
 
 }

@@ -28,7 +28,7 @@ import nxt.Constants;
 import nxt.util.Convert;
 import nxt.util.Logger;
 
-public final class BaseTargetTest {
+final class BaseTargetTest {
 
 	private static final long MIN_BASE_TARGET = (Constants.INITIAL_BASE_TARGET * 9) / 10;
 	private static final long MAX_BASE_TARGET = Constants.isTestnet ? Constants.MAX_BASE_TARGET
@@ -48,18 +48,13 @@ public final class BaseTargetTest {
 
 	private static long calculateBaseTarget(final long previousBaseTarget, final long blocktimeEMA) {
 		long baseTarget;
-		if (blocktimeEMA > 60) {
-			baseTarget = (previousBaseTarget * Math.min(blocktimeEMA, BaseTargetTest.MAX_BLOCKTIME_LIMIT)) / 60;
-		} else {
-			baseTarget = previousBaseTarget - ((previousBaseTarget * BaseTargetTest.GAMMA
-					* (60 - Math.max(blocktimeEMA, BaseTargetTest.MIN_BLOCKTIME_LIMIT))) / 6000);
-		}
-		if ((baseTarget < 0) || (baseTarget > BaseTargetTest.MAX_BASE_TARGET)) {
-			baseTarget = BaseTargetTest.MAX_BASE_TARGET;
-		}
-		if (baseTarget < BaseTargetTest.MIN_BASE_TARGET) {
-			baseTarget = BaseTargetTest.MIN_BASE_TARGET;
-		}
+		if (blocktimeEMA > 60)
+            baseTarget = (previousBaseTarget * Math.min(blocktimeEMA, BaseTargetTest.MAX_BLOCKTIME_LIMIT)) / 60;
+        else baseTarget = previousBaseTarget - ((previousBaseTarget * BaseTargetTest.GAMMA
+                * (60 - Math.max(blocktimeEMA, BaseTargetTest.MIN_BLOCKTIME_LIMIT))) / 6000);
+		if ((baseTarget < 0) || (baseTarget > BaseTargetTest.MAX_BASE_TARGET))
+            baseTarget = BaseTargetTest.MAX_BASE_TARGET;
+		if (baseTarget < BaseTargetTest.MIN_BASE_TARGET) baseTarget = BaseTargetTest.MIN_BASE_TARGET;
 		return baseTarget;
 	}
 
@@ -84,9 +79,7 @@ public final class BaseTargetTest {
 			int previousTestTimestamp = 0;
 
 			int height = BaseTargetTest.START_HEIGHT;
-			if (args.length == 1) {
-				height = Integer.parseInt(args[0]);
-			}
+			if (args.length == 1) height = Integer.parseInt(args[0]);
 
 			long totalBlocktime = 0;
 			long totalTestBlocktime = 0;
@@ -134,48 +127,29 @@ public final class BaseTargetTest {
 
 					final int testBlocktime = (int) ((previousBaseTarget * (timestamp - previousTimestamp - 1))
 							/ previousTestBaseTarget) + 1;
-					if (testBlocktimeEMA == 0) {
-						testBlocktimeEMA = testBlocktime;
-					} else {
-						testBlocktimeEMA = (testBlocktime + (testBlocktimeEMA * (BaseTargetTest.EWMA_N - 1)))
-								/ BaseTargetTest.EWMA_N;
-					}
+					if (testBlocktimeEMA == 0) testBlocktimeEMA = testBlocktime;
+                    else testBlocktimeEMA = (testBlocktime + (testBlocktimeEMA * (BaseTargetTest.EWMA_N - 1)))
+                            / BaseTargetTest.EWMA_N;
 					testTimestamp = previousTestTimestamp + testBlocktime;
 
 					testBlocktimes.add(testBlocktime);
-					if (testBlocktimes.size() > BaseTargetTest.SMA_N) {
-						testBlocktimes.remove(0);
-					}
-					int testBlocktimeSMA = 0;
-					for (final int t : testBlocktimes) {
-						testBlocktimeSMA += t;
-					}
+					if (testBlocktimes.size() > BaseTargetTest.SMA_N) testBlocktimes.remove(0);
+					int testBlocktimeSMA = testBlocktimes.stream().mapToInt(t -> t).sum();
 					testBlocktimeSMA = testBlocktimeSMA / testBlocktimes.size();
 
-					if (testBlocktimes.size() < BaseTargetTest.SMA_N) {
-						testBaseTarget = baseTarget;
-					} else if (((height - 1) % BaseTargetTest.FREQUENCY) == 0) {
-						testBaseTarget = BaseTargetTest.calculateBaseTarget(previousTestBaseTarget,
-								BaseTargetTest.USE_EWMA ? testBlocktimeEMA : testBlocktimeSMA);
-					} else {
-						testBaseTarget = previousTestBaseTarget;
-					}
+					if (testBlocktimes.size() < BaseTargetTest.SMA_N) testBaseTarget = baseTarget;
+                    else if (((height - 1) % BaseTargetTest.FREQUENCY) == 0)
+                        testBaseTarget = BaseTargetTest.calculateBaseTarget(previousTestBaseTarget,
+                                BaseTargetTest.USE_EWMA ? testBlocktimeEMA : testBlocktimeSMA);
+                    else testBaseTarget = previousTestBaseTarget;
 					testCumulativeDifficulty = previousTestCumulativeDifficulty
 							.add(Convert.two64.divide(BigInteger.valueOf(testBaseTarget)));
 
 					final int blocktime = timestamp - previousTimestamp;
-					if (blocktime > maxBlocktime) {
-						maxBlocktime = blocktime;
-					}
-					if (blocktime < minBlocktime) {
-						minBlocktime = blocktime;
-					}
-					if (testBlocktime > maxTestBlocktime) {
-						maxTestBlocktime = testBlocktime;
-					}
-					if (testBlocktime < minTestBlocktime) {
-						minTestBlocktime = testBlocktime;
-					}
+					if (blocktime > maxBlocktime) maxBlocktime = blocktime;
+					if (blocktime < minBlocktime) minBlocktime = blocktime;
+					if (testBlocktime > maxTestBlocktime) maxTestBlocktime = testBlocktime;
+					if (testBlocktime < minTestBlocktime) minTestBlocktime = testBlocktime;
 					totalBlocktime += blocktime;
 					totalTestBlocktime += testBlocktime;
 					count += 1;
@@ -200,9 +174,7 @@ public final class BaseTargetTest {
 
 			}
 
-			if (count == 0) {
-				return;
-			}
+			if (count == 0) return;
 
 			Logger.logMessage("Cumulative difficulty " + cumulativeDifficulty.toString());
 			Logger.logMessage("Test cumulative difficulty " + testCumulativeDifficulty.toString());

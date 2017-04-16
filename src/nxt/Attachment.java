@@ -19,9 +19,9 @@ package nxt;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.json.simple.JSONArray;
@@ -238,17 +238,14 @@ public interface Attachment extends Appendix {
 			final int numberOfUris = buffer.get();
 
 			this.uris = new String[numberOfUris];
-			for (int i = 0; i < this.uris.length; i++) {
+			for (int i = 0; i < this.uris.length; i++)
 				this.uris[i] = Convert.readString(buffer, buffer.getShort(), Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH);
-			}
 			this.guardNodeBlockId = buffer.getLong();
 
-			if (guardNodeBlockId == 0 && (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0)) {
-				throw new NxtException.NotValidException("Invalid number of URIs: " + numberOfUris);
-			}
-			if (guardNodeBlockId != 0 && (numberOfUris != 0)) {
-				throw new NxtException.NotValidException("Guardnode block must not have any IDs");
-			}
+			if (guardNodeBlockId == 0 && (numberOfUris > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS || numberOfUris <= 0))
+				throw new NotValidException("Invalid number of URIs: " + numberOfUris);
+			if (guardNodeBlockId != 0 && (numberOfUris != 0))
+				throw new NotValidException("Guardnode block must not have any IDs");
 		}
 
 		MessagingSupernodeAnnouncement(final JSONObject attachmentData) throws NxtException.NotValidException {
@@ -256,9 +253,7 @@ public interface Attachment extends Appendix {
 			try {
 				final JSONArray urisData = (JSONArray) attachmentData.get("uris");
 				this.uris = new String[urisData.size()];
-				for (int i = 0; i < this.uris.length; i++) {
-					this.uris[i] = (String) urisData.get(i);
-				}
+				for (int i = 0; i < this.uris.length; i++) this.uris[i] = (String) urisData.get(i);
 				this.guardNodeBlockId = (Long)attachmentData.get("guardNodeBlockId");
 			} catch (final RuntimeException e) {
 				throw new NxtException.NotValidException("Error parsing SN announcement parameters", e);
@@ -273,9 +268,7 @@ public interface Attachment extends Appendix {
 		@Override
 		int getMySize() {
 			int size = 1;
-			for (final String uri : this.uris) {
-				size += 2 + Convert.toBytes(uri).length;
-			}
+			size += Arrays.stream(this.uris).mapToInt(uri -> 2 + Convert.toBytes(uri).length).sum();
 			size += 8; // guardNodeBlockId
 			return size;
 		}
@@ -324,7 +317,7 @@ public interface Attachment extends Appendix {
 
 		private final byte[] multiplicator;
 
-		public MessageDigest dig = Crypto.md5();
+		public final MessageDigest dig = Crypto.md5();
 
 		PiggybackedProofOfBounty(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
@@ -345,9 +338,7 @@ public interface Attachment extends Appendix {
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
 				this.multiplicator = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.WORK_MULTIPLICATOR_BYTES);
-			}else{
-				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			}
+			}else this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 		}
 
 		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator) {
@@ -366,16 +357,13 @@ public interface Attachment extends Appendix {
 				dos.write(this.multiplicator);
 				dos.writeBoolean(true); // distinguish between pow and bounty
 				dos.close();
-			} catch (final IOException e) {
+			} catch (final IOException ignored) {
 
 			}
 			byte[] longBytes = baos.toByteArray();
-			if (longBytes == null) {
-				longBytes = new byte[0];
-			}
+			if (longBytes == null) longBytes = new byte[0];
 			dig.update(longBytes);
-			final byte[] digest = dig.digest();
-			return digest;
+			return dig.digest();
 		}
 
 		public byte[] getMultiplicator() {
@@ -406,13 +394,9 @@ public interface Attachment extends Appendix {
 			this.dig.update(publicKey);
 
 			final byte[] b1 = new byte[16];
-			for (int i = 0; i < 8; ++i) {
-				b1[i] = (byte) (this.workId >> ((8 - i - 1) << 3));
-			}
+			for (int i = 0; i < 8; ++i) b1[i] = (byte) (this.workId >> ((8 - i - 1) << 3));
 
-			for (int i = 0; i < 8; ++i) {
-				b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
-			}
+			for (int i = 0; i < 8; ++i) b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
 
 			this.dig.update(b1);
 
@@ -428,9 +412,7 @@ public interface Attachment extends Appendix {
 			}
 			for (int i = 0; i < 12; ++i) {
 				int got = PiggybackedProofOfBounty.toInt(digest, (i * 4) % ln);
-				if (i > 4) {
-					got = got ^ stream[i - 3];
-				}
+				if (i > 4) got = got ^ stream[i - 3];
 				stream[i] = got;
 			}
 			return stream;
@@ -454,7 +436,7 @@ public interface Attachment extends Appendix {
 
 		private final long workId;
 
-		private byte[] hashAnnounced;
+		private final byte[] hashAnnounced;
 
 		PiggybackedProofOfBountyAnnouncement(final ByteBuffer buffer, final byte transactionVersion)
 				throws NxtException.NotValidException {
@@ -471,9 +453,7 @@ public interface Attachment extends Appendix {
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
 				this.hashAnnounced = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
-			}else{
-				this.hashAnnounced = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
-			}
+			}else this.hashAnnounced = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
 		}
 
 		public PiggybackedProofOfBountyAnnouncement(final long workId, final byte[] hash_assigned) {
@@ -516,7 +496,7 @@ public interface Attachment extends Appendix {
 
 	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
-		public static MessageDigest dig = Crypto.md5();
+		public static final MessageDigest dig = Crypto.md5();
 
 
 		private final long workId;
@@ -539,9 +519,7 @@ public interface Attachment extends Appendix {
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
 				this.multiplicator = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.WORK_MULTIPLICATOR_BYTES);
-			}else{
-				this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
-			}
+			}else this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 		}
 
 		public PiggybackedProofOfWork(final long workId, final byte[] multiplicator) {
@@ -560,16 +538,13 @@ public interface Attachment extends Appendix {
 				dos.write(this.multiplicator);
 				dos.writeBoolean(false); // distinguish between pow and bounty
 				dos.close();
-			} catch (final IOException e) {
+			} catch (final IOException ignored) {
 
 			}
 			byte[] longBytes = baos.toByteArray();
-			if (longBytes == null) {
-				longBytes = new byte[0];
-			}
+			if (longBytes == null) longBytes = new byte[0];
 			dig.update(longBytes);
-			final byte[] digest = dig.digest();
-			return digest;
+			return dig.digest();
 		}
 
 		public byte[] getMultiplicator() {
@@ -600,13 +575,9 @@ public interface Attachment extends Appendix {
 			PiggybackedProofOfWork.dig.update(publicKey);
 
 			final byte[] b1 = new byte[16];
-			for (int i = 0; i < 8; ++i) {
-				b1[i] = (byte) (this.workId >> ((8 - i - 1) << 3));
-			}
+			for (int i = 0; i < 8; ++i) b1[i] = (byte) (this.workId >> ((8 - i - 1) << 3));
 
-			for (int i = 0; i < 8; ++i) {
-				b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
-			}
+			for (int i = 0; i < 8; ++i) b1[i + 8] = (byte) (blockId >> ((8 - i - 1) << 3));
 
 			PiggybackedProofOfWork.dig.update(b1);
 
@@ -622,9 +593,7 @@ public interface Attachment extends Appendix {
 			}
 			for (int i = 0; i < 12; ++i) {
 				int got = this.toInt(digest, (i * 4) % ln);
-				if (i > 4) {
-					got = got ^ stream[i - 3];
-				}
+				if (i > 4) got = got ^ stream[i - 3];
 				stream[i] = got;
 
 			}
@@ -686,11 +655,8 @@ public interface Attachment extends Appendix {
 
 		public int getRequiredTimestamp(){
 			int timestamp = 0;
-			for(int i=0;i<Redeem.listOfAddresses.length;++i){
-				if(Redeem.listOfAddresses[i].equalsIgnoreCase(this.address)){
-					timestamp = Redeem.times[i];
-				}
-			}
+			for(int i=0;i<Redeem.listOfAddresses.length;++i)
+				if (Redeem.listOfAddresses[i].equalsIgnoreCase(this.address)) timestamp = Redeem.times[i];
 
 			return timestamp;
 		}
@@ -759,8 +725,8 @@ public interface Attachment extends Appendix {
 				this.xelPerPow = Long.parseLong((String) attachmentData.get("xel_per_pow"));
 				this.xelPerBounty = Long.parseLong((String) attachmentData.get("xel_per_bounty"));
 			}else{
-				this.xelPerPow = ((Long) attachmentData.get("xel_per_pow")).longValue();
-				this.xelPerBounty = ((Long) attachmentData.get("xel_per_bounty")).longValue();
+				this.xelPerPow = (Long) attachmentData.get("xel_per_pow");
+				this.xelPerBounty = (Long) attachmentData.get("xel_per_bounty");
 			}
 
 		}
@@ -784,8 +750,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		int getMySize() {
-			final int size = 2 + Convert.toBytes(this.workTitle).length + 4 + 4 + 8 + 8;
-			return size;
+			return 2 + Convert.toBytes(this.workTitle).length + 4 + 4 + 8 + 8;
 		}
 
 		@Override

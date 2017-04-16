@@ -18,12 +18,7 @@ package nxt.http;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -220,11 +215,9 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 			 */
 			@Override
 			public void notify(final LedgerEntry entry) {
-				if ((entry.getAccountId() == this.accountId) || (this.accountId == 0)) {
-					this.dispatch(new PendingEvent(
-							String.format("Ledger.%s.%s", this.event.name(), Convert.rsAccount(entry.getAccountId())),
-							Long.toUnsignedString(entry.getLedgerId())));
-				}
+				if ((entry.getAccountId() == this.accountId) || (this.accountId == 0)) this.dispatch(new PendingEvent(
+						String.format("Ledger.%s.%s", this.event.name(), Convert.rsAccount(entry.getAccountId())),
+						Long.toUnsignedString(entry.getLedgerId())));
 			}
 
 			/**
@@ -242,13 +235,13 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		private abstract class NxtEventHandler {
 
 			/** Owning event listener */
-			protected final EventListener owner;
+			final EventListener owner;
 
 			/** Account identifier */
-			protected final long accountId;
+			final long accountId;
 
 			/** Nxt listener event */
-			protected final Enum<? extends Enum> event;
+			final Enum<? extends Enum> event;
 
 			/**
 			 * Create the Nxt event handler
@@ -270,7 +263,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 			/**
 			 * Dispatch the event
 			 */
-			protected void dispatch(final PendingEvent pendingEvent) {
+            void dispatch(final PendingEvent pendingEvent) {
 				EventListener.this.lock.lock();
 				try {
 					if (this.waitTransaction() && Db.db.isInTransaction()) {
@@ -342,7 +335,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 			 *
 			 * @return TRUE if need to wait for transaction to commit/rollback
 			 */
-			protected boolean waitTransaction() {
+            boolean waitTransaction() {
 				return true;
 			}
 		}
@@ -458,17 +451,14 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		 */
 		public NxtEventListener(final EventRegistration eventRegistration) throws EventListenerException {
 			final Enum<? extends Enum> event = eventRegistration.getEvent();
-			if (event instanceof Peers.Event) {
-				this.eventHandler = new PeerEventHandler(eventRegistration);
-			} else if (event instanceof BlockchainProcessor.Event) {
+			if (event instanceof Peers.Event) this.eventHandler = new PeerEventHandler(eventRegistration);
+			else if (event instanceof BlockchainProcessor.Event)
 				this.eventHandler = new BlockEventHandler(eventRegistration);
-			} else if (event instanceof TransactionProcessor.Event) {
+			else if (event instanceof TransactionProcessor.Event)
 				this.eventHandler = new TransactionEventHandler(eventRegistration);
-			} else if (event instanceof AccountLedger.Event) {
+			else if (event instanceof AccountLedger.Event)
 				this.eventHandler = new LedgerEventHandler(eventRegistration);
-			} else {
-				throw new EventListenerException("Unsupported listener event");
-			}
+			else throw new EventListenerException("Unsupported listener event");
 		}
 
 		/**
@@ -488,7 +478,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		@Override
 		public boolean equals(final Object obj) {
 			return ((obj != null) && (obj instanceof NxtEventListener)
-					&& this.eventHandler.equals(((NxtEventListener) obj).eventHandler));
+					&& Objects.equals(this.eventHandler, ((NxtEventListener) obj).eventHandler));
 		}
 
 		/**
@@ -629,15 +619,15 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	}
 
 	/** Maximum event users */
-	static final int maxEventUsers = Nxt.getIntProperty("nxt.apiMaxEventUsers");
+	private static final int maxEventUsers = Nxt.getIntProperty("nxt.apiMaxEventUsers");
 
 	/** Event registration timeout (seconds) */
 	static final int eventTimeout = Math.max(Nxt.getIntProperty("nxt.apiEventTimeout"), 15);
 	/** Blockchain processor */
-	static final BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
+	private static final BlockchainProcessor blockchainProcessor = Nxt.getBlockchainProcessor();
 
 	/** Transaction processor */
-	static final TransactionProcessor transactionProcessor = Nxt.getTransactionProcessor();
+	private static final TransactionProcessor transactionProcessor = Nxt.getTransactionProcessor();
 
 	/** Active event users */
 	static final Map<String, EventListener> eventListeners = new ConcurrentHashMap<>();
@@ -650,9 +640,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 			public void run() {
 				final long oldestTime = System.currentTimeMillis() - (EventListener.eventTimeout * 1000);
 				EventListener.eventListeners.values().forEach(listener -> {
-					if (listener.getTimestamp() < oldestTime) {
-						listener.deactivateListener();
-					}
+					if (listener.getTimestamp() < oldestTime) listener.deactivateListener();
 				});
 			}
 		}, (EventListener.eventTimeout * 1000) / 2, (EventListener.eventTimeout * 1000) / 2);
@@ -763,14 +751,10 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	 *             Unable to activate event listeners
 	 */
 	void activateListener(final List<EventRegistration> eventRegistrations) throws EventListenerException {
-		if (this.deactivated) {
-			throw new EventListenerException("Event listener deactivated");
-		}
+		if (this.deactivated) throw new EventListenerException("Event listener deactivated");
 		if ((EventListener.eventListeners.size() >= EventListener.maxEventUsers)
-				&& (EventListener.eventListeners.get(this.address) == null)) {
-			throw new EventListenerException(
-					String.format("Too many API event users: Maximum %d", EventListener.maxEventUsers));
-		}
+				&& (EventListener.eventListeners.get(this.address) == null)) throw new EventListenerException(
+				String.format("Too many API event users: Maximum %d", EventListener.maxEventUsers));
 		//
 		// Start listening for events
 		//
@@ -779,9 +763,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		// Add this event listener to the active list
 		//
 		final EventListener oldListener = EventListener.eventListeners.put(this.address, this);
-		if (oldListener != null) {
-			oldListener.deactivateListener();
-		}
+		if (oldListener != null) oldListener.deactivateListener();
 		Logger.logDebugMessage(String.format("Event listener activated for %s", this.address));
 	}
 
@@ -796,9 +778,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	void addEvents(final List<EventRegistration> eventRegistrations) throws EventListenerException {
 		this.lock.lock();
 		try {
-			if (this.deactivated) {
-				return;
-			}
+			if (this.deactivated) return;
 			//
 			// A listener with account identifier 0 accepts events for all
 			// accounts.
@@ -862,12 +842,10 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	/**
 	 * Deactivate the event listener
 	 */
-	void deactivateListener() {
+    private void deactivateListener() {
 		this.lock.lock();
 		try {
-			if (this.deactivated) {
-				return;
-			}
+			if (this.deactivated) return;
 			this.deactivated = true;
 			//
 			// Cancel all pending wait requests
@@ -905,9 +883,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		List<PendingEvent> events = null;
 		this.lock.lock();
 		try {
-			if (this.deactivated) {
-				throw new EventListenerException("Event listener deactivated");
-			}
+			if (this.deactivated) throw new EventListenerException("Event listener deactivated");
 			if (!this.pendingWaits.isEmpty()) {
 				//
 				// We want only one waiter at a time. This can happen if the
@@ -956,7 +932,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	 *
 	 * @return Activity timestamp (milliseconds)
 	 */
-	long getTimestamp() {
+    private long getTimestamp() {
 		long t;
 		this.lock.lock();
 		t = this.timestamp;
@@ -1041,9 +1017,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 	void removeEvents(final List<EventRegistration> eventRegistrations) {
 		this.lock.lock();
 		try {
-			if (this.deactivated) {
-				return;
-			}
+			if (this.deactivated) return;
 			//
 			// Specifying an account identifier of 0 results in removing all
 			// listeners for the specified event. Otherwise, only the listener
@@ -1063,9 +1037,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 			//
 			// Deactivate the listeners if there are no events remaining
 			//
-			if (this.nxtEventListeners.isEmpty()) {
-				this.deactivateListener();
-			}
+			if (this.nxtEventListeners.isEmpty()) this.deactivateListener();
 		} finally {
 			this.lock.unlock();
 		}
@@ -1081,12 +1053,7 @@ class EventListener implements Runnable, AsyncListener, TransactionalDb.Transact
 		final Thread thread = Thread.currentThread();
 		this.lock.lock();
 		try {
-			final Iterator<PendingEvent> it = this.dbEvents.iterator();
-			while (it.hasNext()) {
-				if (it.next().getThread() == thread) {
-					it.remove();
-				}
-			}
+			this.dbEvents.removeIf(pendingEvent -> pendingEvent.getThread() == thread);
 		} finally {
 			this.lock.unlock();
 		}

@@ -1,7 +1,5 @@
 package nxt.http;
 
-import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
 
 import nxt.*;
@@ -28,7 +26,7 @@ public final class BountyAnnouncement extends CreateTransaction {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final long workId = ParameterParser.getUnsignedLong(req, "work_id", true);
-		Account account = null;
+		Account account;
 		try {
 			Db.db.beginTransaction();
 			account = ParameterParser.getOrCreateSenderAccount(req);
@@ -41,16 +39,14 @@ public final class BountyAnnouncement extends CreateTransaction {
 			Db.db.endTransaction();
 		}
 
-		if (account == null) {
-			return JSONResponses.INCORRECT_ACCOUNT;
-		}
+		if (account == null) return JSONResponses.INCORRECT_ACCOUNT;
 		byte[] hash = new byte[Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES];
 		final String multiplicator_multipart = ParameterParser.getAnnouncement(req, true);
 		if (multiplicator_multipart != null) {
 			// restore fixed sized multiplicator array
 			hash = Convert.parseHexString(multiplicator_multipart);
 			if(hash.length> Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)
-				throw new NxtException.NotValidException("Your announced hash exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
+                throw new NxtException.NotValidException("Your announced hash exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 			hash = Convert.toFixedBytesCutter(hash, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 		}
 

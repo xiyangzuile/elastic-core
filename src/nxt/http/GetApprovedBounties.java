@@ -1,7 +1,5 @@
 package nxt.http;
 
-import java.math.BigInteger;
-
 import javax.servlet.http.HttpServletRequest;
 
 import nxt.Constants;
@@ -27,12 +25,12 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 
 		final long wid = ParameterParser.getUnsignedLong(req, "work_id", true);
 
-		byte hash[] = null;
+		byte[] hash;
 		try {
 			final String readParam = ParameterParser.getAnnouncement(req, true);
 			hash = Convert.parseHexString(readParam);
 			if(hash.length> Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES)
-				throw new NxtException.NotValidException("One of your requested hashes exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
+                throw new NxtException.NotValidException("One of your requested hashes exceeds the maximum allowed number of bytes: " + Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 			hash = Convert.toFixedBytesCutter(hash, Constants.MAX_HASH_ANNOUNCEMENT_SIZE_BYTES);
 		} catch (final Exception e) {
 			hash = null;
@@ -49,13 +47,9 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 
 		final boolean hasIt = PowAndBountyAnnouncements.hasValidHash(wid, hash);
 		final boolean hasItFailed = PowAndBountyAnnouncements.hasHash(wid, hash);
-		if (hasIt) {
-			response.put("approved", "true");
-		} else if (hasItFailed) {
-			response.put("approved", "deprecated");
-		} else {
-			response.put("approved", "false");
-		}
+		if (hasIt) response.put("approved", "true");
+        else if (hasItFailed) response.put("approved", "deprecated");
+        else response.put("approved", "false");
 
 		return response;
 

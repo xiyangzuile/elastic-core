@@ -19,11 +19,12 @@ package nxt.tools;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Objects;
 
-public final class CompareTraceFiles {
+final class CompareTraceFiles {
 
 	private static void assertEquals(final String defaultLine, final String testLine) {
-		if (!defaultLine.equals(testLine)) {
+		if (!Objects.equals(defaultLine, testLine)) {
 			System.out.println("Lines don't match:");
 			System.out.println("default:\n" + defaultLine);
 			System.out.println("test:\n" + testLine);
@@ -44,11 +45,8 @@ public final class CompareTraceFiles {
 			}
 			final int height = CompareTraceFiles.parseHeight(testLine);
 			String defaultLine;
-			while ((defaultLine = defaultReader.readLine()) != null) {
-				if (CompareTraceFiles.parseHeight(defaultLine) >= height) {
-					break;
-				}
-			}
+			while ((defaultLine = defaultReader.readLine()) != null)
+                if (CompareTraceFiles.parseHeight(defaultLine) >= height) break;
 			if (defaultLine == null) {
 				System.out.println("End of default trace file, can't compare further");
 				return;
@@ -64,12 +62,10 @@ public final class CompareTraceFiles {
 				endHeight = CompareTraceFiles.parseHeight(testLine);
 				CompareTraceFiles.assertEquals(defaultLine, testLine);
 			}
-			if ((defaultLine = defaultReader.readLine()) != null) {
-				if (CompareTraceFiles.parseHeight(defaultLine) <= endHeight) {
-					System.out.println("default height: " + CompareTraceFiles.parseHeight(defaultLine) + " end height: "
-							+ endHeight);
-				}
-			}
+			if ((defaultLine = defaultReader.readLine()) != null)
+                if (CompareTraceFiles.parseHeight(defaultLine) <= endHeight)
+                    System.out.println("default height: " + CompareTraceFiles.parseHeight(defaultLine) + " end height: "
+                            + endHeight);
 			System.out.println("Comparison with default trace file done from height " + height + " to " + endHeight);
 		} catch (final IOException e) {
 			throw new RuntimeException(e.toString(), e);

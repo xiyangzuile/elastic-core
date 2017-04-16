@@ -21,7 +21,7 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.util.JSON;
 
-public final class JSONResponses {
+final class JSONResponses {
 
 	public static final JSONStreamAware INVALID_SECRET_PHRASE;
 	static {

@@ -67,14 +67,10 @@ public final class GetBlockchainTransactions extends APIServlet.APIRequestHandle
 		final int lastIndex = ParameterParser.getLastIndex(req);
 
 		final JSONArray transactions = new JSONArray();
-		final Iterator<Transaction> it = Nxt.getBlockchain().getTransactions(accountId,
-				numberOfConfirmations, type, subtype, timestamp, withMessage, phasedOnly, nonPhasedOnly, firstIndex,
-				lastIndex, includeExpiredPrunable, executedOnly).iterator();
-		while (it.hasNext()) {
-				final Transaction transaction = it.next();
-				transactions.add(JSONData.transaction(transaction));
-			
-		}
+        for (Transaction transaction : Nxt.getBlockchain().getTransactions(accountId,
+                numberOfConfirmations, type, subtype, timestamp, withMessage, phasedOnly, nonPhasedOnly, firstIndex,
+                lastIndex, includeExpiredPrunable, executedOnly))
+            transactions.add(JSONData.transaction(transaction));
 
 		final JSONObject response = new JSONObject();
 		response.put("transactions", transactions);

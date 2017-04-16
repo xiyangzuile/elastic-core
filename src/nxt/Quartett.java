@@ -1,10 +1,10 @@
 package nxt;
 
 public class Quartett<T, U, V, W> {
-	T a;
-	U b;
-	V c;
-	W d;
+	private final T a;
+	private final U b;
+	private final V c;
+	private final W d;
 
 	public Quartett(final T a, final U b, final V c, final W d) {
 		this.a = a;

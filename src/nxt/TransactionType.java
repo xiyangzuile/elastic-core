@@ -17,7 +17,6 @@
 package nxt;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.SignatureException;
 import java.util.ArrayList;
@@ -86,26 +85,20 @@ public abstract class TransactionType {
 			void validateAttachment(final Transaction transaction) throws NxtException.ValidationException {
 				final Attachment.AccountControlEffectiveBalanceLeasing attachment = (Attachment.AccountControlEffectiveBalanceLeasing) transaction
 						.getAttachment();
-				if (transaction.getSenderId() == transaction.getRecipientId()) {
-					throw new NxtException.NotValidException("Account cannot lease balance to itself");
-				}
-				if (transaction.getAmountNQT() != 0) {
-					throw new NxtException.NotValidException(
-							"Transaction amount must be 0 for effective balance leasing");
-				}
-				if ((attachment.getPeriod() < Constants.LEASING_DELAY) || (attachment.getPeriod() > 65535)) {
-					throw new NxtException.NotValidException(
+				if (transaction.getSenderId() == transaction.getRecipientId())
+					throw new NotValidException("Account cannot lease balance to itself");
+				if (transaction.getAmountNQT() != 0) throw new NotValidException(
+						"Transaction amount must be 0 for effective balance leasing");
+				if ((attachment.getPeriod() < Constants.LEASING_DELAY) || (attachment.getPeriod() > 65535))
+					throw new NotValidException(
 							"Invalid effective balance leasing period: " + attachment.getPeriod());
-				}
 				final byte[] recipientPublicKey = Account.getPublicKey(transaction.getRecipientId());
-				if (recipientPublicKey == null) {
+				if (recipientPublicKey == null)
 					throw new NxtException.NotCurrentlyValidException("Invalid effective balance leasing: "
 							+ " recipient account " + Long.toUnsignedString(transaction.getRecipientId())
 							+ " not found or no public key published");
-				}
-				if (transaction.getRecipientId() == Genesis.CREATOR_ID) {
-					throw new NxtException.NotValidException("Leasing to Genesis account not allowed");
-				}
+				if (transaction.getRecipientId() == Genesis.CREATOR_ID)
+					throw new NotValidException("Leasing to Genesis account not allowed");
 			}
 
 		};
@@ -144,12 +137,10 @@ public abstract class TransactionType {
 				if(attachment.getGuardNodeBlockId()!=0){
 					Account blockAccount = Account.getAccount(attachment.getGuardNodeBlockId());
 					blockAccount.invalidateSupernodeDeposit();
-				}else {
-					try {
-						senderAcc.refreshSupernodeDeposit(attachment.getUris());
-					} catch (IOException e) {
-						// abviously, this failed! Just pass through .. was a nonsense transaction without any impact
-					}
+				}else try {
+					senderAcc.refreshSupernodeDeposit(attachment.getUris());
+				} catch (IOException e) {
+					// abviously, this failed! Just pass through .. was a nonsense transaction without any impact
 				}
             }
 
@@ -204,10 +195,9 @@ public abstract class TransactionType {
 										   final Map<TransactionType, Map<String, Integer>> duplicates) {
 				final Attachment.MessagingSupernodeAnnouncement attachment = (Attachment.MessagingSupernodeAnnouncement) transaction
 						.getAttachment();
-				final boolean duplicate = TransactionType.isDuplicate(Messaging.SUPERNODE_ANNOUNCEMENT,
-						String.valueOf(transaction.getSenderId()), duplicates, true);
 
-				return duplicate;
+				return TransactionType.isDuplicate(Messaging.SUPERNODE_ANNOUNCEMENT,
+						String.valueOf(transaction.getSenderId()), duplicates, true);
 			}
 
 			@Override
@@ -219,37 +209,28 @@ public abstract class TransactionType {
 				long guard_id = attachment.getGuardNodeBlockId();
 
 				if(guard_id == 0 && (howManyUrls<=0 || howManyUrls > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URIS))
-				{
-					throw new NxtException.NotValidException("Invalid URI number");
-				}
+					throw new NotValidException("Invalid URI number");
 				else if(guard_id != 0 && (howManyUrls!=0))
-				{
-					throw new NxtException.NotValidException("Invalid URI number, must be 0 for guard node block");
-				}
+					throw new NotValidException("Invalid URI number, must be 0 for guard node block");
 
 				for (final String uri : attachment.getUris()) {
-					if (uri.length() > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH) {
-						throw new NxtException.NotValidException("Invalid URI length: " + uri.length());
-					}
+					if (uri.length() > Constants.MAX_SUPERNODE_ANNOUNCEMENT_URI_LENGTH)
+						throw new NotValidException("Invalid URI length: " + uri.length());
 
 					// Check if URL has the correct format (IPv4 address)
-					if(IPValidator.getInstance().validate(uri) == false){
-						throw new NxtException.NotValidException("URIs contain invalid SN IP-addresses");
-					}
+					if(!IPValidator.getInstance().validate(uri))
+						throw new NotValidException("URIs contain invalid SN IP-addresses");
 				}
 
 				// Check if this node either is already a supernode (extend SN membership)
 				// or if it has enough funds to cover the amount required to become a super node
 				Account senderAcc = Account.getAccount(transaction.getSenderId());
 				if(senderAcc == null)
-					throw new NxtException.NotValidException("Sender account " + transaction.getSenderId() + " had no activity before. Please do something else first!");
+					throw new NotValidException("Sender account " + transaction.getSenderId() + " had no activity before. Please do something else first!");
 
-				if(guard_id == 0 && (!senderAcc.isSuperNode() && !senderAcc.isGuardNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT)){
-					throw new NxtException.NotValidException("Your balance does not cover the required super node deposit");
-				}
-				if(guard_id != 0 && (!senderAcc.isGuardNode())){
-					throw new NxtException.NotValidException("Invalid guard node");
-				}
+				if(guard_id == 0 && (!senderAcc.isSuperNode() && !senderAcc.isGuardNode() && senderAcc.getUnconfirmedBalanceNQT()<Constants.SUPERNODE_DEPOSIT_AMOUNT))
+					throw new NotValidException("Your balance does not cover the required super node deposit");
+				if(guard_id != 0 && (!senderAcc.isGuardNode())) throw new NotValidException("Invalid guard node");
 
 			}
 		};
@@ -321,10 +302,9 @@ public abstract class TransactionType {
 				final Attachment.MessagingAccountInfo attachment = (Attachment.MessagingAccountInfo) transaction
 						.getAttachment();
 				if ((attachment.getName().length() > Constants.MAX_ACCOUNT_NAME_LENGTH)
-						|| (attachment.getDescription().length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH)) {
-					throw new NxtException.NotValidException(
+						|| (attachment.getDescription().length() > Constants.MAX_ACCOUNT_DESCRIPTION_LENGTH))
+					throw new NotValidException(
 							"Invalid account info issuance: " + attachment.getJSONObject());
-				}
 			}
 
 		};
@@ -382,12 +362,10 @@ public abstract class TransactionType {
 			@Override
 			void validateAttachment(final Transaction transaction) throws NxtException.ValidationException {
 				if ((transaction.getAttachment() != null)
-						&& (transaction.getAttachment() instanceof Attachment.RedeemAttachment)) {
-					throw new NxtException.NotValidException("Invalid attachment found");
-				}
-				if ((transaction.getAmountNQT() <= 0) || (transaction.getAmountNQT() >= Constants.MAX_BALANCE_NQT)) {
-					throw new NxtException.NotValidException("Invalid ordinary payment");
-				}
+						&& (transaction.getAttachment() instanceof Attachment.RedeemAttachment))
+					throw new NotValidException("Invalid attachment found");
+				if ((transaction.getAmountNQT() <= 0) || (transaction.getAmountNQT() >= Constants.MAX_BALANCE_NQT))
+					throw new NotValidException("Invalid ordinary payment");
 			}
 
 		};
@@ -431,10 +409,9 @@ public abstract class TransactionType {
 						.getAttachment();
 				boolean duplicate = TransactionType.isDuplicate(Payment.REDEEM, String.valueOf(attachment.getAddress()),
 						duplicates, true);
-				if (duplicate == false) {
+				if (!duplicate) {
 					duplicate = Redeem.isAlreadyRedeemed(attachment.getAddress());
-					if(duplicate)
-						transaction.setExtraInfo("Genesis entry already redeemed.");
+					if(duplicate) transaction.setExtraInfo("Genesis entry already redeemed.");
 				}
 				return duplicate;
 			}
@@ -461,72 +438,60 @@ public abstract class TransactionType {
 				final Attachment.RedeemAttachment attachment = (Attachment.RedeemAttachment) transaction
 						.getAttachment();
 
-				if (transaction.getFeeNQT() != 0) {
-					throw new NxtException.NotValidException("You have to send a redeem TX without any fees");
-				}
+				if (transaction.getFeeNQT() != 0)
+					throw new NotValidException("You have to send a redeem TX without any fees");
 
-				if (attachment.getAddress().length()>255 /* heuristic */ || !attachment.getAddress().matches("[a-zA-Z0-9-;]*")) {
-					throw new NxtException.NotValidException(
+				if (attachment.getAddress().length()>255 /* heuristic */ || !attachment.getAddress().matches("[a-zA-Z0-9-;]*"))
+					throw new NotValidException(
 							"Invalid characters in redeem transaction: fields.address");
-				}
 
 				// Check if this "address" is a valid entry in the "genesis
 				// block" claim list
-				if (Redeem.hasAddress(attachment.getAddress()) == false) {
-					throw new NxtException.NotValidException("You have no right to claim from genesis");
-				}
+				if (!Redeem.hasAddress(attachment.getAddress()))
+					throw new NotValidException("You have no right to claim from genesis");
 
-				if(Redeem.isAlreadyRedeemed(attachment.getAddress())){
-					throw new NxtException.NotValidException("Come on, just leave!");
-				}
+				if(Redeem.isAlreadyRedeemed(attachment.getAddress()))
+					throw new NotValidException("Come on, just leave!");
 
 				// Check if the amountNQT matches the "allowed" amount
 				final Long claimableAmount = Redeem.getClaimableAmount(attachment.getAddress());
-				if ((claimableAmount <= 0) || (claimableAmount != transaction.getAmountNQT())) {
-					throw new NxtException.NotValidException("You can only claim exactly " + claimableAmount + " NQT");
-				}
+				if ((claimableAmount <= 0) || (claimableAmount != transaction.getAmountNQT()))
+					throw new NotValidException("You can only claim exactly " + claimableAmount + " NQT");
 
-				if (attachment.getSecp_signatures().length()>4096 /* heuristic */ || !attachment.getSecp_signatures().matches("[a-zA-Z0-9+/=-]*")) {
-					throw new NxtException.NotValidException(
+				if (attachment.getSecp_signatures().length()>4096 /* heuristic */ || !attachment.getSecp_signatures().matches("[a-zA-Z0-9+/=-]*"))
+					throw new NotValidException(
 							"Invalid characters in redeem transaction: fields.secp_signatures");
-				}
-				if (transaction.getRecipientId() == 0) {
-					throw new NxtException.NotValidException("Invalid receiver ID in redeem transaction");
-				}
+				if (transaction.getRecipientId() == 0)
+					throw new NotValidException("Invalid receiver ID in redeem transaction");
 
 				// Finally, do the costly SECP signature verification checks
 				final ArrayList<String> signedBy = new ArrayList<>();
 				final ArrayList<String> signatures = new ArrayList<>();
 				final ArrayList<String> addresses = new ArrayList<>();
-				int need = 0;
-				int gotsigs = 0;
+				int need;
+				int gotsigs;
 				final String addy = attachment.getAddress();
 				final String sigs = attachment.getSecp_signatures();
-				if (addy.indexOf("-") >= 0) {
+				if (addy.contains("-")) {
 					final String[] multiples = addy.split(";")[0].split("-");
 					need = Integer.valueOf(multiples[0]);
-					for (int i = 1; i < multiples.length; ++i) {
-						addresses.add(multiples[i]);
-					}
+					addresses.addAll(Arrays.asList(multiples).subList(1, multiples.length));
 				} else {
 					need = 1;
 					addresses.add(addy);
 				}
-				if (sigs.indexOf("-") >= 0) {
+				if (sigs.contains("-")) {
 					final String[] multiples = sigs.split("-");
 					gotsigs = multiples.length;
-					for (final String multiple : multiples) {
-						signatures.add(multiple);
-					}
+					signatures.addAll(Arrays.asList(multiples));
 				} else {
 					gotsigs = 1;
 					signatures.add(sigs);
 				}
 
-				if (signatures.size() != need) {
-					throw new NxtException.NotValidException("You have to provide exactly " + String.valueOf(need)
+				if (signatures.size() != need)
+					throw new NotValidException("You have to provide exactly " + String.valueOf(need)
 							+ " signatures, you provided " + gotsigs);
-				}
 
 				Logger.logDebugMessage("Found REDEEM transaction");
 				Logger.logDebugMessage("========================");
@@ -536,39 +501,31 @@ public abstract class TransactionType {
 						+ Convert.toUnsignedLong(transaction.getRecipientId()).replace("L", "");
 				Logger.logDebugMessage("String to sign:\t" + message);
 				Logger.logDebugMessage("We need " + String.valueOf(need) + " signatures from these addresses:");
-				for (int i = 0; i < addresses.size(); ++i) {
-					Logger.logDebugMessage(" -> " + addresses.get(i));
-				}
+				for (String address1 : addresses) Logger.logDebugMessage(" -> " + address1);
 				Logger.logDebugMessage("We got " + String.valueOf(gotsigs) + " signatures:");
-				for (int i = 0; i < signatures.size(); ++i) {
+				for (String signature : signatures) {
 					Logger.logDebugMessage(
-							" -> " + signatures.get(i).substring(0, Math.min(12, signatures.get(i).length())) + "...");
+							" -> " + signature.substring(0, Math.min(12, signature.length())) + "...");
 					ECKey result;
 					try {
 						new ECKey();
-						result = ECKey.signedMessageToKey(message, signatures.get(i));
+						result = ECKey.signedMessageToKey(message, signature);
 					} catch (final SignatureException e) {
-						throw new NxtException.NotValidException("Invalid signatures provided");
+						throw new NotValidException("Invalid signatures provided");
 					}
 
-					if (result == null) {
-						throw new NxtException.NotValidException("Invalid signatures provided");
-					}
+					if (result == null) throw new NotValidException("Invalid signatures provided");
 
 					final String add = result.toAddress(MainNetParams.get()).toString();
 					signedBy.add(add);
 
 				}
 				Logger.logDebugMessage("These addresses seem to have signed:");
-				for (int i = 0; i < signedBy.size(); ++i) {
-					Logger.logDebugMessage(" -> " + signedBy.get(i));
-				}
+				for (String aSignedBy : signedBy) Logger.logDebugMessage(" -> " + aSignedBy);
 
 				addresses.retainAll(signedBy);
 				Logger.logDebugMessage("We matched " + String.valueOf(need) + " signatures from these addresses:");
-				for (int i = 0; i < addresses.size(); ++i) {
-					Logger.logDebugMessage(" -> " + addresses.get(i));
-				}
+				for (String address : addresses) Logger.logDebugMessage(" -> " + address);
 				if (addresses.size() != need) {
 					Logger.logDebugMessage(
 							"== " + String.valueOf(addresses.size()) + " out of " + String.valueOf(need) + " matched!");
@@ -589,10 +546,9 @@ public abstract class TransactionType {
 		@Override
 		void applyAttachment(final Transaction transaction, final Account senderAccount,
 				final Account recipientAccount) {
-			if (recipientAccount == null) {
+			if (recipientAccount == null)
 				Account.getAccount(Genesis.FUCKED_TX_ID).addToBalanceAndUnconfirmedBalanceNQT(this.getLedgerEvent(),
 						transaction.getId(), transaction.getAmountNQT());
-			}
 		}
 
 		@Override
@@ -690,59 +646,45 @@ public abstract class TransactionType {
 
 				// Immediately fail attachment validation if transaction has no
 				// SourceCode Appendix
-				if (transaction.getPrunableSourceCode() == null) {
-					throw new NxtException.NotValidException(
-							"Work creation transaction MUST come with a source code appendix");
-				}
+				if (transaction.getPrunableSourceCode() == null) throw new NotValidException(
+						"Work creation transaction MUST come with a source code appendix");
 
 				// Now, source must not be pruned if the transaction is "young"
 				if (!transaction.getPrunableSourceCode().hasPrunableData()
-						&& !(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME))) {
-					throw new NxtException.NotValidException(
+						&& !(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)))
+					throw new NotValidException(
 							"Script kiddie, stay home! Please refrain from pruning unpruneable data");
-				}
 
 				// Check for correct title length
 				if ((attachment.getWorkTitle().length() > Constants.MAX_TITLE_LENGTH)
-						|| (attachment.getWorkTitle().length() < 1)) {
-					throw new NxtException.NotValidException("User provided POW Algorithm has incorrect title length");
-				}
+						|| (attachment.getWorkTitle().length() < 1))
+					throw new NotValidException("User provided POW Algorithm has incorrect title length");
 
 				// Verify Deadline
 				if ((attachment.getDeadline() > Constants.MAX_DEADLINE_FOR_WORK)
-						|| (attachment.getDeadline() < Constants.MIN_DEADLINE_FOR_WORK)) {
-					throw new NxtException.NotValidException(
-							"User provided POW Algorithm does not have a correct deadline");
-				}
+						|| (attachment.getDeadline() < Constants.MIN_DEADLINE_FOR_WORK)) throw new NotValidException(
+						"User provided POW Algorithm does not have a correct deadline");
 
 				// Verify Bounty Limit
 				if ((attachment.getBountyLimit() > Constants.MAX_WORK_BOUNTY_LIMIT)
-						|| (attachment.getBountyLimit() < Constants.MIN_WORK_BOUNTY_LIMIT)) {
-					throw new NxtException.NotValidException(
-							"User provided POW Algorithm does not have a correct bounty limit");
-				}
+						|| (attachment.getBountyLimit() < Constants.MIN_WORK_BOUNTY_LIMIT)) throw new NotValidException(
+						"User provided POW Algorithm does not have a correct bounty limit");
 
 				// Verify XEL per Pow
-				if (attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW) {
-					throw new NxtException.NotValidException(
-							"User provided POW Algorithm does not have a correct xel/pow price");
-				}
+				if (attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW) throw new NotValidException(
+						"User provided POW Algorithm does not have a correct xel/pow price");
 
 				// Verify XEL per Bounty
-				if (attachment.getXelPerBounty() < Constants.MIN_XEL_PER_BOUNTY) {
-					throw new NxtException.NotValidException(
-							"User provided POW Algorithm does not have a correct xel/bounty price");
-				}
+				if (attachment.getXelPerBounty() < Constants.MIN_XEL_PER_BOUNTY) throw new NotValidException(
+						"User provided POW Algorithm does not have a correct xel/bounty price");
 
 				// minimal payout check
 				if (transaction.getAmountNQT() < ((Constants.PAY_FOR_AT_LEAST_X_POW * attachment.getXelPerPow())
-						+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))) {
-					throw new NxtException.NotValidException(
-							"You must attach XEL for at least 20 POW submissions and all bounties, i.e., "
-									+ ((Constants.PAY_FOR_AT_LEAST_X_POW * attachment.getXelPerPow())
-											+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))
-									+ " XEL");
-				}
+						+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))) throw new NotValidException(
+						"You must attach XEL for at least 20 POW submissions and all bounties, i.e., "
+								+ ((Constants.PAY_FOR_AT_LEAST_X_POW * attachment.getXelPerPow())
+								+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))
+								+ " XEL");
 			}
 
 		};
@@ -795,19 +737,13 @@ public abstract class TransactionType {
 				final boolean duplicate = TransactionType.isDuplicate(WorkControl.CANCEL_TASK_REQUEST,
 						String.valueOf(attachment.getWorkId()), duplicates, true);
 
-				if (duplicate == false) {
+				if (!duplicate) {
 					final Work w = Work.getWorkByWorkId(attachment.getWorkId());
-					if (w == null) {
-						return true; // Assume tx with invalid work is duplicate
-										// to prevent it getting to the lower
-										// system levels
-					}
-					if (w.isClosed()) {
-						return true;
-					}
-					if (w.isClose_pending()) {
-						return true;
-					}
+					// to prevent it getting to the lower
+// system levels
+					if (w == null) return true; // Assume tx with invalid work is duplicate
+					if (w.isClosed()) return true;
+					if (w.isClose_pending()) return true;
 				}
 
 				return duplicate;
@@ -839,19 +775,14 @@ public abstract class TransactionType {
 
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
-				if (w == null) {
-					throw new NxtException.NotCurrentlyValidException(
-							"Work " + attachment.getWorkId() + " does not exist yet");
-				}
+				if (w == null) throw new NxtException.NotCurrentlyValidException(
+						"Work " + attachment.getWorkId() + " does not exist yet");
 
-				if (w.isClosed()) {
-					throw new NxtException.NotCurrentlyValidException(
-							"Work " + attachment.getWorkId() + " is already closed");
-				}
+				if (w.isClosed()) throw new NxtException.NotCurrentlyValidException(
+						"Work " + attachment.getWorkId() + " is already closed");
 
-				if (w.getSender_account_id() != transaction.getSenderId()) {
-					throw new NxtException.NotValidException("Only the work creator can cancel this work");
-				}
+				if (w.getSender_account_id() != transaction.getSenderId())
+					throw new NotValidException("Only the work creator can cancel this work");
 			}
 
 			@Override
@@ -867,12 +798,8 @@ public abstract class TransactionType {
 			boolean applyAttachmentUnconfirmed(Transaction transaction, Account senderAccount) {
 				Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction.getAttachment();
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
-				if(w!=null) {
-						// unconfirmed TX do not add anything to the balance before block inclusion
-						return true;
-				}else {
-					return false;
-				}
+				// unconfirmed TX do not add anything to the balance before block inclusion
+				return w != null;
 			}
 
 			@Override
@@ -934,7 +861,7 @@ public abstract class TransactionType {
 						.getAttachment();
 				boolean duplicate = TransactionType.isDuplicate(WorkControl.PROOF_OF_WORK,
 						Convert.toHexString(attachment.getHash()), duplicates, true);
-				if (duplicate == false) {
+				if (!duplicate) {
 					// This is required to limit the amount of unconfirmed POWs
 					// to not exceed either the money or the hard limit per
 					// block.
@@ -942,11 +869,11 @@ public abstract class TransactionType {
 
 					if(w==null) return true;
 
-					if (w!=null && w.isClose_pending()) {
+					if (w.isClose_pending()) {
 						transaction.setExtraInfo("work already closed");
 						return true;
 					}
-					if (w!=null && w.isClosed()) {
+					if (w.isClosed()) {
 						transaction.setExtraInfo("work already closed");
 						return true;
 					}
@@ -955,9 +882,7 @@ public abstract class TransactionType {
 					final long xel_per_pow = w.getXel_per_pow();
 					final long how_many_left = Math.floorDiv(bal_fund, xel_per_pow);
 					int left = Integer.MAX_VALUE;
-					if (how_many_left < left) {
-						left = (int) how_many_left;
-					}
+					if (how_many_left < left) left = (int) how_many_left;
 
 					boolean soft_throttling = false;
 					if (left > Constants.MAX_POWS_PER_BLOCK) {
@@ -971,11 +896,8 @@ public abstract class TransactionType {
 					} else {
 						duplicate = TransactionType.isDuplicate(WorkControl.PROOF_OF_WORK,
 								String.valueOf(attachment.getWorkId()), duplicates, left);
-						if (soft_throttling) {
-							transaction.setExtraInfo("maximum pows per block reached");
-						} else {
-							transaction.setExtraInfo("work ran out of funds");
-						}
+						if (soft_throttling) transaction.setExtraInfo("maximum pows per block reached");
+						else transaction.setExtraInfo("work ran out of funds");
 					}
 				}
 				return duplicate;
@@ -1003,26 +925,22 @@ public abstract class TransactionType {
 			@Override
 			void validateAttachment(final Transaction transaction) throws NxtException.ValidationException {
 
-				if (transaction.getDeadline() != 3) {
-					throw new NxtException.NotValidException("POW/Bounties must have a dead line of 3 minutes");
-				}
+				if (transaction.getDeadline() != 3)
+					throw new NotValidException("POW/Bounties must have a dead line of 3 minutes");
 
 				final Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
 
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
-				if (w == null) {
-					throw new NxtException.NotCurrentlyValidException(
-							"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
-				}
+				if (w == null) throw new NxtException.NotCurrentlyValidException(
+						"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
 
 				final byte[] hash = attachment.getHash();
-				if (PowAndBounty.hasHash(attachment.getWorkId(), hash)) {
+				if (PowAndBounty.hasHash(attachment.getWorkId(), hash))
 					throw new NxtException.NotCurrentlyValidException(
 							"Work " + Convert.toUnsignedLong(attachment.getWorkId())
 									+ " already has this submission, dropping duplicate");
-				}
 			}
 
 			@Override
@@ -1100,7 +1018,7 @@ public abstract class TransactionType {
 						.getAttachment();
 				boolean duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT,
 						Convert.toHexString(attachment.getHashAnnounced()), duplicates, true);
-				if (duplicate == false) {
+				if (!duplicate) {
 					// This is required to limit the amount of unconfirmed BNT
 					// Announcements to not exceed the requested bounty # by the
 					// requester.
@@ -1110,12 +1028,8 @@ public abstract class TransactionType {
 
 					if(w == null) return true;
 
-					if (w!=null && w.isClose_pending()) {
-						return true;
-					}
-					if (w!=null && w.isClosed()) {
-						return true;
-					}
+					if (w.isClose_pending()) return true;
+					if (w.isClosed()) return true;
 
 					final int count_wanted = w.getBounty_limit();
 					final int count_has_announcements = w.getReceived_bounty_announcements();
@@ -1123,10 +1037,8 @@ public abstract class TransactionType {
 					if (left_wanted <= 0) {
 						transaction.setExtraInfo("no more bounty announcement slots available");
 						duplicate = true;
-					} else {
-						duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT,
-								String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
-					}
+					} else duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY_ANNOUNCEMENT,
+							String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
 				}
 				return duplicate;
 			}
@@ -1155,40 +1067,34 @@ public abstract class TransactionType {
 				final Attachment.PiggybackedProofOfBountyAnnouncement attachment = (Attachment.PiggybackedProofOfBountyAnnouncement) transaction
 						.getAttachment();
 				final Account acc = Account.getAccount(transaction.getSenderId());
-				if ((acc == null) || (acc.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
+				if ((acc == null) || (acc.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION))
 					throw new NxtException.NotCurrentlyValidException(
 							"You cannot cover the " + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION
 									+ " NQT deposit fee for your bounty announcement with confirmed funds.");
-				}
 
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
-				if (w == null) {
-					throw new NxtException.NotCurrentlyValidException(
-							"Work " + attachment.getWorkId() + " does not exist");
-				}
+				if (w == null) throw new NxtException.NotCurrentlyValidException(
+						"Work " + attachment.getWorkId() + " does not exist");
 
-				if (PrunableSourceCode.isPrunedByWorkId(w.getId())) {
-					// If the tx is already pruned AND the transaction timestamp
-					// is old enough, we assume submission is valid!
-					// no need to execute after all! We assume that the pruning
-					// is happened long enough ago
-					// This is valid, because MIN_PRUNABLE_LIFETIME is longer
-					// than the maximum work timeout length! We are just
-					// catching up the blockchain here, not actually "submitting
-					// live work"
-					if (!(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME))) {
+				// If the tx is already pruned AND the transaction timestamp
+// is old enough, we assume submission is valid!
+// no need to execute after all! We assume that the pruning
+// is happened long enough ago
+// This is valid, because MIN_PRUNABLE_LIFETIME is longer
+// than the maximum work timeout length! We are just
+// catching up the blockchain here, not actually "submitting
+// live work"
+				if (PrunableSourceCode.isPrunedByWorkId(w.getId()))
+					if (!(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)))
 						throw new NxtException.NotCurrentlyValidException(
 								"Bounty announcement is invalid: references a work package with pruned source code when it should not be pruned");
-					}
-				}
 
 				final byte[] hash = attachment.getHashAnnounced();
-				if (PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash)) {
+				if (PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash))
 					throw new NxtException.NotCurrentlyValidException(
 							"Work " + Convert.toUnsignedLong(attachment.getWorkId())
 									+ " already has this submission, dropping duplicate");
-				}
 
 			}
 
@@ -1210,16 +1116,8 @@ public abstract class TransactionType {
 					// Check if we had an announcement for this workid earlier, if not delay the transaction indefinitely
 					final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
 							attachment.getHash());
-					if (!hadAnnouncement) {
-						return false;
-					} else {
-						// bounties are credited after confirmation!
-						// unconfirmed balance cannot go higher than actual balance
-						return true;
-					}
-				}else {
-					return false;
-				}
+					return hadAnnouncement;
+				}else return false;
 			}
 
 			@Override
@@ -1280,7 +1178,7 @@ public abstract class TransactionType {
 						.getAttachment();
 				final boolean duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY,
 						Convert.toHexString(attachment.getHash()), duplicates, true);
-				if (duplicate == false) {
+				if (!duplicate) {
 					// This is required to limit the amount of unconfirmed BNT
 					// Announcements to not exceed the requested bounty # by the
 					// requester.
@@ -1323,28 +1221,23 @@ public abstract class TransactionType {
 
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
-				if (w == null) {
-					throw new NxtException.NotCurrentlyValidException(
-							"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
-				}
+				if (w == null) throw new NxtException.NotCurrentlyValidException(
+						"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
 
 				// check if we had an announcement for this bounty earlier
 				final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
 						attachment.getHash());
-				if (!hadAnnouncement) {
-					throw new NxtException.NotCurrentlyValidException("Work "
-							+ Convert.toUnsignedLong(attachment.getWorkId())
-							+ " has not yet seen a \"counted\" bounty announcement for this submission with work_id "
-							+ attachment.getWorkId() + ", hash " + Convert.toHexString(attachment.getHash())
-							+ " and multi " + Convert.toHexString(attachment.getMultiplicator()));
-				}
+				if (!hadAnnouncement) throw new NxtException.NotCurrentlyValidException("Work "
+						+ Convert.toUnsignedLong(attachment.getWorkId())
+						+ " has not yet seen a \"counted\" bounty announcement for this submission with work_id "
+						+ attachment.getWorkId() + ", hash " + Convert.toHexString(attachment.getHash())
+						+ " and multi " + Convert.toHexString(attachment.getMultiplicator()));
 
 				final byte[] hash = attachment.getHash();
-				if (PowAndBounty.hasHash(attachment.getWorkId(), hash)) {
+				if (PowAndBounty.hasHash(attachment.getWorkId(), hash))
 					throw new NxtException.NotCurrentlyValidException(
 							"Work " + Convert.toUnsignedLong(attachment.getWorkId())
 									+ " already has this submission, dropping duplicate");
-				}
 
 				transaction.getBlockId();
 			}
@@ -1442,26 +1335,20 @@ public abstract class TransactionType {
 		}
 	}
 
-	static boolean isDuplicate(final TransactionType uniqueType, final String key,
-			final Map<TransactionType, Map<String, Integer>> duplicates, final boolean exclusive) {
+	private static boolean isDuplicate(final TransactionType uniqueType, final String key,
+									   final Map<TransactionType, Map<String, Integer>> duplicates, final boolean exclusive) {
 		return TransactionType.isDuplicate(uniqueType, key, duplicates, exclusive ? 0 : Integer.MAX_VALUE);
 	}
 
-	static boolean isDuplicate(final TransactionType uniqueType, final String key,
-			final Map<TransactionType, Map<String, Integer>> duplicates, final int maxCount) {
-		Map<String, Integer> typeDuplicates = duplicates.get(uniqueType);
-		if (typeDuplicates == null) {
-			typeDuplicates = new HashMap<>();
-			duplicates.put(uniqueType, typeDuplicates);
-		}
+	private static boolean isDuplicate(final TransactionType uniqueType, final String key,
+									   final Map<TransactionType, Map<String, Integer>> duplicates, final int maxCount) {
+		Map<String, Integer> typeDuplicates = duplicates.computeIfAbsent(uniqueType, k -> new HashMap<>());
 		final Integer currentCount = typeDuplicates.get(key);
 		if (currentCount == null) {
 			typeDuplicates.put(key, maxCount > 0 ? 1 : 0);
 			return false;
 		}
-		if (currentCount == 0) {
-			return true;
-		}
+		if (currentCount == 0) return true;
 		if (currentCount < maxCount) {
 			typeDuplicates.put(key, currentCount + 1);
 			return false;
@@ -1471,22 +1358,11 @@ public abstract class TransactionType {
 
 	static boolean isDuplicateOnlyCheck(final TransactionType uniqueType, final String key,
 			final Map<TransactionType, Map<String, Integer>> duplicates, final int maxCount) {
-		Map<String, Integer> typeDuplicates = duplicates.get(uniqueType);
-		if (typeDuplicates == null) {
-			typeDuplicates = new HashMap<>();
-			duplicates.put(uniqueType, typeDuplicates);
-		}
+		Map<String, Integer> typeDuplicates = duplicates.computeIfAbsent(uniqueType, k -> new HashMap<>());
 		final Integer currentCount = typeDuplicates.get(key);
-		if (currentCount == null) {
-			return false;
-		}
-		if (currentCount == 0) {
-			return true;
-		}
-		if (currentCount < maxCount) {
-			return false;
-		}
-		return true;
+		if (currentCount == null) return false;
+		if (currentCount == 0) return true;
+		return currentCount >= maxCount;
 	}
 
 	TransactionType() {
@@ -1498,9 +1374,8 @@ public abstract class TransactionType {
 		final long transactionId = transaction.getId();
 		senderAccount.addToBalanceNQT(this.getLedgerEvent(), transactionId, -amount, -transaction.getFeeNQT());
 
-		if (recipientAccount != null) {
+		if (recipientAccount != null)
 			recipientAccount.addToBalanceAndUnconfirmedBalanceNQT(this.getLedgerEvent(), transactionId, amount);
-		}
 		this.applyAttachment(transaction, senderAccount, recipientAccount);
 	}
 
@@ -1513,14 +1388,11 @@ public abstract class TransactionType {
 	final boolean applyUnconfirmed(final TransactionImpl transaction, final Account senderAccount) {
 		final long amountNQT = transaction.getAmountNQT();
 		long feeNQT = transaction.getFeeNQT();
-		if (transaction.referencedTransactionFullHash() != null) {
+		if (transaction.referencedTransactionFullHash() != null)
 			feeNQT = Math.addExact(feeNQT, Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
-		}
 		final long totalAmountNQT = Math.addExact(amountNQT, feeNQT);
 		if ((senderAccount.getUnconfirmedBalanceNQT() < totalAmountNQT) && !((transaction.getTimestamp() == 0)
-				&& Arrays.equals(transaction.getSenderPublicKey(), Genesis.CREATOR_PUBLIC_KEY))) {
-			return false;
-		}
+				&& Arrays.equals(transaction.getSenderPublicKey(), Genesis.CREATOR_PUBLIC_KEY))) return false;
 
 		if(amountNQT != 0 || feeNQT != 0)
 			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), -amountNQT, -feeNQT);
@@ -1615,10 +1487,9 @@ public abstract class TransactionType {
 		}else {
 			senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), transaction.getAmountNQT(),
 					transaction.getFeeNQT());
-			if (transaction.referencedTransactionFullHash() != null) {
+			if (transaction.referencedTransactionFullHash() != null)
 				senderAccount.addToUnconfirmedBalanceNQT(this.getLedgerEvent(), transaction.getId(), 0,
 						Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
-			}
 		}
 	}
 

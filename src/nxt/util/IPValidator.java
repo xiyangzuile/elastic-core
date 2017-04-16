@@ -4,8 +4,7 @@ import java.util.regex.Pattern;
 
 public class IPValidator{
     private static IPValidator instance = null;
-    private Pattern pattern;
-    private Matcher matcher;
+    private final Pattern pattern;
 
     private static final String IPADDRESS_PATTERN =
             "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
@@ -17,9 +16,7 @@ public class IPValidator{
         pattern = Pattern.compile(IPADDRESS_PATTERN);
     }
     public static synchronized IPValidator getInstance () {
-        if (IPValidator.instance == null) {
-            IPValidator.instance = new IPValidator ();
-        }
+        if (IPValidator.instance == null) IPValidator.instance = new IPValidator();
         return IPValidator.instance;
     }
 
@@ -29,7 +26,7 @@ public class IPValidator{
      * @return true valid ip address, false invalid ip address
      */
     public boolean validate(final String ip){
-        matcher = pattern.matcher(ip);
+        Matcher matcher = pattern.matcher(ip);
         return matcher.matches();
     }
 }

@@ -2,11 +2,11 @@ package nxt;
 
 import java.util.HashMap;
 
-public class DoubleLongLRUCache {
-	int capacity;
-	HashMap<Pair<Long, Long>, DoubleLongNode> map = new HashMap<>();
-	DoubleLongNode head = null;
-	DoubleLongNode end = null;
+class DoubleLongLRUCache {
+	private final int capacity;
+	private final HashMap<Pair<Long, Long>, DoubleLongNode> map = new HashMap<>();
+	private DoubleLongNode head = null;
+	private DoubleLongNode end = null;
 
 	public DoubleLongLRUCache(final int capacity) {
 		this.capacity = capacity;
@@ -30,18 +30,12 @@ public class DoubleLongLRUCache {
 		this.set(key1, key2, res);
 	}
 
-	public void remove(final DoubleLongNode n) {
-		if (n.pre != null) {
-			n.pre.next = n.next;
-		} else {
-			this.head = n.next;
-		}
+	private void remove(final DoubleLongNode n) {
+		if (n.pre != null) n.pre.next = n.next;
+        else this.head = n.next;
 
-		if (n.next != null) {
-			n.next.pre = n.pre;
-		} else {
-			this.end = n.pre;
-		}
+		if (n.next != null) n.next.pre = n.pre;
+        else this.end = n.pre;
 
 	}
 
@@ -59,32 +53,26 @@ public class DoubleLongLRUCache {
 				this.remove(this.end);
 				this.setHead(created);
 
-			} else {
-				this.setHead(created);
-			}
+			} else this.setHead(created);
 			this.map.put(pairkey, created);
 		}
 	}
 
-	public void setHead(final DoubleLongNode n) {
+	private void setHead(final DoubleLongNode n) {
 		n.next = this.head;
 		n.pre = null;
 
-		if (this.head != null) {
-			this.head.pre = n;
-		}
+		if (this.head != null) this.head.pre = n;
 
 		this.head = n;
 
-		if (this.end == null) {
-			this.end = this.head;
-		}
+		if (this.end == null) this.end = this.head;
 	}
 }
 
 class DoubleLongNode {
-	long key1;
-	long key2;
+	private final long key1;
+	private final long key2;
 	long value;
 	DoubleLongNode pre;
 	DoubleLongNode next;

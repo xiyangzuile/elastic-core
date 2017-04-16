@@ -40,13 +40,9 @@ public class RetrievePrunedTransaction extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 		final long transactionId = ParameterParser.getUnsignedLong(req, "transaction", true);
 		Transaction transaction = Nxt.getBlockchain().getTransaction(transactionId);
-		if (transaction == null) {
-			return JSONResponses.UNKNOWN_TRANSACTION;
-		}
+		if (transaction == null) return JSONResponses.UNKNOWN_TRANSACTION;
 		transaction = Nxt.getBlockchainProcessor().restorePrunedTransaction(transactionId);
-		if (transaction == null) {
-			return JSONResponses.PRUNED_TRANSACTION;
-		}
+		if (transaction == null) return JSONResponses.PRUNED_TRANSACTION;
 		return JSONData.transaction(transaction);
 	}
 

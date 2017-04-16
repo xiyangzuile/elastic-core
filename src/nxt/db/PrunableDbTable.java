@@ -40,20 +40,17 @@ public abstract class PrunableDbTable<T> extends PersistentDbTable<T> {
 		super(table, dbKeyFactory, fullTextSearchColumns);
 	}
 
-	protected void prune() {
-		if (Constants.ENABLE_PRUNING) {
-			try (Connection con = DerivedDbTable.db.getConnection();
-					PreparedStatement pstmt = con
-							.prepareStatement("DELETE FROM " + this.table + " WHERE transaction_timestamp < ?")) {
-				pstmt.setInt(1, Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME);
-				final int deleted = pstmt.executeUpdate();
-				if (deleted > 0) {
-					Logger.logDebugMessage("Deleted " + deleted + " expired prunable data from " + this.table);
-				}
-			} catch (final SQLException e) {
-				throw new RuntimeException(e.toString(), e);
-			}
-		}
+	void prune() {
+		if (Constants.ENABLE_PRUNING) try (Connection con = DerivedDbTable.db.getConnection();
+                                           PreparedStatement pstmt = con
+                                                   .prepareStatement("DELETE FROM " + this.table + " WHERE transaction_timestamp < ?")) {
+            pstmt.setInt(1, Nxt.getEpochTime() - Constants.MAX_PRUNABLE_LIFETIME);
+            final int deleted = pstmt.executeUpdate();
+            if (deleted > 0)
+                Logger.logDebugMessage("Deleted " + deleted + " expired prunable data from " + this.table);
+        } catch (final SQLException e) {
+            throw new RuntimeException(e.toString(), e);
+        }
 	}
 
 	@Override

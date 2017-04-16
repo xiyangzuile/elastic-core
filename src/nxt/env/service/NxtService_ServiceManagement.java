@@ -21,7 +21,7 @@ import javax.swing.JOptionPane;
 import nxt.Nxt;
 import nxt.env.LookAndFeel;
 
-public class NxtService_ServiceManagement {
+class NxtService_ServiceManagement {
 
 	public static boolean serviceControl_Continue() {
 		return false;
@@ -63,7 +63,7 @@ public class NxtService_ServiceManagement {
 	public static boolean serviceInit() {
 		LookAndFeel.init();
 		new Thread(() -> {
-			final String[] args = {};
+			final String[] args = new String[]{};
 			Nxt.main(args);
 		}).start();
 		return true;

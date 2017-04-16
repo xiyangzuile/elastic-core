@@ -41,9 +41,7 @@ public final class GetAccountLessors extends APIServlet.APIRequestHandler {
 
 		final Account account = ParameterParser.getAccount(req);
 		int height = ParameterParser.getHeight(req);
-		if (height < 0) {
-			height = Nxt.getBlockchain().getHeight();
-		}
+		if (height < 0) height = Nxt.getBlockchain().getHeight();
 
 		final JSONObject response = new JSONObject();
 		JSONData.putAccount(response, "account", account.getId());
@@ -51,16 +49,14 @@ public final class GetAccountLessors extends APIServlet.APIRequestHandler {
 		final JSONArray lessorsJSON = new JSONArray();
 
 		try (DbIterator<Account> lessors = account.getLessors(height)) {
-			if (lessors.hasNext()) {
-				while (lessors.hasNext()) {
-					final Account lessor = lessors.next();
-					final JSONObject lessorJSON = new JSONObject();
-					JSONData.putAccount(lessorJSON, "lessor", lessor.getId());
-					lessorJSON.put("guaranteedBalanceNQT", String.valueOf(
-							lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
-					lessorsJSON.add(lessorJSON);
-				}
-			}
+			if (lessors.hasNext()) while (lessors.hasNext()) {
+                final Account lessor = lessors.next();
+                final JSONObject lessorJSON = new JSONObject();
+                JSONData.putAccount(lessorJSON, "lessor", lessor.getId());
+                lessorJSON.put("guaranteedBalanceNQT", String.valueOf(
+                        lessor.getGuaranteedBalanceNQT(Constants.GUARANTEED_BALANCE_CONFIRMATIONS, height)));
+                lessorsJSON.add(lessorJSON);
+            }
 		}
 		response.put("lessors", lessorsJSON);
 		return response;

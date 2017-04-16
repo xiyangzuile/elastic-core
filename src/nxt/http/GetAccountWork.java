@@ -2,6 +2,7 @@ package nxt.http;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,7 +28,7 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 
 		final Account account = ParameterParser.getAccount(req);
 
-		long onlyOneId = 0;
+		long onlyOneId;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "onlyOneId");
 			final BigInteger b = new BigInteger(readParam);
@@ -36,13 +37,13 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 			onlyOneId = 0;
 		}
 
-		final JSONArray work_packages = new JSONArray();
+		final JSONArray work_packages;
 
 		boolean only_counts = false;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "count");
 			only_counts = Boolean.parseBoolean(readParam);
-		} catch (final Exception e) {
+		} catch (final Exception ignored) {
 		}
 
 		if (only_counts) {
@@ -55,9 +56,7 @@ public final class GetAccountWork extends APIServlet.APIRequestHandler {
 			final int lastIndex = ParameterParser.getLastIndex(req);
 
 			final List<Work> work = Work.getAccountWork(account.getId(), true, firstIndex, lastIndex, onlyOneId);
-			for (final Work w : work) {
-				work_packages.add(w.toJsonObject());
-			}
+			work_packages = work.stream().map(Work::toJsonObject).collect(Collectors.toCollection(JSONArray::new));
 
 			final JSONObject response = new JSONObject();
 			response.put("work_packages", work_packages);

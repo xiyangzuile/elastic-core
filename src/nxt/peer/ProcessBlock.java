@@ -38,17 +38,14 @@ final class ProcessBlock extends PeerServlet.PeerRequestHandler {
 		final Block lastBlock = Nxt.getBlockchain().getLastBlock();
 		if (lastBlock.getStringId().equals(previousBlockId)
 				|| ((Convert.parseUnsignedLong(previousBlockId) == lastBlock.getPreviousBlockId())
-						&& (lastBlock.getTimestamp() > Convert.parseLong(request.get("timestamp"))))) {
-			Peers.peersService.submit(() -> {
-				try {
-					Nxt.getBlockchainProcessor().processPeerBlock(request);
-				} catch (NxtException | RuntimeException e) {
-					if (peer != null) {
-						peer.blacklist(e);
-					}
-				}
-			});
-		}
+						&& (lastBlock.getTimestamp() > Convert.parseLong(request.get("timestamp")))))
+            Peers.peersService.submit(() -> {
+                try {
+                    Nxt.getBlockchainProcessor().processPeerBlock(request);
+                } catch (NxtException | RuntimeException e) {
+                    if (peer != null) peer.blacklist(e);
+                }
+            });
 		return JSON.emptyJSON;
 	}
 

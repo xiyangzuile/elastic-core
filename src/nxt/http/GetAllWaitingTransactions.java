@@ -39,9 +39,7 @@ public final class GetAllWaitingTransactions extends APIServlet.APIRequestHandle
 		final JSONArray jsonArray = new JSONArray();
 		response.put("transactions", jsonArray);
 		final Transaction[] transactions = Nxt.getTransactionProcessor().getAllWaitingTransactions();
-		for (final Transaction transaction : transactions) {
-			jsonArray.add(JSONData.unconfirmedTransaction(transaction));
-		}
+		for (final Transaction transaction : transactions) jsonArray.add(JSONData.unconfirmedTransaction(transaction));
 		return response;
 	}
 

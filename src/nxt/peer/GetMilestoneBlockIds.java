@@ -47,9 +47,7 @@ final class GetMilestoneBlockIds extends PeerServlet.PeerRequestHandler {
 				if ((myLastBlockId == lastBlockId) || Nxt.getBlockchain().hasBlock(lastBlockId)) {
 					milestoneBlockIds.add(lastBlockIdString);
 					response.put("milestoneBlockIds", milestoneBlockIds);
-					if (myLastBlockId == lastBlockId) {
-						response.put("last", Boolean.TRUE);
-					}
+					if (myLastBlockId == lastBlockId) response.put("last", Boolean.TRUE);
 					return response;
 				}
 			}
@@ -63,9 +61,8 @@ final class GetMilestoneBlockIds extends PeerServlet.PeerRequestHandler {
 			if (lastMilestoneBlockIdString != null) {
 				final Block lastMilestoneBlock = Nxt.getBlockchain()
 						.getBlock(Convert.parseUnsignedLong(lastMilestoneBlockIdString));
-				if (lastMilestoneBlock == null) {
-					throw new IllegalStateException("Don't have block " + lastMilestoneBlockIdString);
-				}
+				if (lastMilestoneBlock == null)
+                    throw new IllegalStateException("Don't have block " + lastMilestoneBlockIdString);
 				height = lastMilestoneBlock.getHeight();
 				jump = Math.min(1440, Math.max(blockchainHeight - height, 1));
 				height = Math.max(height - jump, 0);

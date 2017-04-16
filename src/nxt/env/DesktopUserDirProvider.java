@@ -25,7 +25,7 @@ import java.util.Properties;
 
 abstract class DesktopUserDirProvider implements DirProvider {
 
-	public static final String LOG_FILE_PATTERN = "java.util.logging.FileHandler.pattern";
+	private static final String LOG_FILE_PATTERN = "java.util.logging.FileHandler.pattern";
 
 	private File logFileDir;
 

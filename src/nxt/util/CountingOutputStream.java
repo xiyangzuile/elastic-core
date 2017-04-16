@@ -20,7 +20,7 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class CountingOutputStream extends FilterOutputStream {
+class CountingOutputStream extends FilterOutputStream {
 
 	private long count;
 

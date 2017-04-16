@@ -39,9 +39,7 @@ public final class GetAllBroadcastedTransactions extends APIServlet.APIRequestHa
 		final JSONArray jsonArray = new JSONArray();
 		response.put("transactions", jsonArray);
 		final Transaction[] transactions = Nxt.getTransactionProcessor().getAllBroadcastedTransactions();
-		for (final Transaction transaction : transactions) {
-			jsonArray.add(JSONData.unconfirmedTransaction(transaction));
-		}
+		for (final Transaction transaction : transactions) jsonArray.add(JSONData.unconfirmedTransaction(transaction));
 		return response;
 	}
 

@@ -19,7 +19,6 @@
  */
 package nxt;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -133,18 +132,15 @@ public final class PowAndBountyAnnouncements {
 
 	public void applyBountyAnnouncement(final Block bl) throws NxtException.NotValidException  {
 		final Work w = Work.getWorkByWorkId(this.work_id);
-		if (w == null) {
-			throw new NxtException.NotValidException("Unknown work id!");
-		}
-		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {
+		if (w == null) throw new NxtException.NotValidException("Unknown work id!");
+		if ((!w.isClosed()) && (!w.isClose_pending())) {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_ANNOUNCEMENT;
 			final Account participantAccount = Account.getAccount(this.accountId);
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 
-			if (participantAccount.getBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+			if (participantAccount.getBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)
 				throw new NxtException.NotValidException("Insufficient funds for deposit");
-			}
 
 			participantAccount.addToBalanceNQT(event, this.id,
 					-1 * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
@@ -184,9 +180,7 @@ public final class PowAndBountyAnnouncements {
 		if (t != null) {
 			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
 			response.put("hash_announcement", Arrays.toString(this.hash));
-		} else {
-			response.put("error", "Transaction not found");
-		}
+		} else response.put("error", "Transaction not found");
 
 		return response;
 	}

@@ -67,28 +67,24 @@ public final class Logger {
 	static {
 		final String oldManager = System.getProperty("java.util.logging.manager");
 		System.setProperty("java.util.logging.manager", "nxt.util.NxtLogManager");
-		if (!(LogManager.getLogManager() instanceof NxtLogManager)) {
-			System.setProperty("java.util.logging.manager",
-					(oldManager != null ? oldManager : "java.util.logging.LogManager"));
-		}
-		if (!Boolean.getBoolean("nxt.doNotConfigureLogging")) {
-			try {
-				final Properties loggingProperties = new Properties();
-				Nxt.loadProperties(loggingProperties, "logging-default.properties", true);
-				Nxt.loadProperties(loggingProperties, "logging.properties", false);
-				Nxt.updateLogFileHandler(loggingProperties);
-				if (loggingProperties.size() > 0) {
-					final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-					loggingProperties.store(outStream, "logging properties");
-					final ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());
-					java.util.logging.LogManager.getLogManager().readConfiguration(inStream);
-					inStream.close();
-					outStream.close();
-				}
-				BriefLogFormatter.init();
-			} catch (final IOException e) {
-				throw new RuntimeException("Error loading logging properties", e);
+		if (!(LogManager.getLogManager() instanceof NxtLogManager)) System.setProperty("java.util.logging.manager",
+				(oldManager != null ? oldManager : "java.util.logging.LogManager"));
+		if (!Boolean.getBoolean("nxt.doNotConfigureLogging")) try {
+			final Properties loggingProperties = new Properties();
+			Nxt.loadProperties(loggingProperties, "logging-default.properties", true);
+			Nxt.loadProperties(loggingProperties, "logging.properties", false);
+			Nxt.updateLogFileHandler(loggingProperties);
+			if (loggingProperties.size() > 0) {
+				final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+				loggingProperties.store(outStream, "logging properties");
+				final ByteArrayInputStream inStream = new ByteArrayInputStream(outStream.toByteArray());
+				LogManager.getLogManager().readConfiguration(inStream);
+				inStream.close();
+				outStream.close();
 			}
+			BriefLogFormatter.init();
+		} catch (final IOException e) {
+			throw new RuntimeException("Error loading logging properties", e);
 		}
 		log = org.slf4j.LoggerFactory.getLogger(nxt.Nxt.class);
 		enableStackTraces = Nxt.getBooleanProperty("nxt.enableStackTraces");
@@ -142,19 +138,15 @@ public final class Logger {
 			final StackTraceElement caller = Thread.currentThread().getStackTrace()[3];
 			String className = caller.getClassName();
 			final int index = className.lastIndexOf('.');
-			if (index != -1) {
-				className = className.substring(index + 1);
-			}
+			if (index != -1) className = className.substring(index + 1);
 			logMessage = className + "." + caller.getMethodName() + ": " + logMessage;
 		}
 		//
 		// Format the stack trace if enabled
 		//
-		if (e != null) {
-			if (!Logger.enableStackTraces) {
-				logMessage = logMessage + "\n" + exc.toString();
-				e = null;
-			}
+		if (e != null) if (!Logger.enableStackTraces) {
+			logMessage = logMessage + "\n" + exc.toString();
+			e = null;
 		}
 		//
 		// Log the event
@@ -176,11 +168,8 @@ public final class Logger {
 		//
 		// Notify listeners
 		//
-		if (exc != null) {
-			Logger.exceptionListeners.notify(exc, Event.EXCEPTION);
-		} else {
-			Logger.messageListeners.notify(message, Event.MESSAGE);
-		}
+		if (exc != null) Logger.exceptionListeners.notify(exc, Event.EXCEPTION);
+		else Logger.messageListeners.notify(message, Event.MESSAGE);
 	}
 
 	/**
@@ -206,13 +195,11 @@ public final class Logger {
 	}
 
 	public static void logSignMessage(final String message) {
-		if(Constants.logSigningEvents)
-			Logger.doLog(Level.INFO, "[SIGN] " + message, null);
+		if(Constants.logSigningEvents) Logger.doLog(Level.INFO, "[SIGN] " + message, null);
 	}
 
 	public static void logKomotoMessage(final String message) {
-		if(Constants.logKimotoEvents)
-			Logger.doLog(Level.INFO, "[KIMOTO] " + message, null);
+		if(Constants.logKimotoEvents) Logger.doLog(Level.INFO, "[KIMOTO] " + message, null);
 	}
 
 	/**
@@ -328,17 +315,13 @@ public final class Logger {
 	}
 
 	public static void logShutdownMessage(final String message) {
-		if (LogManager.getLogManager() instanceof NxtLogManager) {
-			Logger.logMessage(message);
-		} else {
-			System.out.println(message);
-		}
+		if (LogManager.getLogManager() instanceof NxtLogManager) Logger.logMessage(message);
+		else System.out.println(message);
 	}
 
 	public static void logShutdownMessage(final String message, final Exception e) {
-		if (LogManager.getLogManager() instanceof NxtLogManager) {
-			Logger.logMessage(message, e);
-		} else {
+		if (LogManager.getLogManager() instanceof NxtLogManager) Logger.logMessage(message, e);
+		else {
 			System.out.println(message);
 			System.out.println(e.toString());
 		}
@@ -420,9 +403,8 @@ public final class Logger {
 	 * Logger shutdown
 	 */
 	public static void shutdown() {
-		if (LogManager.getLogManager() instanceof NxtLogManager) {
+		if (LogManager.getLogManager() instanceof NxtLogManager)
 			((NxtLogManager) LogManager.getLogManager()).nxtShutdown();
-		}
 	}
 
 	/**

@@ -251,25 +251,21 @@ public class GetAccountLedger extends APIServlet.APIRequestHandler {
 		final String eventType = Convert.emptyToNull(req.getParameter("eventType"));
 		LedgerEvent event = null;
 		long eventId = 0;
-		if (eventType != null) {
-			try {
-				event = LedgerEvent.valueOf(eventType);
-				eventId = ParameterParser.getUnsignedLong(req, "event", false);
-			} catch (final RuntimeException e) {
-				throw new ParameterException(JSONResponses.incorrect("eventType"));
-			}
-		}
+		if (eventType != null) try {
+            event = LedgerEvent.valueOf(eventType);
+            eventId = ParameterParser.getUnsignedLong(req, "event", false);
+        } catch (final RuntimeException e) {
+            throw new ParameterException(JSONResponses.incorrect("eventType"));
+        }
 		final String holdingType = Convert.emptyToNull(req.getParameter("holdingType"));
 		LedgerHolding holding = null;
 		long holdingId = 0;
-		if (holdingType != null) {
-			try {
-				holding = LedgerHolding.valueOf(holdingType);
-				holdingId = ParameterParser.getUnsignedLong(req, "holding", false);
-			} catch (final RuntimeException e) {
-				throw new ParameterException(JSONResponses.incorrect("holdingType"));
-			}
-		}
+		if (holdingType != null) try {
+            holding = LedgerHolding.valueOf(holdingType);
+            holdingId = ParameterParser.getUnsignedLong(req, "holding", false);
+        } catch (final RuntimeException e) {
+            throw new ParameterException(JSONResponses.incorrect("holdingType"));
+        }
 		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
 		final boolean includeHoldingInfo = "true".equalsIgnoreCase(req.getParameter("includeHoldingInfo"));
 

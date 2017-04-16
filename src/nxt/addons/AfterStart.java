@@ -25,15 +25,13 @@ public final class AfterStart implements AddOn {
 	@Override
 	public void init() {
 		final String afterStartScript = Nxt.getStringProperty("nxt.afterStartScript");
-		if (afterStartScript != null) {
-			ThreadPool.runAfterStart(() -> {
-				try {
-					Runtime.getRuntime().exec(afterStartScript);
-				} catch (final Exception e) {
-					Logger.logErrorMessage("Failed to run after start script: " + afterStartScript, e);
-				}
-			});
-		}
+		if (afterStartScript != null) ThreadPool.runAfterStart(() -> {
+            try {
+                Runtime.getRuntime().exec(afterStartScript);
+            } catch (final Exception e) {
+                Logger.logErrorMessage("Failed to run after start script: " + afterStartScript, e);
+            }
+        });
 	}
 
 }

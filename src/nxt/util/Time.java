@@ -66,9 +66,8 @@ public interface Time {
 		private final int time;
 
 		public FasterTime(final int time, final int multiplier) {
-			if ((multiplier > 1000) || (multiplier <= 0)) {
-				throw new IllegalArgumentException("Time multiplier must be between 1 and 1000");
-			}
+			if ((multiplier > 1000) || (multiplier <= 0))
+                throw new IllegalArgumentException("Time multiplier must be between 1 and 1000");
 			this.multiplier = multiplier;
 			this.time = time;
 			this.systemStartTime = System.currentTimeMillis();

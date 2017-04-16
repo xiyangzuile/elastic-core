@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import nxt.Db;
 
@@ -41,7 +42,7 @@ final class PeerDb {
 
 		@Override
 		public boolean equals(final Object obj) {
-			return ((obj != null) && (obj instanceof Entry) && this.address.equals(((Entry) obj).address));
+			return ((obj != null) && (obj instanceof Entry) && Objects.equals(this.address, ((Entry) obj).address));
 		}
 
 		public String getAddress() {
@@ -79,9 +80,8 @@ final class PeerDb {
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM peer");
 				ResultSet rs = pstmt.executeQuery()) {
-			while (rs.next()) {
-				peers.add(new Entry(rs.getString("address"), rs.getLong("services"), rs.getInt("last_updated")));
-			}
+			while (rs.next())
+                peers.add(new Entry(rs.getString("address"), rs.getLong("services"), rs.getInt("last_updated")));
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}

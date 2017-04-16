@@ -18,6 +18,7 @@ package nxt.http;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -191,9 +192,7 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 		//
 		final boolean addEvents = Boolean.valueOf(req.getParameter("add"));
 		final boolean removeEvents = Boolean.valueOf(req.getParameter("remove"));
-		if (addEvents && removeEvents) {
-			return EventRegister.exclusiveParams;
-		}
+		if (addEvents && removeEvents) return EventRegister.exclusiveParams;
 		//
 		// Build the event list from the 'event' parameters
 		//
@@ -207,60 +206,49 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 			EventListener.blockEvents.forEach(event -> events.add(new EventRegistration(event, 0)));
 			EventListener.txEvents.forEach(event -> events.add(new EventRegistration(event, 0)));
 			EventListener.ledgerEvents.forEach(event -> events.add(new EventRegistration(event, 0)));
-		} else {
-			for (final String param : params) {
-				//
-				// The Ledger event can have 2 or 3 parts. All other events have
-				// 2 parts.
-				//
-				long accountId = 0;
-				final String[] parts = param.split("\\.");
-				if (parts[0].equals("Ledger")) {
-					if (parts.length == 3) {
-						try {
-							accountId = Convert.parseAccountId(parts[2]);
-						} catch (final RuntimeException e) {
-							return EventRegister.incorrectEvent;
-						}
-					} else if (parts.length != 2) {
-						return EventRegister.incorrectEvent;
-					}
-				} else if (parts.length != 2) {
-					return EventRegister.incorrectEvent;
-				}
-				//
-				// Add the event
-				//
-				List<? extends Enum> eventList;
-				switch (parts[0]) {
-				case "Block":
-					eventList = EventListener.blockEvents;
-					break;
-				case "Peer":
-					eventList = EventListener.peerEvents;
-					break;
-				case "Transaction":
-					eventList = EventListener.txEvents;
-					break;
-				case "Ledger":
-					eventList = EventListener.ledgerEvents;
-					break;
-				default:
-					return EventRegister.unknownEvent;
-				}
-				boolean eventAdded = false;
-				for (final Enum<? extends Enum> event : eventList) {
-					if (event.name().equals(parts[1])) {
-						events.add(new EventRegistration(event, accountId));
-						eventAdded = true;
-						break;
-					}
-				}
-				if (!eventAdded) {
-					return EventRegister.unknownEvent;
-				}
-			}
-		}
+		} else for (final String param : params) {
+            //
+            // The Ledger event can have 2 or 3 parts. All other events have
+            // 2 parts.
+            //
+            long accountId = 0;
+            final String[] parts = param.split("\\.");
+            if (Objects.equals(parts[0], "Ledger")) if (parts.length == 3) try {
+                accountId = Convert.parseAccountId(parts[2]);
+            } catch (final RuntimeException e) {
+                return EventRegister.incorrectEvent;
+            }
+            else if (parts.length != 2) return EventRegister.incorrectEvent;
+            else if (parts.length != 2) return EventRegister.incorrectEvent;
+            //
+            // Add the event
+            //
+            List<? extends Enum> eventList;
+            switch (parts[0]) {
+                case "Block":
+                    eventList = EventListener.blockEvents;
+                    break;
+                case "Peer":
+                    eventList = EventListener.peerEvents;
+                    break;
+                case "Transaction":
+                    eventList = EventListener.txEvents;
+                    break;
+                case "Ledger":
+                    eventList = EventListener.ledgerEvents;
+                    break;
+                default:
+                    return EventRegister.unknownEvent;
+            }
+            boolean eventAdded = false;
+            for (final Enum<? extends Enum> event : eventList)
+                if (Objects.equals(event.name(), parts[1])) {
+                    events.add(new EventRegistration(event, accountId));
+                    eventAdded = true;
+                    break;
+                }
+            if (!eventAdded) return EventRegister.unknownEvent;
+        }
 		//
 		// Register the event listener
 		//
@@ -268,15 +256,10 @@ public class EventRegister extends APIServlet.APIRequestHandler {
 			if (addEvents || removeEvents) {
 				final EventListener listener = EventListener.eventListeners.get(req.getRemoteAddr());
 				if (listener != null) {
-					if (addEvents) {
-						listener.addEvents(events);
-					} else {
-						listener.removeEvents(events);
-					}
+					if (addEvents) listener.addEvents(events);
+                    else listener.removeEvents(events);
 					response = EventRegister.eventsRegistered;
-				} else {
-					response = EventRegister.noEventsRegistered;
-				}
+				} else response = EventRegister.noEventsRegistered;
 			} else {
 				final EventListener listener = new EventListener(req.getRemoteAddr());
 				listener.activateListener(events);

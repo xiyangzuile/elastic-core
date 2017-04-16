@@ -35,7 +35,7 @@ import nxt.peer.Peer;
 import nxt.peer.Peers;
 import nxt.util.Convert;
 
-public final class GetInitialData extends UserServlet.UserRequestHandler {
+final class GetInitialData extends UserServlet.UserRequestHandler {
 
 	static final GetInitialData instance = new GetInitialData();
 
@@ -68,82 +68,66 @@ public final class GetInitialData extends UserServlet.UserRequestHandler {
 			}
 		}
 
-		for (final Peer peer : Peers.getAllPeers()) {
+		for (final Peer peer : Peers.getAllPeers())
+            if (peer.isBlacklisted()) {
 
-			if (peer.isBlacklisted()) {
+                final JSONObject blacklistedPeer = new JSONObject();
+                blacklistedPeer.put("index", Users.getIndex(peer));
+                blacklistedPeer.put("address", peer.getHost());
+                blacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+                blacklistedPeer.put("software", peer.getSoftware());
+                blacklistedPeers.add(blacklistedPeer);
 
-				final JSONObject blacklistedPeer = new JSONObject();
-				blacklistedPeer.put("index", Users.getIndex(peer));
-				blacklistedPeer.put("address", peer.getHost());
-				blacklistedPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-				blacklistedPeer.put("software", peer.getSoftware());
-				blacklistedPeers.add(blacklistedPeer);
+            } else if (peer.getState() == Peer.State.NON_CONNECTED) {
 
-			} else if (peer.getState() == Peer.State.NON_CONNECTED) {
+                final JSONObject knownPeer = new JSONObject();
+                knownPeer.put("index", Users.getIndex(peer));
+                knownPeer.put("address", peer.getHost());
+                knownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+                knownPeer.put("software", peer.getSoftware());
+                knownPeers.add(knownPeer);
 
-				final JSONObject knownPeer = new JSONObject();
-				knownPeer.put("index", Users.getIndex(peer));
-				knownPeer.put("address", peer.getHost());
-				knownPeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-				knownPeer.put("software", peer.getSoftware());
-				knownPeers.add(knownPeer);
+            } else {
 
-			} else {
+                final JSONObject activePeer = new JSONObject();
+                activePeer.put("index", Users.getIndex(peer));
+                if (peer.getState() == Peer.State.DISCONNECTED) activePeer.put("disconnected", true);
+                activePeer.put("address", peer.getHost());
+                activePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
+                activePeer.put("weight", peer.getWeight());
+                activePeer.put("downloaded", peer.getDownloadedVolume());
+                activePeer.put("uploaded", peer.getUploadedVolume());
+                activePeer.put("software", peer.getSoftware());
+                activePeers.add(activePeer);
+            }
 
-				final JSONObject activePeer = new JSONObject();
-				activePeer.put("index", Users.getIndex(peer));
-				if (peer.getState() == Peer.State.DISCONNECTED) {
-					activePeer.put("disconnected", true);
-				}
-				activePeer.put("address", peer.getHost());
-				activePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
-				activePeer.put("weight", peer.getWeight());
-				activePeer.put("downloaded", peer.getDownloadedVolume());
-				activePeer.put("uploaded", peer.getUploadedVolume());
-				activePeer.put("software", peer.getSoftware());
-				activePeers.add(activePeer);
-			}
-		}
+        for (BlockImpl block : Nxt.getBlockchain().getBlocks(0, 59)) {
+            final JSONObject recentBlock = new JSONObject();
+            recentBlock.put("index", Users.getIndex(block));
+            recentBlock.put("timestamp", block.getTimestamp());
+            recentBlock.put("numberOfTransactions", block.getTransactions().size());
+            recentBlock.put("totalAmountNQT", block.getTotalAmountNQT());
+            recentBlock.put("totalFeeNQT", block.getTotalFeeNQT());
+            recentBlock.put("payloadLength", block.getPayloadLength());
+            recentBlock.put("generator", Long.toUnsignedString(block.getGeneratorId()));
+            recentBlock.put("height", block.getHeight());
+            recentBlock.put("version", block.getVersion());
+            recentBlock.put("block", block.getStringId());
+            recentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
+                    .divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
 
-		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(0, 59).iterator();
-		while (it.hasNext()) {
-			final BlockImpl block = it.next();
-			final JSONObject recentBlock = new JSONObject();
-			recentBlock.put("index", Users.getIndex(block));
-			recentBlock.put("timestamp", block.getTimestamp());
-			recentBlock.put("numberOfTransactions", block.getTransactions().size());
-			recentBlock.put("totalAmountNQT", block.getTotalAmountNQT());
-			recentBlock.put("totalFeeNQT", block.getTotalFeeNQT());
-			recentBlock.put("payloadLength", block.getPayloadLength());
-			recentBlock.put("generator", Long.toUnsignedString(block.getGeneratorId()));
-			recentBlock.put("height", block.getHeight());
-			recentBlock.put("version", block.getVersion());
-			recentBlock.put("block", block.getStringId());
-			recentBlock.put("baseTarget", BigInteger.valueOf(block.getBaseTarget()).multiply(BigInteger.valueOf(100000))
-					.divide(BigInteger.valueOf(Constants.INITIAL_BASE_TARGET)));
+            recentBlocks.add(recentBlock);
 
-			recentBlocks.add(recentBlock);
-
-		}
+        }
 
 		final JSONObject response = new JSONObject();
 		response.put("response", "processInitialData");
 		response.put("version", Nxt.VERSION);
-		if (unconfirmedTransactions.size() > 0) {
-			response.put("unconfirmedTransactions", unconfirmedTransactions);
-		}
-		if (activePeers.size() > 0) {
-			response.put("activePeers", activePeers);
-		}
-		if (knownPeers.size() > 0) {
-			response.put("knownPeers", knownPeers);
-		}
-		if (blacklistedPeers.size() > 0) {
-			response.put("blacklistedPeers", blacklistedPeers);
-		}
-		if (recentBlocks.size() > 0) {
-			response.put("recentBlocks", recentBlocks);
-		}
+		if (unconfirmedTransactions.size() > 0) response.put("unconfirmedTransactions", unconfirmedTransactions);
+		if (activePeers.size() > 0) response.put("activePeers", activePeers);
+		if (knownPeers.size() > 0) response.put("knownPeers", knownPeers);
+		if (blacklistedPeers.size() > 0) response.put("blacklistedPeers", blacklistedPeers);
+		if (recentBlocks.size() > 0) response.put("recentBlocks", recentBlocks);
 
 		return response;
 	}

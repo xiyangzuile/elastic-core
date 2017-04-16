@@ -57,9 +57,7 @@ public interface Fee {
 		@Override
 		public final long getFee(final TransactionImpl transaction, final Appendix appendage) {
 			final int size = this.getSize(transaction, appendage) - 1;
-			if (size < 0) {
-				return this.constantFee;
-			}
+			if (size < 0) return this.constantFee;
 			return Math.addExact(this.constantFee, Math.multiplyExact(size / this.unitSize, this.feePerSize));
 		}
 

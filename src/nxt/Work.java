@@ -16,7 +16,6 @@
 
 package nxt;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Connection;
@@ -43,7 +42,7 @@ import nxt.util.Logger;
 public final class Work {
 
 	public enum Event {
-		WORK_CREATED, WORK_POW_RECEIVED, WORK_BOUNTY_RECEIVED, WORK_CANCELLED, WORK_TIMEOUTED;
+		WORK_CREATED, WORK_POW_RECEIVED, WORK_BOUNTY_RECEIVED, WORK_CANCELLED, WORK_TIMEOUTED
 	}
 
 	private static final Listeners<Work, Event> listeners = new Listeners<>();
@@ -76,15 +75,12 @@ public final class Work {
 		Nxt.getBlockchainProcessor().addListener(block -> {
 			final List<Work> shufflings = new ArrayList<>();
 			try (DbIterator<Work> iterator = Work.getActiveAndPendingWorks(0, -1)) {
-				for (final Work shuffling : iterator) {
-					shufflings.add(shuffling);
-				}
+				for (final Work shuffling : iterator) shufflings.add(shuffling);
 			}
 			shufflings.forEach(shuffling -> {
-				if (shuffling.close_pending || (--shuffling.blocksRemaining <= 0)) {
-					// Work has timed out natually
-					shuffling.natural_timeout(block);
-				} else {
+				// Work has timed out natually
+				if (shuffling.close_pending || --shuffling.blocksRemaining <= 0) shuffling.natural_timeout(block);
+				else {
 					shuffling.updatePowTarget(block);
 					Work.workTable.insert(shuffling);
 				}
@@ -105,13 +101,10 @@ public final class Work {
 	}
 
 	public static int countAccountWork(final long accountId, final boolean onlyOpen) {
-		if (onlyOpen) {
-			return Work.workTable.getCount(new DbClause.BooleanClause("closed", false)
-					.and(new DbClause.LongClause("sender_account_id", accountId)
-							.and(new DbClause.BooleanClause("close_pending", false))));
-		} else {
-			return Work.workTable.getCount(new DbClause.LongClause("sender_account_id", accountId));
-		}
+		if (onlyOpen) return Work.workTable.getCount(new DbClause.BooleanClause("closed", false)
+				.and(new DbClause.LongClause("sender_account_id", accountId)
+						.and(new DbClause.BooleanClause("close_pending", false))));
+		else return Work.workTable.getCount(new DbClause.LongClause("sender_account_id", accountId));
 	}
 
 	public static List<Work> getAccountWork(final long accountId, final boolean includeFinished, final int from,
@@ -127,15 +120,11 @@ public final class Work {
 								+ DbUtils.limitsClause(from, to))) {
 			int i = 0;
 			pstmt.setLong(++i, accountId);
-			if (onlyOneId != 0) {
-				pstmt.setLong(++i, onlyOneId);
-			}
+			if (onlyOneId != 0) pstmt.setLong(++i, onlyOneId);
 			DbUtils.setLimits(++i, pstmt, from, to);
 			try (DbIterator<Work> w_it = Work.workTable.getManyBy(con, pstmt, true)) {
-				while (w_it.hasNext()) {
-					ret.add(w_it.next());
-				}
-			} catch (final Exception e) {
+				while (w_it.hasNext()) ret.add(w_it.next());
+			} catch (final Exception ignored) {
 
 			}
 			return ret;
@@ -144,7 +133,7 @@ public final class Work {
 		}
 	}
 
-	public static DbIterator<Work> getActiveAndPendingWorks(final int from, final int to) {
+	private static DbIterator<Work> getActiveAndPendingWorks(final int from, final int to) {
 		return Work.workTable.getManyBy(
 				new DbClause.BooleanClause("closed", false).and(new DbClause.BooleanClause("latest", true)), from, to,
 				" ORDER BY blocks_remaining, height DESC ");
@@ -159,11 +148,8 @@ public final class Work {
 				PreparedStatement pstmt = con.prepareStatement(
 						"SELECT SUM(balance_pow_fund+balance_bounty_fund) as summ FROM work WHERE work.closed = FALSE AND work.latest = TRUE")) {
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next()) {
-					return rs.getLong("summ");
-				} else {
-					return 0;
-				}
+				if (rs.next()) return rs.getLong("summ");
+				else return 0;
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -199,7 +185,7 @@ public final class Work {
 	public static Work getWork(final byte[] fullHash) {
 		final long shufflingId = Convert.fullHashToId(fullHash);
 		final Work shuffling = Work.workTable.get(Work.workDbKeyFactory.newKey(shufflingId));
-		if ((shuffling != null) && !Arrays.equals(shuffling.getFullHash(), fullHash)) {
+		if (shuffling != null && !Arrays.equals(shuffling.getFullHash(), fullHash)) {
 			Logger.logDebugMessage("Shuffling with different hash %s but same id found for hash %s",
 					Convert.toHexString(shuffling.getFullHash()), Convert.toHexString(fullHash));
 			return null;
@@ -220,9 +206,7 @@ public final class Work {
 			pstmt.setLong(++i, work_id);
 			final DbIterator<Work> it = Work.workTable.getManyBy(con, pstmt, true);
 			Work w = null;
-			if (it.hasNext()) {
-				w = it.next();
-			}
+			if (it.hasNext()) w = it.next();
 			it.close();
 			return w;
 		} catch (final SQLException e) {
@@ -234,16 +218,14 @@ public final class Work {
 	}
 
 	public static double logBigDecimal(final BigDecimal val) {
-		return Work.logBigInteger(val.unscaledValue()) + (val.scale() * Math.log(10.0));
+		return Work.logBigInteger(val.unscaledValue()) + val.scale() * Math.log(10.0);
 	}
 
-	public static double logBigInteger(BigInteger val) {
+	private static double logBigInteger(BigInteger val) {
 		final int blex = val.bitLength() - 1022; // any value in 60..1023 is ok
-		if (blex > 0) {
-			val = val.shiftRight(blex);
-		}
+		if (blex > 0) val = val.shiftRight(blex);
 		final double res = Math.log(val.doubleValue());
-		return blex > 0 ? res + (blex * Work.LOG2) : res;
+		return blex > 0 ? res + blex * Work.LOG2 : res;
 	}
 
 	public static boolean removeListener(final Listener<Work> listener, final Event eventType) {
@@ -317,8 +299,8 @@ public final class Work {
 		this.close_pending = false;
 		this.xel_per_bounty = attachment.getXelPerBounty();
 		this.balance_pow_fund = transaction.getAmountNQT()
-				- (attachment.getBountyLimit() * attachment.getXelPerBounty());
-		this.balance_bounty_fund = (attachment.getBountyLimit() * attachment.getXelPerBounty());
+				- attachment.getBountyLimit() * attachment.getXelPerBounty();
+		this.balance_bounty_fund = attachment.getBountyLimit() * attachment.getXelPerBounty();
 		this.balance_pow_fund_orig = this.balance_pow_fund;
 		this.balance_bounty_fund_orig = this.balance_bounty_fund;
 		this.received_bounties = 0;
@@ -366,7 +348,7 @@ public final class Work {
 		return this.dbKey;
 	}
 
-	public byte[] getFullHash() {
+	private byte[] getFullHash() {
 		return TransactionDb.getFullHash(this.id);
 	}
 
@@ -428,92 +410,79 @@ public final class Work {
 
 	public void kill_bounty_fund(final Block bl) {
 
-		if (this.isClosed() == false) {
+		if (!this.isClosed()) {
 			if (this.balance_bounty_fund >= this.xel_per_bounty) {
 				this.balance_bounty_fund -= this.xel_per_bounty;
 				this.received_bounties++;
 			}
 
-			if (this.balance_bounty_fund < this.xel_per_bounty) {
-				// all was paid out, close it!
-				this.natural_timeout(bl);
-			} else {
-				Work.workTable.insert(this);
-			}
+			// all was paid out, close it!
+			if (this.balance_bounty_fund < this.xel_per_bounty) this.natural_timeout(bl);
+			else Work.workTable.insert(this);
 		}
 	}
 
 	public void natural_timeout(final Block bl) {
 
-		if (this.closed == true) {
-			return;
+		if (this.closed) return;
+
+		// Check if cancelled or timedout
+		if (!this.close_pending) if (this.blocksRemaining == 0 && this.balance_pow_fund >= this.xel_per_pow
+				&& this.received_bounties < this.bounty_limit
+				&& this.received_bounty_announcements < this.bounty_limit) {
+			// timedout with money remaining and bounty slots remaining
+			this.timedout = true;
+			this.closing_timestamp = bl.getTimestamp();
+			if (this.received_bounties == this.received_bounty_announcements) {
+				this.closed = true;
+				// Now create ledger event for "refund" what is left in the
+				// pow and bounty funds
+				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+				final Account participantAccount = Account.getAccount(this.sender_account_id);
+				participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+						this.balance_pow_fund + this.balance_bounty_fund);
+
+			} else this.close_pending = true;
+
+		} else if (this.blocksRemaining > 0
+				&& (this.balance_pow_fund < this.xel_per_pow || this.received_bounties == this.bounty_limit
+				|| this.received_bounty_announcements == this.bounty_limit)) {
+			// closed regularily, nothing to bother about
+			this.closing_timestamp = bl.getTimestamp();
+			if (this.received_bounties == this.received_bounty_announcements) {
+				this.closed = true;
+				// Now create ledger event for "refund" what is left in the
+				// pow and bounty funds
+				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+				final Account participantAccount = Account.getAccount(this.sender_account_id);
+				participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+						this.balance_pow_fund + this.balance_bounty_fund);
+
+			} else this.close_pending = true;
+		} else {
+			// manual cancellation
+			this.cancelled = true;
+			this.closing_timestamp = bl.getTimestamp();
+			if (this.received_bounties == this.received_bounty_announcements) {
+				this.closed = true;
+				// Now create ledger event for "refund" what is left in the
+				// pow and bounty funds
+				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
+				final Account participantAccount = Account.getAccount(this.sender_account_id);
+				participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+						this.balance_pow_fund + this.balance_bounty_fund);
+
+			} else this.close_pending = true;
 		}
-
-		if ((this.close_pending == false) && (this.closed == false)) {
-			// Check if cancelled or timedout
-			if ((this.blocksRemaining == 0) && (this.balance_pow_fund >= this.xel_per_pow)
-					&& (this.received_bounties < this.bounty_limit)
-					&& (this.received_bounty_announcements < this.bounty_limit)) {
-				// timedout with money remaining and bounty slots remaining
-				this.timedout = true;
-				this.closing_timestamp = bl.getTimestamp();
-				if (this.received_bounties == this.received_bounty_announcements) {
-					this.closed = true;
-					// Now create ledger event for "refund" what is left in the
-					// pow and bounty funds
-					final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
-					final Account participantAccount = Account.getAccount(this.sender_account_id);
-					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-							this.balance_pow_fund + this.balance_bounty_fund);
-
-				} else {
-					this.close_pending = true;
-				}
-
-			} else if ((this.blocksRemaining > 0)
-					&& ((this.balance_pow_fund < this.xel_per_pow) || (this.received_bounties == this.bounty_limit)
-							|| (this.received_bounty_announcements == this.bounty_limit))) {
-				// closed regularily, nothing to bother about
-				this.closing_timestamp = bl.getTimestamp();
-				if (this.received_bounties == this.received_bounty_announcements) {
-					this.closed = true;
-					// Now create ledger event for "refund" what is left in the
-					// pow and bounty funds
-					final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
-					final Account participantAccount = Account.getAccount(this.sender_account_id);
-					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-							this.balance_pow_fund + this.balance_bounty_fund);
-
-				} else {
-					this.close_pending = true;
-				}
-			} else {
-				// manual cancellation
-				this.cancelled = true;
-				this.closing_timestamp = bl.getTimestamp();
-				if (this.received_bounties == this.received_bounty_announcements) {
-					this.closed = true;
-					// Now create ledger event for "refund" what is left in the
-					// pow and bounty funds
-					final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
-					final Account participantAccount = Account.getAccount(this.sender_account_id);
-					participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-							this.balance_pow_fund + this.balance_bounty_fund);
-
-				} else {
-					this.close_pending = true;
-				}
-			}
-		} else if ((this.close_pending == true) && (this.closed == false)) {
-			if (((bl.getTimestamp() - this.closing_timestamp) >= Constants.DEPOSIT_GRACE_PERIOD)
-					|| (this.received_bounty_announcements == this.received_bounties)) {
+		else if (this.close_pending && !this.closed)
+			if (bl.getTimestamp() - this.closing_timestamp >= Constants.DEPOSIT_GRACE_PERIOD
+					|| this.received_bounty_announcements == this.received_bounties) {
 				this.closed = true;
 				this.close_pending = false;
 
 				int refundAnnouncements = 0;
-				if (this.received_bounty_announcements > this.received_bounties) {
+				if (this.received_bounty_announcements > this.received_bounties)
 					refundAnnouncements = this.received_bounty_announcements - this.received_bounties;
-				}
 				// Now create ledger event for "refund" what is left in the pow
 				// and bounty funds
 				final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_CANCELLATION;
@@ -524,20 +493,19 @@ public final class Work {
 				// And move forfeited deposits to FORFEITED_DEPOSITS_ACCOUNT account
 				final Account forfeitedAccount = Account.addOrGetAccount(Constants.FORFEITED_DEPOSITS_ACCOUNT);
 				final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
-				if (depositAccount.getUnconfirmedBalanceNQT() < (refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)) {
+				if (depositAccount.getUnconfirmedBalanceNQT() < refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
 					// Deposit is just lost, no idea what happened (but it should never happen)
-				}else {
+				} else {
 
 					depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-							-1 * (refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION));
+							-1 * refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 					forfeitedAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-							(refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION));
+							refundAnnouncements * Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
 				}
 
 			} else {
 				// pass through
 			}
-		}
 
 		Work.workTable.insert(this);
 
@@ -547,33 +515,27 @@ public final class Work {
 	}
 
 	public void reduce_one_pow_submission(final Block bl) {
-		if ((this.isClosed() == false) && (this.isClose_pending() == false)) {
+		if (!this.isClosed() && !this.isClose_pending()) {
 
 			if (this.balance_pow_fund >= this.xel_per_pow) {
 				this.balance_pow_fund -= this.xel_per_pow;
 				this.received_pows++;
 			}
 
-			if (this.balance_pow_fund < this.xel_per_pow) {
-				// all was paid out, close it!
-				this.natural_timeout(bl);
-			} else {
-				Work.workTable.insert(this);
-			}
+			// all was paid out, close it!
+			if (this.balance_pow_fund < this.xel_per_pow) this.natural_timeout(bl);
+			else Work.workTable.insert(this);
 		}
 
 	}
 
 	public void register_bounty_announcement(final Block bl) {
 
-		if ((this.isClosed() == false) && (this.isClose_pending() == false)) {
+		if (!this.isClosed() && !this.isClose_pending()) {
 			this.received_bounty_announcements++;
-			if (this.received_bounty_announcements == this.bounty_limit) {
-				// all was paid out, close it!
-				this.natural_timeout(bl);
-			} else {
-				Work.workTable.insert(this);
-			}
+			// all was paid out, close it!
+			if (this.received_bounty_announcements == this.bounty_limit) this.natural_timeout(bl);
+			else Work.workTable.insert(this);
 		}
 	}
 
@@ -604,6 +566,7 @@ public final class Work {
 			pstmt.setInt(++i, this.received_bounty_announcements);
 			pstmt.setInt(++i, this.received_pows);
 			pstmt.setInt(++i, this.bounty_limit);
+			//noinspection SuspiciousNameCombination
 			pstmt.setInt(++i, this.originating_height);
 			pstmt.setInt(++i, Nxt.getBlockchain().getBlock(this.block_id).getHeight());
 			pstmt.setBytes(++i, this.work_min_pow_target.toByteArray());
@@ -654,20 +617,17 @@ public final class Work {
 		final JSONObject obj = this.toJsonObject();
 
 		final PrunableSourceCode p = PrunableSourceCode.getPrunableSourceCodeByWorkId(this.work_id);
-		if (p == null) {
-			obj.put("source", "");
-		} else {
-			obj.put("source", Ascii85.encode(Convert.uncompress(p.getSource())));
-		}
+		if (p == null) obj.put("source", "");
+		else obj.put("source", Ascii85.encode(Convert.uncompress(p.getSource())));
 
 		return obj;
 	}
 	
-	public double kimoto(double x){
-	    return 1 + (0.7084 * Math.pow(((x)/(28.0)), -1.228));
+	private double kimoto(double x){
+	    return 1 + 0.7084 * Math.pow(x / 28.0, -1.228);
 	}
 	
-	public void updatePowTarget(final Block currentBlock) {
+	private void updatePowTarget(final Block currentBlock) {
 
 		// Initialize with the blocks base target (this is set in
 		// BlockImpl::calculateNextMinPowTarget
@@ -675,12 +635,10 @@ public final class Work {
 		// or to the minimal possible difficulty if there aren't any closed jobs
 		// yet)
 
-		BigInteger targetI = null;
-		if (Objects.equals(this.work_min_pow_target, BigInteger.ZERO)) {
+		BigInteger targetI;
+		if (Objects.equals(this.work_min_pow_target, BigInteger.ZERO))
 			targetI = Nxt.getBlockchain().getBlock(this.getBlock_id()).getMinPowTarget();
-		} else {
-			targetI = this.work_min_pow_target;
-		}
+		else targetI = this.work_min_pow_target;
 
 		if (currentBlock.getId() != this.getBlock_id()) {
 			// Do standard retargeting (yet to be peer reviewed)
@@ -699,35 +657,25 @@ public final class Work {
 			Block b = currentBlock;
 			int counter = 0;
 			int current_timestamp = b.getTimestamp();
-			double trs_per_second = 1, target_per_second = 1;
+			double trs_per_second, target_per_second;
 			while (isFull || isEmpty) {
-				if ((b == null) || (b.getId() == this.getBlock_id())) {
-					break;
-				}
+				if (b == null || b.getId() == this.getBlock_id()) break;
 				counter = counter + 1;
 				long num = b.countNumberPOWPerWorkId(this.getId());
 				
-				if (isFull && num == 20)
-					fullCnt+=1;
-				else
-					isFull = false;
+				if (isFull && num == 20) fullCnt += 1;
+				else isFull = false;
 				
-				if (isEmpty && num == 0)
-					emptyCnt+=1;
-				else
-					isEmpty = false;				
+				if (isEmpty && num == 0) emptyCnt += 1;
+				else isEmpty = false;
 				
-				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max)) {
-					break;
-				}
+				if (b.getPreviousBlock() == null || counter == account_for_blocks_max) break;
 				b = b.getPreviousBlock();
 			}
 			b = currentBlock;
 			counter = 0;
 			while (true) {
-				if ((b == null) || (b.getId() == this.getBlock_id())) {
-					break;
-				}
+				if (b == null || b.getId() == this.getBlock_id()) break;
 				counter = counter + 1;
 				PastBlocksMass += b.countNumberPOWPerWorkId(this.getId());
 				PastBlocksTotalMass += b.countNumberPOW();
@@ -738,9 +686,7 @@ public final class Work {
 				
 				seconds_passed = current_timestamp - b.getTimestampPrevious();
 				
-				if (seconds_passed < 1) {
-					seconds_passed = 1;
-				}
+				if (seconds_passed < 1) seconds_passed = 1;
 				
 				trs_per_second = (double)PastBlocksMass / (double)seconds_passed;
 				target_per_second = 10.0/60.0;
@@ -751,14 +697,12 @@ public final class Work {
 					double kim = kimoto(PastBlocksMass * 30);
 					
 					if (counter >= account_for_blocks_min && (local_adjustment > kim || local_adjustment < 1/kim)){
-						Logger.logKomotoMessage("Komoto: kim = " + kim + ", 1/kim = " + (1/kim) + ", trs_per_second = " + trs_per_second + ", adjustment = " + local_adjustment);
+						Logger.logKomotoMessage("Komoto: kim = " + kim + ", 1/kim = " + 1/kim + ", trs_per_second = " + trs_per_second + ", adjustment = " + local_adjustment);
 						break;
 					}
-				}else{
 				}
-				if ((b.getPreviousBlock() == null) || (counter == account_for_blocks_max)) {
-					break;
-				}
+
+				if (b.getPreviousBlock() == null || counter == account_for_blocks_max) break;
 				b = b.getPreviousBlock();
 			}
 			
@@ -781,21 +725,16 @@ public final class Work {
 
 			}
 			
-			if(fullCnt>1)
-				local_adjustment = local_adjustment / (1<<fullCnt);
-			if(emptyCnt>1)
-				local_adjustment = local_adjustment * (1<<emptyCnt);
+			if(fullCnt>1) local_adjustment = local_adjustment / (1 << fullCnt);
+			if(emptyCnt>1) local_adjustment = local_adjustment * (1 << emptyCnt);
 			
 			BigDecimal intermediate = new BigDecimal(targetI);
 			intermediate = intermediate.multiply(BigDecimal.valueOf(local_adjustment));
 			targetI = intermediate.toBigInteger();
 			
 			
-			if (targetI.compareTo(Constants.least_possible_target) == 1) {
-				targetI = Constants.least_possible_target;
-			} else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) { 
-				targetI = BigInteger.valueOf(1L);
-			}
+			if (targetI.compareTo(Constants.least_possible_target) == 1) targetI = Constants.least_possible_target;
+			else if (targetI.compareTo(BigInteger.valueOf(1L)) == -1) targetI = BigInteger.valueOf(1L);
 			Logger.logKomotoMessage("New target: " + Convert.toHexString(targetI.toByteArray()));
 
 

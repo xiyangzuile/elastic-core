@@ -37,9 +37,7 @@ public final class GetTransactionBytes extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
 		final String transactionValue = req.getParameter("transaction");
-		if (transactionValue == null) {
-			return JSONResponses.MISSING_TRANSACTION;
-		}
+		if (transactionValue == null) return JSONResponses.MISSING_TRANSACTION;
 
 		long transactionId;
 		Transaction transaction;
@@ -53,12 +51,8 @@ public final class GetTransactionBytes extends APIServlet.APIRequestHandler {
 		final JSONObject response = new JSONObject();
 		if (transaction == null) {
 			transaction = Nxt.getTransactionProcessor().getUnconfirmedTransaction(transactionId);
-			if (transaction == null) {
-				return JSONResponses.UNKNOWN_TRANSACTION;
-			}
-		} else {
-			response.put("confirmations", Nxt.getBlockchain().getHeight() - transaction.getHeight());
-		}
+			if (transaction == null) return JSONResponses.UNKNOWN_TRANSACTION;
+		} else response.put("confirmations", Nxt.getBlockchain().getHeight() - transaction.getHeight());
 		response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
 		response.put("unsignedTransactionBytes", Convert.toHexString(transaction.getUnsignedBytes()));
 		JSONData.putPrunableAttachment(response, transaction);

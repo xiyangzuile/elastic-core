@@ -33,6 +33,7 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -58,15 +59,13 @@ import nxt.peer.Peers;
 import nxt.util.Convert;
 import nxt.util.Logger;
 
-public class DesktopSystemTray {
+class DesktopSystemTray {
 
-	public static final int DELAY = 1000;
+	private static final int DELAY = 1000;
 
-	public static String humanReadableByteCount(final long bytes) {
+	private static String humanReadableByteCount(final long bytes) {
 		final int unit = 1000;
-		if (bytes < unit) {
-			return bytes + " B";
-		}
+		if (bytes < unit) return bytes + " B";
 		final int exp = (int) (Math.log(bytes) / Math.log(unit));
 		final String pre = "" + ("KMGTPE").charAt(exp - 1);
 		return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
@@ -87,13 +86,9 @@ public class DesktopSystemTray {
 
 	private void addDataRow(final JPanel parent, String text, final String value) {
 		final JPanel rowPanel = new JPanel();
-		if (!"".equals(value)) {
-			rowPanel.add(Box.createRigidArea(new Dimension(20, 0)));
-		}
+		if (!Objects.equals("", value)) rowPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
-		if (!"".equals(text) && !"".equals(value)) {
-			text += ':';
-		}
+		if (!Objects.equals("", text) && !Objects.equals("", value)) text += ':';
 		final JLabel textLabel = new JLabel(text);
 		// textLabel.setFont(textLabel.getFont().deriveFont(Font.BOLD));
 		rowPanel.add(textLabel);
@@ -132,9 +127,7 @@ public class DesktopSystemTray {
 
 		final MenuItem shutdown = new MenuItem("Shutdown");
 		this.openWalletInBrowser = new MenuItem("Open Wallet in Browser");
-		if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-			this.openWalletInBrowser.setEnabled(false);
-		}
+		if (!Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) this.openWalletInBrowser.setEnabled(false);
 		final MenuItem showDesktopApplication = new MenuItem("Show Desktop Application");
 		final MenuItem refreshDesktopApplication = new MenuItem("Refresh Wallet");
 		if (!Nxt.isDesktopApplicationEnabled()) {
@@ -142,9 +135,7 @@ public class DesktopSystemTray {
 			refreshDesktopApplication.setEnabled(false);
 		}
 		this.viewLog = new MenuItem("View Log File");
-		if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-			this.viewLog.setEnabled(false);
-		}
+		if (!Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) this.viewLog.setEnabled(false);
 		final MenuItem status = new MenuItem("Status");
 
 		popup.add(status);
@@ -211,9 +202,7 @@ public class DesktopSystemTray {
 		});
 
 		final ActionListener statusUpdater = evt -> {
-			if ((this.statusDialog == null) || !this.statusDialog.isVisible()) {
-				return;
-			}
+			if ((this.statusDialog == null) || !this.statusDialog.isVisible()) return;
 			this.displayStatus();
 		};
 		new Timer(DesktopSystemTray.DELAY, statusUpdater).start();
@@ -224,9 +213,8 @@ public class DesktopSystemTray {
 		final Collection<Generator> allGenerators = Generator.getAllGenerators();
 
 		final StringBuilder generators = new StringBuilder();
-		for (final Generator generator : allGenerators) {
-			generators.append(Convert.rsAccount(generator.getAccountId())).append(' ');
-		}
+		for (final Generator generator : allGenerators)
+            generators.append(Convert.rsAccount(generator.getAccountId())).append(' ');
 		final Object optionPaneBackground = UIManager.get("OptionPane.background");
 		UIManager.put("OptionPane.background", Color.WHITE);
 		final Object panelBackground = UIManager.get("Panel.background");
@@ -264,9 +252,7 @@ public class DesktopSystemTray {
 			this.addDataRow(this.statusPanel, "Seconds passed",
 					String.valueOf(Nxt.getEpochTime() - lastBlock.getTimestamp()));
 			this.addDataRow(this.statusPanel, "Forging", String.valueOf(allGenerators.size() > 0));
-			if (allGenerators.size() > 0) {
-				this.addDataRow(this.statusPanel, "Forging accounts", generators.toString());
-			}
+			if (allGenerators.size() > 0) this.addDataRow(this.statusPanel, "Forging accounts", generators.toString());
 		}
 
 		this.addEmptyRow(this.statusPanel);

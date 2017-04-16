@@ -48,15 +48,11 @@ public final class GetBlocks extends APIServlet.APIRequestHandler {
 		final boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));
 
 		final JSONArray blocks = new JSONArray();
-		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(firstIndex, lastIndex).iterator();
-		while (it.hasNext()) {
-			final Block block = it.next();
-			if (block.getTimestamp() < timestamp) {
-				break;
-			}
-			blocks.add(JSONData.block(block, includeTransactions, includeExecutedPhased));
+        for (BlockImpl block : Nxt.getBlockchain().getBlocks(firstIndex, lastIndex)) {
+            if (block.getTimestamp() < timestamp) break;
+            blocks.add(JSONData.block(block, includeTransactions, includeExecutedPhased));
 
-		}
+        }
 
 		final JSONObject response = new JSONObject();
 		response.put("blocks", blocks);

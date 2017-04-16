@@ -51,9 +51,7 @@ public final class GetUnconfirmedTransactionIds extends APIServlet.APIRequestHan
 				.getAllUnconfirmedTransactions()) {
 			while (transactionsIterator.hasNext()) {
 				final Transaction transaction = transactionsIterator.next();
-				if (filter.ok(transaction)) {
-					transactionIds.add(transaction.getStringId());
-				}
+				if (filter.ok(transaction)) transactionIds.add(transaction.getStringId());
 			}
 		}
 

@@ -39,7 +39,7 @@ import java.util.Calendar;
  *
  * The wrapper forwards all methods to the wrapped prepared statement
  */
-public class FilteredPreparedStatement extends FilteredStatement implements PreparedStatement {
+class FilteredPreparedStatement extends FilteredStatement implements PreparedStatement {
 
 	private final PreparedStatement stmt;
 	private final String sql;
@@ -165,7 +165,7 @@ public class FilteredPreparedStatement extends FilteredStatement implements Prep
 	}
 
 	@Override
-	public void setBytes(final int parameterIndex, final byte x[]) throws SQLException {
+	public void setBytes(final int parameterIndex, final byte[] x) throws SQLException {
 		this.stmt.setBytes(parameterIndex, x);
 	}
 

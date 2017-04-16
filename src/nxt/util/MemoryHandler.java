@@ -67,11 +67,8 @@ public class MemoryHandler extends Handler {
 		int bufferSize;
 		try {
 			value = manager.getProperty(cname + ".size");
-			if (value != null) {
-				bufferSize = Math.max(Integer.valueOf(value.trim()), 10);
-			} else {
-				bufferSize = MemoryHandler.DEFAULT_SIZE;
-			}
+			if (value != null) bufferSize = Math.max(Integer.valueOf(value.trim()), 10);
+            else bufferSize = MemoryHandler.DEFAULT_SIZE;
 		} catch (final NumberFormatException exc) {
 			bufferSize = MemoryHandler.DEFAULT_SIZE;
 		}
@@ -81,11 +78,8 @@ public class MemoryHandler extends Handler {
 		//
 		try {
 			value = manager.getProperty(cname + ".level");
-			if (value != null) {
-				this.level = Level.parse(value.trim());
-			} else {
-				this.level = Level.ALL;
-			}
+			if (value != null) this.level = Level.parse(value.trim());
+            else this.level = Level.ALL;
 		} catch (final IllegalArgumentException exc) {
 			this.level = Level.ALL;
 		}
@@ -125,9 +119,7 @@ public class MemoryHandler extends Handler {
 			final Formatter formatter = this.getFormatter();
 			for (int i = 0; i < rtnSize; i++) {
 				rtnList.add(formatter.format(this.buffer[pos++]));
-				if (pos == this.buffer.length) {
-					pos = 0;
-				}
+				if (pos == this.buffer.length) pos = 0;
 			}
 		}
 		return rtnList;
@@ -143,17 +135,14 @@ public class MemoryHandler extends Handler {
 	@Override
 	public void publish(final LogRecord record) {
 		if ((record != null) && (record.getLevel().intValue() >= this.level.intValue())
-				&& (this.level.intValue() != MemoryHandler.OFF_VALUE)) {
-			synchronized (this.buffer) {
-				final int ix = (this.start + this.count) % this.buffer.length;
-				this.buffer[ix] = record;
-				if (this.count < this.buffer.length) {
-					this.count++;
-				} else {
-					this.start++;
-					this.start %= this.buffer.length;
-				}
-			}
-		}
+				&& (this.level.intValue() != MemoryHandler.OFF_VALUE)) synchronized (this.buffer) {
+            final int ix = (this.start + this.count) % this.buffer.length;
+            this.buffer[ix] = record;
+            if (this.count < this.buffer.length) this.count++;
+            else {
+                this.start++;
+                this.start %= this.buffer.length;
+            }
+        }
 	}
 }

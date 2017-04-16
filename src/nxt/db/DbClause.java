@@ -167,7 +167,7 @@ public abstract class DbClause {
 
 	}
 
-	public static final class NullClause extends DbClause {
+	protected static final class NullClause extends DbClause {
 
 		public NullClause(final String columnName) {
 			super(" " + columnName + " IS NULL ");
@@ -216,7 +216,7 @@ public abstract class DbClause {
 
 	private final String clause;
 
-	protected DbClause(final String clause) {
+	DbClause(final String clause) {
 		this.clause = clause;
 	}
 

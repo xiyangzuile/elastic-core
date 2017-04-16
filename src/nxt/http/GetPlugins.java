@@ -27,6 +27,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -46,9 +47,7 @@ public final class GetPlugins extends APIServlet.APIRequestHandler {
 
 		@Override
 		public FileVisitResult postVisitDirectory(final Path dir, final IOException e) {
-			if (!GetPlugins.PLUGINS_HOME.equals(dir)) {
-				this.directories.add(dir);
-			}
+			if (!Objects.equals(GetPlugins.PLUGINS_HOME, dir)) this.directories.add(dir);
 			return FileVisitResult.CONTINUE;
 		}
 
@@ -80,9 +79,8 @@ public final class GetPlugins extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
 		final JSONObject response = new JSONObject();
-		if (!Files.isReadable(GetPlugins.PLUGINS_HOME)) {
-			return JSONResponses.fileNotFound(GetPlugins.PLUGINS_HOME.toString());
-		}
+		if (!Files.isReadable(GetPlugins.PLUGINS_HOME))
+            return JSONResponses.fileNotFound(GetPlugins.PLUGINS_HOME.toString());
 		final PluginDirListing pluginDirListing = new PluginDirListing();
 		try {
 			Files.walkFileTree(GetPlugins.PLUGINS_HOME, EnumSet.noneOf(FileVisitOption.class), 2, pluginDirListing);

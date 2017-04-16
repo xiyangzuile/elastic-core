@@ -32,18 +32,14 @@ public enum APITag {
 
 	private static final Map<String, APITag> apiTags = new HashMap<>();
 	static {
-		for (final APITag apiTag : APITag.values()) {
-			if (APITag.apiTags.put(apiTag.getDisplayName(), apiTag) != null) {
-				throw new RuntimeException("Duplicate APITag name: " + apiTag.getDisplayName());
-			}
-		}
+		for (final APITag apiTag : APITag.values())
+            if (APITag.apiTags.put(apiTag.getDisplayName(), apiTag) != null)
+                throw new RuntimeException("Duplicate APITag name: " + apiTag.getDisplayName());
 	}
 
 	public static APITag fromDisplayName(final String displayName) {
 		final APITag apiTag = APITag.apiTags.get(displayName);
-		if (apiTag == null) {
-			throw new IllegalArgumentException("Invalid APITag name: " + displayName);
-		}
+		if (apiTag == null) throw new IllegalArgumentException("Invalid APITag name: " + displayName);
 		return apiTag;
 	}
 

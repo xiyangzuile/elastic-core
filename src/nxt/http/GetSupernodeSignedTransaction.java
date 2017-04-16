@@ -17,7 +17,6 @@
 package nxt.http;
 
 import nxt.Account;
-import nxt.Nxt;
 import nxt.NxtException;
 import nxt.Transaction;
 import nxt.crypto.Crypto;
@@ -79,24 +78,22 @@ public final class GetSupernodeSignedTransaction extends APIServlet.APIRequestHa
 
 		Account snAccount = Account.getAccount(Crypto.getPrivateKey(secretPhrase));
 		final JSONObject response = new JSONObject();
-		if(snAccount == null || snAccount.isSuperNode() == false){
+		if(snAccount == null || !snAccount.isSuperNode()){
 			Exception e = new Exception("You are not a super node");
 			JSONData.putException(response, e, e.getMessage());
-		}else {
-			try {
-				final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes,
-						prunableAttachmentJSON);
-				final Transaction transaction = builder.build();
+		}else try {
+			final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes,
+					prunableAttachmentJSON);
+			final Transaction transaction = builder.build();
 
-				// super node sign
-				transaction.signSuperNode(secretPhrase);
+			// super node sign
+			transaction.signSuperNode(secretPhrase);
 
-				response.put("transaction", transaction.getStringId());
-				response.put("fullHash", transaction.getFullHash());
-				response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
-			} catch (NxtException.ValidationException | RuntimeException e) {
-				JSONData.putException(response, e, "Failed to sign transaction");
-			}
+			response.put("transaction", transaction.getStringId());
+			response.put("fullHash", transaction.getFullHash());
+			response.put("transactionBytes", Convert.toHexString(transaction.getBytes()));
+		} catch (NxtException.ValidationException | RuntimeException e) {
+			JSONData.putException(response, e, "Failed to sign transaction");
 		}
 		return response;
 

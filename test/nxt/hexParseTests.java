@@ -3,9 +3,6 @@ package nxt;
 import nxt.util.Convert;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 /**
  * Created by anonymous on 19.03.17.
  */

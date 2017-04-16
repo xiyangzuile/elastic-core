@@ -26,7 +26,7 @@ import nxt.HoldingType;
 import nxt.util.Convert;
 import nxt.util.JSON;
 
-public final class JSONResponses {
+final class JSONResponses {
 	public static final JSONStreamAware MISSING_LANGUAGE = JSONResponses.missing("program language");
 	public static final JSONStreamAware MISSING_PROGAMCODE = JSONResponses.missing("program code");
 	public static final JSONStreamAware MISSING_BOUNTYHOOK = JSONResponses.missing("bounty hook");
@@ -224,7 +224,7 @@ public final class JSONResponses {
 		DECRYPTION_FAILED = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware DUPLICATE_REFUND;
+	private static final JSONStreamAware DUPLICATE_REFUND;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
@@ -232,7 +232,7 @@ public final class JSONResponses {
 		DUPLICATE_REFUND = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware NO_MESSAGE;
+	private static final JSONStreamAware NO_MESSAGE;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
@@ -240,7 +240,7 @@ public final class JSONResponses {
 		NO_MESSAGE = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware HEIGHT_NOT_AVAILABLE;
+	private static final JSONStreamAware HEIGHT_NOT_AVAILABLE;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
@@ -256,7 +256,7 @@ public final class JSONResponses {
 		NO_PASSWORD_IN_CONFIG = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware POLL_RESULTS_NOT_AVAILABLE;
+	private static final JSONStreamAware POLL_RESULTS_NOT_AVAILABLE;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
@@ -264,7 +264,7 @@ public final class JSONResponses {
 		POLL_RESULTS_NOT_AVAILABLE = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware POLL_FINISHED;
+	private static final JSONStreamAware POLL_FINISHED;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 8);
@@ -272,7 +272,7 @@ public final class JSONResponses {
 		POLL_FINISHED = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware HASHES_MISMATCH;
+	private static final JSONStreamAware HASHES_MISMATCH;
 	static {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 10);
@@ -360,7 +360,7 @@ public final class JSONResponses {
 		PEER_NOT_OPEN_API = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware MONITOR_ALREADY_STARTED;
+	private static final JSONStreamAware MONITOR_ALREADY_STARTED;
 
 	static {
 		final JSONObject response = new JSONObject();
@@ -369,7 +369,7 @@ public final class JSONResponses {
 		MONITOR_ALREADY_STARTED = JSON.prepare(response);
 	}
 
-	public static final JSONStreamAware MONITOR_NOT_STARTED;
+	private static final JSONStreamAware MONITOR_NOT_STARTED;
 
 	static {
 		final JSONObject response = new JSONObject();
@@ -385,7 +385,7 @@ public final class JSONResponses {
 		return JSON.prepare(response);
 	}
 
-	static JSONStreamAware error(final String error) {
+	private static JSONStreamAware error(final String error) {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 11);
 		response.put("errorDescription", error);
@@ -413,11 +413,9 @@ public final class JSONResponses {
 	static JSONStreamAware missing(final String... paramNames) {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 3);
-		if (paramNames.length == 1) {
-			response.put("errorDescription", "\"" + paramNames[0] + "\"" + " not specified");
-		} else {
+		if (paramNames.length == 1) response.put("errorDescription", "\"" + paramNames[0] + "\"" + " not specified");
+		else
 			response.put("errorDescription", "At least one of " + Arrays.toString(paramNames) + " must be specified");
-		}
 		return JSON.prepare(response);
 	}
 
@@ -437,7 +435,7 @@ public final class JSONResponses {
 		return JSON.prepare(response);
 	}
 
-	static JSONStreamAware unknown(final String objectName) {
+	private static JSONStreamAware unknown(final String objectName) {
 		final JSONObject response = new JSONObject();
 		response.put("errorCode", 5);
 		response.put("errorDescription", "Unknown " + objectName);

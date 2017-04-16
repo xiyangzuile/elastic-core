@@ -44,13 +44,10 @@ public class BlacklistPeer extends APIRequestHandler {
 		final JSONObject response = new JSONObject();
 
 		final String peerAddress = request.getParameter("peer");
-		if (peerAddress == null) {
-			return JSONResponses.MISSING_PEER;
-		}
+		if (peerAddress == null) return JSONResponses.MISSING_PEER;
 		final Peer peer = Peers.findOrCreatePeer(peerAddress, true);
-		if (peer == null) {
-			return JSONResponses.UNKNOWN_PEER;
-		} else {
+		if (peer == null) return JSONResponses.UNKNOWN_PEER;
+        else {
 			Peers.addPeer(peer);
 			peer.blacklist("Manual blacklist");
 			response.put("done", true);

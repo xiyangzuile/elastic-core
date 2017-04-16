@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class SimpleForgingTest extends AbstractForgingTest {
 
-    static final String secretPhrase = "Marty Mc Fly";
+    private static final String secretPhrase = "Marty Mc Fly";
 
     @Before
     public void init() {

@@ -10,7 +10,6 @@ import org.junit.Test;
 import static nxt.TransactionBuilder.make;
 import static nxt.TransactionBuilder.makeSupernodeSigned;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import nxt.util.Logger;
 
@@ -19,8 +18,8 @@ import java.util.Properties;
 
 public class SimpleWorkTest extends AbstractForgingTest {
 
-    static final String secretPhrase = "Marty Mc Fly";
-    static int current_height = startHeight;
+    private static final String secretPhrase = "Marty Mc Fly";
+    private static int current_height = startHeight;
     @Before
     public void init() {
         Properties properties = AbstractForgingTest.newTestProperties();
@@ -34,7 +33,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         Assert.assertTrue("nxt.fakeForgingAccount must be defined in nxt.properties", Nxt.getStringProperty("nxt.fakeForgingAccount") != null);
     }
 
-    void forgeBlocks(int howMany, String secretPhrase){
+    private void forgeBlocks(int howMany, String secretPhrase){
         forgeTo(current_height + howMany, secretPhrase);
         assertEquals(Nxt.getBlockchain().getHeight(),current_height + howMany);
         current_height += howMany;
@@ -112,7 +111,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
-                    1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
+                    1440, 10, Constants.ONE_NXT, 10*Constants.ONE_NXT);
             final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {
@@ -132,7 +131,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
-                    1440, 10, 1*Constants.ONE_NXT, 10*Constants.ONE_NXT);
+                    1440, 10, Constants.ONE_NXT, 10*Constants.ONE_NXT);
             final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {

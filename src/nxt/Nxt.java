@@ -28,10 +28,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.AccessControlException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import nxt.util.*;
 import org.json.simple.JSONObject;
@@ -71,7 +68,9 @@ public final class Nxt {
 				Nxt.setServerStatus(ServerStatus.BEFORE_DATABASE, null);
 				Db.init();
 				Nxt.setServerStatus(ServerStatus.AFTER_DATABASE, null);
+				//noinspection ResultOfMethodCallIgnored
 				TransactionProcessorImpl.getInstance();
+				//noinspection ResultOfMethodCallIgnored
 				BlockchainProcessorImpl.getInstance();
 				Account.init();
 				AccountLedger.init();
@@ -100,27 +99,23 @@ public final class Nxt {
 
 				if(snpass.length()!=0){
 
-					if(IPValidator.getInstance().validate(Nxt.externalIPSN)==false){
+					if(!IPValidator.getInstance().validate(Nxt.externalIPSN)){
 						Logger.logErrorMessage("You are trying to become a supernode, but your external IP is not a correct IP.");
 						System.exit(1);
 					}
 
 					Account sn = Account.getAccount(Crypto.getPublicKey(snpass));
 
-					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())){
-                        if(snrenew==false){
+					if(sn==null || (!sn.isSuperNode() && !sn.canBecomeSupernode())) if (!snrenew) {
+                        Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
+                        System.exit(1);
+                    } else
+                        Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Fund your account as quick as possible. Retrying soon.");
+                    else // Check if autorenew is on if the node is not yet a supernode
+                        if((!sn.isSuperNode() && sn.canBecomeSupernode())) if (!snrenew) {
                             Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
                             System.exit(1);
-                        }else {
-                            Logger.logErrorMessage("You are trying to become a supernode, but you do not have enough funds for the deposit. Fund your account as quick as possible. Retrying soon.");
                         }
-					}else if((!sn.isSuperNode() && sn.canBecomeSupernode())){
-						// Check if autorenew is on if the node is not yet a supernode
-						if(snrenew==false){
-							Logger.logErrorMessage("You are not a supernode yet, make sure you activate nxt.autoRenewSupernode = true.");
-							System.exit(1);
-						}
-					}
 
 					if(sn != null && sn.isSuperNode()){
 						Nxt.isSupernode = true;
@@ -165,16 +160,10 @@ public final class Nxt {
 				Logger.logMessage("Nxt server " + Nxt.VERSION + " started successfully.");
 				Logger.logMessage("Copyright © 2013-2016 The XEL Core Developers.");
 				Logger.logMessage("Distributed under GPLv2, with ABSOLUTELY NO WARRANTY.");
-				if (API.getWelcomePageUri() != null) {
-					Logger.logMessage("Client UI is at " + API.getWelcomePageUri());
-				}
+				if (API.getWelcomePageUri() != null) Logger.logMessage("Client UI is at " + API.getWelcomePageUri());
 				Nxt.setServerStatus(ServerStatus.STARTED, API.getWelcomePageUri());
-				if (Nxt.isDesktopApplicationEnabled()) {
-					Nxt.launchDesktopApplication();
-				}
-				if (Constants.isTestnet) {
-					Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
-				}
+				if (Nxt.isDesktopApplicationEnabled()) Nxt.launchDesktopApplication();
+				if (Constants.isTestnet) Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
 			} catch (final Exception e) {
 				Logger.logErrorMessage(e.getMessage(), e);
 				Nxt.runtimeMode.alert(e.getMessage() + "\n" + "See additional information in "
@@ -184,9 +173,7 @@ public final class Nxt {
 		}
 
 		private static void init() {
-			if (Init.initialized) {
-				throw new RuntimeException("Nxt.init has already been called");
-			}
+			if (Init.initialized) throw new RuntimeException("Nxt.init has already been called");
 			Init.initialized = true;
 		}
 
@@ -200,10 +187,10 @@ public final class Nxt {
 	public static final String APPLICATION = "Elastic";
 
 	private static volatile Time time = new Time.EpochTime();
-	public static final String NXT_DEFAULT_PROPERTIES = "nxt-default.properties";
-	public static final String NXT_PROPERTIES = "nxt.properties";
+	private static final String NXT_DEFAULT_PROPERTIES = "nxt-default.properties";
+	private static final String NXT_PROPERTIES = "nxt.properties";
 
-	public static final String CONFIG_DIR = "conf";
+	private static final String CONFIG_DIR = "conf";
 	private static final RuntimeMode runtimeMode;
 
 	private static final DirProvider dirProvider;
@@ -219,10 +206,9 @@ public final class Nxt {
 		dirProvider = RuntimeEnvironment.getDirProvider();
 		System.out.println("User home folder " + Nxt.dirProvider.getUserHomeDir());
 		Nxt.loadProperties(Nxt.defaultProperties, Nxt.NXT_DEFAULT_PROPERTIES, true);
-		if (!Nxt.VERSION.equals(Nxt.defaultProperties.getProperty("nxt.version"))) {
-			throw new RuntimeException("Using an nxt-default.properties file from a version other than " + Nxt.VERSION
-					+ " is not supported!!! You provided " + Nxt.defaultProperties.getProperty("nxt.version") + ".");
-		}
+		if (!Objects.equals(Nxt.VERSION, Nxt.defaultProperties.getProperty("nxt.version")))
+            throw new RuntimeException("Using an nxt-default.properties file from a version other than " + Nxt.VERSION
+                    + " is not supported!!! You provided " + Nxt.defaultProperties.getProperty("nxt.version") + ".");
 	}
 
 	private static final Properties properties = new Properties(Nxt.defaultProperties);
@@ -241,10 +227,10 @@ public final class Nxt {
 
 	public static Boolean getBooleanProperty(final String name) {
 		final String value = Nxt.properties.getProperty(name);
-		if (Boolean.TRUE.toString().equals(value)) {
+		if (Objects.equals(Boolean.TRUE.toString(), value)) {
 			Logger.logMessage(name + " = \"true\"");
 			return true;
-		} else if (Boolean.FALSE.toString().equals(value)) {
+		} else if (Objects.equals(Boolean.FALSE.toString(), value)) {
 			Logger.logMessage(name + " = \"false\"");
 			return false;
 		}
@@ -281,27 +267,19 @@ public final class Nxt {
 
 	public static String getProcessId() {
 		final String runtimeName = ManagementFactory.getRuntimeMXBean().getName();
-		if (runtimeName == null) {
-			return "";
-		}
+		if (runtimeName == null) return "";
 		final String[] tokens = runtimeName.split("@");
-		if (tokens.length == 2) {
-			return tokens[0];
-		}
+		if (tokens.length == 2) return tokens[0];
 		return "";
 	}
 
 	public static List<String> getStringListProperty(final String name) {
 		final String value = Nxt.getStringProperty(name);
-		if ((value == null) || (value.length() == 0)) {
-			return Collections.emptyList();
-		}
+		if ((value == null) || (value.length() == 0)) return Collections.emptyList();
 		final List<String> result = new ArrayList<>();
 		for (String s : value.split(";")) {
 			s = s.trim();
-			if (s.length() > 0) {
-				result.add(s);
-			}
+			if (s.length() > 0) result.add(s);
 		}
 		return result;
 	}
@@ -316,7 +294,7 @@ public final class Nxt {
 
 	public static String getStringProperty(final String name, final String defaultValue, final boolean doNotLog) {
 		final String value = Nxt.properties.getProperty(name);
-		if ((value != null) && !"".equals(value)) {
+		if ((value != null) && !Objects.equals("", value)) {
 			Logger.logMessage(name + " = \"" + (doNotLog ? "{not logged}" : value) + "\"");
 			return value;
 		} else {
@@ -333,7 +311,7 @@ public final class Nxt {
 		return Nxt.dirProvider.getUserHomeDir();
 	}
 
-	public static void init() {
+	private static void init() {
 		Init.init();
 	}
 
@@ -343,9 +321,7 @@ public final class Nxt {
 	}
 
 	private static Thread initSecureRandom() {
-		final Thread secureRandomInitThread = new Thread(() -> {
-			Crypto.getSecureRandom().nextBytes(new byte[1024]);
-		});
+		final Thread secureRandomInitThread = new Thread(() -> Crypto.getSecureRandom().nextBytes(new byte[1024]));
 		secureRandomInitThread.setDaemon(true);
 		secureRandomInitThread.start();
 		return secureRandomInitThread;
@@ -374,72 +350,66 @@ public final class Nxt {
 					throw new IllegalArgumentException(
 							String.format("Error loading %s from %s", propertiesFile, configFile));
 				}
-			} else {
-				try (InputStream is = Thread.currentThread().getContextClassLoader()
-						.getResourceAsStream(propertiesFile)) {
-					// When running nxt.exe from a Windows installation we
-					// always have nxt.properties in the classpath but this is
-					// not the nxt properties file
-					// Therefore we first load it from the classpath and then
-					// look for the real nxt.properties in the user folder.
-					if (is != null) {
-						System.out.println("Loading default properties from resources file.");
+			} else try (InputStream is = Thread.currentThread().getContextClassLoader()
+                    .getResourceAsStream(propertiesFile)) {
+                // When running nxt.exe from a Windows installation we
+                // always have nxt.properties in the classpath but this is
+                // not the nxt properties file
+                // Therefore we first load it from the classpath and then
+                // look for the real nxt.properties in the user folder.
+                if (is != null) {
+                    System.out.println("Loading default properties from resources file.");
 
-						properties.load(is);
-						if (isDefault) {
-							return properties;
-						}
-					}
-					// load non-default properties files from the user folder
-					if (!Nxt.dirProvider.isLoadPropertyFileFromUserDir()) {
-						System.out.println("Skipping to load properties from home folder.");
+                    properties.load(is);
+                    if (isDefault) return properties;
+                }
+                // load non-default properties files from the user folder
+                if (!Nxt.dirProvider.isLoadPropertyFileFromUserDir()) {
+                    System.out.println("Skipping to load properties from home folder.");
 
-						return properties;
-					}
-					final String homeDir = Nxt.dirProvider.getUserHomeDir();
-					if (!Files.isReadable(Paths.get(homeDir))) {
-						System.out.println("Creating home directory: " + homeDir);
+                    return properties;
+                }
+                final String homeDir = Nxt.dirProvider.getUserHomeDir();
+                if (!Files.isReadable(Paths.get(homeDir))) {
+                    System.out.println("Creating home directory: " + homeDir);
 
-						try {
-							Files.createDirectory(Paths.get(homeDir));
-						} catch (final Exception e) {
-							if (!(e instanceof NoSuchFileException)) {
-								throw e;
-							}
-							// Fix for WinXP and 2003 which does have a roaming
-							// sub folder
-							Files.createDirectory(Paths.get(homeDir).getParent());
-							Files.createDirectory(Paths.get(homeDir));
-						}
-					}
-					final Path confDir = Paths.get(homeDir, Nxt.CONFIG_DIR);
-					if (!Files.isReadable(confDir)) {
-						System.out.println("Creating config directory: " + confDir);
+                    try {
+                        Files.createDirectory(Paths.get(homeDir));
+                    } catch (final Exception e) {
+                        if (!(e instanceof NoSuchFileException)) throw e;
+                        // Fix for WinXP and 2003 which does have a roaming
+                        // sub folder
+                        Files.createDirectory(Paths.get(homeDir).getParent());
+                        Files.createDirectory(Paths.get(homeDir));
+                    }
+                }
+                final Path confDir = Paths.get(homeDir, Nxt.CONFIG_DIR);
+                if (!Files.isReadable(confDir)) {
+                    System.out.println("Creating config directory: " + confDir);
 
-						Files.createDirectory(confDir);
-					}
-					final Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
-					if (Files.isReadable(propPath)) {
-						System.out.println("Loading customized properties " + propertiesFile + " from " + confDir);
-						try (InputStream istream = Files.newInputStream(propPath)) {
-							properties.load(istream);
-						} catch (final Exception e) {
-							System.err.println("Failed loading customized properties " + propertiesFile + " from "
-									+ confDir + ": " + e.getMessage());
-						}
+                    Files.createDirectory(confDir);
+                }
+                final Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
+                if (Files.isReadable(propPath)) {
+                    System.out.println("Loading customized properties " + propertiesFile + " from " + confDir);
+                    try (InputStream istream = Files.newInputStream(propPath)) {
+                        properties.load(istream);
+                    } catch (final Exception e) {
+                        System.err.println("Failed loading customized properties " + propertiesFile + " from "
+                                + confDir + ": " + e.getMessage());
+                    }
 
-					} else {
-						System.out.println("Creating property file in:" + propPath);
+                } else {
+                    System.out.println("Creating property file in:" + propPath);
 
-						Files.createFile(propPath);
-						Files.write(propPath,
-								Convert.toBytes("# use this file for workstation specific " + propertiesFile));
-					}
-					return properties;
-				} catch (final IOException e) {
-					throw new IllegalArgumentException("Error loading " + propertiesFile, e);
-				}
-			}
+                    Files.createFile(propPath);
+                    Files.write(propPath,
+                            Convert.toBytes("# use this file for workstation specific " + propertiesFile));
+                }
+                return properties;
+            } catch (final IOException e) {
+                throw new IllegalArgumentException("Error loading " + propertiesFile, e);
+            }
 		} catch (final IllegalArgumentException e) {
 			e.printStackTrace(); // make sure we log this exception
 			throw e;
@@ -451,9 +421,8 @@ public final class Nxt {
 				"java.vendor", "java.vm.vendor", "java.home", "java.library.path", "java.class.path", "os.arch",
 				"sun.arch.data.model", "os.name", "file.encoding", "java.security.policy", "java.security.manager",
 				RuntimeEnvironment.RUNTIME_MODE_ARG, RuntimeEnvironment.DIRPROVIDER_ARG };
-		for (final String property : loggedProperties) {
-			Logger.logDebugMessage(String.format("%s = %s", property, System.getProperty(property)));
-		}
+		for (final String property : loggedProperties)
+            Logger.logDebugMessage(String.format("%s = %s", property, System.getProperty(property)));
 		Logger.logDebugMessage(String.format("availableProcessors = %s", Runtime.getRuntime().availableProcessors()));
 		Logger.logDebugMessage(String.format("maxMemory = %s", Runtime.getRuntime().maxMemory()));
 		Logger.logDebugMessage(String.format("processId = %s", Nxt.getProcessId()));
@@ -493,11 +462,8 @@ public final class Nxt {
 	private static void printCommandLineArguments() {
 		try {
 			final List<String> inputArguments = ManagementFactory.getRuntimeMXBean().getInputArguments();
-			if ((inputArguments != null) && (inputArguments.size() > 0)) {
-				System.out.println("Command line arguments");
-			} else {
-				return;
-			}
+			if ((inputArguments != null) && (inputArguments.size() > 0)) System.out.println("Command line arguments");
+            else return;
 			inputArguments.forEach(System.out::println);
 		} catch (final AccessControlException e) {
 			System.out.println("Cannot read input arguments " + e.getMessage());
@@ -507,31 +473,23 @@ public final class Nxt {
 	private static void redirectSystemStreams(final String streamName) {
 		final String isStandardRedirect = System.getProperty("nxt.redirect.system." + streamName);
 		Path path = null;
-		if (isStandardRedirect != null) {
-			try {
-				path = Files.createTempFile("nxt.system." + streamName + ".", ".log");
-			} catch (final IOException e) {
-				e.printStackTrace();
-				return;
-			}
-		} else {
+		if (isStandardRedirect != null) try {
+            path = Files.createTempFile("nxt.system." + streamName + ".", ".log");
+        } catch (final IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        else {
 			final String explicitFileName = System.getProperty("nxt.system." + streamName);
-			if (explicitFileName != null) {
-				path = Paths.get(explicitFileName);
-			}
+			if (explicitFileName != null) path = Paths.get(explicitFileName);
 		}
-		if (path != null) {
-			try {
-				final PrintStream stream = new PrintStream(Files.newOutputStream(path));
-				if (streamName.equals("out")) {
-					System.setOut(new PrintStream(stream));
-				} else {
-					System.setErr(new PrintStream(stream));
-				}
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
+		if (path != null) try {
+            final PrintStream stream = new PrintStream(Files.newOutputStream(path));
+            if (Objects.equals(streamName, "out")) System.setOut(new PrintStream(stream));
+            else System.setErr(new PrintStream(stream));
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
 	}
 
 	private static void setServerStatus(final ServerStatus status, final URI wallet) {
@@ -545,17 +503,16 @@ public final class Nxt {
 
 		for (final String propertyName : systemProperties) {
 			String propertyValue;
-			if ((propertyValue = Nxt.getStringProperty(propertyName)) != null) {
-				System.setProperty(propertyName, propertyValue);
-			}
+			if ((propertyValue = Nxt.getStringProperty(propertyName)) != null)
+                System.setProperty(propertyName, propertyValue);
 		}
 	}
 
-	static void setTime(final Time time) {
+	private static void setTime(final Time time) {
 		Nxt.time = time;
 	}
 
-	public static void shutdown() {
+	private static void shutdown() {
 		Logger.logShutdownMessage("Shutting down...");
 		AddOns.shutdown();
 		API.shutdown();
@@ -569,17 +526,13 @@ public final class Nxt {
 	}
 
 	private static void testSecureRandom() {
-		final Thread thread = new Thread(() -> {
-			Crypto.getSecureRandom().nextBytes(new byte[1024]);
-		});
+		final Thread thread = new Thread(() -> Crypto.getSecureRandom().nextBytes(new byte[1024]));
 		thread.setDaemon(true);
 		thread.start();
 		try {
 			thread.join(2000);
-			if (thread.isAlive()) {
-				throw new RuntimeException("SecureRandom implementation too slow!!! "
-						+ "Install haveged if on linux, or set nxt.useStrongSecureRandom=false.");
-			}
+			if (thread.isAlive()) throw new RuntimeException("SecureRandom implementation too slow!!! "
+                    + "Install haveged if on linux, or set nxt.useStrongSecureRandom=false.");
 		} catch (final InterruptedException ignore) {
 		}
 	}

@@ -30,7 +30,7 @@ public final class Redeem extends CreateTransaction {
 
 		String address = ParameterParser.getParameterMultipart(req, "redeem_address");
 		final String secp_signatures = ParameterParser.getParameterMultipart(req, "secp_signatures");
-		Account account = null;
+		Account account;
 		try {
 			Db.db.beginTransaction();
 			account = ParameterParser.getOrCreateSenderAccount(req);
@@ -45,22 +45,14 @@ public final class Redeem extends CreateTransaction {
 
 		final long account_to = ParameterParser.getOrCreateReceipientAccount(req);
 
-		if (address == null) {
-			return JSONResponses.MISSING_FIELDS_REDEEM;
-		} else if (secp_signatures == null) {
-			return JSONResponses.MISSING_FIELDS_REDEEM;
-		} else if (account == null) {
-			return JSONResponses.MISSING_FIELDS_REDEEM;
-		}
+		if (address == null) return JSONResponses.MISSING_FIELDS_REDEEM;
+        else if (secp_signatures == null) return JSONResponses.MISSING_FIELDS_REDEEM;
+        else if (account == null) return JSONResponses.MISSING_FIELDS_REDEEM;
 
 		final String[] parts = address.split(",");
-		if (parts.length == 3) {
-			address = parts[1];
-		}
+		if (parts.length == 3) address = parts[1];
 
-		if (nxt.Redeem.hasAddress(address) == false) {
-			return JSONResponses.MISSING_FIELDS_REDEEM;
-		}
+		if (!nxt.Redeem.hasAddress(address)) return JSONResponses.MISSING_FIELDS_REDEEM;
 		// More boundary checks
 		final long amountlong = ParameterParser.getAmountNQT(req);
 

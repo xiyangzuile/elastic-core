@@ -18,15 +18,11 @@ package nxt.http;
 
 import nxt.*;
 import nxt.db.DbIterator;
-import nxt.peer.Peer;
-import nxt.peer.Peers;
-import nxt.util.Convert;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 
 public final class GetSupernodes extends APIServlet.APIRequestHandler {
 

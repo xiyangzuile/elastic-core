@@ -18,7 +18,7 @@ package nxt.db;
 
 public abstract class PersistentDbTable<T> extends EntityDbTable<T> {
 
-	protected PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+	PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
 		super(table, dbKeyFactory, false, null);
 	}
 
@@ -27,8 +27,8 @@ public abstract class PersistentDbTable<T> extends EntityDbTable<T> {
 		super(table, dbKeyFactory, multiversion, fullTextSearchColumns);
 	}
 
-	protected PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
-			final String fullTextSearchColumns) {
+	PersistentDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
+                      final String fullTextSearchColumns) {
 		super(table, dbKeyFactory, false, fullTextSearchColumns);
 	}
 

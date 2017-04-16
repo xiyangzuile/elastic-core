@@ -62,13 +62,9 @@ public abstract class DbVersion {
 			int nextUpdate = 1;
 			try {
 				final ResultSet rs = stmt.executeQuery("SELECT next_update FROM version");
-				if (!rs.next()) {
-					throw new RuntimeException("Invalid version table");
-				}
+				if (!rs.next()) throw new RuntimeException("Invalid version table");
 				nextUpdate = rs.getInt("next_update");
-				if (!rs.isLast()) {
-					throw new RuntimeException("Invalid version table");
-				}
+				if (!rs.isLast()) throw new RuntimeException("Invalid version table");
 				rs.close();
 				Logger.logMessage(
 						"Database update may take a while if needed, current db version " + (nextUpdate - 1) + "...");

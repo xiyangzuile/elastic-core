@@ -1,8 +1,5 @@
 package nxt.http;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
 import org.json.simple.JSONStreamAware;
 import nxt.Account;
@@ -37,21 +34,13 @@ public final class CreateWork extends CreateTransaction {
 
 		final Account account = ParameterParser.getSenderAccount(req);
 
-		if (workTitle == null) {
-			return JSONResponses.MISSING_NAME;
-		} else if (workLanguage == null) {
-			return JSONResponses.MISSING_LANGUAGE;
-		} else if (programCode == null) {
-			return JSONResponses.MISSING_PROGAMCODE;
-		} else if (deadline == null) {
-			return JSONResponses.MISSING_DEADLINE;
-		} else if (xelPerBounty == null) {
-			return JSONResponses.MISSING_XEL_PER_BOUNTY;
-		} else if (xelPerPow == null) {
-			return JSONResponses.MISSING_XEL_PER_POW;
-		} else if (bountyLimit == null) {
-			return JSONResponses.MISSING_BOUNTYLIMIT;
-		}
+		if (workTitle == null) return JSONResponses.MISSING_NAME;
+        else if (workLanguage == null) return JSONResponses.MISSING_LANGUAGE;
+        else if (programCode == null) return JSONResponses.MISSING_PROGAMCODE;
+        else if (deadline == null) return JSONResponses.MISSING_DEADLINE;
+        else if (xelPerBounty == null) return JSONResponses.MISSING_XEL_PER_BOUNTY;
+        else if (xelPerPow == null) return JSONResponses.MISSING_XEL_PER_POW;
+        else if (bountyLimit == null) return JSONResponses.MISSING_BOUNTYLIMIT;
 
 		// Do some boundary checks
 		final byte workLanguageByte = 0x01;
@@ -59,9 +48,8 @@ public final class CreateWork extends CreateTransaction {
 		int deadlineInt;
 		try {
 			deadlineInt = Integer.parseInt(deadline);
-			if (deadlineInt > Constants.MAX_DEADLINE_FOR_WORK || deadlineInt < Constants.MIN_DEADLINE_FOR_WORK) {
-				return JSONResponses.INCORRECT_DEADLINE;
-			}
+			if (deadlineInt > Constants.MAX_DEADLINE_FOR_WORK || deadlineInt < Constants.MIN_DEADLINE_FOR_WORK)
+                return JSONResponses.INCORRECT_DEADLINE;
 
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_DEADLINE;
@@ -71,9 +59,7 @@ public final class CreateWork extends CreateTransaction {
 		try {
 			bountyLimitInt = Integer.parseInt(bountyLimit);
 			if ((bountyLimitInt > Constants.MAX_WORK_BOUNTY_LIMIT)
-					|| (bountyLimitInt < Constants.MIN_WORK_BOUNTY_LIMIT)) {
-				return JSONResponses.MISSING_BOUNTYLIMIT;
-			}
+					|| (bountyLimitInt < Constants.MIN_WORK_BOUNTY_LIMIT)) return JSONResponses.MISSING_BOUNTYLIMIT;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.MISSING_BOUNTYLIMIT;
 		}
@@ -81,9 +67,7 @@ public final class CreateWork extends CreateTransaction {
 		long xelPerPowInt;
 		try {
 			xelPerPowInt = Long.parseLong(xelPerPow);
-			if (xelPerPowInt < Constants.MIN_XEL_PER_POW) {
-				return JSONResponses.INCORRECT_XEL_PER_POW;
-			}
+			if (xelPerPowInt < Constants.MIN_XEL_PER_POW) return JSONResponses.INCORRECT_XEL_PER_POW;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_XEL_PER_POW;
 		}
@@ -91,9 +75,7 @@ public final class CreateWork extends CreateTransaction {
 		long xelPerBountyInt;
 		try {
 			xelPerBountyInt = Long.parseLong(xelPerBounty);
-			if (xelPerBountyInt < Constants.MIN_XEL_PER_BOUNTY) {
-				return JSONResponses.INCORRECT_XEL_PER_BOUNTY;
-			}
+			if (xelPerBountyInt < Constants.MIN_XEL_PER_BOUNTY) return JSONResponses.INCORRECT_XEL_PER_BOUNTY;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_XEL_PER_BOUNTY;
 		}
@@ -101,9 +83,8 @@ public final class CreateWork extends CreateTransaction {
 		// More boundary checks
 		final long amountlong = ParameterParser.getAmountNQT(req);
 
-		if ((workTitle.length() > Constants.MAX_TITLE_LENGTH) || (workTitle.length() < 1)) {
-			return JSONResponses.INCORRECT_WORK_NAME_LENGTH;
-		}
+		if ((workTitle.length() > Constants.MAX_TITLE_LENGTH) || (workTitle.length() < 1))
+            return JSONResponses.INCORRECT_WORK_NAME_LENGTH;
 
 		final Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte,
 				deadlineInt, bountyLimitInt, xelPerPowInt, xelPerBountyInt);

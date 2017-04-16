@@ -122,9 +122,7 @@ final class User {
 			throws IOException {
 		final JSONArray responses = new JSONArray();
 		JSONStreamAware pendingResponse;
-		while ((pendingResponse = this.pendingResponses.poll()) != null) {
-			responses.add(pendingResponse);
-		}
+		while ((pendingResponse = this.pendingResponses.poll()) != null) responses.add(pendingResponse);
 		if (responses.size() > 0) {
 			final JSONObject combinedResponse = new JSONObject();
 			combinedResponse.put("responses", responses);
@@ -160,19 +158,15 @@ final class User {
 	synchronized void send(final JSONStreamAware response) {
 		if (this.asyncContext == null) {
 
-			if (this.isInactive) {
-				// user not seen recently, no responses should be collected
-				return;
-			}
+            // user not seen recently, no responses should be collected
+            if (this.isInactive) return;
 			if (this.pendingResponses.size() > 1000) {
 				this.pendingResponses.clear();
 				// stop collecting responses for this user
 				this.isInactive = true;
-				if (this.secretPhrase == null) {
-					// but only completely remove users that don't have unlocked
-					// accounts
-					Users.remove(this);
-				}
+                // but only completely remove users that don't have unlocked
+// accounts
+                if (this.secretPhrase == null) Users.remove(this);
 				return;
 			}
 
@@ -182,11 +176,7 @@ final class User {
 
 			final JSONArray responses = new JSONArray();
 			JSONStreamAware pendingResponse;
-			while ((pendingResponse = this.pendingResponses.poll()) != null) {
-
-				responses.add(pendingResponse);
-
-			}
+			while ((pendingResponse = this.pendingResponses.poll()) != null) responses.add(pendingResponse);
 			responses.add(response);
 
 			final JSONObject combinedResponse = new JSONObject();

@@ -38,9 +38,7 @@ public final class GetBlockId extends APIServlet.APIRequestHandler {
 		int height;
 		try {
 			final String heightValue = Convert.emptyToNull(req.getParameter("height"));
-			if (heightValue == null) {
-				return JSONResponses.MISSING_HEIGHT;
-			}
+			if (heightValue == null) return JSONResponses.MISSING_HEIGHT;
 			height = Integer.parseInt(heightValue);
 		} catch (final RuntimeException e) {
 			return JSONResponses.INCORRECT_HEIGHT;

@@ -37,9 +37,7 @@ public final class GetBalance extends APIServlet.APIRequestHandler {
 		final boolean includeEffectiveBalance = "true".equalsIgnoreCase(req.getParameter("includeEffectiveBalance"));
 		final long accountId = ParameterParser.getAccountId(req, true);
 		int height = ParameterParser.getHeight(req);
-		if (height < 0) {
-			height = Nxt.getBlockchain().getHeight();
-		}
+		if (height < 0) height = Nxt.getBlockchain().getHeight();
 		final Account account = Account.getAccount(accountId, height);
 		return JSONData.accountBalance(account, includeEffectiveBalance, height);
 	}

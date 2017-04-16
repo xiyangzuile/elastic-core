@@ -25,7 +25,7 @@ public abstract class NxtException extends Exception {
 	 */
 	private static final long serialVersionUID = 8278126418545304279L;
 
-	public static class AccountControlException extends NotCurrentlyValidException {
+	private static class AccountControlException extends NotCurrentlyValidException {
 
 		/**
 		 * 
@@ -212,15 +212,15 @@ public abstract class NxtException extends Exception {
 		super();
 	}
 
-	protected NxtException(final String message) {
+	NxtException(final String message) {
 		super(message);
 	}
 
-	protected NxtException(final String message, final Throwable cause) {
+	NxtException(final String message, final Throwable cause) {
 		super(message, cause);
 	}
 
-	protected NxtException(final Throwable cause) {
+	NxtException(final Throwable cause) {
 		super(cause);
 	}
 

@@ -48,26 +48,21 @@ public final class DetectMimeType extends APIServlet.APIRequestHandler {
 		String filename = Convert.nullToEmpty(req.getParameter("filename")).trim();
 		final String dataValue = Convert.emptyToNull(req.getParameter("data"));
 		byte[] data;
-		if (dataValue == null) {
-			try {
-				final Part part = req.getPart("file");
-				if (part == null) {
-					throw new ParameterException(JSONResponses.INCORRECT_TAGGED_DATA_FILE);
-				}
-				final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
-				data = fileData.getData();
-				// Depending on how the client submits the form, the filename,
-				// can be a regular parameter
-				// or encoded in the multipart form. If its not a parameter we
-				// take from the form
-				if (filename.isEmpty() && (fileData.getFilename() != null)) {
-					filename = fileData.getFilename();
-				}
-			} catch (IOException | ServletException e) {
-				Logger.logDebugMessage("error in reading file data", e);
-				throw new ParameterException(JSONResponses.INCORRECT_TAGGED_DATA_FILE);
-			}
-		} else {
+		if (dataValue == null) try {
+            final Part part = req.getPart("file");
+            if (part == null) throw new ParameterException(JSONResponses.INCORRECT_TAGGED_DATA_FILE);
+            final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
+            data = fileData.getData();
+            // Depending on how the client submits the form, the filename,
+            // can be a regular parameter
+            // or encoded in the multipart form. If its not a parameter we
+            // take from the form
+            if (filename.isEmpty() && (fileData.getFilename() != null)) filename = fileData.getFilename();
+        } catch (IOException | ServletException e) {
+            Logger.logDebugMessage("error in reading file data", e);
+            throw new ParameterException(JSONResponses.INCORRECT_TAGGED_DATA_FILE);
+        }
+        else {
 			final boolean isText = !"false".equalsIgnoreCase(req.getParameter("isText"));
 			data = isText ? Convert.toBytes(dataValue) : Convert.parseHexString(dataValue);
 		}

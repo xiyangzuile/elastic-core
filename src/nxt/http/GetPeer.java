@@ -40,14 +40,10 @@ public final class GetPeer extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
 		final String peerAddress = req.getParameter("peer");
-		if (peerAddress == null) {
-			return JSONResponses.MISSING_PEER;
-		}
+		if (peerAddress == null) return JSONResponses.MISSING_PEER;
 
 		final Peer peer = Peers.findOrCreatePeer(peerAddress, false);
-		if (peer == null) {
-			return JSONResponses.UNKNOWN_PEER;
-		}
+		if (peer == null) return JSONResponses.UNKNOWN_PEER;
 
 		return JSONData.peer(peer);
 

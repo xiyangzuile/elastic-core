@@ -37,11 +37,8 @@ public interface Appendix {
 		}
 
 		AbstractAppendix(final ByteBuffer buffer, final byte transactionVersion) {
-			if (transactionVersion == 0) {
-				this.version = 0;
-			} else {
-				this.version = buffer.get();
-			}
+			if (transactionVersion == 0) this.version = 0;
+			else this.version = buffer.get();
 		}
 
 		AbstractAppendix(final int version) {
@@ -116,9 +113,7 @@ public interface Appendix {
 
 		@Override
 		public final void putBytes(final ByteBuffer buffer) {
-			if (this.version > 0) {
-				buffer.put(this.version);
-			}
+			if (this.version > 0) buffer.put(this.version);
 			this.putMyBytes(buffer);
 		}
 
@@ -164,9 +159,7 @@ public interface Appendix {
 		};
 
 		static PrunableSourceCode parse(final JSONObject attachmentData) {
-			if (!Appendix.hasAppendix(PrunableSourceCode.appendixName, attachmentData)) {
-				return null;
-			}
+			if (!Appendix.hasAppendix(PrunableSourceCode.appendixName, attachmentData)) return null;
 			return new PrunableSourceCode(attachmentData);
 		}
 
@@ -218,9 +211,8 @@ public interface Appendix {
 
 		@Override
 		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount) {
-			if ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MAX_PRUNABLE_LIFETIME) {
+			if ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MAX_PRUNABLE_LIFETIME)
 				nxt.PrunableSourceCode.add((TransactionImpl) transaction, this);
-			}
 		}
 
 		@Override
@@ -235,9 +227,7 @@ public interface Appendix {
 
 		@Override
 		public byte[] getHash() {
-			if (this.hash != null) {
-				return this.hash;
-			}
+			if (this.hash != null) return this.hash;
 			final MessageDigest digest = Crypto.sha256();
 			digest.update(this.source);
 			digest.update(Short.toString(this.language).getBytes());
@@ -245,9 +235,7 @@ public interface Appendix {
 		}
 
 		public short getLanguage() {
-			if (this.prunableSourceCode != null) {
-				return this.prunableSourceCode.getLanguage();
-			}
+			if (this.prunableSourceCode != null) return this.prunableSourceCode.getLanguage();
 			return this.language;
 		}
 
@@ -263,9 +251,7 @@ public interface Appendix {
 		}
 
 		public byte[] getSource() {
-			if (this.prunableSourceCode != null) {
-				return this.prunableSourceCode.getSource();
-			}
+			if (this.prunableSourceCode != null) return this.prunableSourceCode.getSource();
 			return this.source;
 		}
 
@@ -279,9 +265,8 @@ public interface Appendix {
 			if (!this.hasPrunableData() && this.shouldLoadPrunable(transaction, includeExpiredPrunable)) {
 				final nxt.PrunableSourceCode prunableSourceCode = nxt.PrunableSourceCode
 						.getPrunableSourceCode(transaction.getId());
-				if ((prunableSourceCode != null) && (prunableSourceCode.getSource() != null)) {
+				if ((prunableSourceCode != null) && (prunableSourceCode.getSource() != null))
 					this.prunableSourceCode = prunableSourceCode;
-				}
 			}
 		}
 
@@ -316,10 +301,8 @@ public interface Appendix {
 
 		@Override
 		void validate(final Transaction transaction) throws NxtException.ValidationException {
-			if (transaction.getType() != TransactionType.WorkControl.NEW_TASK) {
-				throw new NxtException.NotValidException(
-						"Source code can only be attached to work-creation transactions!");
-			}
+			if (transaction.getType() != TransactionType.WorkControl.NEW_TASK) throw new NotValidException(
+					"Source code can only be attached to work-creation transactions!");
 
 			if (this.source != null) {
 				byte[] src = this.getSource();
@@ -328,26 +311,20 @@ public interface Appendix {
 
 
 				// Do heuristic precheck here to avoid costly DOS attack on uncompression function
-				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH * 4)) {
-					throw new NxtException.NotValidException(
-							"Source code in compressed form is longer than 4 times the threshold!");
-				}
+				if ((src != null) && (src.length > Constants.MAX_WORK_CODE_LENGTH * 4)) throw new NotValidException(
+						"Source code in compressed form is longer than 4 times the threshold!");
 
 				// try to decompress
-				if(src!=null) {
-					try {
-						dec = Convert.uncompress(src);
-					} catch (Exception e) {
-						throw new NotValidException(e.toString());
-					}
+				if(src!=null) try {
+					dec = Convert.uncompress(src);
+				} catch (Exception e) {
+					throw new NotValidException(e.toString());
 				}
 				if ((src == null)
-						&& ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME)) {
+						&& ((Nxt.getEpochTime() - transaction.getTimestamp()) < Constants.MIN_PRUNABLE_LIFETIME))
 					throw new NxtException.NotCurrentlyValidException("Source code has been pruned prematurely");
-				}
-				if ((dec != null) && (dec.length > Constants.MAX_WORK_CODE_LENGTH)) {
-					throw new NxtException.NotValidException("Invalid source code length: " + src.length);
-				}
+				if ((dec != null) && (dec.length > Constants.MAX_WORK_CODE_LENGTH))
+					throw new NotValidException("Invalid source code length: " + src.length);
 
 			}
 
@@ -360,9 +337,7 @@ public interface Appendix {
 		private static final String appendixName = "PublicKeyAnnouncement";
 
 		static PublicKeyAnnouncement parse(final JSONObject attachmentData) {
-			if (!Appendix.hasAppendix(PublicKeyAnnouncement.appendixName, attachmentData)) {
-				return null;
-			}
+			if (!Appendix.hasAppendix(PublicKeyAnnouncement.appendixName, attachmentData)) return null;
 			return new PublicKeyAnnouncement(attachmentData);
 		}
 
@@ -386,12 +361,9 @@ public interface Appendix {
 		@Override
 		void apply(final Transaction transaction, final Account senderAccount, final Account recipientAccount)
 				throws NotValidException {
-			if (recipientAccount == null) {
-				throw new NxtException.NotValidException("PublicKeyAnnouncement must have a correct receipient");
-			}
-			if (Account.setOrVerify(recipientAccount.getId(), this.publicKey)) {
-				recipientAccount.apply(this.publicKey);
-			}
+			if (recipientAccount == null)
+				throw new NotValidException("PublicKeyAnnouncement must have a correct receipient");
+			if (Account.setOrVerify(recipientAccount.getId(), this.publicKey)) recipientAccount.apply(this.publicKey);
 		}
 
 		@Override
@@ -420,29 +392,23 @@ public interface Appendix {
 
 		@Override
 		void validate(final Transaction transaction) throws NxtException.ValidationException {
-			if (transaction.getRecipientId() == 0 || transaction.getType().canHaveRecipient() == false || transaction.getType() == TransactionType.Payment.REDEEM) {
-				throw new NxtException.NotValidException(
+			if (transaction.getRecipientId() == 0 || !transaction.getType().canHaveRecipient() || transaction.getType() == TransactionType.Payment.REDEEM)
+				throw new NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions with no recipient or to redeem transactions");
-			}
 
-			if (transaction.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST || transaction.getType() == TransactionType.WorkControl.BOUNTY || transaction.getType() == TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT || transaction.getType() == TransactionType.WorkControl.PROOF_OF_WORK || transaction.getType() == TransactionType.WorkControl.NEW_TASK) {
-				throw new NxtException.NotValidException(
+			if (transaction.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST || transaction.getType() == TransactionType.WorkControl.BOUNTY || transaction.getType() == TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT || transaction.getType() == TransactionType.WorkControl.PROOF_OF_WORK || transaction.getType() == TransactionType.WorkControl.NEW_TASK)
+				throw new NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions related to work creation or management");
-			}
 
-			if (!Crypto.isCanonicalPublicKey(this.publicKey)) {
-				throw new NxtException.NotValidException(
-						"Invalid recipient public key: " + Convert.toHexString(this.publicKey));
-			}
+			if (!Crypto.isCanonicalPublicKey(this.publicKey)) throw new NotValidException(
+					"Invalid recipient public key: " + Convert.toHexString(this.publicKey));
 			final long recipientId = transaction.getRecipientId();
-			if (Account.getId(this.publicKey) != recipientId) {
-				throw new NxtException.NotValidException("Announced public key does not match recipient accountId");
-			}
+			if (Account.getId(this.publicKey) != recipientId)
+				throw new NotValidException("Announced public key does not match recipient accountId");
 			final byte[] recipientPublicKey = Account.getPublicKey(recipientId);
-			if ((recipientPublicKey != null) && !Arrays.equals(this.publicKey, recipientPublicKey)) {
+			if ((recipientPublicKey != null) && !Arrays.equals(this.publicKey, recipientPublicKey))
 				throw new NxtException.NotCurrentlyValidException(
 						"A different public key for this account has already been announced");
-			}
 		}
 
 	}

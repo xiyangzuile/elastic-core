@@ -109,9 +109,7 @@ public final class TransactionImpl implements Transaction {
 
 		@Override
 		public TransactionImpl build(final String secretPhrase) throws NxtException.NotValidException {
-			if (this.timestamp == Integer.MAX_VALUE) {
-				this.timestamp = Nxt.getEpochTime();
-			}
+			if (this.timestamp == Integer.MAX_VALUE) this.timestamp = Nxt.getEpochTime();
 			if (!this.ecBlockSet) {
 				final Block ecBlock = BlockchainImpl.getInstance().getECBlock(this.timestamp);
 				this.ecBlockHeight = ecBlock.getHeight();
@@ -122,9 +120,7 @@ public final class TransactionImpl implements Transaction {
 
 		@Override
 		public TransactionImpl buildUnixTimeStamped(final String secretPhrase, final int unixTimestamp) throws NxtException.NotValidException {
-			if (this.timestamp == Integer.MAX_VALUE) {
-				this.timestamp = Convert.toEpochTime(unixTimestamp * 1000L);
-			}
+			if (this.timestamp == Integer.MAX_VALUE) this.timestamp = Convert.toEpochTime(unixTimestamp * 1000L);
 			if (!this.ecBlockSet) {
 				final Block ecBlock = BlockchainImpl.getInstance().getECBlock(this.timestamp);
 				this.ecBlockHeight = ecBlock.getHeight();
@@ -237,33 +233,25 @@ public final class TransactionImpl implements Transaction {
 			signature = Convert.emptyToNull(signature);
 			buffer.get(supernode_signature);
 			supernode_signature = Convert.emptyToNull(supernode_signature);
-			int flags = 0;
-			int ecBlockHeight = 0;
-			long ecBlockId = 0;
+			int flags;
+			int ecBlockHeight;
+			long ecBlockId;
 			flags = buffer.getInt();
 			ecBlockHeight = buffer.getInt();
 			ecBlockId = buffer.getLong();
 
 			final TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-			if (transactionType == null) {
-				throw new NxtException.NotValidException("Unknown transaction type");
-			}
+			if (transactionType == null) throw new NotValidException("Unknown transaction type");
 
 			final TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
 					deadline, transactionType.parseAttachment(buffer, version)).timestamp(timestamp)
 							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature).supernode_signature(superNodePublicKey, supernode_signature)
 							.ecBlockHeight(ecBlockHeight).ecBlockId(ecBlockId);
-			if (transactionType.canHaveRecipient()) {
-				builder.recipientId(recipientId);
-			}
+			if (transactionType.canHaveRecipient()) builder.recipientId(recipientId);
 			int position = 1;
-			if ((flags & position) != 0) {
-				builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
-			}
+			if ((flags & position) != 0) builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
 			position <<= 1;
-			if ((flags & position) != 0) {
-				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
-			}
+			if ((flags & position) != 0) builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
 			if (buffer.hasRemaining()) {
 				byte[] rem = new byte[buffer.remaining()];
 				buffer.get(rem);
@@ -285,9 +273,7 @@ public final class TransactionImpl implements Transaction {
 
 			final Appendix.PrunableSourceCode prunableSourceCode = Appendix.PrunableSourceCode
 					.parse(prunableAttachments);
-			if (prunableSourceCode != null) {
-				builder.appendix(prunableSourceCode);
-			}
+			if (prunableSourceCode != null) builder.appendix(prunableSourceCode);
 		}
 		return builder;
 	}
@@ -309,15 +295,14 @@ public final class TransactionImpl implements Transaction {
 			final Long versionValue = (Long) transactionData.get("version");
 			final byte version = versionValue == null ? 0 : versionValue.byteValue();
 			final JSONObject attachmentData = (JSONObject) transactionData.get("attachment");
-			int ecBlockHeight = 0;
-			long ecBlockId = 0;
+			int ecBlockHeight;
+			long ecBlockId;
 			ecBlockHeight = ((Long) transactionData.get("ecBlockHeight")).intValue();
 			ecBlockId = Convert.parseUnsignedLong((String) transactionData.get("ecBlockId"));
 
 			final TransactionType transactionType = TransactionType.findTransactionType(type, subtype);
-			if (transactionType == null) {
-				throw new NxtException.NotValidException("Invalid transaction type: " + type + ", " + subtype);
-			}
+			if (transactionType == null)
+                throw new NotValidException("Invalid transaction type: " + type + ", " + subtype);
 			final TransactionImpl.BuilderImpl builder = new BuilderImpl(version, senderPublicKey, amountNQT, feeNQT,
 					deadline, transactionType.parseAttachment(attachmentData)).timestamp(timestamp)
 							.referencedTransactionFullHash(referencedTransactionFullHash).signature(signature).supernode_signature(superNodePublicKey, supernode_signature)
@@ -340,10 +325,8 @@ public final class TransactionImpl implements Transaction {
 	public static TransactionImpl parseTransaction(final JSONObject transactionData) throws NxtException.NotValidException {
 		final TransactionImpl transaction = TransactionImpl.newTransactionBuilder(transactionData).build();
 
-		if ((transaction.getSignature() != null) && !transaction.checkSignature()) {
-			throw new NxtException.NotValidException(
-					"Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
-		}
+		if ((transaction.getSignature() != null) && !transaction.checkSignature()) throw new NotValidException(
+                "Invalid transaction signature for transaction " + transaction.getJSONObject().toJSONString());
 
 		return transaction;
 	}
@@ -417,59 +400,45 @@ public final class TransactionImpl implements Transaction {
 		this.ecBlockId = builder.ecBlockId;
 
 		final List<Appendix.AbstractAppendix> list = new ArrayList<>();
-		if ((this.attachment = builder.attachment) != null) {
-			list.add(this.attachment);
-		}
+		if ((this.attachment = builder.attachment) != null) list.add(this.attachment);
 
-		if ((this.publicKeyAnnouncement = builder.publicKeyAnnouncement) != null) {
-			list.add(this.publicKeyAnnouncement);
-		}
+		if ((this.publicKeyAnnouncement = builder.publicKeyAnnouncement) != null) list.add(this.publicKeyAnnouncement);
 
-		if ((this.prunableSourceCode = builder.prunableSourceCode) != null) {
-			list.add(this.prunableSourceCode);
-		}
+		if ((this.prunableSourceCode = builder.prunableSourceCode) != null) list.add(this.prunableSourceCode);
 
 		this.appendages = Collections.unmodifiableList(list);
 		int appendagesSize = 0;
 		for (final Appendix appendage : this.appendages) {
-			if ((secretPhrase != null) && (appendage instanceof Appendix.Encryptable)) {
-				((Appendix.Encryptable) appendage).encrypt(secretPhrase);
-			}
+			if ((secretPhrase != null) && (appendage instanceof Appendix.Encryptable))
+                ((Appendix.Encryptable) appendage).encrypt(secretPhrase);
 			appendagesSize += appendage.getSize();
 		}
 		this.appendagesSize = appendagesSize;
-		if ((builder.feeNQT <= 0) || (Constants.correctInvalidFees && (builder.signature == null))) {
-			if (this.type.zeroFeeTransaction()) {
-				this.feeNQT = 0;
-			} else {
-				final int effectiveHeight = (this.height < Integer.MAX_VALUE ? this.height
-						: Nxt.getBlockchain().getHeight());
-				final long minFee = this.getMinimumFeeNQT(effectiveHeight);
-				this.feeNQT = Math.max(minFee, builder.feeNQT);
-			}
-		} else {
-			this.feeNQT = builder.feeNQT;
-		}
+		if ((builder.feeNQT <= 0) || (Constants.correctInvalidFees && (builder.signature == null)))
+            if (this.type.zeroFeeTransaction()) this.feeNQT = 0;
+            else {
+                final int effectiveHeight = (this.height < Integer.MAX_VALUE ? this.height
+                        : Nxt.getBlockchain().getHeight());
+                final long minFee = this.getMinimumFeeNQT(effectiveHeight);
+                this.feeNQT = Math.max(minFee, builder.feeNQT);
+            }
+        else this.feeNQT = builder.feeNQT;
 
 		// save supernode sig
 		this.supernode_signature = Convert.emptyToNull(builder.supernode_signature);
 
-		if ((builder.signature != null) && (secretPhrase != null)) {
-			throw new NxtException.NotValidException("Transaction is already signed");
-		} else if (builder.signature != null) {
-			this.signature = builder.signature;
-		} else if (secretPhrase != null) {
+		if ((builder.signature != null) && (secretPhrase != null))
+            throw new NotValidException("Transaction is already signed");
+        else if (builder.signature != null) this.signature = builder.signature;
+        else if (secretPhrase != null) {
 			if (!(this.getAttachment() instanceof Attachment.RedeemAttachment) && (this.getSenderPublicKey() != null)
-					&& !Arrays.equals(this.senderPublicKey, Crypto.getPublicKey(secretPhrase))) {
-				throw new NxtException.NotValidException("Secret phrase doesn't match transaction sender public key");
-			}
+					&& !Arrays.equals(this.senderPublicKey, Crypto.getPublicKey(secretPhrase)))
+                throw new NotValidException("Secret phrase doesn't match transaction sender public key");
 			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && (this.getSenderPublicKey() != null)
-					&& !Arrays.equals(this.senderPublicKey, Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY))) {
-				throw new NxtException.NotValidException("Secret phrase doesn't match REDEEM_ID public key");
-			}
-			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && (this.getSenderPublicKey() == null)) {
-				throw new NxtException.NotValidException("This transaction must be bound to REDEEM_ID public key");
-			}
+					&& !Arrays.equals(this.senderPublicKey, Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY)))
+                throw new NotValidException("Secret phrase doesn't match REDEEM_ID public key");
+			if ((this.getAttachment() instanceof Attachment.RedeemAttachment) && (this.getSenderPublicKey() == null))
+                throw new NotValidException("This transaction must be bound to REDEEM_ID public key");
 			byte[] toSignBytes = this.bytes();
 			this.signature = Crypto.sign(toSignBytes, secretPhrase);
 			this.bytes = null;
@@ -485,6 +454,7 @@ public final class TransactionImpl implements Transaction {
 		}
 	}
 
+	@Override
 	public void signSuperNode(String secretPhrase) {
 		this.supernode_signature = Crypto.sign(this.zeroPartSignature(this.getBytes()), secretPhrase);
 		this.superNodePublicKey = Crypto.getPublicKey(secretPhrase);
@@ -506,14 +476,11 @@ public final class TransactionImpl implements Transaction {
 		Account recipientAccount = null;
 		if (this.recipientId != 0) {
 			recipientAccount = Account.getAccount(this.recipientId);
-			if (recipientAccount == null) {
-				recipientAccount = Account.addOrGetAccount(this.recipientId);
-			}
+			if (recipientAccount == null) recipientAccount = Account.addOrGetAccount(this.recipientId);
 		}
-		if (this.referencedTransactionFullHash != null) {
-			senderAccount.addToUnconfirmedBalanceNQT(this.getType().getLedgerEvent(), this.getId(), 0,
-					Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
-		}
+		if (this.referencedTransactionFullHash != null)
+            senderAccount.addToUnconfirmedBalanceNQT(this.getType().getLedgerEvent(), this.getId(), 0,
+                    Constants.UNCONFIRMED_POOL_DEPOSIT_NQT);
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
 			appendage.apply(this, senderAccount, recipientAccount);
@@ -528,88 +495,70 @@ public final class TransactionImpl implements Transaction {
 
 	boolean attachmentIsDuplicate(final Map<TransactionType, Map<String, Integer>> duplicates,
 			final boolean atAcceptanceHeight) {
-		if (!atAcceptanceHeight) {
-			return false;
-		}
-		if (atAcceptanceHeight) {
-			// all are checked at acceptance height for block duplicates
-			if (this.type.isBlockDuplicate(this, duplicates)) {
-				return true;
-			}
-		}
+		if (!atAcceptanceHeight) return false;
+		// all are checked at acceptance height for block duplicates
+		if (this.type.isBlockDuplicate(this, duplicates)) return true;
 		// non-phased at acceptance height, and phased at execution height
 		return this.type.isDuplicate(this, duplicates);
 	}
 
 	@Override
 	public byte[] getSupernodeSig() {
-		if(this.supernode_signature == null || this.supernode_signature == new byte[32]){
-			return null;
-		}
+		if(this.supernode_signature == null || this.supernode_signature == new byte[32]) return null;
 		return Convert.emptyToNull(this.supernode_signature);
 	}
 
 	private byte[] bytes() {
-		if (this.bytes == null) {
-			try {
-				final ByteBuffer buffer = ByteBuffer.allocate(this.getSize());
-				buffer.order(ByteOrder.LITTLE_ENDIAN);
-				buffer.put(this.type.getType());
-				buffer.put((byte) ((this.version << 4) | this.type.getSubtype()));
-				buffer.putInt(this.timestamp);
-				buffer.putShort(this.deadline);
-				buffer.put(this.getSenderPublicKey());
-				buffer.put(Convert.emptyToNull(this.superNodePublicKey)!= null ? this.superNodePublicKey : new byte[32]);
-				buffer.putLong(this.type.canHaveRecipient() ? this.recipientId : Genesis.CREATOR_ID);
-					buffer.putLong(this.amountNQT);
-					buffer.putLong(this.feeNQT);
-					if (this.referencedTransactionFullHash != null) {
-						buffer.put(this.referencedTransactionFullHash);
-					} else {
-						buffer.put(new byte[32]);
-					}
+		if (this.bytes == null) try {
+            final ByteBuffer buffer = ByteBuffer.allocate(this.getSize());
+            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            buffer.put(this.type.getType());
+            buffer.put((byte) ((this.version << 4) | this.type.getSubtype()));
+            buffer.putInt(this.timestamp);
+            buffer.putShort(this.deadline);
+            buffer.put(this.getSenderPublicKey());
+            buffer.put(Convert.emptyToNull(this.superNodePublicKey) != null ? this.superNodePublicKey : new byte[32]);
+            buffer.putLong(this.type.canHaveRecipient() ? this.recipientId : Genesis.CREATOR_ID);
+            buffer.putLong(this.amountNQT);
+            buffer.putLong(this.feeNQT);
+            if (this.referencedTransactionFullHash != null) buffer.put(this.referencedTransactionFullHash);
+            else buffer.put(new byte[32]);
 
-				buffer.put(this.signature != null ? this.signature : new byte[64]);
-				buffer.put(Convert.emptyToNull(this.supernode_signature) != null ? this.supernode_signature : new byte[64]);
-				buffer.putInt(this.getFlags());
-				buffer.putInt(this.ecBlockHeight);
-				buffer.putLong(this.ecBlockId);
+            buffer.put(this.signature != null ? this.signature : new byte[64]);
+            buffer.put(Convert.emptyToNull(this.supernode_signature) != null ? this.supernode_signature : new byte[64]);
+            buffer.putInt(this.getFlags());
+            buffer.putInt(this.ecBlockHeight);
+            buffer.putLong(this.ecBlockId);
 
-				for (final Appendix appendage : this.appendages) {
-					appendage.putBytes(buffer);
-				}
-				this.bytes = buffer.array();
-			} catch (final RuntimeException e) {
-				if (this.signature != null) {
-					Logger.logDebugMessage(
-							"Failed to get transaction bytes for transaction: " + this.getJSONObject().toJSONString());
-				}
-				throw e;
-			}
-		}
+            for (final Appendix appendage : this.appendages) appendage.putBytes(buffer);
+            this.bytes = buffer.array();
+        } catch (final RuntimeException e) {
+            if (this.signature != null) Logger.logDebugMessage(
+                    "Failed to get transaction bytes for transaction: " + this.getJSONObject().toJSONString());
+            throw e;
+        }
 		return this.bytes;
 	}
 
+	@Override
 	public byte[] getSuperNodePublicKey() {
 		return Convert.emptyToNull(this.superNodePublicKey);
 	}
 
 	private boolean checkSignature() {
-		if (!this.hasValidSignature) {
-			if (this.getAttachment() instanceof Attachment.RedeemAttachment) {
-				this.hasValidSignature = true; // TODO FIXME! CHECK IF SIGNATURE
-												// BELONGS TO RECEIVER!!!!!
-			} else {
-				byte[] toVerifyBytes = this.getBytes();
+        // BELONGS TO RECEIVER!!!!!
+        if (!this.hasValidSignature) if (this.getAttachment() instanceof Attachment.RedeemAttachment)
+            this.hasValidSignature = true; // TODO FIXME! CHECK IF SIGNATURE
+        else {
+            byte[] toVerifyBytes = this.getBytes();
 
 
-				this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
-						this.zeroSignature(toVerifyBytes), this.getSenderPublicKey());
-				Logger.logSignMessage("Verifying HEX:\t" + Convert.toHexString(toVerifyBytes) +
-						"\nZero'ed HEX:\t" + Convert.toHexString(this.zeroSignature(toVerifyBytes)) +
-						"\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t"+this.hasValidSignature + "\nTrans. IDNR:\t"+Convert.toUnsignedLong(this.getId()));
-			}
-		}
+            this.hasValidSignature = (this.signature != null) && Crypto.verify(this.signature,
+                    this.zeroSignature(toVerifyBytes), this.getSenderPublicKey());
+            Logger.logSignMessage("Verifying HEX:\t" + Convert.toHexString(toVerifyBytes) +
+                    "\nZero'ed HEX:\t" + Convert.toHexString(this.zeroSignature(toVerifyBytes)) +
+                    "\nJson Trans.:\t" + this.getJSONObject() + "\nVERIFY RESULT:\t" + this.hasValidSignature + "\nTrans. IDNR:\t" + Convert.toUnsignedLong(this.getId()));
+        }
 		return this.hasValidSignature;
 	}
 
@@ -627,9 +576,7 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	byte[] fullHash() {
-		if (this.fullHash == null) {
-			this.getId();
-		}
+		if (this.fullHash == null) this.getId();
 		return this.fullHash;
 	}
 
@@ -645,9 +592,8 @@ public final class TransactionImpl implements Transaction {
 
 	@Override
 	public List<Appendix.AbstractAppendix> getAppendages(final boolean includeExpiredPrunable) {
-		for (final Appendix.AbstractAppendix appendage : this.appendages) {
-			appendage.loadPrunable(this, includeExpiredPrunable);
-		}
+		for (final Appendix.AbstractAppendix appendage : this.appendages)
+            appendage.loadPrunable(this, includeExpiredPrunable);
 		return this.appendages;
 	}
 
@@ -675,9 +621,8 @@ public final class TransactionImpl implements Transaction {
 
 	@Override
 	public BlockImpl getBlock() {
-		if ((this.block == null) && (this.blockId != 0)) {
-			this.block = BlockchainImpl.getInstance().getBlock(this.blockId);
-		}
+		if ((this.block == null) && (this.blockId != 0))
+            this.block = BlockchainImpl.getInstance().getBlock(this.blockId);
 		return this.block;
 	}
 
@@ -697,9 +642,8 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	DbKey getDbKey() {
-		if (this.dbKey == null) {
-			this.dbKey = TransactionProcessorImpl.getInstance().unconfirmedTransactionDbKeyFactory.newKey(this.getId());
-		}
+		if (this.dbKey == null)
+            this.dbKey = TransactionProcessorImpl.getInstance().unconfirmedTransactionDbKeyFactory.newKey(this.getId());
 		return this.dbKey;
 	}
 
@@ -736,13 +680,9 @@ public final class TransactionImpl implements Transaction {
 	private int getFlags() {
 		int flags = 0;
 		int position = 1;
-		if (this.publicKeyAnnouncement != null) {
-			flags |= position;
-		}
+		if (this.publicKeyAnnouncement != null) flags |= position;
 		position <<= 1;
-		if (this.prunableSourceCode != null) {
-			flags |= position;
-		}
+		if (this.prunableSourceCode != null) flags |= position;
 		return flags;
 	}
 
@@ -754,9 +694,7 @@ public final class TransactionImpl implements Transaction {
 	@Override
 	public int getFullSize() {
 		int fullSize = this.getSize() - this.appendagesSize;
-		for (final Appendix.AbstractAppendix appendage : this.getAppendages()) {
-			fullSize += appendage.getFullSize();
-		}
+		fullSize += this.getAppendages().stream().mapToInt(Appendix.AbstractAppendix::getFullSize).sum();
 		return fullSize;
 	}
 
@@ -769,21 +707,18 @@ public final class TransactionImpl implements Transaction {
 	public long getId() {
 		if (this.id == 0) {
 			if (this.signature == null) {
-				{
-					IllegalStateException ex = new IllegalStateException("Transaction is not signed yet: " + Convert.toHexString(this.bytes()));
-					ex.printStackTrace();
-					throw ex;
-				}
-			}
+                IllegalStateException ex = new IllegalStateException("Transaction is not signed yet: " + Convert.toHexString(this.bytes()));
+                ex.printStackTrace();
+                throw ex;
+            }
 				final byte[] data = this.zeroSignature(this.getBytes());
 				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
 				byte[] supernodeHash = null;
 				if(Convert.emptyToNull(this.supernode_signature) != null)
-					supernodeHash = Crypto.sha256().digest(this.supernode_signature);
+                    supernodeHash = Crypto.sha256().digest(this.supernode_signature);
 				final MessageDigest digest = Crypto.sha256();
 				digest.update(data);
-				if(supernodeHash!=null)
-					digest.update(supernodeHash);
+				if(supernodeHash!=null) digest.update(supernodeHash);
 				this.fullHash = digest.digest(signatureHash);
 
 			final BigInteger bigInteger = new BigInteger(1,
@@ -799,12 +734,10 @@ public final class TransactionImpl implements Transaction {
 	public long getSNCleanedId() {
 		if (this.sncleanid == 0) {
 			if (this.signature == null) {
-				{
-					IllegalStateException ex = new IllegalStateException("Transaction is not signed yet: " + Convert.toHexString(this.bytes()));
-					ex.printStackTrace();
-					throw ex;
-				}
-			}
+                IllegalStateException ex = new IllegalStateException("Transaction is not signed yet: " + Convert.toHexString(this.bytes()));
+                ex.printStackTrace();
+                throw ex;
+            }
 				final byte[] data = this.zeroSignature(this.getBytes());
 				final byte[] signatureHash = Crypto.sha256().digest(this.signature);
 
@@ -823,9 +756,7 @@ public final class TransactionImpl implements Transaction {
 
 	@Override
 	public short getIndex() {
-		if (this.index == -1) {
-			throw new IllegalStateException("Transaction index has not been set");
-		}
+		if (this.index == -1) throw new IllegalStateException("Transaction index has not been set");
 		return this.index;
 	}
 
@@ -839,21 +770,18 @@ public final class TransactionImpl implements Transaction {
 		json.put("senderPublicKey", Convert.toHexString(this.getSenderPublicKey()));
 
 		if(this.getSuperNodePublicKey()!=null)
-			json.put("superNodePublicKey", Convert.toHexString(this.getSuperNodePublicKey()));
+            json.put("superNodePublicKey", Convert.toHexString(this.getSuperNodePublicKey()));
 
-		if (this.type.canHaveRecipient()) {
-			json.put("recipient", Long.toUnsignedString(this.recipientId));
-		}
+		if (this.type.canHaveRecipient()) json.put("recipient", Long.toUnsignedString(this.recipientId));
 		json.put("amountNQT", this.amountNQT);
 		json.put("feeNQT", this.feeNQT);
-		if (this.referencedTransactionFullHash != null) {
-			json.put("referencedTransactionFullHash", Convert.toHexString(this.referencedTransactionFullHash));
-		}
+		if (this.referencedTransactionFullHash != null)
+            json.put("referencedTransactionFullHash", Convert.toHexString(this.referencedTransactionFullHash));
 		json.put("ecBlockHeight", this.ecBlockHeight);
 		json.put("ecBlockId", Long.toUnsignedString(this.ecBlockId));
 		json.put("signature", Convert.toHexString(this.signature));
 		if(this.getSupernodeSig() != null)
-			json.put("supernode_signature", Convert.toHexString(Convert.emptyToNull(this.supernode_signature)));
+            json.put("supernode_signature", Convert.toHexString(Convert.emptyToNull(this.supernode_signature)));
 
 
 		final JSONObject attachmentJSON = new JSONObject();
@@ -861,9 +789,7 @@ public final class TransactionImpl implements Transaction {
 			appendage.loadPrunable(this);
 			attachmentJSON.putAll(appendage.getJSONObject());
 		}
-		if (!attachmentJSON.isEmpty()) {
-			json.put("attachment", attachmentJSON);
-		}
+		if (!attachmentJSON.isEmpty()) json.put("attachment", attachmentJSON);
 		json.put("version", this.version);
 		return json;
 	}
@@ -872,40 +798,31 @@ public final class TransactionImpl implements Transaction {
 		long totalFee = 0;
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
-			if (blockchainHeight < appendage.getBaselineFeeHeight()) {
-				return 0; // No need to validate fees before baseline block
-			}
+			if (blockchainHeight < appendage.getBaselineFeeHeight())
+                return 0; // No need to validate fees before baseline block
 			final Fee fee = blockchainHeight >= appendage.getNextFeeHeight() ? appendage.getNextFee(this)
 					: appendage.getBaselineFee(this);
 			totalFee = Math.addExact(totalFee, fee.getFee(this, appendage));
 		}
-		if (this.referencedTransactionFullHash != null) {
-			totalFee = Math.addExact(totalFee, Constants.ONE_NXT);
-		}
+		if (this.referencedTransactionFullHash != null) totalFee = Math.addExact(totalFee, Constants.ONE_NXT);
 		return totalFee;
 	}
 
 	@Override
 	public JSONObject getPrunableAttachmentJSON() {
 		JSONObject prunableJSON = null;
-		for (final Appendix.AbstractAppendix appendage : this.appendages) {
-			if (appendage instanceof Appendix.Prunable) {
-				appendage.loadPrunable(this);
-				if (prunableJSON == null) {
-					prunableJSON = appendage.getJSONObject();
-				} else {
-					prunableJSON.putAll(appendage.getJSONObject());
-				}
-			}
-		}
+		for (final Appendix.AbstractAppendix appendage : this.appendages)
+            if (appendage instanceof Appendix.Prunable) {
+                appendage.loadPrunable(this);
+                if (prunableJSON == null) prunableJSON = appendage.getJSONObject();
+                else prunableJSON.putAll(appendage.getJSONObject());
+            }
 		return prunableJSON;
 	}
 
 	@Override
 	public Appendix.PrunableSourceCode getPrunableSourceCode() {
-		if (this.prunableSourceCode != null) {
-			this.prunableSourceCode.loadPrunable(this);
-		}
+		if (this.prunableSourceCode != null) this.prunableSourceCode.loadPrunable(this);
 		return this.prunableSourceCode;
 	}
 
@@ -925,21 +842,16 @@ public final class TransactionImpl implements Transaction {
 
 	@Override
 	public long getSenderId() {
-		if (this.senderId == 0) {
-			this.senderId = Account.getId(this.getSenderPublicKey());
-		}
+		if (this.senderId == 0) this.senderId = Account.getId(this.getSenderPublicKey());
 		return this.senderId;
 	}
 
 	@Override
 	public byte[] getSenderPublicKey() {
-		if ((this.getAttachment() instanceof Attachment.RedeemAttachment)) {
-			return Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
-		}
+		if ((this.getAttachment() instanceof Attachment.RedeemAttachment))
+            return Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
 
-		if (this.senderPublicKey == null) {
-			this.senderPublicKey = Account.getPublicKey(this.senderId);
-		}
+		if (this.senderPublicKey == null) this.senderPublicKey = Account.getPublicKey(this.senderId);
 		return this.senderPublicKey;
 	}
 
@@ -956,9 +868,7 @@ public final class TransactionImpl implements Transaction {
 	public String getStringId() {
 		if (this.stringId == null) {
 			this.getId();
-			if (this.stringId == null) {
-				this.stringId = Long.toUnsignedString(this.id);
-			}
+			if (this.stringId == null) this.stringId = Long.toUnsignedString(this.id);
 		}
 		return this.stringId;
 	}
@@ -1051,300 +961,230 @@ public final class TransactionImpl implements Transaction {
 	@Override
 	public long getSupernodeId(){
 		if(superNodePublicKey == null) return 0;
-		long accountId = Account.getId(this.superNodePublicKey);
-		return accountId;
+		return Account.getId(this.superNodePublicKey);
 	}
 
 	@Override
 	public void validateWithoutSn() throws NxtException.ValidationException {
-		if (this.type == null) {
-			throw new NxtException.NotValidException("Invalid transaction type");
-		}
+		if (this.type == null) throw new NotValidException("Invalid transaction type");
+		//noinspection ConstantConditions
 		if (this.timestamp == 0 ? ((this.deadline != 0) || (this.feeNQT != 0))
-				: ((this.deadline < 1) || ((this.type.zeroFeeTransaction() == false) && (this.feeNQT <= 0))
-				|| ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)))
+				: ((this.deadline < 1) || ((!this.type.zeroFeeTransaction()) && (this.feeNQT <= 0))
+				|| ((this.type.zeroFeeTransaction()) && (this.feeNQT != 0)))
 				|| (this.feeNQT > Constants.MAX_BALANCE_NQT) || (this.amountNQT < 0)
-				|| (this.amountNQT > Constants.MAX_BALANCE_NQT) || (this.type == null)) {
-			throw new NxtException.NotValidException(
-					"Invalid transaction parameters:\n type: " + this.type + ", timestamp: " + this.timestamp
-							+ ", deadline: " + this.deadline + ", fee: " + this.feeNQT + ", amount: " + this.amountNQT);
-		}
+				|| (this.amountNQT > Constants.MAX_BALANCE_NQT) || (this.type == null)) throw new NotValidException(
+                "Invalid transaction parameters:\n type: " + this.type + ", timestamp: " + this.timestamp
+                        + ", deadline: " + this.deadline + ", fee: " + this.feeNQT + ", amount: " + this.amountNQT);
 
 		// Just a safe guard, should never be fulfilled actually
 		final long maxMangle = Math.max(this.amountNQT, this.feeNQT);
-		if ((this.amountNQT + this.feeNQT) < maxMangle) {
-			throw new NxtException.NotValidException("Keep out, script kiddie.");
-		}
+		if ((this.amountNQT + this.feeNQT) < maxMangle) throw new NotValidException("Keep out, script kiddie.");
 
-		if ((this.referencedTransactionFullHash != null) && (this.referencedTransactionFullHash.length != 32)) {
-			throw new NxtException.NotValidException("Invalid referenced transaction full hash "
-					+ Convert.toHexString(this.referencedTransactionFullHash));
-		}
+		if ((this.referencedTransactionFullHash != null) && (this.referencedTransactionFullHash.length != 32))
+            throw new NotValidException("Invalid referenced transaction full hash "
+                    + Convert.toHexString(this.referencedTransactionFullHash));
 
-		if ((this.attachment == null) || (this.type != this.attachment.getTransactionType())) {
-			throw new NxtException.NotValidException(
-					"Invalid attachment " + this.attachment + " for transaction of type " + this.type);
-		}
+		if ((this.attachment == null) || (this.type != this.attachment.getTransactionType()))
+            throw new NotValidException(
+                    "Invalid attachment " + this.attachment + " for transaction of type " + this.type);
 
 		// Redeemer-Account is not allowed to do any transaction whatsoever
-		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM)) {
-			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
-		}
+		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM))
+            throw new NotValidException("Redeem Account is not allowed to do anything.");
 
-		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM)) {
-			throw new NxtException.NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
-		}
+		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM))
+            throw new NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
 
-		if (this.getRecipientId() == Genesis.REDEEM_ID) {
-			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
-		}
+		if (this.getRecipientId() == Genesis.REDEEM_ID)
+            throw new NotValidException("Redeem Account is not allowed to do anything.");
 
 		// just another safe guard, better be safe than sorry
 		if (!Objects.equals(this.type, TransactionType.Payment.REDEEM) && this.getAttachment() != null
-				&& (this.getAttachment() instanceof Attachment.RedeemAttachment)) {
-			throw new NxtException.NotValidException("Keep out, script kiddie.");
-		}
+				&& (this.getAttachment() instanceof Attachment.RedeemAttachment))
+            throw new NotValidException("Keep out, script kiddie.");
 
 		// Check redeem timestamp validity
 		if (Objects.equals(this.type, TransactionType.Payment.REDEEM)){
 			Attachment.RedeemAttachment att = (Attachment.RedeemAttachment) this.getAttachment();
-			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp()){
-				throw new NxtException.NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
-			}
+			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp())
+                throw new NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
 		}
 
-		if (!this.type.canHaveRecipient()) {
-			if (this.recipientId != 0) {
-				throw new NxtException.NotValidException(
-						"Transactions of this type must have recipient == 0, amount == 0");
-			}
-		}
+		if (!this.type.canHaveRecipient()) if (this.recipientId != 0) throw new NotValidException(
+                "Transactions of this type must have recipient == 0, amount == 0");
 
-		if (this.type.mustHaveRecipient() && (this.version > 0)) {
-			if (this.recipientId == 0) {
-				throw new NxtException.NotValidException("Transactions of this type must have a valid recipient");
-			}
-		}
+		if (this.type.mustHaveRecipient() && (this.version > 0)) if (this.recipientId == 0)
+            throw new NotValidException("Transactions of this type must have a valid recipient");
 
 
 		// This type does not require any supernode sig
-		if(Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null){
-			throw new NxtException.NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
-		}
+		if(Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null)
+            throw new NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
 
 
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
-			if (!appendage.verifyVersion(this.version)) {
-				throw new NxtException.NotValidException("Invalid attachment version " + appendage.getVersion()
-						+ " for transaction version " + this.version);
-			}
+			if (!appendage.verifyVersion(this.version))
+                throw new NotValidException("Invalid attachment version " + appendage.getVersion()
+                        + " for transaction version " + this.version);
 
 			appendage.validate(this);
 		}
 
-		if (this.getFullSize() > Constants.MAX_PAYLOAD_LENGTH) {
-			throw new NxtException.NotValidException(
-					"Transaction size " + this.getFullSize() + " exceeds maximum payload size");
-		}
+		if (this.getFullSize() > Constants.MAX_PAYLOAD_LENGTH) throw new NotValidException(
+                "Transaction size " + this.getFullSize() + " exceeds maximum payload size");
 
 		final int blockchainHeight = Nxt.getBlockchain().getHeight();
 		final long minimumFeeNQT = this.getMinimumFeeNQT(blockchainHeight);
-		if ((this.type.zeroFeeTransaction() == false) && (this.feeNQT < minimumFeeNQT)) {
-			throw new NxtException.NotCurrentlyValidException(
-					String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
-							((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
-							blockchainHeight));
-		}
-		if ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)) {
-			throw new NxtException.NotValidException(String.format("Transaction fee must be zero for zeroFeeTx!"));
-		}
+		if ((!this.type.zeroFeeTransaction()) && (this.feeNQT < minimumFeeNQT))
+            throw new NxtException.NotCurrentlyValidException(
+                    String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
+                            ((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
+                            blockchainHeight));
+		if ((this.type.zeroFeeTransaction()) && (this.feeNQT != 0))
+            throw new NotValidException("Transaction fee must be zero for zeroFeeTx!");
 		if (this.ecBlockId != 0) {
-			if (blockchainHeight < this.ecBlockHeight) {
-				throw new NxtException.NotCurrentlyValidException(
-						"ecBlockHeight " + this.ecBlockHeight + " exceeds blockchain height " + blockchainHeight);
-			}
-			if (BlockDb.findBlockIdAtHeight(this.ecBlockHeight) != this.ecBlockId) {
-				throw new NxtException.NotCurrentlyValidException(
-						"ecBlockHeight " + this.ecBlockHeight + " does not match ecBlockId "
-								+ Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
-			}
+			if (blockchainHeight < this.ecBlockHeight) throw new NxtException.NotCurrentlyValidException(
+                    "ecBlockHeight " + this.ecBlockHeight + " exceeds blockchain height " + blockchainHeight);
+			if (BlockDb.findBlockIdAtHeight(this.ecBlockHeight) != this.ecBlockId)
+                throw new NxtException.NotCurrentlyValidException(
+                        "ecBlockHeight " + this.ecBlockHeight + " does not match ecBlockId "
+                                + Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
 		}
 	}
 
 	@Override
 	public void validate() throws NxtException.ValidationException {
-		if (this.type == null) {
-			throw new NxtException.NotValidException("Invalid transaction type");
-		}
+		if (this.type == null) throw new NotValidException("Invalid transaction type");
+		//noinspection ConstantConditions
 		if (this.timestamp == 0 ? ((this.deadline != 0) || (this.feeNQT != 0))
-				: ((this.deadline < 1) || ((this.type.zeroFeeTransaction() == false) && (this.feeNQT <= 0))
-						|| ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)))
+				: ((this.deadline < 1) || ((!this.type.zeroFeeTransaction()) && (this.feeNQT <= 0))
+						|| ((this.type.zeroFeeTransaction()) && (this.feeNQT != 0)))
 						|| (this.feeNQT > Constants.MAX_BALANCE_NQT) || (this.amountNQT < 0)
-						|| (this.amountNQT > Constants.MAX_BALANCE_NQT) || (this.type == null)) {
-			throw new NxtException.NotValidException(
-					"Invalid transaction parameters:\n type: " + this.type + ", timestamp: " + this.timestamp
-							+ ", deadline: " + this.deadline + ", fee: " + this.feeNQT + ", amount: " + this.amountNQT);
-		}
+						|| (this.amountNQT > Constants.MAX_BALANCE_NQT) || (this.type == null))
+            throw new NotValidException(
+                    "Invalid transaction parameters:\n type: " + this.type + ", timestamp: " + this.timestamp
+                            + ", deadline: " + this.deadline + ", fee: " + this.feeNQT + ", amount: " + this.amountNQT);
 
 		// Just a safe guard, should never be fulfilled actually
 		final long maxMangle = Math.max(this.amountNQT, this.feeNQT);
-		if ((this.amountNQT + this.feeNQT) < maxMangle) {
-			throw new NxtException.NotValidException("Keep out, script kiddie.");
-		}
+		if ((this.amountNQT + this.feeNQT) < maxMangle) throw new NotValidException("Keep out, script kiddie.");
 
-		if ((this.referencedTransactionFullHash != null) && (this.referencedTransactionFullHash.length != 32)) {
-			throw new NxtException.NotValidException("Invalid referenced transaction full hash "
-					+ Convert.toHexString(this.referencedTransactionFullHash));
-		}
+		if ((this.referencedTransactionFullHash != null) && (this.referencedTransactionFullHash.length != 32))
+            throw new NotValidException("Invalid referenced transaction full hash "
+                    + Convert.toHexString(this.referencedTransactionFullHash));
 
-		if ((this.attachment == null) || (this.type != this.attachment.getTransactionType())) {
-			throw new NxtException.NotValidException(
-					"Invalid attachment " + this.attachment + " for transaction of type " + this.type);
-		}
+		if ((this.attachment == null) || (this.type != this.attachment.getTransactionType()))
+            throw new NotValidException(
+                    "Invalid attachment " + this.attachment + " for transaction of type " + this.type);
 
 		// Redeemer-Account is not allowed to do any transaction whatsoever
-		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM)) {
-			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
-		}
-		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM)) {
-			throw new NxtException.NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
-		}
+		if ((this.getSenderId() == Genesis.REDEEM_ID) && (this.type != TransactionType.Payment.REDEEM))
+            throw new NotValidException("Redeem Account is not allowed to do anything.");
+		if ((this.getSenderId() != Genesis.REDEEM_ID) && (this.type == TransactionType.Payment.REDEEM))
+            throw new NotValidException("Redeem Account is the only one allowed to send redeem transactions.");
 
-		if (this.getRecipientId() == Genesis.REDEEM_ID) {
-			throw new NxtException.NotValidException("Redeem Account is not allowed to do anything.");
-		}
+		if (this.getRecipientId() == Genesis.REDEEM_ID)
+            throw new NotValidException("Redeem Account is not allowed to do anything.");
 
 		// just another safe guard, better be safe than sorry
 		if (!Objects.equals(this.type, TransactionType.Payment.REDEEM) && this.getAttachment() != null
-				&& (this.getAttachment() instanceof Attachment.RedeemAttachment)) {
-			throw new NxtException.NotValidException("Keep out, script kiddie.");
-		}
+				&& (this.getAttachment() instanceof Attachment.RedeemAttachment))
+            throw new NotValidException("Keep out, script kiddie.");
 
 		// Check redeem timestamp validity
 		if (Objects.equals(this.type, TransactionType.Payment.REDEEM)){
 			Attachment.RedeemAttachment att = (Attachment.RedeemAttachment) this.getAttachment();
-			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp()){
-				throw new NxtException.NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
-			}
+			if(Convert.toEpochTime(att.getRequiredTimestamp() * 1000L) != this.getTimestamp())
+                throw new NotValidException("Redeem timestamp not valid, you gave " + this.getTimestamp() + ", must be " + Convert.toEpochTime(att.getRequiredTimestamp()) + "!");
 		}
 
-		if (!this.type.canHaveRecipient()) {
-			if (this.recipientId != 0) {
-				throw new NxtException.NotValidException(
-						"Transactions of this type must have recipient == 0, amount == 0");
-			}
-		}
+		if (!this.type.canHaveRecipient()) if (this.recipientId != 0) throw new NotValidException(
+                "Transactions of this type must have recipient == 0, amount == 0");
 
-		if (this.type.mustHaveRecipient() && (this.version > 0)) {
-			if (this.recipientId == 0) {
-				throw new NxtException.NotValidException("Transactions of this type must have a valid recipient");
-			}
-		}
+		if (this.type.mustHaveRecipient() && (this.version > 0)) if (this.recipientId == 0)
+            throw new NotValidException("Transactions of this type must have a valid recipient");
 
-		if(this.type.mustHaveSupernodeSignature()){
-			if(Convert.emptyToNull(this.supernode_signature) == null || Convert.emptyToNull(this.superNodePublicKey) == null){
-				throw new NxtException.NotValidException("The transaction must be signed by a supernode");
-			}else{
-				// check signature in verifySignature() routine ... if it is there. Just make sure now that the public key actually belongs to a supernode
-				long accountId = Account.getId(this.superNodePublicKey);
-				Account snode = Account.getAccount(accountId);
-				if(snode == null){
-					throw new NxtException.NotCurrentlyValidException("The super node is unknown");
-				}
-				if(snode.isSuperNode() == false){
-					throw new NxtException.NotCurrentlyValidException("The super node is not a super node");
-				}
-			}
-		}else{
-			// This type does not require any supernode sig
-			if(Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null){
-				throw new NxtException.NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
-			}
-		}
+        // This type does not require any supernode sig
+        if(this.type.mustHaveSupernodeSignature())
+            if (Convert.emptyToNull(this.supernode_signature) == null || Convert.emptyToNull(this.superNodePublicKey) == null)
+                throw new NotValidException("The transaction must be signed by a supernode");
+            else {
+                // check signature in verifySignature() routine ... if it is there. Just make sure now that the public key actually belongs to a supernode
+                long accountId = Account.getId(this.superNodePublicKey);
+                Account snode = Account.getAccount(accountId);
+                if (snode == null) throw new NxtException.NotCurrentlyValidException("The super node is unknown");
+                if (!snode.isSuperNode())
+                    throw new NxtException.NotCurrentlyValidException("The super node is not a super node");
+            }
+        else if (Convert.emptyToNull(this.supernode_signature) != null || Convert.emptyToNull(this.superNodePublicKey) != null)
+            throw new NotValidException("The transaction " + this.getId() + " must not be signed by any supernode");
 
 		for (final Appendix.AbstractAppendix appendage : this.appendages) {
 			appendage.loadPrunable(this);
-			if (!appendage.verifyVersion(this.version)) {
-				throw new NxtException.NotValidException("Invalid attachment version " + appendage.getVersion()
-						+ " for transaction version " + this.version);
-			}
+			if (!appendage.verifyVersion(this.version))
+                throw new NotValidException("Invalid attachment version " + appendage.getVersion()
+                        + " for transaction version " + this.version);
 
 			appendage.validate(this);
 		}
 
-		if (this.getFullSize() > Constants.MAX_PAYLOAD_LENGTH) {
-			throw new NxtException.NotValidException(
-					"Transaction size " + this.getFullSize() + " exceeds maximum payload size");
-		}
+		if (this.getFullSize() > Constants.MAX_PAYLOAD_LENGTH) throw new NotValidException(
+                "Transaction size " + this.getFullSize() + " exceeds maximum payload size");
 
 		final int blockchainHeight = Nxt.getBlockchain().getHeight();
 		final long minimumFeeNQT = this.getMinimumFeeNQT(blockchainHeight);
-		if ((this.type.zeroFeeTransaction() == false) && (this.feeNQT < minimumFeeNQT)) {
-			throw new NxtException.NotCurrentlyValidException(
-					String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
-							((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
-							blockchainHeight));
-		}
-		if ((this.type.zeroFeeTransaction() == true) && (this.feeNQT != 0)) {
-			throw new NxtException.NotValidException(String.format("Transaction fee must be zero for zeroFeeTx!"));
-		}
+		if ((!this.type.zeroFeeTransaction()) && (this.feeNQT < minimumFeeNQT))
+            throw new NxtException.NotCurrentlyValidException(
+                    String.format("Transaction fee %f XEL less than minimum fee %f XEL at height %d",
+                            ((double) this.feeNQT) / Constants.ONE_NXT, ((double) minimumFeeNQT) / Constants.ONE_NXT,
+                            blockchainHeight));
+		if ((this.type.zeroFeeTransaction()) && (this.feeNQT != 0))
+            throw new NotValidException("Transaction fee must be zero for zeroFeeTx!");
 		if (this.ecBlockId != 0) {
-			if (blockchainHeight < this.ecBlockHeight) {
-				throw new NxtException.NotCurrentlyValidException(
-						"ecBlockHeight " + this.ecBlockHeight + " exceeds blockchain height " + blockchainHeight);
-			}
-			if (BlockDb.findBlockIdAtHeight(this.ecBlockHeight) != this.ecBlockId) {
-				throw new NxtException.NotCurrentlyValidException(
-						"ecBlockHeight " + this.ecBlockHeight + " does not match ecBlockId "
-								+ Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
-			}
+			if (blockchainHeight < this.ecBlockHeight) throw new NxtException.NotCurrentlyValidException(
+                    "ecBlockHeight " + this.ecBlockHeight + " exceeds blockchain height " + blockchainHeight);
+			if (BlockDb.findBlockIdAtHeight(this.ecBlockHeight) != this.ecBlockId)
+                throw new NxtException.NotCurrentlyValidException(
+                        "ecBlockHeight " + this.ecBlockHeight + " does not match ecBlockId "
+                                + Long.toUnsignedString(this.ecBlockId) + ", transaction was generated on a fork");
 		}
 	}
 
 	@Override
 	public boolean verifySignature() {
 
-		boolean result = false;
+		boolean result;
 
-		if (this.getAttachment() instanceof Attachment.RedeemAttachment) {
-			result = this.checkSignature();// TODO: check redeem
-		} else {
-			result = this.checkSignature() && Account.setOrVerify(this.getSenderId(), this.getSenderPublicKey());
-		}
+		if (this.getAttachment() instanceof Attachment.RedeemAttachment)
+            result = this.checkSignature();// TODO: check redeem
+        else result = this.checkSignature() && Account.setOrVerify(this.getSenderId(), this.getSenderPublicKey());
 
-		if(result && Convert.emptyToNull(this.supernode_signature) != null){
-			result = this.checkSuperNodeSignature();
-		}
+		if(result && Convert.emptyToNull(this.supernode_signature) != null) result = this.checkSuperNodeSignature();
 
 		return result;
 	}
 
 	private byte[] zeroSignature(final byte[] data) {
 		final int start = this.signatureOffset();
-		for (int i = start; i < (start + 64 * 2); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
-			data[i] = 0;
-		}
+        // zeroing two signatures (*2), namely the user and the supernode signature
+        for (int i = start; i < (start + 64 * 2); i++) data[i] = 0;
 
 		// Also, important, do not forget to zero the SN public key
 		final int start_snpubkey = this.snPubkeyOffset();
-		for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) { // zeroing two signatures (*2), namely the user and the supernode signature
-			data[i] = 0;
-		}
+        // zeroing two signatures (*2), namely the user and the supernode signature
+        for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) data[i] = 0;
 
 		return data;
 	}
 	private byte[] zeroPartSignature(final byte[] data) {
 		final int start = this.signatureOffset();
-		for (int i = start + 64; i < (start + 64 * 2); i++) { // zeroing supernode sig only
-			data[i] = 0;
-		}
+        // zeroing supernode sig only
+        for (int i = start + 64; i < (start + 64 * 2); i++) data[i] = 0;
 
 		// Also, important, do not forget to zero the SN public key
 		final int start_snpubkey = this.snPubkeyOffset();
-		for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) {
-			data[i] = 0;
-		}
+		for (int i = start_snpubkey; i < (start_snpubkey + 32); i++) data[i] = 0;
 
 		return data;
 	}

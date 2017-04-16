@@ -68,9 +68,7 @@ public class QueuedThreadPool extends ThreadPoolExecutor {
 	protected void afterExecute(final Runnable task, final Throwable exc) {
 		super.afterExecute(task, exc);
 		final Runnable newTask = this.pendingQueue.poll();
-		if (newTask != null) {
-			super.execute(newTask);
-		}
+		if (newTask != null) super.execute(newTask);
 	}
 
 	/**
@@ -83,15 +81,10 @@ public class QueuedThreadPool extends ThreadPoolExecutor {
 	 */
 	@Override
 	public void execute(final Runnable task) throws RejectedExecutionException {
-		if (task == null) {
-			throw new NullPointerException("Null runnable passed to execute()");
-		}
+		if (task == null) throw new NullPointerException("Null runnable passed to execute()");
 		try {
-			if (this.getActiveCount() >= this.maxSize) {
-				this.pendingQueue.put(task);
-			} else {
-				super.execute(task);
-			}
+			if (this.getActiveCount() >= this.maxSize) this.pendingQueue.put(task);
+            else super.execute(task);
 		} catch (final InterruptedException exc) {
 			throw new RejectedExecutionException("Unable to queue task", exc);
 		}
@@ -153,9 +146,7 @@ public class QueuedThreadPool extends ThreadPoolExecutor {
 	 */
 	@Override
 	public <T> Future<T> submit(final Callable<T> callable) throws RejectedExecutionException {
-		if (callable == null) {
-			throw new NullPointerException("Null callable passed to submit()");
-		}
+		if (callable == null) throw new NullPointerException("Null callable passed to submit()");
 		final FutureTask<T> futureTask = new FutureTask<>(callable);
 		this.execute(futureTask);
 		return futureTask;
@@ -172,9 +163,7 @@ public class QueuedThreadPool extends ThreadPoolExecutor {
 	 */
 	@Override
 	public Future<?> submit(final Runnable task) throws RejectedExecutionException {
-		if (task == null) {
-			throw new NullPointerException("Null runnable passed to submit()");
-		}
+		if (task == null) throw new NullPointerException("Null runnable passed to submit()");
 		final FutureTask<Void> futureTask = new FutureTask<>(task, null);
 		this.execute(futureTask);
 		return futureTask;
@@ -195,9 +184,7 @@ public class QueuedThreadPool extends ThreadPoolExecutor {
 	 */
 	@Override
 	public <T> Future<T> submit(final Runnable task, final T result) throws RejectedExecutionException {
-		if (task == null) {
-			throw new NullPointerException("Null runnable passed to submit()");
-		}
+		if (task == null) throw new NullPointerException("Null runnable passed to submit()");
 		final FutureTask<T> futureTask = new FutureTask<>(task, result);
 		this.execute(futureTask);
 		return futureTask;

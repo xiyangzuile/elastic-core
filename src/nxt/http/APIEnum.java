@@ -205,11 +205,9 @@ public enum APIEnum {
 	private static final Map<String, APIEnum> apiByName = new HashMap<>();
 
 	static {
-		for (final APIEnum api : APIEnum.values()) {
-			if (APIEnum.apiByName.put(api.getName(), api) != null) {
-				throw new RuntimeException("Duplicate API name: " + api.getName());
-			}
-		}
+		for (final APIEnum api : APIEnum.values())
+            if (APIEnum.apiByName.put(api.getName(), api) != null)
+                throw new RuntimeException("Duplicate API name: " + api.getName());
 	}
 
 	public static EnumSet<APIEnum> base64StringToEnumSet(final String apiSetBase64) {
@@ -218,18 +216,14 @@ public enum APIEnum {
 		final EnumSet<APIEnum> result = EnumSet.noneOf(APIEnum.class);
 		for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
 			result.add(APIEnum.values()[i]);
-			if (i == Integer.MAX_VALUE) {
-				break; // or (i+1) would overflow
-			}
+			if (i == Integer.MAX_VALUE) break; // or (i+1) would overflow
 		}
 		return result;
 	}
 
 	public static String enumSetToBase64String(final EnumSet<APIEnum> apiSet) {
 		final BitSet bitSet = new BitSet();
-		for (final APIEnum api : apiSet) {
-			bitSet.set(api.ordinal());
-		}
+		for (final APIEnum api : apiSet) bitSet.set(api.ordinal());
 		return Base64.getEncoder().encodeToString(bitSet.toByteArray());
 	}
 

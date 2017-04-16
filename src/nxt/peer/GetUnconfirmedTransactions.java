@@ -38,17 +38,13 @@ final class GetUnconfirmedTransactions extends PeerServlet.PeerRequestHandler {
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 
 		final List<String> exclude = (List<String>) request.get("exclude");
-		if (exclude == null) {
-			return JSON.emptyJSON;
-		}
+		if (exclude == null) return JSON.emptyJSON;
 
 		final SortedSet<? extends Transaction> transactionSet = Nxt.getTransactionProcessor()
 				.getCachedUnconfirmedTransactions(exclude);
 		final JSONArray transactionsData = new JSONArray();
 		for (final Transaction transaction : transactionSet) {
-			if (transactionsData.size() >= 100) {
-				break;
-			}
+			if (transactionsData.size() >= 100) break;
 			transactionsData.add(transaction.getJSONObject());
 		}
 		final JSONObject response = new JSONObject();

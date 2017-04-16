@@ -18,7 +18,7 @@ package nxt.addons;
 
 import nxt.http.APIServlet;
 
-public interface AddOn {
+interface AddOn {
 
 	default APIServlet.APIRequestHandler getAPIRequestHandler() {
 		return null;

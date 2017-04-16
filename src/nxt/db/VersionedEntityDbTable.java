@@ -29,9 +29,7 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 
 	static void rollback(final TransactionalDb db, final String table, final int height,
 			final DbKey.Factory<?> dbKeyFactory) {
-		if (!db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		try (Connection con = db.getConnection();
 				PreparedStatement pstmtSelectToDelete = con.prepareStatement(
 						"SELECT DISTINCT " + dbKeyFactory.getPKColumns() + " FROM " + table + " WHERE height > ?");
@@ -39,12 +37,11 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 				PreparedStatement pstmtSetLatest = con.prepareStatement(
 						"UPDATE " + table + " SET latest = TRUE " + dbKeyFactory.getPKClause() + " AND height ="
 								+ " (SELECT MAX(height) FROM " + table + dbKeyFactory.getPKClause() + ")")) {
-			pstmtSelectToDelete.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmtSelectToDelete.setInt(1, height);
 			final List<DbKey> dbKeys = new ArrayList<>();
 			try (ResultSet rs = pstmtSelectToDelete.executeQuery()) {
-				while (rs.next()) {
-					dbKeys.add(dbKeyFactory.newKey(rs));
-				}
+				while (rs.next()) dbKeys.add(dbKeyFactory.newKey(rs));
 			}
 			/*
 			 * if (dbKeys.size() > 0 && Logger.isDebugEnabled()) {
@@ -52,7 +49,8 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 			 * format("rollback table %s found %d records to update to latest",
 			 * table, dbKeys.size())); }
 			 */
-			pstmtDelete.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmtDelete.setInt(1, height);
 			pstmtDelete.executeUpdate();
 			/*
 			 * if (deletedRecordsCount > 0 && Logger.isDebugEnabled()) {
@@ -63,6 +61,7 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 			for (final DbKey dbKey : dbKeys) {
 				int i = 1;
 				i = dbKey.setPK(pstmtSetLatest, i);
+				//noinspection UnusedAssignment
 				i = dbKey.setPK(pstmtSetLatest, i);
 				pstmtSetLatest.executeUpdate();
 				// Db.getCache(table).remove(dbKey);
@@ -74,9 +73,7 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 
 	static void trim(final TransactionalDb db, final String table, final int height,
 			final DbKey.Factory<?> dbKeyFactory) {
-		if (!db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		try (Connection con = db.getConnection();
 				PreparedStatement pstmtSelect = con.prepareStatement("SELECT " + dbKeyFactory.getPKColumns()
 						+ ", MAX(height) AS max_height" + " FROM " + table + " WHERE height < ? GROUP BY "
@@ -87,18 +84,22 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 						"DELETE FROM " + table + " WHERE height < ? AND height >= 0 AND latest = FALSE " + " AND ("
 								+ dbKeyFactory.getPKColumns() + ") NOT IN (SELECT (" + dbKeyFactory.getPKColumns()
 								+ ") FROM " + table + " WHERE height >= ?)")) {
-			pstmtSelect.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmtSelect.setInt(1, height);
 			try (ResultSet rs = pstmtSelect.executeQuery()) {
 				while (rs.next()) {
 					final DbKey dbKey = dbKeyFactory.newKey(rs);
 					final int maxHeight = rs.getInt("max_height");
 					int i = 1;
 					i = dbKey.setPK(pstmtDelete, i);
-					pstmtDelete.setInt(i, maxHeight);
+                    //noinspection SuspiciousNameCombination
+                    pstmtDelete.setInt(i, maxHeight);
 					pstmtDelete.executeUpdate();
 				}
-				pstmtDeleteDeleted.setInt(1, height);
-				pstmtDeleteDeleted.setInt(2, height);
+                //noinspection SuspiciousNameCombination
+                pstmtDeleteDeleted.setInt(1, height);
+                //noinspection SuspiciousNameCombination
+                pstmtDeleteDeleted.setInt(2, height);
 				pstmtDeleteDeleted.executeUpdate();
 			}
 		} catch (final SQLException e) {
@@ -120,12 +121,8 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 	}
 
 	public final boolean delete(final T t, final boolean keepInCache) {
-		if (t == null) {
-			return false;
-		}
-		if (!DerivedDbTable.db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (t == null) return false;
+		if (!DerivedDbTable.db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		final DbKey dbKey = this.dbKeyFactory.newKey(t);
 		try (Connection con = DerivedDbTable.db.getConnection();
 				PreparedStatement pstmtCount = con.prepareStatement(
@@ -142,20 +139,16 @@ public abstract class VersionedEntityDbTable<T> extends EntityDbTable<T> {
 						pstmt.executeUpdate(); // delete after the save
 					}
 					return true;
-				} else {
-					try (PreparedStatement pstmtDelete = con
-							.prepareStatement("DELETE FROM " + this.table + this.dbKeyFactory.getPKClause())) {
-						dbKey.setPK(pstmtDelete);
-						return pstmtDelete.executeUpdate() > 0;
-					}
-				}
+				} else try (PreparedStatement pstmtDelete = con
+                        .prepareStatement("DELETE FROM " + this.table + this.dbKeyFactory.getPKClause())) {
+                    dbKey.setPK(pstmtDelete);
+                    return pstmtDelete.executeUpdate() > 0;
+                }
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		} finally {
-			if (!keepInCache) {
-				DerivedDbTable.db.getCache(this.table).remove(dbKey);
-			}
+			if (!keepInCache) DerivedDbTable.db.getCache(this.table).remove(dbKey);
 		}
 	}
 

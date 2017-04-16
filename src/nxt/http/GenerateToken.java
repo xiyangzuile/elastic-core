@@ -42,9 +42,7 @@ public final class GenerateToken extends APIServlet.APIRequestHandler {
 
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
 		final String website = Convert.emptyToNull(req.getParameter("website"));
-		if (website == null) {
-			return JSONResponses.MISSING_WEBSITE;
-		}
+		if (website == null) return JSONResponses.MISSING_WEBSITE;
 
 		try {
 

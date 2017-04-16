@@ -51,17 +51,13 @@ final class GetNextBlocks extends PeerServlet.PeerRequestHandler {
 		final long blockId = Convert.parseUnsignedLong((String) request.get("blockId"));
 		final List<String> stringList = (List<String>) request.get("blockIds");
 		if (stringList != null) {
-			if (stringList.size() > 36) {
-				return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
-			}
+			if (stringList.size() > 36) return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
 			final List<Long> idList = new ArrayList<>();
 			stringList.forEach(stringId -> idList.add(Convert.parseUnsignedLong(stringId)));
 			blocks = Nxt.getBlockchain().getBlocksAfter(blockId, idList);
 		} else {
 			final long limit = Convert.parseLong(request.get("limit"));
-			if (limit > 36) {
-				return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
-			}
+			if (limit > 36) return GetNextBlocks.TOO_MANY_BLOCKS_REQUESTED;
 			blocks = Nxt.getBlockchain().getBlocksAfter(blockId, limit > 0 ? (int) limit : 36);
 		}
 		blocks.forEach(block -> nextBlocksArray.add(block.getJSONObject()));

@@ -1,7 +1,6 @@
 package nxt;
 
 import nxt.crypto.Crypto;
-import nxt.http.GetSupernodes;
 import nxt.util.Convert;
 import nxt.util.Logger;
 import org.junit.After;
@@ -18,11 +17,11 @@ import static org.junit.Assert.assertTrue;
 
 public class TransactionCrippler extends AbstractForgingTest {
 
-    static final String secretPhrase = "Marty Mc Fly";
-    static final String secretPhrase2 = "test";
-    static final String guard1 = "Guard 1";
-    static final String guard2 = "Guard 2";
-    static int current_height = startHeight;
+    private static final String secretPhrase = "Marty Mc Fly";
+    private static final String secretPhrase2 = "test";
+    private static final String guard1 = "Guard 1";
+    private static final String guard2 = "Guard 2";
+    private static int current_height = startHeight;
     @Before
     public void init() {
         Properties properties = AbstractForgingTest.newTestProperties();
@@ -37,7 +36,7 @@ public class TransactionCrippler extends AbstractForgingTest {
         Assert.assertTrue("nxt.fakeForgingAccount must be defined in nxt.properties", Nxt.getStringProperty("nxt.fakeForgingAccount") != null);
     }
 
-    void forgeBlocks(int howMany, String secretPhrase){
+    private void forgeBlocks(int howMany, String secretPhrase){
         forgeTo(current_height + howMany, secretPhrase);
         assertEquals(Nxt.getBlockchain().getHeight(),current_height + howMany);
         current_height += howMany;
@@ -49,7 +48,9 @@ public class TransactionCrippler extends AbstractForgingTest {
         Account g2 = null;
         try {
             Db.db.beginTransaction();
+            //noinspection UnusedAssignment
             g1 = Account.addOrGetAccount(Crypto.getPublicKey(guard1));
+            //noinspection UnusedAssignment
             g2 = Account.addOrGetAccount(Crypto.getPublicKey(guard2));
         }catch(Exception e){
             // For consensus reasons, this must work!!!
@@ -115,7 +116,6 @@ public class TransactionCrippler extends AbstractForgingTest {
             try {
                 TransactionImpl t = (TransactionImpl)makeSupernodeSigned(attachment, null, secretPhrase, user2.getId(), 1000*Constants.ONE_NXT, false, true);
                 System.out.println("About to broadcast TXID: " + t.getId() + "\n" + t.getJSONObject().toJSONString()+ "\n"+Convert.toHexString(t.getBytes()));
-                success = true;
             } catch (Exception e) {
                 Logger.logErrorMessage(e.getMessage());
             }

@@ -65,9 +65,7 @@ final class TransactionDb {
 			pstmt.setFetchSize(50);
 			try (ResultSet rs = pstmt.executeQuery()) {
 				final List<TransactionImpl> list = new ArrayList<>();
-				while (rs.next()) {
-					list.add(TransactionDb.loadTransaction(con, rs));
-				}
+				while (rs.next()) list.add(TransactionDb.loadTransaction(con, rs));
 				return list;
 			}
 		} catch (final SQLException e) {
@@ -82,9 +80,7 @@ final class TransactionDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);
-			if (block != null) {
-				return block.getTransactions();
-			}
+			if (block != null) return block.getTransactions();
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection()) {
@@ -128,22 +124,18 @@ final class TransactionDb {
 		return TransactionDb.findTransaction(transactionId, Integer.MAX_VALUE);
 	}
 
-	static TransactionImpl findTransaction(final long transactionId, final int height) {
+	private static TransactionImpl findTransaction(final long transactionId, final int height) {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
-			if (transaction != null) {
-				return transaction.getHeight() <= height ? transaction : null;
-			}
+			if (transaction != null) return transaction.getHeight() <= height ? transaction : null;
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE id = ?")) {
 			pstmt.setLong(1, transactionId);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next() && (rs.getInt("height") <= height)) {
-					return TransactionDb.loadTransaction(con, rs);
-				}
+				if (rs.next() && (rs.getInt("height") <= height)) return TransactionDb.loadTransaction(con, rs);
 				return null;
 			}
 		} catch (final SQLException e) {
@@ -158,24 +150,22 @@ final class TransactionDb {
 		return TransactionDb.findTransactionByFullHash(fullHash, Integer.MAX_VALUE);
 	}
 
-	static TransactionImpl findTransactionByFullHash(final byte[] fullHash, final int height) {
+	private static TransactionImpl findTransactionByFullHash(final byte[] fullHash, final int height) {
 		final long transactionId = Convert.fullHashToId(fullHash);
 		// Check the cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
-			if (transaction != null) {
-				return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash)
-						? transaction : null);
-			}
+			if (transaction != null)
+                return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash)
+                        ? transaction : null);
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM transaction WHERE id = ?")) {
 			pstmt.setLong(1, transactionId);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next() && Arrays.equals(rs.getBytes("full_hash"), fullHash) && (rs.getInt("height") <= height)) {
-					return TransactionDb.loadTransaction(con, rs);
-				}
+				if (rs.next() && Arrays.equals(rs.getBytes("full_hash"), fullHash) && (rs.getInt("height") <= height))
+                    return TransactionDb.loadTransaction(con, rs);
 				return null;
 			}
 		} catch (final SQLException e) {
@@ -190,9 +180,7 @@ final class TransactionDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
-			if (transaction != null) {
-				return transaction.fullHash();
-			}
+			if (transaction != null) return transaction.fullHash();
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -214,9 +202,7 @@ final class TransactionDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
-			if (transaction != null) {
-				return (transaction.getHeight() <= height);
-			}
+			if (transaction != null) return (transaction.getHeight() <= height);
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -234,13 +220,11 @@ final class TransactionDb {
 		return TransactionDb.hasSNCleanTransaction(transactionId, Integer.MAX_VALUE);
 	}
 
-	static boolean hasSNCleanTransaction(final long SNCleantransactionId, final int height) {
+	private static boolean hasSNCleanTransaction(final long SNCleantransactionId, final int height) {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.sncleantransactionCache.get(SNCleantransactionId);
-			if (transaction != null) {
-				return (transaction.getHeight() <= height);
-			}
+			if (transaction != null) return (transaction.getHeight() <= height);
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -263,9 +247,8 @@ final class TransactionDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final TransactionImpl transaction = BlockDb.transactionCache.get(transactionId);
-			if (transaction != null) {
-				return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash));
-			}
+			if (transaction != null)
+                return ((transaction.getHeight() <= height) && Arrays.equals(transaction.fullHash(), fullHash));
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -324,17 +307,14 @@ final class TransactionDb {
 							.index(transactionIndex);
 			if (transactionType.canHaveRecipient()) {
 				final long recipientId = rs.getLong("recipient_id");
-				if (!rs.wasNull()) {
-					builder.recipientId(recipientId);
-				}
+				if (!rs.wasNull()) builder.recipientId(recipientId);
 			}
 
-			if (rs.getBoolean("has_prunable_source_code")) {
-				builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
-			}
-			if (rs.getBoolean("has_public_key_announcement") || rs.getBoolean("has_prunable_encrypted_message")) { // TODO: Remove the second check, its only there for BUG 1086
-				builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
-			}
+			if (rs.getBoolean("has_prunable_source_code"))
+                builder.appendix(new Appendix.PrunableSourceCode(buffer, version));
+            // TODO: Remove the second check, its only there for BUG 1086
+            if (rs.getBoolean("has_public_key_announcement") || rs.getBoolean("has_prunable_encrypted_message"))
+                builder.appendix(new Appendix.PublicKeyAnnouncement(buffer, version));
 
 			return builder.build();
 
@@ -371,18 +351,12 @@ final class TransactionDb {
 					pstmt.setByte(++i, transaction.getType().getType());
 					pstmt.setByte(++i, transaction.getType().getSubtype());
 					pstmt.setLong(++i, transaction.getSenderId());
-					int bytesLength = 0;
-					for (final Appendix appendage : transaction.getAppendages()) {
-						bytesLength += appendage.getSize();
-					}
-					if (bytesLength == 0) {
-						pstmt.setNull(++i, Types.VARBINARY);
-					} else {
+					int bytesLength = transaction.getAppendages().stream().mapToInt(Appendix.AbstractAppendix::getSize).sum();
+					if (bytesLength == 0) pstmt.setNull(++i, Types.VARBINARY);
+                    else {
 						final ByteBuffer buffer = ByteBuffer.allocate(bytesLength);
 						buffer.order(ByteOrder.LITTLE_ENDIAN);
-						for (final Appendix appendage : transaction.getAppendages()) {
-							appendage.putBytes(buffer);
-						}
+						for (final Appendix appendage : transaction.getAppendages()) appendage.putBytes(buffer);
 						pstmt.setBytes(++i, buffer.array());
 					}
 					pstmt.setInt(++i, transaction.getBlockTimestamp());
@@ -401,14 +375,13 @@ final class TransactionDb {
 					pstmt.setShort(++i, index++);
 					pstmt.executeUpdate();
 				}
-				if (transaction.referencedTransactionFullHash() != null) {
-					try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO referenced_transaction "
-							+ "(transaction_id, referenced_transaction_id) VALUES (?, ?)")) {
-						pstmt.setLong(1, transaction.getId());
-						pstmt.setLong(2, Convert.fullHashToId(transaction.referencedTransactionFullHash()));
-						pstmt.executeUpdate();
-					}
-				}
+				if (transaction.referencedTransactionFullHash() != null)
+                    try (PreparedStatement pstmt = con.prepareStatement("INSERT INTO referenced_transaction "
+                            + "(transaction_id, referenced_transaction_id) VALUES (?, ?)")) {
+                        pstmt.setLong(1, transaction.getId());
+                        pstmt.setLong(2, Convert.fullHashToId(transaction.referencedTransactionFullHash()));
+                        pstmt.executeUpdate();
+                    }
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);

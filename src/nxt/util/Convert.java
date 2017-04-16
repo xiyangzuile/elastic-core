@@ -38,14 +38,14 @@ import nxt.crypto.Crypto;
 
 public final class Convert {
 
-	private static final char[] hexChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
-			'f' };
-	private static final long[] multipliers = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+	private static final char[] hexChars = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
+			'f'};
+	private static final long[] multipliers = new long[]{1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000};
 
 	public static final BigInteger two64 = new BigInteger("18446744073709551616");
 	public static final long[] EMPTY_LONG = new long[0];
 	public static final byte[] EMPTY_BYTE = new byte[0];
-	public static final byte[][] EMPTY_BYTES = new byte[0][];
+	private static final byte[][] EMPTY_BYTES = new byte[0][];
 	public static final int[][] EMPTY_INT_BYTES = new int[0][];
 	public static final String[] EMPTY_STRING = new String[0];
 
@@ -53,9 +53,7 @@ public final class Convert {
 		final int minLength = Math.min(o1.length, o2.length);
 		for (int i = 0; i < minLength; i++) {
 			final int result = Byte.compare(o1[i], o2[i]);
-			if (result != 0) {
-				return result;
-			}
+			if (result != 0) return result;
 		}
 		return o1.length - o2.length;
 	};
@@ -73,14 +71,8 @@ public final class Convert {
 	}
 
 	public static byte[] emptyToNull(final byte[] bytes) {
-		if (bytes == null) {
-			return null;
-		}
-		for (final byte b : bytes) {
-			if (b != 0) {
-				return bytes;
-			}
-		}
+		if (bytes == null) return null;
+		for (final byte b : bytes) if (b != 0) return bytes;
 		return null;
 	}
 
@@ -93,9 +85,8 @@ public final class Convert {
 	}
 
 	public static long fullHashToId(final byte[] hash) {
-		if ((hash == null) || (hash.length < 8)) {
+		if ((hash == null) || (hash.length < 8))
 			throw new IllegalArgumentException("Invalid hash: " + Arrays.toString(hash));
-		}
 		final BigInteger bigInteger = new BigInteger(1,
 				new byte[] { hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0] });
 		return bigInteger.longValue();
@@ -118,21 +109,14 @@ public final class Convert {
 	}
 
 	public static long parseAccountId(String account) {
-		if ((account == null) || (account = account.trim()).isEmpty()) {
-			return 0;
-		}
+		if ((account == null) || (account = account.trim()).isEmpty()) return 0;
 		account = account.toUpperCase();
-		if (account.startsWith("XEL-")) {
-			return Crypto.rsDecode(account.substring(4));
-		} else {
-			return Long.parseUnsignedLong(account);
-		}
+		if (account.startsWith("XEL-")) return Crypto.rsDecode(account.substring(4));
+		else return Long.parseUnsignedLong(account);
 	}
 
 	public static byte[] parseHexString(String hex) {
-		if (hex == null) {
-			return null;
-		}
+		if (hex == null) return null;
 		hex=hex.toLowerCase();
 		final byte[] bytes = new byte[hex.length() / 2];
 		for (int i = 0; i < bytes.length; i++) {
@@ -140,24 +124,18 @@ public final class Convert {
 			char1 = char1 > 0x60 ? char1 - 0x57 : char1 - 0x30;
 			int char2 = hex.charAt((i * 2) + 1);
 			char2 = char2 > 0x60 ? char2 - 0x57 : char2 - 0x30;
-			if ((char1 < 0) || (char2 < 0) || (char1 > 15) || (char2 > 15)) {
+			if ((char1 < 0) || (char2 < 0) || (char1 > 15) || (char2 > 15))
 				throw new NumberFormatException("Invalid hex number: " + hex);
-			}
 			bytes[i] = (byte) ((char1 << 4) + char2);
 		}
 		return bytes;
 	}
 
 	public static long parseLong(final Object o) {
-		if (o == null) {
-			return 0;
-		} else if (o instanceof Long) {
-			return ((Long) o);
-		} else if (o instanceof String) {
-			return Long.parseLong((String) o);
-		} else {
-			throw new IllegalArgumentException("Not a long: " + o);
-		}
+		if (o == null) return 0;
+		else if (o instanceof Long) return ((Long) o);
+		else if (o instanceof String) return Long.parseLong((String) o);
+		else throw new IllegalArgumentException("Not a long: " + o);
 	}
 
 	public static long parseNXT(final String nxt) {
@@ -166,38 +144,25 @@ public final class Convert {
 
 	private static long parseStringFraction(final String value, final int decimals, final long maxValue) {
 		final String[] s = value.trim().split("\\.");
-		if ((s.length == 0) || (s.length > 2)) {
-			throw new NumberFormatException("Invalid number: " + value);
-		}
+		if ((s.length == 0) || (s.length > 2)) throw new NumberFormatException("Invalid number: " + value);
 		final long wholePart = Long.parseLong(s[0]);
-		if (wholePart > maxValue) {
-			throw new IllegalArgumentException("Whole part of value exceeds maximum possible");
-		}
-		if (s.length == 1) {
-			return wholePart * Convert.multipliers[decimals];
-		}
+		if (wholePart > maxValue) throw new IllegalArgumentException("Whole part of value exceeds maximum possible");
+		if (s.length == 1) return wholePart * Convert.multipliers[decimals];
 		long fractionalPart = Long.parseLong(s[1]);
-		if ((fractionalPart >= Convert.multipliers[decimals]) || (s[1].length() > decimals)) {
+		if ((fractionalPart >= Convert.multipliers[decimals]) || (s[1].length() > decimals))
 			throw new IllegalArgumentException("Fractional part exceeds maximum allowed divisibility");
-		}
-		for (int i = s[1].length(); i < decimals; i++) {
-			fractionalPart *= 10;
-		}
+		for (int i = s[1].length(); i < decimals; i++) fractionalPart *= 10;
 		return (wholePart * Convert.multipliers[decimals]) + fractionalPart;
 	}
 
 	public static long parseUnsignedLong(final String number) {
-		if (number == null) {
-			return 0;
-		}
+		if (number == null) return 0;
 		return Long.parseUnsignedLong(number);
 	}
 
 	public static String readString(final ByteBuffer buffer, final int numBytes, final int maxLength)
 			throws NxtException.NotValidException {
-		if (numBytes > (3 * maxLength)) {
-			throw new NxtException.NotValidException("Max parameter length exceeded");
-		}
+		if (numBytes > (3 * maxLength)) throw new NxtException.NotValidException("Max parameter length exceeded");
 		final byte[] bytes = new byte[numBytes];
 		buffer.get(bytes);
 		return Convert.toString(bytes);
@@ -208,41 +173,32 @@ public final class Convert {
 	}
 
 	public static long safeAdd(final long left, final long right) throws ArithmeticException {
-		if (right > 0 ? left > (Long.MAX_VALUE - right) : left < (Long.MIN_VALUE - right)) {
+		if (right > 0 ? left > (Long.MAX_VALUE - right) : left < (Long.MIN_VALUE - right))
 			throw new ArithmeticException("Integer overflow");
-		}
 		return left + right;
 	}
 
 	public static long[] toArray(final List<Long> list) {
 		final long[] result = new long[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			result[i] = list.get(i);
-		}
+		for (int i = 0; i < list.size(); i++) result[i] = list.get(i);
 		return result;
 	}
 
 	public static Long[] toArray(final long[] array) {
 		final Long[] result = new Long[array.length];
-		for (int i = 0; i < array.length; i++) {
-			result[i] = array[i];
-		}
+		for (int i = 0; i < array.length; i++) result[i] = array[i];
 		return result;
 	}
 
 	public static long[] toArray(final Long[] array) {
 		final long[] result = new long[array.length];
-		for (int i = 0; i < array.length; i++) {
-			result[i] = array[i];
-		}
+		for (int i = 0; i < array.length; i++) result[i] = array[i];
 		return result;
 	}
 
 	public static byte[] toBytes(final long n) {
 		final byte[] bytes = new byte[8];
-		for (int i = 0; i < 8; i++) {
-			bytes[i] = (byte) (n >> (8 * i));
-		}
+		for (int i = 0; i < 8; i++) bytes[i] = (byte) (n >> (8 * i));
 		return bytes;
 	}
 
@@ -263,9 +219,7 @@ public final class Convert {
 	}
 
 	public static String toHexString(final byte[] bytes) {
-		if (bytes == null) {
-			return null;
-		}
+		if (bytes == null) return null;
 		final char[] chars = new char[bytes.length * 2];
 		for (int i = 0; i < bytes.length; i++) {
 			chars[i * 2] = Convert.hexChars[((bytes[i] >> 4) & 0xF)];
@@ -274,22 +228,16 @@ public final class Convert {
 		return String.valueOf(chars);
 	}
 
-	public static List<Long> toList(final long[] array) {
+	public static List<Long> toList(final Long[] array) {
 		final List<Long> result = new ArrayList<>(array.length);
-		for (final long elem : array) {
-			result.add(elem);
-		}
+		result.addAll(Arrays.asList(array));
 		return result;
 	}
 
-	public static Set<Long> toSet(final long[] array) {
-		if ((array == null) || (array.length == 0)) {
-			return Collections.emptySet();
-		}
+	public static Set<Long> toSet(final Long[] array) {
+		if ((array == null) || (array.length == 0)) return Collections.emptySet();
 		final Set<Long> set = new HashSet<>(array.length);
-		for (final long elem : array) {
-			set.add(elem);
-		}
+		set.addAll(Arrays.asList(array));
 		return set;
 	}
 
@@ -306,9 +254,7 @@ public final class Convert {
 	}
 
 	public static String toUnsignedLong(final long objectId) {
-		if (objectId >= 0) {
-			return String.valueOf(objectId);
-		}
+		if (objectId >= 0) return String.valueOf(objectId);
 		final BigInteger id = BigInteger.valueOf(objectId).add(Convert.two64);
 		return id.toString();
 	}
@@ -324,9 +270,7 @@ public final class Convert {
 				ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
 			final byte[] buffer = new byte[1024];
 			int nRead;
-			while ((nRead = gzip.read(buffer, 0, buffer.length)) > 0) {
-				bos.write(buffer, 0, nRead);
-			}
+			while ((nRead = gzip.read(buffer, 0, buffer.length)) > 0) bos.write(buffer, 0, nRead);
 			bos.flush();
 			return bos.toByteArray();
 		} catch (final IOException e) {
@@ -336,14 +280,8 @@ public final class Convert {
 
 	public static byte[] toFixedBytesCutter(byte[] input, int len){
 		byte[] res = new byte[len];
-		if(input.length>=len){
-			for(int i=0;i<len;++i)
-				res[i]=input[i];
-		}
-		else if(input.length<len){
-			for(int i=0;i<input.length; ++i)
-				res[i+(len-input.length)] = input[i];
-		}
+		if(input.length>=len) System.arraycopy(input, 0, res, 0, len);
+		else if(input.length<len) System.arraycopy(input, 0, res, 0 + (len - input.length), input.length);
 		return res;
 	}
 

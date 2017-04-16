@@ -36,7 +36,7 @@ public final class FilteringIterator<T> implements Iterator<T>, Iterable<T>, Aut
 		this(dbIterator, filter, 0, Integer.MAX_VALUE);
 	}
 
-	public FilteringIterator(final DbIterator<T> dbIterator, final Filter<T> filter, final int from, final int to) {
+	private FilteringIterator(final DbIterator<T> dbIterator, final Filter<T> filter, final int from, final int to) {
 		this.dbIterator = dbIterator;
 		this.filter = filter;
 		this.from = from;
@@ -54,9 +54,7 @@ public final class FilteringIterator<T> implements Iterator<T>, Iterable<T>, Aut
 
 	@Override
 	public boolean hasNext() {
-		if (this.hasNext) {
-			return true;
-		}
+		if (this.hasNext) return true;
 		while (this.dbIterator.hasNext() && (this.count <= this.to)) {
 			this.next = this.dbIterator.next();
 			if (this.filter.ok(this.next)) {
@@ -74,9 +72,7 @@ public final class FilteringIterator<T> implements Iterator<T>, Iterable<T>, Aut
 
 	@Override
 	public Iterator<T> iterator() {
-		if (this.iterated) {
-			throw new IllegalStateException("Already iterated");
-		}
+		if (this.iterated) throw new IllegalStateException("Already iterated");
 		this.iterated = true;
 		return this;
 	}

@@ -20,16 +20,16 @@ public final class GetMineableWork extends APIServlet.APIRequestHandler {
 
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
-
+		int n = -1;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "n");
-			Integer.parseInt(readParam);
-		} catch (final Exception e) {
+			n = Integer.parseInt(readParam); // todo  check
+		} catch (final Exception ignored) {
 		}
 
 		final JSONArray work_packages = new JSONArray();
 
-		try (DbIterator<? extends Work> iterator = Work.getActiveWorks(0, -1)) {
+		try (DbIterator<? extends Work> iterator = Work.getActiveWorks(0, n)) {
 			while (iterator.hasNext()) {
 				final Work transaction = iterator.next();
 				work_packages.add(transaction.toJsonObjectWithSource());

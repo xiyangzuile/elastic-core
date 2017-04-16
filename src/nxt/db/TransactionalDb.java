@@ -41,22 +41,17 @@ public class TransactionalDb extends BasicDb {
 
 		@Override
 		public void close() throws SQLException {
-			if (TransactionalDb.this.localConnection.get() == null) {
-				super.close();
-			} else if (this != TransactionalDb.this.localConnection.get()) {
-				throw new IllegalStateException("Previous connection not committed");
-			}
+			if (TransactionalDb.this.localConnection.get() == null) super.close();
+            else if (this != TransactionalDb.this.localConnection.get())
+                throw new IllegalStateException("Previous connection not committed");
 		}
 
 		@Override
 		public void commit() throws SQLException {
-			if (TransactionalDb.this.localConnection.get() == null) {
-				super.commit();
-			} else if (this != TransactionalDb.this.localConnection.get()) {
-				throw new IllegalStateException("Previous connection not committed");
-			} else {
-				TransactionalDb.this.commitTransaction();
-			}
+			if (TransactionalDb.this.localConnection.get() == null) super.commit();
+            else if (this != TransactionalDb.this.localConnection.get())
+                throw new IllegalStateException("Previous connection not committed");
+            else TransactionalDb.this.commitTransaction();
 		}
 
 		private void doCommit() throws SQLException {
@@ -69,13 +64,10 @@ public class TransactionalDb extends BasicDb {
 
 		@Override
 		public void rollback() throws SQLException {
-			if (TransactionalDb.this.localConnection.get() == null) {
-				super.rollback();
-			} else if (this != TransactionalDb.this.localConnection.get()) {
-				throw new IllegalStateException("Previous connection not committed");
-			} else {
-				TransactionalDb.this.rollbackTransaction();
-			}
+			if (TransactionalDb.this.localConnection.get() == null) super.rollback();
+            else if (this != TransactionalDb.this.localConnection.get())
+                throw new IllegalStateException("Previous connection not committed");
+            else TransactionalDb.this.rollbackTransaction();
 		}
 
 		@Override
@@ -107,10 +99,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final boolean b = super.execute();
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			return b;
 		}
 
@@ -119,10 +110,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final ResultSet r = super.executeQuery();
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			return r;
 		}
 
@@ -131,10 +121,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final int c = super.executeUpdate();
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), this.getSQL()));
 			return c;
 		}
 	}
@@ -150,10 +139,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final boolean b = super.execute(sql);
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			return b;
 		}
 
@@ -162,10 +150,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final ResultSet r = super.executeQuery(sql);
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			return r;
 		}
 
@@ -174,10 +161,9 @@ public class TransactionalDb extends BasicDb {
 			final long start = System.currentTimeMillis();
 			final int c = super.executeUpdate(sql);
 			final long elapsed = System.currentTimeMillis() - start;
-			if (elapsed > TransactionalDb.stmtThreshold) {
-				TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
-						elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
-			}
+			if (elapsed > TransactionalDb.stmtThreshold)
+                TransactionalDb.logThreshold(String.format("SQL statement required %.3f seconds at height %d:\n%s",
+                        elapsed / 1000.0, Nxt.getBlockchain().getHeight(), sql));
 			return c;
 		}
 	}
@@ -216,14 +202,9 @@ public class TransactionalDb extends BasicDb {
 		boolean firstLine = true;
 		for (int i = 3; i < stackTrace.length; i++) {
 			final String line = stackTrace[i].toString();
-			if (!line.startsWith("nxt.")) {
-				break;
-			}
-			if (firstLine) {
-				firstLine = false;
-			} else {
-				sb.append('\n');
-			}
+			if (!line.startsWith("nxt.")) break;
+			if (firstLine) firstLine = false;
+            else sb.append('\n');
 			sb.append("  ").append(line);
 		}
 		Logger.logDebugMessage(sb.toString());
@@ -246,9 +227,7 @@ public class TransactionalDb extends BasicDb {
 	}
 
 	public Connection beginTransaction() {
-		if (this.localConnection.get() != null) {
-			throw new IllegalStateException("Transaction already in progress");
-		}
+		if (this.localConnection.get() != null) throw new IllegalStateException("Transaction already in progress");
 		try {
 			Connection con = this.getPooledConnection();
 			con.setAutoCommit(false);
@@ -268,16 +247,12 @@ public class TransactionalDb extends BasicDb {
 
 	void clearCache(final String tableName) {
 		final Map<DbKey, Object> cacheMap = this.transactionCaches.get().get(tableName);
-		if (cacheMap != null) {
-			cacheMap.clear();
-		}
+		if (cacheMap != null) cacheMap.clear();
 	}
 
 	public void commitTransaction() {
 		final DbConnection con = this.localConnection.get();
-		if (con == null) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (con == null) throw new IllegalStateException("Not in transaction");
 		try {
 			con.doCommit();
 			final Set<TransactionCallback> callbacks = this.transactionCallback.get();
@@ -292,17 +267,15 @@ public class TransactionalDb extends BasicDb {
 
 	public void endTransaction() {
 		final Connection con = this.localConnection.get();
-		if (con == null) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (con == null) throw new IllegalStateException("Not in transaction");
 		this.localConnection.set(null);
 		this.transactionCaches.set(null);
 		final long now = System.currentTimeMillis();
 		final long elapsed = now - ((DbConnection) con).txStart;
-		if (elapsed >= TransactionalDb.txThreshold) {
-			TransactionalDb.logThreshold(String.format("Database transaction required %.3f seconds at height %d",
-					elapsed / 1000.0, Nxt.getBlockchain().getHeight()));
-		} else {
+		if (elapsed >= TransactionalDb.txThreshold)
+            TransactionalDb.logThreshold(String.format("Database transaction required %.3f seconds at height %d",
+                    elapsed / 1000.0, Nxt.getBlockchain().getHeight()));
+        else {
 			long count, times;
 			boolean logStats = false;
 			synchronized (this) {
@@ -315,32 +288,21 @@ public class TransactionalDb extends BasicDb {
 					this.statsTime = now;
 				}
 			}
-			if (logStats) {
-				Logger.logDebugMessage(
-						String.format("Average database transaction time is %.3f seconds", times / 1000.0 / count));
-			}
+			if (logStats) Logger.logDebugMessage(
+                    String.format("Average database transaction time is %.3f seconds", times / 1000.0 / count));
 		}
 		DbUtils.close(con);
 	}
 
 	Map<DbKey, Object> getCache(final String tableName) {
-		if (!this.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
-		Map<DbKey, Object> cacheMap = this.transactionCaches.get().get(tableName);
-		if (cacheMap == null) {
-			cacheMap = new HashMap<>();
-			this.transactionCaches.get().put(tableName, cacheMap);
-		}
-		return cacheMap;
+		if (!this.isInTransaction()) throw new IllegalStateException("Not in transaction");
+        return this.transactionCaches.get().computeIfAbsent(tableName, k -> new HashMap<>());
 	}
 
 	@Override
 	public Connection getConnection() throws SQLException {
 		final Connection con = this.localConnection.get();
-		if (con != null) {
-			return con;
-		}
+		if (con != null) return con;
 		return new DbConnection(super.getConnection());
 	}
 
@@ -359,9 +321,7 @@ public class TransactionalDb extends BasicDb {
 
 	public void rollbackTransaction() {
 		final DbConnection con = this.localConnection.get();
-		if (con == null) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (con == null) throw new IllegalStateException("Not in transaction");
 		try {
 			con.doRollback();
 		} catch (final SQLException e) {

@@ -20,7 +20,7 @@ import org.json.simple.JSONStreamAware;
 
 import nxt.NxtException;
 
-public final class ParameterException extends NxtException {
+final class ParameterException extends NxtException {
 
 	/**
 	 * 

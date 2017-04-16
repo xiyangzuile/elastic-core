@@ -47,9 +47,7 @@ public final class GetAccount extends APIServlet.APIRequestHandler {
 		JSONData.putAccount(response, "account", account.getId());
 
 		final byte[] publicKey = Account.getPublicKey(account.getId());
-		if (publicKey != null) {
-			response.put("publicKey", Convert.toHexString(publicKey));
-		}
+		if (publicKey != null) response.put("publicKey", Convert.toHexString(publicKey));
 		final Account.AccountInfo accountInfo = account.getAccountInfo();
 		if (accountInfo != null) {
 			response.put("name", Convert.nullToEmpty(accountInfo.getName()));
@@ -73,24 +71,22 @@ public final class GetAccount extends APIServlet.APIRequestHandler {
 			response.put("accountControls", accountControlsJson);
 		}
 
-		if (includeLessors) {
-			try (DbIterator<Account> lessors = account.getLessors()) {
-				if (lessors.hasNext()) {
-					final JSONArray lessorIds = new JSONArray();
-					final JSONArray lessorIdsRS = new JSONArray();
-					final JSONArray lessorInfo = new JSONArray();
-					while (lessors.hasNext()) {
-						final Account lessor = lessors.next();
-						lessorIds.add(Long.toUnsignedString(lessor.getId()));
-						lessorIdsRS.add(Convert.rsAccount(lessor.getId()));
-						lessorInfo.add(JSONData.lessor(lessor, includeEffectiveBalance));
-					}
-					response.put("lessors", lessorIds);
-					response.put("lessorsRS", lessorIdsRS);
-					response.put("lessorsInfo", lessorInfo);
-				}
-			}
-		}
+		if (includeLessors) try (DbIterator<Account> lessors = account.getLessors()) {
+            if (lessors.hasNext()) {
+                final JSONArray lessorIds = new JSONArray();
+                final JSONArray lessorIdsRS = new JSONArray();
+                final JSONArray lessorInfo = new JSONArray();
+                while (lessors.hasNext()) {
+                    final Account lessor = lessors.next();
+                    lessorIds.add(Long.toUnsignedString(lessor.getId()));
+                    lessorIdsRS.add(Convert.rsAccount(lessor.getId()));
+                    lessorInfo.add(JSONData.lessor(lessor, includeEffectiveBalance));
+                }
+                response.put("lessors", lessorIds);
+                response.put("lessorsRS", lessorIdsRS);
+                response.put("lessorsInfo", lessorInfo);
+            }
+        }
 
 		return response;
 

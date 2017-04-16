@@ -74,9 +74,7 @@ public final class GetBlockchainStatus extends APIServlet.APIRequestHandler {
 			final String servingPeer = APIProxy.getInstance().getMainPeerAnnouncedAddress();
 			response.put("apiProxy", true);
 			response.put("apiProxyPeer", servingPeer);
-		} else {
-			response.put("apiProxy", false);
-		}
+		} else response.put("apiProxy", false);
 		response.put("isLightClient", Constants.isLightClient);
 		return response;
 	}

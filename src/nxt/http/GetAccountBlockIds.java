@@ -46,12 +46,8 @@ public final class GetAccountBlockIds extends APIServlet.APIRequestHandler {
 		final int lastIndex = ParameterParser.getLastIndex(req);
 
 		final JSONArray blockIds = new JSONArray();
-		final Iterator<BlockImpl> it = Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex)
-				.iterator();
-		while (it.hasNext()) {
-			final Block block = it.next();
-			blockIds.add(block.getStringId());
-		}
+        for (BlockImpl block : Nxt.getBlockchain().getBlocks(accountId, timestamp, firstIndex, lastIndex))
+            blockIds.add(block.getStringId());
 
 		final JSONObject response = new JSONObject();
 		response.put("blockIds", blockIds);

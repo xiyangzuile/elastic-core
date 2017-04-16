@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.json.simple.JSONStreamAware;
 
-public final class LockAccount extends UserServlet.UserRequestHandler {
+final class LockAccount extends UserServlet.UserRequestHandler {
 
 	static final LockAccount instance = new LockAccount();
 

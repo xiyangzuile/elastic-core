@@ -22,7 +22,7 @@ import java.sql.Statement;
 /**
  * Create Statement and PrepareStatement for use with FilteredConnection
  */
-public interface FilteredFactory {
+interface FilteredFactory {
 
 	/**
 	 * Create a FilteredPreparedStatement for the supplied PreparedStatement

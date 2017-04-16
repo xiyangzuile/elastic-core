@@ -119,41 +119,34 @@ public class SetLogging extends APIServlet.APIRequestHandler {
 		// Get the log level
 		//
 		final String value = req.getParameter("logLevel");
-		if (value != null) {
-			switch (value) {
-			case "DEBUG":
-				Logger.setLevel(Logger.Level.DEBUG);
-				break;
-			case "INFO":
-				Logger.setLevel(Logger.Level.INFO);
-				break;
-			case "WARN":
-				Logger.setLevel(Logger.Level.WARN);
-				break;
-			case "ERROR":
-				Logger.setLevel(Logger.Level.ERROR);
-				break;
-			default:
-				response = SetLogging.INCORRECT_LEVEL;
-			}
-		} else {
-			Logger.setLevel(Logger.Level.INFO);
-		}
+		if (value != null) switch (value) {
+            case "DEBUG":
+                Logger.setLevel(Logger.Level.DEBUG);
+                break;
+            case "INFO":
+                Logger.setLevel(Logger.Level.INFO);
+                break;
+            case "WARN":
+                Logger.setLevel(Logger.Level.WARN);
+                break;
+            case "ERROR":
+                Logger.setLevel(Logger.Level.ERROR);
+                break;
+            default:
+                response = SetLogging.INCORRECT_LEVEL;
+        }
+        else Logger.setLevel(Logger.Level.INFO);
 		//
 		// Get the communication events
 		//
 		if (response == null) {
 			final String[] events = req.getParameterValues("communicationEvent");
-			if (!Peers.setCommunicationLoggingMask(events)) {
-				response = SetLogging.INCORRECT_EVENT;
-			}
+			if (!Peers.setCommunicationLoggingMask(events)) response = SetLogging.INCORRECT_EVENT;
 		}
 		//
 		// Return the response
 		//
-		if (response == null) {
-			response = SetLogging.LOGGING_UPDATED;
-		}
+		if (response == null) response = SetLogging.LOGGING_UPDATED;
 		return response;
 	}
 

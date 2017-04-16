@@ -57,17 +57,13 @@ public final class DbIterator<T> implements Iterator<T>, Iterable<T>, AutoClosea
 
 	@Override
 	public boolean hasNext() {
-		if (!this.hasNext) {
-			DbUtils.close(this.rs, this.pstmt, this.con);
-		}
+		if (!this.hasNext) DbUtils.close(this.rs, this.pstmt, this.con);
 		return this.hasNext;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		if (this.iterated) {
-			throw new IllegalStateException("Already iterated");
-		}
+		if (this.iterated) throw new IllegalStateException("Already iterated");
 		this.iterated = true;
 		return this;
 	}

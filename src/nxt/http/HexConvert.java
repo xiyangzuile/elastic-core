@@ -40,15 +40,11 @@ public final class HexConvert extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 		final String string = Convert.emptyToNull(req.getParameter("string"));
-		if (string == null) {
-			return JSON.emptyJSON;
-		}
+		if (string == null) return JSON.emptyJSON;
 		final JSONObject response = new JSONObject();
 		try {
 			final byte[] asHex = Convert.parseHexString(string);
-			if (asHex.length > 0) {
-				response.put("text", Convert.toString(asHex));
-			}
+			if (asHex.length > 0) response.put("text", Convert.toString(asHex));
 		} catch (final RuntimeException ignore) {
 		}
 		try {

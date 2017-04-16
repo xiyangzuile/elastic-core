@@ -24,14 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -86,13 +79,11 @@ public final class API {
 				final int addressBitLength = (targetHostAddress instanceof Inet4Address) ? 32 : 128;
 				this.netMask = BigInteger.ZERO.setBit(addressBitLength).subtract(BigInteger.ONE)
 						.subtract(BigInteger.ZERO.setBit(addressBitLength - maskBitLength).subtract(BigInteger.ONE));
-			} else {
-				throw new IllegalArgumentException("Invalid address: " + address);
-			}
+			} else throw new IllegalArgumentException("Invalid address: " + address);
 		}
 
 		private boolean contains(final BigInteger hostAddressToCheck) {
-			return hostAddressToCheck.and(this.netMask).equals(this.netAddress);
+			return Objects.equals(hostAddressToCheck.and(this.netMask), this.netAddress);
 		}
 
 	}
@@ -121,9 +112,9 @@ public final class API {
 
 	}
 
-	public static final int TESTNET_API_PORT = 6876;
+	private static final int TESTNET_API_PORT = 6876;
 
-	public static final int TESTNET_API_SSLPORT = 6877;
+	private static final int TESTNET_API_SSLPORT = 6877;
 	public static final int openAPIPort;
 
 	public static final int openAPISSLPort;
@@ -132,11 +123,11 @@ public final class API {
 	private static final Set<String> allowedBotHosts;
 	private static final List<NetworkAddress> allowedBotNets;
 	private static final Map<String, PasswordCount> incorrectPasswords = new HashMap<>();
-	public static final String adminPassword = Nxt.getStringProperty("nxt.adminPassword", "", true);
+	private static final String adminPassword = Nxt.getStringProperty("nxt.adminPassword", "", true);
 	static final boolean disableAdminPassword;
 	static final int maxRecords = Nxt.getIntProperty("nxt.maxAPIRecords");
 
-	static final boolean enableAPIUPnP = Nxt.getBooleanProperty("nxt.enableAPIUPnP");
+	private static final boolean enableAPIUPnP = Nxt.getBooleanProperty("nxt.enableAPIUPnP");
 	public static final int apiServerIdleTimeout = Nxt.getIntProperty("nxt.apiServerIdleTimeout");
 	public static final boolean apiServerCORS = Nxt.getBooleanProperty("nxt.apiServerCORS");
 
@@ -159,18 +150,14 @@ public final class API {
 		if (!allowedBotHostsList.contains("*")) {
 			final Set<String> hosts = new HashSet<>();
 			final List<NetworkAddress> nets = new ArrayList<>();
-			for (final String host : allowedBotHostsList) {
-				if (host.contains("/")) {
-					try {
-						nets.add(new NetworkAddress(host));
-					} catch (final UnknownHostException e) {
-						Logger.logErrorMessage("Unknown network " + host, e);
-						throw new RuntimeException(e.toString(), e);
-					}
-				} else {
-					hosts.add(host);
+			for (final String host : allowedBotHostsList)
+				if (host.contains("/")) try {
+					nets.add(new NetworkAddress(host));
+				} catch (final UnknownHostException e) {
+					Logger.logErrorMessage("Unknown network " + host, e);
+					throw new RuntimeException(e.toString(), e);
 				}
-			}
+				else hosts.add(host);
 			allowedBotHosts = Collections.unmodifiableSet(hosts);
 			allowedBotNets = Collections.unmodifiableList(nets);
 		} else {
@@ -185,7 +172,7 @@ public final class API {
 					: Nxt.getIntProperty("nxt.apiServerSSLPort");
 			final String host = Nxt.getStringProperty("nxt.apiServerHost");
 			disableAdminPassword = Nxt.getBooleanProperty("nxt.disableAdminPassword")
-					|| ("127.0.0.1".equals(host) && API.adminPassword.isEmpty());
+					|| (Objects.equals("127.0.0.1", host) && API.adminPassword.isEmpty());
 
 			apiServer = new Server();
 			ServerConnector connector;
@@ -229,9 +216,8 @@ public final class API {
 						"SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
 				sslContextFactory.addExcludeProtocols("SSLv3");
 				final List<String> ciphers = Nxt.getStringListProperty("nxt.apiSSLCiphers");
-				if (!ciphers.isEmpty()) {
+				if (!ciphers.isEmpty())
 					sslContextFactory.setIncludeCipherSuites(ciphers.toArray(new String[ciphers.size()]));
-				}
 				connector = new ServerConnector(API.apiServer, new SslConnectionFactory(sslContextFactory, "http/1.1"),
 						new HttpConnectionFactory(https_config));
 				connector.setPort(sslPort);
@@ -240,9 +226,7 @@ public final class API {
 				connector.setReuseAddress(true);
 				API.apiServer.addConnector(connector);
 				Logger.logMessage("API server using HTTPS port " + sslPort);
-			} else {
-				sslContextFactory = null;
-			}
+			} else sslContextFactory = null;
 			final String localhost = "0.0.0.0".equals(host) || "127.0.0.1".equals(host) ? "localhost" : host;
 			try {
 				API.welcomePageUri = new URI(enableSSL ? "https" : "http", null, localhost, enableSSL ? sslPort : port,
@@ -252,9 +236,9 @@ public final class API {
 			} catch (final URISyntaxException e) {
 				Logger.logInfoMessage("Cannot resolve browser URI", e);
 			}
-			openAPIPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null)
+			openAPIPort = !Constants.isLightClient && Objects.equals("0.0.0.0", host) && (API.allowedBotHosts == null)
 					&& (!enableSSL || (port != sslPort)) ? port : 0;
-			openAPISSLPort = !Constants.isLightClient && "0.0.0.0".equals(host) && (API.allowedBotHosts == null)
+			openAPISSLPort = !Constants.isLightClient && Objects.equals("0.0.0.0", host) && (API.allowedBotHosts == null)
 					&& enableSSL ? sslPort : 0;
 
 			final HandlerList apiHandlers = new HandlerList();
@@ -297,9 +281,8 @@ public final class API {
 					0));
 
 			final GzipHandler gzipHandler = new GzipHandler();
-			if (!Nxt.getBooleanProperty("nxt.enableAPIServerGZIPFilter")) {
+			if (!Nxt.getBooleanProperty("nxt.enableAPIServerGZIPFilter"))
 				gzipHandler.setExcludedPaths("/nxt", "/nxt-proxy");
-			}
 			gzipHandler.setIncludedMethods("GET", "POST");
 			gzipHandler.setMinGzipSize(nxt.peer.Peers.MIN_COMPRESS_SIZE);
 			apiHandler.setGzipHandler(gzipHandler);
@@ -328,11 +311,9 @@ public final class API {
 				try {
 					if (API.enableAPIUPnP) {
 						final Connector[] apiConnectors = API.apiServer.getConnectors();
-						for (final Connector apiConnector : apiConnectors) {
-							if (apiConnector instanceof ServerConnector) {
+						for (final Connector apiConnector : apiConnectors)
+							if (apiConnector instanceof ServerConnector)
 								UPnP.addPort(((ServerConnector) apiConnector).getPort());
-							}
-						}
 					}
 					APIServlet.initClass();
 					APIProxyServlet.initClass();
@@ -372,7 +353,7 @@ public final class API {
 				Logger.logWarningMessage("Too many incorrect admin password attempts from " + remoteHost);
 				throw new ParameterException(JSONResponses.LOCKED_ADMIN_PASSWORD);
 			}
-			if (!API.adminPassword.equals(req.getParameter("adminPassword"))) {
+			if (!Objects.equals(API.adminPassword, req.getParameter("adminPassword"))) {
 				if (passwordCount == null) {
 					passwordCount = new PasswordCount();
 					API.incorrectPasswords.put(remoteHost, passwordCount);
@@ -382,22 +363,14 @@ public final class API {
 				Logger.logWarningMessage("Incorrect adminPassword from " + remoteHost);
 				throw new ParameterException(JSONResponses.INCORRECT_ADMIN_PASSWORD);
 			}
-			if (passwordCount != null) {
-				API.incorrectPasswords.remove(remoteHost);
-			}
+			if (passwordCount != null) API.incorrectPasswords.remove(remoteHost);
 		}
 	}
 
 	public static boolean checkPassword(final HttpServletRequest req) {
-		if (API.disableAdminPassword) {
-			return true;
-		}
-		if (API.adminPassword.isEmpty()) {
-			return false;
-		}
-		if (Convert.emptyToNull(req.getParameter("adminPassword")) == null) {
-			return false;
-		}
+		if (API.disableAdminPassword) return true;
+		if (API.adminPassword.isEmpty()) return false;
+		if (Convert.emptyToNull(req.getParameter("adminPassword")) == null) return false;
 		try {
 			API.checkOrLockPassword(req);
 			return true;
@@ -418,16 +391,11 @@ public final class API {
 	}
 
 	static boolean isAllowed(final String remoteHost) {
-		if ((API.allowedBotHosts == null) || API.allowedBotHosts.contains(remoteHost)) {
-			return true;
-		}
+		if ((API.allowedBotHosts == null) || API.allowedBotHosts.contains(remoteHost)) return true;
 		try {
 			final BigInteger hostAddressToCheck = new BigInteger(InetAddress.getByName(remoteHost).getAddress());
-			for (final NetworkAddress network : API.allowedBotNets) {
-				if (network.contains(hostAddressToCheck)) {
-					return true;
-				}
-			}
+			for (final NetworkAddress network : API.allowedBotNets)
+				if (network.contains(hostAddressToCheck)) return true;
 		} catch (final UnknownHostException e) {
 			// can't resolve, disallow
 			Logger.logMessage("Unknown remote host " + remoteHost);
@@ -437,30 +405,22 @@ public final class API {
 	}
 
 	public static void shutdown() {
-		if (API.apiServer != null) {
-			try {
-				API.apiServer.stop();
-				if (API.enableAPIUPnP) {
-					final Connector[] apiConnectors = API.apiServer.getConnectors();
-					for (final Connector apiConnector : apiConnectors) {
-						if (apiConnector instanceof ServerConnector) {
-							UPnP.deletePort(((ServerConnector) apiConnector).getPort());
-						}
-					}
-				}
-			} catch (final Exception e) {
-				Logger.logShutdownMessage("Failed to stop API server", e);
+		if (API.apiServer != null) try {
+			API.apiServer.stop();
+			if (API.enableAPIUPnP) {
+				final Connector[] apiConnectors = API.apiServer.getConnectors();
+				for (final Connector apiConnector : apiConnectors)
+					if (apiConnector instanceof ServerConnector)
+						UPnP.deletePort(((ServerConnector) apiConnector).getPort());
 			}
+		} catch (final Exception e) {
+			Logger.logShutdownMessage("Failed to stop API server", e);
 		}
 	}
 
 	public static void verifyPassword(final HttpServletRequest req) throws ParameterException {
-		if (API.disableAdminPassword) {
-			return;
-		}
-		if (API.adminPassword.isEmpty()) {
-			throw new ParameterException(JSONResponses.NO_PASSWORD_IN_CONFIG);
-		}
+		if (API.disableAdminPassword) return;
+		if (API.adminPassword.isEmpty()) throw new ParameterException(JSONResponses.NO_PASSWORD_IN_CONFIG);
 		API.checkOrLockPassword(req);
 	}
 

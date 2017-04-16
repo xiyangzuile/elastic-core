@@ -51,18 +51,14 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 
 	CreateTransaction(final APITag[] apiTags, final String... parameters) {
 		super(apiTags, CreateTransaction.addCommonParameters(parameters));
-		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) {
-			throw new RuntimeException(
-					"CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
-		}
+		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) throw new RuntimeException(
+                "CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
 	}
 
 	CreateTransaction(final String fileParameter, final APITag[] apiTags, final String... parameters) {
 		super(fileParameter, apiTags, CreateTransaction.addCommonParameters(parameters));
-		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) {
-			throw new RuntimeException(
-					"CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
-		}
+		if (!this.getAPITags().contains(APITag.CREATE_TRANSACTION)) throw new RuntimeException(
+                "CreateTransaction API " + this.getClass().getName() + " is missing APITag.CREATE_TRANSACTION tag");
 	}
 
 	@Override
@@ -90,27 +86,20 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 		final boolean broadcast = !"false".equalsIgnoreCase(req.getParameter("broadcast")) && (secretPhrase != null);
 
 		Appendix.PrunableSourceCode prunableSourceCode = null;
-		if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK) {
-			prunableSourceCode = (Appendix.PrunableSourceCode) ParameterParser.getSourceCode(req);
-		}
+		if (attachment.getTransactionType() == TransactionType.WorkControl.NEW_TASK)
+            prunableSourceCode = (Appendix.PrunableSourceCode) ParameterParser.getSourceCode(req);
 		Appendix.PublicKeyAnnouncement publicKeyAnnouncement = null;
 		final String recipientPublicKey = Convert.emptyToNull(req.getParameter("recipientPublicKey"));
-		if (recipientPublicKey != null) {
-			publicKeyAnnouncement = new Appendix.PublicKeyAnnouncement(Convert.parseHexString(recipientPublicKey));
-		}
+		if (recipientPublicKey != null)
+            publicKeyAnnouncement = new Appendix.PublicKeyAnnouncement(Convert.parseHexString(recipientPublicKey));
 
-		if ((secretPhrase == null) && (publicKeyValue == null)) {
-			return JSONResponses.MISSING_SECRET_PHRASE;
-		} else if (deadlineValue == null) {
-			return JSONResponses.MISSING_DEADLINE;
-		}
+		if ((secretPhrase == null) && (publicKeyValue == null)) return JSONResponses.MISSING_SECRET_PHRASE;
+        else if (deadlineValue == null) return JSONResponses.MISSING_DEADLINE;
 
 		short deadline;
 		try {
 			deadline = Short.parseShort(deadlineValue);
-			if (deadline < 1) {
-				return JSONResponses.INCORRECT_DEADLINE;
-			}
+			if (deadline < 1) return JSONResponses.INCORRECT_DEADLINE;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_DEADLINE;
 		}
@@ -118,32 +107,25 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 		final long feeNQT = ParameterParser.getFeeNQT(req);
 		final int ecBlockHeight = ParameterParser.getInt(req, "ecBlockHeight", 0, Integer.MAX_VALUE, false);
 		long ecBlockId = ParameterParser.getUnsignedLong(req, "ecBlockId", false);
-		if ((ecBlockId != 0) && (ecBlockId != Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight))) {
-			return JSONResponses.INCORRECT_EC_BLOCK;
-		}
-		if ((ecBlockId == 0) && (ecBlockHeight > 0)) {
-			ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
-		}
+		if ((ecBlockId != 0) && (ecBlockId != Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight)))
+            return JSONResponses.INCORRECT_EC_BLOCK;
+		if ((ecBlockId == 0) && (ecBlockHeight > 0)) ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
 
 		final JSONObject response = new JSONObject();
 
 		// shouldn't try to get publicKey from senderAccount as it may have not
 		// been set yet
-		byte[] publicKey = null;
-		if (attachment instanceof Attachment.RedeemAttachment) {
-			publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
-		} else {
-			publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
-					: Convert.parseHexString(publicKeyValue);
-		}
+		byte[] publicKey;
+		if (attachment instanceof Attachment.RedeemAttachment)
+            publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
+        else publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
+                : Convert.parseHexString(publicKeyValue);
 
 		try {
 			final Transaction.Builder builder = Nxt
 					.newTransactionBuilder(publicKey, amountNQT, feeNQT, deadline, attachment)
 					.referencedTransactionFullHash(referencedTransactionFullHash);
-			if (attachment.getTransactionType().canHaveRecipient()) {
-				builder.recipientId(recipientId);
-			}
+			if (attachment.getTransactionType().canHaveRecipient()) builder.recipientId(recipientId);
 
 			builder.appendix(publicKeyAnnouncement);
 			builder.appendix(prunableSourceCode);
@@ -152,16 +134,14 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				builder.ecBlockId(ecBlockId);
 				builder.ecBlockHeight(ecBlockHeight);
 			}
-			Transaction transaction = null;
-			if(attachment!=null && Objects.equals(attachment.getTransactionType(), Payment.REDEEM)){
-				transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
-			}else{
-				transaction = builder.build(secretPhrase);
-			}
+			Transaction transaction;
+            //noinspection ConstantConditions
+            if(Objects.equals(attachment.getTransactionType(), Payment.REDEEM))
+                transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment) attachment).getRequiredTimestamp());
+            else transaction = builder.build(secretPhrase);
 			try {
-				if (Math.addExact(amountNQT, transaction.getFeeNQT()) > senderAccount.getUnconfirmedBalanceNQT()) {
-					return JSONResponses.NOT_ENOUGH_FUNDS;
-				}
+				if (Math.addExact(amountNQT, transaction.getFeeNQT()) > senderAccount.getUnconfirmedBalanceNQT())
+                    return JSONResponses.NOT_ENOUGH_FUNDS;
 			} catch (final ArithmeticException e) {
 				return JSONResponses.NOT_ENOUGH_FUNDS;
 			}
@@ -181,22 +161,18 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 				Nxt.getTransactionProcessor().broadcast(transaction);
 
 				// Now, if transaction was my redeem transaction, and we are below the 5000 block threshold ... mine block immediately
-				if ((secretPhrase != null) && (transaction.getType() == Payment.REDEEM) && Nxt.getBlockchain().getHeight()<4998) {
-					try {
-						BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase),
-								Nxt.getEpochTime(), secretPhrase);
-					} catch (final Exception e) {
-						// fall through
-					}
-				}
+				if (transaction.getType() == Payment.REDEEM && Nxt.getBlockchain().getHeight() < 4998) try {
+                    BlockchainProcessorImpl.getInstance().generateBlock(Crypto.getPublicKey(secretPhrase),
+                            Nxt.getEpochTime(), secretPhrase);
+                } catch (final Exception e) {
+                    // fall through
+                }
 
 				response.put("broadcasted", true);
 			} else {
 				// No full validation here for SN tx, since it would naturally fail
-				if(transaction.getType().mustHaveSupernodeSignature()==false)
-					transaction.validate();
-				else
-					transaction.validateWithoutSn();
+				if(!transaction.getType().mustHaveSupernodeSignature()) transaction.validate();
+                else transaction.validateWithoutSn();
 
 				response.put("broadcasted", false);
 			}
@@ -205,9 +181,7 @@ abstract class CreateTransaction extends APIServlet.APIRequestHandler {
 		} catch (final NxtException.InsufficientBalanceException e) {
 			throw e;
 		} catch (final NxtException.ValidationException e) {
-			if (broadcast) {
-				response.clear();
-			}
+			if (broadcast) response.clear();
 			response.put("broadcasted", false);
 			JSONData.putException(response, e);
 		}

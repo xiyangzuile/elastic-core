@@ -1,9 +1,9 @@
 package nxt;
 
-public class Triplet<T, U, V> {
-	T a;
-	U b;
-	V c;
+class Triplet<T, U, V> {
+	private final T a;
+	private final U b;
+	private final V c;
 
 	Triplet(final T a, final U b, final V c) {
 		this.a = a;

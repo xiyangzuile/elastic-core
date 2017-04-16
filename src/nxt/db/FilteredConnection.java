@@ -42,7 +42,7 @@ import java.util.concurrent.Executor;
  * factory is used to create wrappers for statements and prepared statements
  * that are created for this connection.
  */
-public class FilteredConnection implements Connection {
+class FilteredConnection implements Connection {
 
 	private final Connection con;
 	private final FilteredFactory factory;

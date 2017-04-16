@@ -16,6 +16,7 @@
 
 package nxt.http;
 
+import java.util.Arrays;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
@@ -80,23 +81,15 @@ public final class GetLog extends APIServlet.APIRequestHandler {
 		//
 		int count;
 		final String value = req.getParameter("count");
-		if (value != null) {
-			count = Math.max(Integer.valueOf(value), 0);
-		} else {
-			count = Integer.MAX_VALUE;
-		}
+		if (value != null) count = Math.max(Integer.valueOf(value), 0);
+        else count = Integer.MAX_VALUE;
 		//
 		// Get the log messages
 		//
 		final JSONArray logJSON = new JSONArray();
 		final Logger logger = Logger.getLogger("");
 		final Handler[] handlers = logger.getHandlers();
-		for (final Handler handler : handlers) {
-			if (handler instanceof MemoryHandler) {
-				logJSON.addAll(((MemoryHandler) handler).getMessages(count));
-				break;
-			}
-		}
+        Arrays.stream(handlers).filter(handler -> handler instanceof MemoryHandler).findFirst().ifPresent(handler -> logJSON.addAll(((MemoryHandler) handler).getMessages(count)));
 		//
 		// Return the response
 		//

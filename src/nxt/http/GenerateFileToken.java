@@ -46,9 +46,7 @@ public final class GenerateFileToken extends APIServlet.APIRequestHandler {
 		byte[] data;
 		try {
 			final Part part = req.getPart("file");
-			if (part == null) {
-				throw new ParameterException(JSONResponses.INCORRECT_FILE);
-			}
+			if (part == null) throw new ParameterException(JSONResponses.INCORRECT_FILE);
 			final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
 			data = fileData.getData();
 		} catch (IOException | ServletException e) {

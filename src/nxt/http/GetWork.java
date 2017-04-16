@@ -1,15 +1,12 @@
 package nxt.http;
 
-import nxt.Account;
 import nxt.NxtException;
 import nxt.Work;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
-import java.util.List;
 
 public final class GetWork extends APIServlet.APIRequestHandler {
 
@@ -24,7 +21,7 @@ public final class GetWork extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final JSONObject response = new JSONObject();
-		long onlyOneId = 0;
+		long onlyOneId;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "onlyOneId");
 			final BigInteger b = new BigInteger(readParam);
@@ -34,10 +31,8 @@ public final class GetWork extends APIServlet.APIRequestHandler {
 		}
 
 		Work work = Work.getWork(onlyOneId);
-		if(work==null)
-			response.put("work", null);
-		else
-			response.put("work", work.toJsonObject());
+		if(work==null) response.put("work", null);
+		else response.put("work", work.toJsonObject());
 
 		return response;
 

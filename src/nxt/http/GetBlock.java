@@ -40,39 +40,28 @@ public final class GetBlock extends APIServlet.APIRequestHandler {
 		final String blockValue = Convert.emptyToNull(req.getParameter("block"));
 		final String heightValue = Convert.emptyToNull(req.getParameter("height"));
 		final String timestampValue = Convert.emptyToNull(req.getParameter("timestamp"));
-		if (blockValue != null) {
-			try {
-				blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(blockValue));
-			} catch (final RuntimeException e) {
-				return JSONResponses.INCORRECT_BLOCK;
-			}
-		} else if (heightValue != null) {
-			try {
-				final int height = Integer.parseInt(heightValue);
-				if ((height < 0) || (height > Nxt.getBlockchain().getHeight())) {
-					return JSONResponses.INCORRECT_HEIGHT;
-				}
-				blockData = Nxt.getBlockchain().getBlockAtHeight(height);
-			} catch (final RuntimeException e) {
-				return JSONResponses.INCORRECT_HEIGHT;
-			}
-		} else if (timestampValue != null) {
-			try {
-				final int timestamp = Integer.parseInt(timestampValue);
-				if (timestamp < 0) {
-					return JSONResponses.INCORRECT_TIMESTAMP;
-				}
-				blockData = Nxt.getBlockchain().getLastBlock(timestamp);
-			} catch (final RuntimeException e) {
-				return JSONResponses.INCORRECT_TIMESTAMP;
-			}
-		} else {
-			blockData = Nxt.getBlockchain().getLastBlock();
-		}
+		if (blockValue != null) try {
+            blockData = Nxt.getBlockchain().getBlock(Convert.parseUnsignedLong(blockValue));
+        } catch (final RuntimeException e) {
+            return JSONResponses.INCORRECT_BLOCK;
+        }
+        else if (heightValue != null) try {
+            final int height = Integer.parseInt(heightValue);
+            if ((height < 0) || (height > Nxt.getBlockchain().getHeight())) return JSONResponses.INCORRECT_HEIGHT;
+            blockData = Nxt.getBlockchain().getBlockAtHeight(height);
+        } catch (final RuntimeException e) {
+            return JSONResponses.INCORRECT_HEIGHT;
+        }
+        else if (timestampValue != null) try {
+            final int timestamp = Integer.parseInt(timestampValue);
+            if (timestamp < 0) return JSONResponses.INCORRECT_TIMESTAMP;
+            blockData = Nxt.getBlockchain().getLastBlock(timestamp);
+        } catch (final RuntimeException e) {
+            return JSONResponses.INCORRECT_TIMESTAMP;
+        }
+        else blockData = Nxt.getBlockchain().getLastBlock();
 
-		if (blockData == null) {
-			return JSONResponses.UNKNOWN_BLOCK;
-		}
+		if (blockData == null) return JSONResponses.UNKNOWN_BLOCK;
 
 		final boolean includeTransactions = "true".equalsIgnoreCase(req.getParameter("includeTransactions"));
 		final boolean includeExecutedPhased = "true".equalsIgnoreCase(req.getParameter("includeExecutedPhased"));

@@ -24,7 +24,7 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
-		long wid = 0;
+		long wid;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "work_id");
 			final BigInteger b = new BigInteger(readParam);

@@ -46,9 +46,7 @@ public final class GetSharedKey extends APIServlet.APIRequestHandler {
 		final byte[] nonce = ParameterParser.getBytes(req, "nonce", true);
 		final long accountId = ParameterParser.getAccountId(req, "account", true);
 		final byte[] publicKey = Account.getPublicKey(accountId);
-		if (publicKey == null) {
-			return JSONResponses.INCORRECT_ACCOUNT;
-		}
+		if (publicKey == null) return JSONResponses.INCORRECT_ACCOUNT;
 		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(secretPhrase), publicKey, nonce);
 		final JSONObject response = new JSONObject();
 		response.put("sharedKey", Convert.toHexString(sharedKey));

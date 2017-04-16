@@ -27,7 +27,7 @@ import java.sql.Statement;
  *
  * The wrapper forwards all methods to the wrapped statement
  */
-public class FilteredStatement implements Statement {
+class FilteredStatement implements Statement {
 
 	private final Statement stmt;
 
@@ -76,12 +76,12 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public boolean execute(final String sql, final int columnIndexes[]) throws SQLException {
+	public boolean execute(final String sql, final int[] columnIndexes) throws SQLException {
 		return this.stmt.execute(sql, columnIndexes);
 	}
 
 	@Override
-	public boolean execute(final String sql, final String columnNames[]) throws SQLException {
+	public boolean execute(final String sql, final String[] columnNames) throws SQLException {
 		return this.stmt.execute(sql, columnNames);
 	}
 
@@ -106,12 +106,12 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public long executeLargeUpdate(final String sql, final int columnIndexes[]) throws SQLException {
+	public long executeLargeUpdate(final String sql, final int[] columnIndexes) throws SQLException {
 		return this.stmt.executeLargeUpdate(sql, columnIndexes);
 	}
 
 	@Override
-	public long executeLargeUpdate(final String sql, final String columnNames[]) throws SQLException {
+	public long executeLargeUpdate(final String sql, final String[] columnNames) throws SQLException {
 		return this.stmt.executeLargeUpdate(sql, columnNames);
 	}
 
@@ -131,12 +131,12 @@ public class FilteredStatement implements Statement {
 	}
 
 	@Override
-	public int executeUpdate(final String sql, final int columnIndexes[]) throws SQLException {
+	public int executeUpdate(final String sql, final int[] columnIndexes) throws SQLException {
 		return this.stmt.executeUpdate(sql, columnIndexes);
 	}
 
 	@Override
-	public int executeUpdate(final String sql, final String columnNames[]) throws SQLException {
+	public int executeUpdate(final String sql, final String[] columnNames) throws SQLException {
 		return this.stmt.executeUpdate(sql, columnNames);
 	}
 

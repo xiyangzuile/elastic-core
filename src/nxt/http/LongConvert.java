@@ -42,26 +42,20 @@ public final class LongConvert extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 		final String id = Convert.emptyToNull(req.getParameter("id"));
-		if (id == null) {
-			return JSON.emptyJSON;
-		}
+		if (id == null) return JSON.emptyJSON;
 		final JSONObject response = new JSONObject();
 		final BigInteger bigInteger = new BigInteger(id);
-		if (bigInteger.signum() < 0) {
-			if (bigInteger.negate().compareTo(Convert.two64) > 0) {
-				return JSONResponses.OVERFLOW;
-			} else {
-				response.put("stringId", bigInteger.add(Convert.two64).toString());
-				response.put("longId", String.valueOf(bigInteger.longValue()));
-			}
-		} else {
-			if (bigInteger.compareTo(Convert.two64) >= 0) {
-				return JSONResponses.OVERFLOW;
-			} else {
-				response.put("stringId", bigInteger.toString());
-				response.put("longId", String.valueOf(bigInteger.longValue()));
-			}
-		}
+		if (bigInteger.signum() < 0)
+            if (bigInteger.negate().compareTo(Convert.two64) > 0) return JSONResponses.OVERFLOW;
+            else {
+                response.put("stringId", bigInteger.add(Convert.two64).toString());
+                response.put("longId", String.valueOf(bigInteger.longValue()));
+            }
+        else if (bigInteger.compareTo(Convert.two64) >= 0) return JSONResponses.OVERFLOW;
+        else {
+            response.put("stringId", bigInteger.toString());
+            response.put("longId", String.valueOf(bigInteger.longValue()));
+        }
 		return response;
 	}
 

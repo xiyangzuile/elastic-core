@@ -44,12 +44,9 @@ public final class GetReferencingTransactions extends APIServlet.APIRequestHandl
 		final int lastIndex = ParameterParser.getLastIndex(req);
 
 		final JSONArray transactions = new JSONArray();
-		final Iterator<Transaction> iterator = Nxt.getBlockchain().getReferencingTransactions(transactionId,
-				firstIndex, lastIndex).iterator();
-		while (iterator.hasNext()) {
-				final Transaction transaction = iterator.next();
-				transactions.add(JSONData.transaction(transaction));
-		}
+        for (Transaction transaction : Nxt.getBlockchain().getReferencingTransactions(transactionId,
+                firstIndex, lastIndex))
+            transactions.add(JSONData.transaction(transaction));
 
 		final JSONObject response = new JSONObject();
 		response.put("transactions", transactions);

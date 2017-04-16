@@ -46,15 +46,9 @@ public class SetAPIProxyPeer extends APIServlet.APIRequestHandler {
 			return JSONData.peer(peer);
 		}
 		final Peer peer = Peers.findOrCreatePeer(peerAddress, false);
-		if (peer == null) {
-			return JSONResponses.UNKNOWN_PEER;
-		}
-		if (peer.getState() != Peer.State.CONNECTED) {
-			return JSONResponses.PEER_NOT_CONNECTED;
-		}
-		if (!peer.isOpenAPI()) {
-			return JSONResponses.PEER_NOT_OPEN_API;
-		}
+		if (peer == null) return JSONResponses.UNKNOWN_PEER;
+		if (peer.getState() != Peer.State.CONNECTED) return JSONResponses.PEER_NOT_CONNECTED;
+		if (!peer.isOpenAPI()) return JSONResponses.PEER_NOT_OPEN_API;
 		APIProxy.getInstance().setForcedPeer(peer);
 		return JSONData.peer(peer);
 	}

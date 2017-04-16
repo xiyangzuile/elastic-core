@@ -24,13 +24,11 @@ import nxt.util.Convert;
 
 public final class EncryptedData {
 
-	public static final EncryptedData EMPTY_DATA = new EncryptedData(new byte[0], new byte[0]);
+	private static final EncryptedData EMPTY_DATA = new EncryptedData(new byte[0], new byte[0]);
 
 	public static EncryptedData encrypt(final byte[] plaintext, final String secretPhrase,
 			final byte[] theirPublicKey) {
-		if (plaintext.length == 0) {
-			return EncryptedData.EMPTY_DATA;
-		}
+		if (plaintext.length == 0) return EncryptedData.EMPTY_DATA;
 		final byte[] nonce = new byte[32];
 		Crypto.getSecureRandom().nextBytes(nonce);
 		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(secretPhrase), theirPublicKey, nonce);
@@ -38,24 +36,18 @@ public final class EncryptedData {
 		return new EncryptedData(data, nonce);
 	}
 
-	public static int getEncryptedDataLength(final byte[] plaintext) {
-		if (plaintext.length == 0) {
-			return 0;
-		}
+	private static int getEncryptedDataLength(final byte[] plaintext) {
+		if (plaintext.length == 0) return 0;
 		return Crypto.aesEncrypt(plaintext, new byte[32]).length;
 	}
 
 	public static int getEncryptedSize(final byte[] plaintext) {
-		if (plaintext.length == 0) {
-			return 0;
-		}
+		if (plaintext.length == 0) return 0;
 		return EncryptedData.getEncryptedDataLength(plaintext) + 32;
 	}
 
 	public static EncryptedData readEncryptedData(final byte[] bytes) {
-		if (bytes.length == 0) {
-			return EncryptedData.EMPTY_DATA;
-		}
+		if (bytes.length == 0) return EncryptedData.EMPTY_DATA;
 		final ByteBuffer buffer = ByteBuffer.wrap(bytes);
 		buffer.order(ByteOrder.LITTLE_ENDIAN);
 		try {
@@ -65,14 +57,11 @@ public final class EncryptedData {
 		}
 	}
 
-	public static EncryptedData readEncryptedData(final ByteBuffer buffer, final int length, final int maxLength)
+	private static EncryptedData readEncryptedData(final ByteBuffer buffer, final int length, final int maxLength)
 			throws NxtException.NotValidException {
-		if (length == 0) {
-			return EncryptedData.EMPTY_DATA;
-		}
-		if (length > maxLength) {
+		if (length == 0) return EncryptedData.EMPTY_DATA;
+		if (length > maxLength)
 			throw new NxtException.NotValidException("Max encrypted data length exceeded: " + length);
-		}
 		final byte[] data = new byte[length];
 		buffer.get(data);
 		final byte[] nonce = new byte[32];
@@ -89,9 +78,7 @@ public final class EncryptedData {
 	}
 
 	public byte[] decrypt(final String secretPhrase, final byte[] theirPublicKey) {
-		if (this.data.length == 0) {
-			return this.data;
-		}
+		if (this.data.length == 0) return this.data;
 		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(secretPhrase), theirPublicKey, this.nonce);
 		return Crypto.aesDecrypt(this.data, sharedKey);
 	}

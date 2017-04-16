@@ -48,25 +48,19 @@ public class UPnP {
 	 *            Port to add
 	 */
 	public static synchronized void addPort(final int port) {
-		if (!UPnP.initDone) {
-			UPnP.init();
-		}
+		if (!UPnP.initDone) UPnP.init();
 		//
 		// Ignore the request if we didn't find a gateway device
 		//
-		if (UPnP.gateway == null) {
-			return;
-		}
+		if (UPnP.gateway == null) return;
 		//
 		// Forward the port
 		//
 		try {
 			if (UPnP.gateway.addPortMapping(port, port, UPnP.localAddress.getHostAddress(), "TCP",
-					Nxt.APPLICATION + " " + Nxt.VERSION)) {
-				Logger.logDebugMessage("Mapped port [" + UPnP.externalAddress.getHostAddress() + "]:" + port);
-			} else {
-				Logger.logDebugMessage("Unable to map port " + port);
-			}
+					Nxt.APPLICATION + " " + Nxt.VERSION))
+                Logger.logDebugMessage("Mapped port [" + UPnP.externalAddress.getHostAddress() + "]:" + port);
+            else Logger.logDebugMessage("Unable to map port " + port);
 		} catch (final Exception exc) {
 			Logger.logErrorMessage("Unable to map port " + port + ": " + exc.toString());
 		}
@@ -79,18 +73,13 @@ public class UPnP {
 	 *            Port to delete
 	 */
 	public static synchronized void deletePort(final int port) {
-		if (!UPnP.initDone || (UPnP.gateway == null)) {
-			return;
-		}
+		if (!UPnP.initDone || (UPnP.gateway == null)) return;
 		//
 		// Delete the port
 		//
 		try {
-			if (UPnP.gateway.deletePortMapping(port, "TCP")) {
-				Logger.logDebugMessage("Mapping deleted for port " + port);
-			} else {
-				Logger.logDebugMessage("Unable to delete mapping for port " + port);
-			}
+			if (UPnP.gateway.deletePortMapping(port, "TCP")) Logger.logDebugMessage("Mapping deleted for port " + port);
+            else Logger.logDebugMessage("Unable to delete mapping for port " + port);
 		} catch (final Exception exc) {
 			Logger.logErrorMessage("Unable to delete mapping for port " + port + ": " + exc.toString());
 		}
@@ -102,9 +91,7 @@ public class UPnP {
 	 * @return External address or null if the address is not available
 	 */
 	public static synchronized InetAddress getExternalAddress() {
-		if (!UPnP.initDone) {
-			UPnP.init();
-		}
+		if (!UPnP.initDone) UPnP.init();
 		return UPnP.externalAddress;
 	}
 
@@ -114,9 +101,7 @@ public class UPnP {
 	 * @return Local address or null if the address is not available
 	 */
 	public static synchronized InetAddress getLocalAddress() {
-		if (!UPnP.initDone) {
-			UPnP.init();
-		}
+		if (!UPnP.initDone) UPnP.init();
 		return UPnP.localAddress;
 	}
 
@@ -135,15 +120,14 @@ public class UPnP {
 			final GatewayDiscover discover = new GatewayDiscover();
 			discover.setTimeout(Nxt.getIntProperty("nxt.upnpDiscoverTimeout", discover.getTimeout()));
 			final Map<InetAddress, GatewayDevice> gatewayMap = discover.discover();
-			if ((gatewayMap == null) || gatewayMap.isEmpty()) {
-				Logger.logDebugMessage("There are no UPnP gateway devices");
-			} else {
+			if ((gatewayMap == null) || gatewayMap.isEmpty())
+                Logger.logDebugMessage("There are no UPnP gateway devices");
+            else {
 				gatewayMap.forEach((addr, device) -> Logger
 						.logDebugMessage("UPnP gateway device found on " + addr.getHostAddress()));
 				UPnP.gateway = discover.getValidGateway();
-				if (UPnP.gateway == null) {
-					Logger.logDebugMessage("There is no connected UPnP gateway device");
-				} else {
+				if (UPnP.gateway == null) Logger.logDebugMessage("There is no connected UPnP gateway device");
+                else {
 					UPnP.localAddress = UPnP.gateway.getLocalAddress();
 					UPnP.externalAddress = InetAddress.getByName(UPnP.gateway.getExternalIPAddress());
 					Logger.logDebugMessage("Using UPnP gateway device on " + UPnP.localAddress.getHostAddress());

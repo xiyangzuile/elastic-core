@@ -69,12 +69,11 @@ public final class PrunableSourceCode {
 		if (appendix.getSource() != null) {
 			PrunableSourceCode prunableSourceCode = PrunableSourceCode.prunableSourceCodeTable
 					.get(transaction.getDbKey());
-			if (prunableSourceCode == null) {
-				prunableSourceCode = new PrunableSourceCode(transaction, blockTimestamp, height);
-			} else if (prunableSourceCode.height != height) {
-				throw new RuntimeException("Attempt to modify prunable source code from height "
-						+ prunableSourceCode.height + " at height " + height);
-			}
+			if (prunableSourceCode == null)
+                prunableSourceCode = new PrunableSourceCode(transaction, blockTimestamp, height);
+            else if (prunableSourceCode.height != height)
+                throw new RuntimeException("Attempt to modify prunable source code from height "
+                        + prunableSourceCode.height + " at height " + height);
 			if (prunableSourceCode.getSource() == null) {
 				prunableSourceCode.setPlain(appendix);
 				PrunableSourceCode.prunableSourceCodeTable.insert(prunableSourceCode);
@@ -105,9 +104,7 @@ public final class PrunableSourceCode {
 			final DbIterator<PrunableSourceCode> it = PrunableSourceCode.prunableSourceCodeTable.getManyBy(con, pstmt,
 					false);
 			PrunableSourceCode s = null;
-			if (it.hasNext()) {
-				s = it.next();
-			}
+			if (it.hasNext()) s = it.next();
 			it.close();
 			return s;
 		} catch (final SQLException e) {
@@ -120,15 +117,13 @@ public final class PrunableSourceCode {
 	}
 
 	static boolean isPruned(final long transactionId, final boolean hasPrunableSourceCode) {
-		if (!hasPrunableSourceCode) {
-			return false;
-		}
+		if (!hasPrunableSourceCode) return false;
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con
 						.prepareStatement("SELECT source FROM prunable_source_code WHERE id = ?")) {
 			pstmt.setLong(1, transactionId);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				return !rs.next() || (hasPrunableSourceCode && (rs.getBytes("source") == null));
+				return !rs.next() || rs.getBytes("source") == null;
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -210,9 +205,7 @@ public final class PrunableSourceCode {
 	}
 
 	private void save(final Connection con) throws SQLException {
-		if (this.source == null) {
-			throw new IllegalStateException("Prunable source code not fully initialized");
-		}
+		if (this.source == null) throw new IllegalStateException("Prunable source code not fully initialized");
 		try (PreparedStatement pstmt = con.prepareStatement("MERGE INTO prunable_source_code (id, work_id, "
 				+ "source, block_timestamp, transaction_timestamp, height, language) " + "KEY (id) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?)")) {
@@ -222,6 +215,7 @@ public final class PrunableSourceCode {
 			DbUtils.setBytes(pstmt, ++i, this.source);
 			pstmt.setInt(++i, this.blockTimestamp);
 			pstmt.setInt(++i, this.transactionTimestamp);
+			//noinspection SuspiciousNameCombination
 			pstmt.setInt(++i, this.height);
 			pstmt.setShort(++i, this.language);
 			pstmt.executeUpdate();

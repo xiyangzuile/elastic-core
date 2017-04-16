@@ -19,7 +19,7 @@ package nxt.env;
 import java.io.File;
 import java.net.URI;
 
-public class SystemTrayDataProvider {
+class SystemTrayDataProvider {
 
 	private final String toolTip;
 	private final URI wallet;

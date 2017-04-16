@@ -57,13 +57,10 @@ public final class PopOff extends APIServlet.APIRequestHandler {
 		List<? extends Block> blocks;
 		try {
 			Nxt.getBlockchainProcessor().setGetMoreBlocks(false);
-			if (numBlocks > 0) {
-				blocks = Nxt.getBlockchainProcessor().popOffTo(Nxt.getBlockchain().getHeight() - numBlocks);
-			} else if (height > 0) {
-				blocks = Nxt.getBlockchainProcessor().popOffTo(height);
-			} else {
-				return JSONResponses.missing("numBlocks", "height");
-			}
+			if (numBlocks > 0)
+                blocks = Nxt.getBlockchainProcessor().popOffTo(Nxt.getBlockchain().getHeight() - numBlocks);
+            else if (height > 0) blocks = Nxt.getBlockchainProcessor().popOffTo(height);
+            else return JSONResponses.missing("numBlocks", "height");
 		} finally {
 			Nxt.getBlockchainProcessor().setGetMoreBlocks(true);
 		}
@@ -71,9 +68,8 @@ public final class PopOff extends APIServlet.APIRequestHandler {
 		blocks.forEach(block -> blocksJSON.add(JSONData.block(block, true, false)));
 		final JSONObject response = new JSONObject();
 		response.put("blocks", blocksJSON);
-		if (keepTransactions) {
-			blocks.forEach(block -> Nxt.getTransactionProcessor().processLater(block.getTransactions()));
-		}
+		if (keepTransactions)
+            blocks.forEach(block -> Nxt.getTransactionProcessor().processLater(block.getTransactions()));
 		return response;
 	}
 

@@ -85,11 +85,9 @@ public final class Users {
 	static {
 
 		final List<String> allowedUserHostsList = Nxt.getStringListProperty("nxt.allowedUserHosts");
-		if (!allowedUserHostsList.contains("*")) {
+		if (!allowedUserHostsList.contains("*"))
 			allowedUserHosts = Collections.unmodifiableSet(new HashSet<>(allowedUserHostsList));
-		} else {
-			allowedUserHosts = null;
-		}
+		else allowedUserHosts = null;
 
 		final boolean enableUIServer = Nxt.getBooleanProperty("nxt.enableUIServer");
 		if (enableUIServer) {
@@ -116,9 +114,7 @@ public final class Users {
 				connector = new ServerConnector(Users.userServer,
 						new SslConnectionFactory(sslContextFactory, "http/1.1"),
 						new HttpConnectionFactory(https_config));
-			} else {
-				connector = new ServerConnector(Users.userServer);
-			}
+			} else connector = new ServerConnector(Users.userServer);
 
 			connector.setPort(port);
 			connector.setHost(host);
@@ -189,9 +185,8 @@ public final class Users {
 				response.put("balanceNQT", account.getUnconfirmedBalanceNQT());
 				final byte[] accountPublicKey = Account.getPublicKey(account.getId());
 				Users.users.values().forEach(user -> {
-					if ((user.getSecretPhrase() != null) && Arrays.equals(user.getPublicKey(), accountPublicKey)) {
+					if ((user.getSecretPhrase() != null) && Arrays.equals(user.getPublicKey(), accountPublicKey))
 						user.send(response);
-					}
 				});
 			}, Account.Event.UNCONFIRMED_BALANCE);
 
@@ -308,9 +303,7 @@ public final class Users {
 				final JSONArray addedActivePeers = new JSONArray();
 				final JSONObject addedActivePeer = new JSONObject();
 				addedActivePeer.put("index", Users.getIndex(peer));
-				if (peer.getState() != Peer.State.CONNECTED) {
-					addedActivePeer.put("disconnected", true);
-				}
+				if (peer.getState() != Peer.State.CONNECTED) addedActivePeer.put("disconnected", true);
 				addedActivePeer.put("address", peer.getHost());
 				addedActivePeer.put("announcedAddress", Convert.truncate(peer.getAnnouncedAddress(), "-", 25, true));
 				addedActivePeer.put("weight", peer.getWeight());
@@ -446,9 +439,7 @@ public final class Users {
 				response.put("response", "setBlockGenerationDeadline");
 				response.put("deadline", generator.getDeadline());
 				Users.users.values().forEach(user -> {
-					if (Arrays.equals(generator.getPublicKey(), user.getPublicKey())) {
-						user.send(response);
-					}
+					if (Arrays.equals(generator.getPublicKey(), user.getPublicKey())) user.send(response);
 				});
 			}, Generator.Event.GENERATION_DEADLINE);
 		}
@@ -460,12 +451,7 @@ public final class Users {
 	}
 
 	static int getIndex(final Block block) {
-		Integer index = Users.blockIndexMap.get(block.getId());
-		if (index == null) {
-			index = Users.blockCounter.incrementAndGet();
-			Users.blockIndexMap.put(block.getId(), index);
-		}
-		return index;
+		return Users.blockIndexMap.computeIfAbsent(block.getId(), k -> Users.blockCounter.incrementAndGet());
 	}
 
 	static int getIndex(final Peer peer) {
@@ -479,19 +465,12 @@ public final class Users {
 	}
 
 	static int getIndex(final Transaction transaction) {
-		Integer index = Users.transactionIndexMap.get(transaction.getId());
-		if (index == null) {
-			index = Users.transactionCounter.incrementAndGet();
-			Users.transactionIndexMap.put(transaction.getId(), index);
-		}
-		return index;
+		return Users.transactionIndexMap.computeIfAbsent(transaction.getId(), k -> Users.transactionCounter.incrementAndGet());
 	}
 
 	static Peer getPeer(final int index) {
 		final String peerAddress = Users.peerAddressMap.get(index);
-		if (peerAddress == null) {
-			return null;
-		}
+		if (peerAddress == null) return null;
 		return Peers.getPeer(peerAddress);
 	}
 
@@ -504,9 +483,7 @@ public final class Users {
 				user = oldUser;
 				user.setInactive(false);
 			}
-		} else {
-			user.setInactive(false);
-		}
+		} else user.setInactive(false);
 		return user;
 	}
 
@@ -523,18 +500,14 @@ public final class Users {
 	}
 
 	private static void sendToAll(final JSONStreamAware response) {
-		for (final User user : Users.users.values()) {
-			user.send(response);
-		}
+		for (final User user : Users.users.values()) user.send(response);
 	}
 
 	public static void shutdown() {
-		if (Users.userServer != null) {
-			try {
-				Users.userServer.stop();
-			} catch (final Exception e) {
-				Logger.logShutdownMessage("Failed to stop user interface server", e);
-			}
+		if (Users.userServer != null) try {
+			Users.userServer.stop();
+		} catch (final Exception e) {
+			Logger.logShutdownMessage("Failed to stop user interface server", e);
 		}
 	}
 

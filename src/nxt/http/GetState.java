@@ -76,9 +76,7 @@ public final class GetState extends APIServlet.APIRequestHandler {
 		response.put("isOffline", Constants.isOffline);
 		response.put("needsAdminPassword", !API.disableAdminPassword);
 		final InetAddress externalAddress = UPnP.getExternalAddress();
-		if (externalAddress != null) {
-			response.put("upnpExternalAddress", externalAddress.getHostAddress());
-		}
+		if (externalAddress != null) response.put("upnpExternalAddress", externalAddress.getHostAddress());
 		return response;
 	}
 

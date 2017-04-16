@@ -36,9 +36,7 @@ public final class GetECBlock extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 		int timestamp = ParameterParser.getTimestamp(req);
-		if (timestamp == 0) {
-			timestamp = Nxt.getEpochTime();
-		}
+		if (timestamp == 0) timestamp = Nxt.getEpochTime();
 		final Block ecBlock = Nxt.getBlockchain().getECBlock(timestamp);
 		final JSONObject response = new JSONObject();
 		response.put("ecBlockId", ecBlock.getStringId());

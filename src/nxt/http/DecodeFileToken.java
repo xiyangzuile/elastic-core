@@ -42,15 +42,11 @@ public final class DecodeFileToken extends APIServlet.APIRequestHandler {
 	@Override
 	public JSONStreamAware processRequest(final HttpServletRequest req) throws ParameterException {
 		final String tokenString = req.getParameter("token");
-		if (tokenString == null) {
-			return JSONResponses.MISSING_TOKEN;
-		}
+		if (tokenString == null) return JSONResponses.MISSING_TOKEN;
 		byte[] data;
 		try {
 			final Part part = req.getPart("file");
-			if (part == null) {
-				throw new ParameterException(JSONResponses.INCORRECT_FILE);
-			}
+			if (part == null) throw new ParameterException(JSONResponses.INCORRECT_FILE);
 			final ParameterParser.FileData fileData = new ParameterParser.FileData(part).invoke();
 			data = fileData.getData();
 		} catch (IOException | ServletException e) {

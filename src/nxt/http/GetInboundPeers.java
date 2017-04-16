@@ -86,11 +86,8 @@ public final class GetInboundPeers extends APIServlet.APIRequestHandler {
 		final boolean includePeerInfo = "true".equalsIgnoreCase(req.getParameter("includePeerInfo"));
 		final List<Peer> peers = Peers.getInboundPeers();
 		final JSONArray peersJSON = new JSONArray();
-		if (includePeerInfo) {
-			peers.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
-		} else {
-			peers.forEach(peer -> peersJSON.add(peer.getHost()));
-		}
+		if (includePeerInfo) peers.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
+        else peers.forEach(peer -> peersJSON.add(peer.getHost()));
 		final JSONObject response = new JSONObject();
 		response.put("peers", peersJSON);
 		return response;

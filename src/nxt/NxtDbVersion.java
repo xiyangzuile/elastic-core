@@ -1279,12 +1279,9 @@ class NxtDbVersion extends DbVersion {
 					ResultSet rs = stmt.executeQuery("SELECT CONSTRAINT_NAME FROM INFORMATION_SCHEMA.CONSTRAINTS "
 							+ "WHERE TABLE_NAME='BLOCK' AND (COLUMN_LIST='NEXT_BLOCK_ID' OR COLUMN_LIST='PREVIOUS_BLOCK_ID')")) {
 				final List<String> constraintNames = new ArrayList<>();
-				while (rs.next()) {
-					constraintNames.add(rs.getString(1));
-				}
-				for (final String constraintName : constraintNames) {
-					stmt.executeUpdate("ALTER TABLE BLOCK DROP CONSTRAINT " + constraintName);
-				}
+				while (rs.next()) constraintNames.add(rs.getString(1));
+				for (final String constraintName : constraintNames)
+                    stmt.executeUpdate("ALTER TABLE BLOCK DROP CONSTRAINT " + constraintName);
 				this.apply(null);
 			} catch (final SQLException e) {
 				throw new RuntimeException(e.toString(), e);

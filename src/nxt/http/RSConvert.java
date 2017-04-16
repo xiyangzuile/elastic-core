@@ -39,14 +39,10 @@ public final class RSConvert extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 		final String accountValue = Convert.emptyToNull(req.getParameter("account"));
-		if (accountValue == null) {
-			return JSONResponses.MISSING_ACCOUNT;
-		}
+		if (accountValue == null) return JSONResponses.MISSING_ACCOUNT;
 		try {
 			final long accountId = Convert.parseAccountId(accountValue);
-			if (accountId == 0) {
-				return JSONResponses.INCORRECT_ACCOUNT;
-			}
+			if (accountId == 0) return JSONResponses.INCORRECT_ACCOUNT;
 			final JSONObject response = new JSONObject();
 			JSONData.putAccount(response, "account", accountId);
 			return response;

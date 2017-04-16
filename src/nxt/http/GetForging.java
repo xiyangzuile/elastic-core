@@ -47,13 +47,9 @@ public final class GetForging extends APIServlet.APIRequestHandler {
 		final int elapsedTime = Nxt.getEpochTime() - Nxt.getBlockchain().getLastBlock().getTimestamp();
 		if (secretPhrase != null) {
 			final Account account = Account.getAccount(Crypto.getPublicKey(secretPhrase));
-			if (account == null) {
-				return JSONResponses.UNKNOWN_ACCOUNT;
-			}
+			if (account == null) return JSONResponses.UNKNOWN_ACCOUNT;
 			final Generator generator = Generator.getGenerator(secretPhrase);
-			if (generator == null) {
-				return JSONResponses.NOT_FORGING;
-			}
+			if (generator == null) return JSONResponses.NOT_FORGING;
 			return JSONData.generator(generator, elapsedTime);
 		} else {
 			API.verifyPassword(req);

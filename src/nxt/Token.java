@@ -44,21 +44,13 @@ public final class Token {
 					| (((long) (token[ptr + 2] & 0xFF)) << 16) | (((long) (token[ptr + 3] & 0xFF)) << 24)
 					| (((long) (token[ptr + 4] & 0xFF)) << 32);
 
-			if (number < 32) {
-				buf.append("0000000");
-			} else if (number < 1024) {
-				buf.append("000000");
-			} else if (number < 32768) {
-				buf.append("00000");
-			} else if (number < 1048576) {
-				buf.append("0000");
-			} else if (number < 33554432) {
-				buf.append("000");
-			} else if (number < 1073741824) {
-				buf.append("00");
-			} else if (number < 34359738368L) {
-				buf.append("0");
-			}
+			if (number < 32) buf.append("0000000");
+            else if (number < 1024) buf.append("000000");
+            else if (number < 32768) buf.append("00000");
+            else if (number < 1048576) buf.append("0000");
+            else if (number < 33554432) buf.append("000");
+            else if (number < 1073741824) buf.append("00");
+            else if (number < 34359738368L) buf.append("0");
 			buf.append(Long.toString(number, 32));
 
 		}
@@ -86,9 +78,7 @@ public final class Token {
 
 		}
 
-		if (i != 160) {
-			throw new IllegalArgumentException("Invalid token string: " + tokenString);
-		}
+		if (i != 160) throw new IllegalArgumentException("Invalid token string: " + tokenString);
 		final byte[] publicKey = new byte[32];
 		System.arraycopy(tokenBytes, 0, publicKey, 0, 32);
 		final int timestamp = (tokenBytes[32] & 0xFF) | ((tokenBytes[33] & 0xFF) << 8) | ((tokenBytes[34] & 0xFF) << 16)

@@ -28,7 +28,7 @@ import nxt.Transaction;
 /**
  * Get the transactions
  */
-public class GetTransactions extends PeerServlet.PeerRequestHandler {
+class GetTransactions extends PeerServlet.PeerRequestHandler {
 
 	static final GetTransactions instance = new GetTransactions();
 
@@ -37,9 +37,7 @@ public class GetTransactions extends PeerServlet.PeerRequestHandler {
 
 	@Override
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
-		if (!Constants.INCLUDE_EXPIRED_PRUNABLE) {
-			return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
-		}
+		if (!Constants.INCLUDE_EXPIRED_PRUNABLE) return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
 		final JSONObject response = new JSONObject();
 		final JSONArray transactionArray = new JSONArray();
 		final JSONArray transactionIds = (JSONArray) request.get("transactionIds");
@@ -47,17 +45,15 @@ public class GetTransactions extends PeerServlet.PeerRequestHandler {
 		//
 		// Return the transactions to the caller
 		//
-		if (transactionIds != null) {
-			transactionIds.forEach(transactionId -> {
-				final long id = Long.parseUnsignedLong((String) transactionId);
-				final Transaction transaction = blockchain.getTransaction(id);
-				if (transaction != null) {
-					transaction.getAppendages(true);
-					final JSONObject transactionJSON = transaction.getJSONObject();
-					transactionArray.add(transactionJSON);
-				}
-			});
-		}
+		if (transactionIds != null) transactionIds.forEach(transactionId -> {
+			final long id = Long.parseUnsignedLong((String) transactionId);
+			final Transaction transaction = blockchain.getTransaction(id);
+			if (transaction != null) {
+				transaction.getAppendages(true);
+				final JSONObject transactionJSON = transaction.getJSONObject();
+				transactionArray.add(transactionJSON);
+			}
+		});
 		response.put("transactions", transactionArray);
 		return response;
 	}

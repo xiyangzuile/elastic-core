@@ -1,8 +1,8 @@
 package nxt;
 
-public class Pair<T, U> {
-	T a;
-	U b;
+class Pair<T, U> {
+	private final T a;
+	private final U b;
 
 	Pair(final T a, final U b) {
 		this.a = a;

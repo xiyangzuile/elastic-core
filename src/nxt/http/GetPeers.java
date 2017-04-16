@@ -49,25 +49,19 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 		final String[] serviceValues = req.getParameterValues("service");
 		final boolean includePeerInfo = "true".equalsIgnoreCase(req.getParameter("includePeerInfo"));
 		Peer.State state;
-		if (stateValue != null) {
-			try {
-				state = Peer.State.valueOf(stateValue);
-			} catch (final RuntimeException exc) {
-				return JSONResponses.incorrect("state", "- '" + stateValue + "' is not defined");
-			}
-		} else {
-			state = null;
-		}
+		if (stateValue != null) try {
+            state = Peer.State.valueOf(stateValue);
+        } catch (final RuntimeException exc) {
+            return JSONResponses.incorrect("state", "- '" + stateValue + "' is not defined");
+        }
+        else state = null;
 		long serviceCodes = 0;
-		if (serviceValues != null) {
-			for (final String serviceValue : serviceValues) {
-				try {
-					serviceCodes |= Peer.Service.valueOf(serviceValue).getCode();
-				} catch (final RuntimeException exc) {
-					return JSONResponses.incorrect("service", "- '" + serviceValue + "' is not defined");
-				}
-			}
-		}
+		if (serviceValues != null) for (final String serviceValue : serviceValues)
+            try {
+                serviceCodes |= Peer.Service.valueOf(serviceValue).getCode();
+            } catch (final RuntimeException exc) {
+                return JSONResponses.incorrect("service", "- '" + serviceValue + "' is not defined");
+            }
 
 
 		final Collection<? extends Peer> peers = active ? Peers.getActivePeers()
@@ -75,52 +69,32 @@ public final class GetPeers extends APIServlet.APIRequestHandler {
 		final JSONArray peersJSON = new JSONArray();
 		if (serviceCodes != 0) {
 			final long services = serviceCodes;
-			if (includePeerInfo) {
-				peers.forEach(peer -> {
-					if (peer.providesServices(services) && peer.isSupernode()==false) {
-						peersJSON.add(JSONData.peer(peer));
-					}
-				});
-			} else {
-				peers.forEach(peer -> {
-					if (peer.providesServices(services) && peer.isSupernode()==false) {
-						peersJSON.add(peer.getHost());
-					}
-				});
-			}
-		} else {
-			if (includePeerInfo) {
-				peers.forEach(peer -> {if (peer.isSupernode()==false) peersJSON.add(JSONData.peer(peer));});
-			} else {
-				peers.forEach(peer -> {if (peer.isSupernode()==false) peersJSON.add(peer.getHost()); });
-			}
-		}
+			if (includePeerInfo) peers.forEach(peer -> {
+                if (peer.providesServices(services) && !peer.isSupernode()) peersJSON.add(JSONData.peer(peer));
+            });
+            else peers.forEach(peer -> {
+                if (peer.providesServices(services) && !peer.isSupernode()) peersJSON.add(peer.getHost());
+            });
+		} else if (includePeerInfo) peers.forEach(peer -> {
+            if (!peer.isSupernode()) peersJSON.add(JSONData.peer(peer));
+        });
+        else peers.forEach(peer -> {
+                if (!peer.isSupernode()) peersJSON.add(peer.getHost());
+            });
 
 		// Also add all SN peers to the list
 		final Collection<? extends Peer> peers_sn = active ? Peers.getActiveSnPeers()
 				: state != null ? Peers.getSnPeers(state) : Peers.getAllSNPeers();
 		if (serviceCodes != 0) {
 			final long services = serviceCodes;
-			if (includePeerInfo) {
-				peers_sn.forEach(peer -> {
-					if (peer.providesServices(services)) {
-						peersJSON.add(JSONData.peer(peer));
-					}
-				});
-			} else {
-				peers_sn.forEach(peer -> {
-					if (peer.providesServices(services)) {
-						peersJSON.add(peer.getHost());
-					}
-				});
-			}
-		} else {
-			if (includePeerInfo) {
-				peers_sn.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
-			} else {
-				peers_sn.forEach(peer -> peersJSON.add(peer.getHost()));
-			}
-		}
+			if (includePeerInfo) peers_sn.forEach(peer -> {
+                if (peer.providesServices(services)) peersJSON.add(JSONData.peer(peer));
+            });
+            else peers_sn.forEach(peer -> {
+                if (peer.providesServices(services)) peersJSON.add(peer.getHost());
+            });
+		} else if (includePeerInfo) peers_sn.forEach(peer -> peersJSON.add(JSONData.peer(peer)));
+        else peers_sn.forEach(peer -> peersJSON.add(peer.getHost()));
 
 
 

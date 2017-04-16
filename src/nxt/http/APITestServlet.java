@@ -18,16 +18,7 @@ package nxt.http;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -107,11 +98,7 @@ public class APITestServlet extends HttpServlet {
 			final String requestType = entry.getKey();
 			final Set<APITag> apiTags = entry.getValue().getAPITags();
 			for (final APITag apiTag : apiTags) {
-				SortedSet<String> set = APITestServlet.requestTags.get(apiTag.name());
-				if (set == null) {
-					set = new TreeSet<>();
-					APITestServlet.requestTags.put(apiTag.name(), set);
-				}
+				SortedSet<String> set = APITestServlet.requestTags.computeIfAbsent(apiTag.name(), k -> new TreeSet<>());
 				set.add(requestType);
 			}
 		}
@@ -120,14 +107,10 @@ public class APITestServlet extends HttpServlet {
 	private static void appendWikiLink(final String className, final StringBuilder buf) {
 		for (int i = 0; i < className.length(); i++) {
 			char c = className.charAt(i);
-			if (i == 0) {
-				c = Character.toUpperCase(c);
-			}
+			if (i == 0) c = Character.toUpperCase(c);
 			buf.append(c);
 			if ((i < (className.length() - 2)) && Character.isUpperCase(className.charAt(i + 1))
-					&& (Character.isLowerCase(c) || Character.isLowerCase(className.charAt(i + 2)))) {
-				buf.append('_');
-			}
+					&& (Character.isLowerCase(c) || Character.isLowerCase(className.charAt(i + 2)))) buf.append('_');
 		}
 	}
 
@@ -135,26 +118,19 @@ public class APITestServlet extends HttpServlet {
 		final StringBuilder buf = new StringBuilder();
 		final String requestTag = Convert.nullToEmpty(req.getParameter("requestTag"));
 		buf.append("<li");
-		if (requestTag.equals("") & !req.getParameterMap().containsKey("requestType")
-				& !req.getParameterMap().containsKey("requestTypes")) {
-			buf.append(" class='active'");
-		}
+		if (Objects.equals(requestTag, "") & !req.getParameterMap().containsKey("requestType")
+				& !req.getParameterMap().containsKey("requestTypes")) buf.append(" class='active'");
 		buf.append("><a href='/test'>ALL</a></li>\n");
 		buf.append("<li");
-		if (req.getParameterMap().containsKey("requestTypes")) {
-			buf.append(" class='active'");
-		}
+		if (req.getParameterMap().containsKey("requestTypes")) buf.append(" class='active'");
 		buf.append("><a href='/test?requestTypes=' id='navi-selected'>SELECTED</a></li>\n");
-		for (final APITag apiTag : APITag.values()) {
-			if (APITestServlet.requestTags.get(apiTag.name()) != null) {
-				buf.append("<li");
-				if (requestTag.equals(apiTag.name())) {
-					buf.append(" class='active'");
-				}
-				buf.append("><a href='/test?requestTag=").append(Escape.html(apiTag.name())).append("'>");
-				buf.append(Escape.html(apiTag.getDisplayName())).append("</a></li>\n");
-			}
-		}
+		for (final APITag apiTag : APITag.values())
+            if (APITestServlet.requestTags.get(apiTag.name()) != null) {
+                buf.append("<li");
+                if (Objects.equals(requestTag, apiTag.name())) buf.append(" class='active'");
+                buf.append("><a href='/test?requestTag=").append(Escape.html(apiTag.name())).append("'>");
+                buf.append(Escape.html(apiTag.getDisplayName())).append("</a></li>\n");
+            }
 		return buf.toString();
 	}
 
@@ -192,21 +168,15 @@ public class APITestServlet extends HttpServlet {
 		buf.append("</h4>\n");
 		buf.append("</div> <!-- panel-heading -->\n");
 		buf.append("<div id='collapse").append(Escape.html(requestType)).append("' class='panel-collapse collapse");
-		if (singleView) {
-			buf.append(" in");
-		}
+		if (singleView) buf.append(" in");
 		buf.append("'>\n");
 		buf.append("<div class='panel-body'>\n");
 		final String path = req.getServletPath();
-		final String formAction = "/test-proxy".equals(path) ? "/nxt-proxy" : "/nxt";
+		final String formAction = Objects.equals("/test-proxy", path) ? "/nxt-proxy" : "/nxt";
 		buf.append("<form action='").append(formAction).append("' method='POST' ");
-		if (fileParameter != null) {
-			buf.append("enctype='multipart/form-data' ");
-		}
+		if (fileParameter != null) buf.append("enctype='multipart/form-data' ");
 		buf.append("onsubmit='return ATS.submitForm(this");
-		if (fileParameter != null) {
-			buf.append(", \"").append(fileParameter).append("\"");
-		}
+		if (fileParameter != null) buf.append(", \"").append(fileParameter).append("\"");
 		buf.append(")'>\n");
 		buf.append("<input type='hidden' id='formAction' value='").append(Escape.html(formAction)).append("'/>\n");
 		buf.append("<input type='hidden' name='requestType' value='").append(Escape.html(requestType)).append("'/>\n");
@@ -223,23 +193,15 @@ public class APITestServlet extends HttpServlet {
 		for (final String parameter : parameters) {
 			buf.append("<tr class='api-call-input-tr'>\n");
 			buf.append("<td>").append(Escape.html(parameter)).append(":</td>\n");
-			if (APITestServlet.isTextArea(parameter)) {
-				buf.append("<td><textarea ");
-			} else {
-				buf.append("<td><input type='").append(APITestServlet.isPassword(parameter) ? "password" : "text")
-						.append("' ");
-			}
+			if (APITestServlet.isTextArea(parameter)) buf.append("<td><textarea ");
+            else buf.append("<td><input type='").append(APITestServlet.isPassword(parameter) ? "password" : "text")
+                    .append("' ");
 			buf.append("name='").append(Escape.html(parameter)).append("' ");
 			final String value = Convert.emptyToNull(req.getParameter(parameter));
-			if (value != null) {
-				buf.append("value='").append(Escape.html(value.replace("'", "&quot;"))).append("' ");
-			}
+			if (value != null) buf.append("value='").append(Escape.html(value.replace("'", "&quot;"))).append("' ");
 			buf.append("style='width:100%;min-width:200px;'");
-			if (APITestServlet.isTextArea(parameter)) {
-				buf.append("></textarea></td>\n");
-			} else {
-				buf.append("/></td>\n");
-			}
+			if (APITestServlet.isTextArea(parameter)) buf.append("></textarea></td>\n");
+            else buf.append("/></td>\n");
 			buf.append("</tr>\n");
 		}
 		buf.append("<tr>\n");
@@ -252,9 +214,7 @@ public class APITestServlet extends HttpServlet {
 		if (!requirePost) {
 			buf.append("<span style='float:right;' class='uri-link'>");
 			buf.append("</span>\n");
-		} else {
-			buf.append("<span style='float:right;font-size:12px;font-weight:normal;'>POST only</span>\n");
-		}
+		} else buf.append("<span style='float:right;font-size:12px;font-weight:normal;'>POST only</span>\n");
 		buf.append("Response</h5>\n");
 		buf.append("<pre class='hljs json'><code class='result'>JSON response</code></pre>\n");
 		buf.append("</div>\n");
@@ -273,12 +233,12 @@ public class APITestServlet extends HttpServlet {
 	}
 
 	private static boolean isPassword(final String parameter) {
-		return "secretPhrase".equals(parameter) || "adminPassword".equals(parameter)
-				|| "recipientSecretPhrase".equals(parameter);
+		return Objects.equals("secretPhrase", parameter) || Objects.equals("adminPassword", parameter)
+				|| Objects.equals("recipientSecretPhrase", parameter);
 	}
 
 	private static boolean isTextArea(final String parameter) {
-		return "website".equals(parameter);
+		return Objects.equals("website", parameter);
 	}
 
 	@Override
@@ -303,11 +263,8 @@ public class APITestServlet extends HttpServlet {
 			APIServlet.APIRequestHandler requestHandler = APIServlet.apiRequestHandlers.get(requestType);
 			final StringBuilder bufJSCalls = new StringBuilder();
 			String nodeType = "Full Node";
-			if (Constants.isLightClient) {
-				nodeType = "Light Client";
-			} else if (APIProxy.enableAPIProxy) {
-				nodeType = "Roaming Client";
-			}
+			if (Constants.isLightClient) nodeType = "Light Client";
+            else if (APIProxy.enableAPIProxy) nodeType = "Roaming Client";
 			bufJSCalls.append("    $('#nodeType').val('").append(Escape.html(nodeType)).append("');");
 			bufJSCalls.append("    $('#servletPath').val('").append(req.getServletPath()).append("');");
 			if (requestHandler != null) {
@@ -323,16 +280,14 @@ public class APITestServlet extends HttpServlet {
 				}
 			} else {
 				final String requestTypes = Convert.nullToEmpty(req.getParameter("requestTypes"));
-				if (!requestTypes.equals("")) {
+				if (!Objects.equals(requestTypes, "")) {
 					final Set<String> selectedRequestTypes = new TreeSet<>(Arrays.asList(requestTypes.split("_")));
 					for (final String type : selectedRequestTypes) {
 						requestHandler = APIServlet.apiRequestHandlers.get(type);
 						writer.print(APITestServlet.form(req, type, false, requestHandler));
 						bufJSCalls.append("    ATS.apiCalls.push('").append(Escape.html(type)).append("');\n");
 					}
-				} else {
-					writer.print(APITestServlet.fullTextMessage("No API calls selected.", "info"));
-				}
+				} else writer.print(APITestServlet.fullTextMessage("No API calls selected.", "info"));
 			}
 			writer.print(APITestServlet.footer1);
 			writer.print(bufJSCalls.toString());

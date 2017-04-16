@@ -16,7 +16,9 @@
 
 package nxt.http;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -70,9 +72,7 @@ public final class JSONData {
 	static JSONObject apiRequestHandler(final APIServlet.APIRequestHandler handler) {
 		final JSONObject json = new JSONObject();
 		json.put("allowRequiredBlockParameters", handler.allowRequiredBlockParameters());
-		if (handler.getFileParameter() != null) {
-			json.put("fileParameter", handler.getFileParameter());
-		}
+		if (handler.getFileParameter() != null) json.put("fileParameter", handler.getFileParameter());
 		json.put("requireBlockchain", handler.requireBlockchain());
 		json.put("requirePost", handler.requirePost());
 		json.put("requirePassword", handler.requirePassword());
@@ -103,24 +103,17 @@ public final class JSONData {
 		json.put("version", block.getVersion());
 		json.put("baseTarget", Long.toUnsignedString(block.getBaseTarget()));
 		json.put("cumulativeDifficulty", block.getCumulativeDifficulty().toString());
-		if (block.getPreviousBlockId() != 0) {
+		if (block.getPreviousBlockId() != 0)
 			json.put("previousBlock", Long.toUnsignedString(block.getPreviousBlockId()));
-		}
-		if (block.getNextBlockId() != 0) {
-			json.put("nextBlock", Long.toUnsignedString(block.getNextBlockId()));
-		}
+		if (block.getNextBlockId() != 0) json.put("nextBlock", Long.toUnsignedString(block.getNextBlockId()));
 		json.put("payloadHash", Convert.toHexString(block.getPayloadHash()));
 		json.put("generationSignature", Convert.toHexString(block.getGenerationSignature()));
-		if (block.getVersion() > 1) {
-			json.put("previousBlockHash", Convert.toHexString(block.getPreviousBlockHash()));
-		}
+		if (block.getVersion() > 1) json.put("previousBlockHash", Convert.toHexString(block.getPreviousBlockHash()));
 		json.put("blockSignature", Convert.toHexString(block.getBlockSignature()));
 		final JSONArray transactions = new JSONArray();
-		if (includeTransactions) {
+		if (includeTransactions)
 			block.getTransactions().forEach(transaction -> transactions.add(JSONData.transaction(transaction)));
-		} else {
-			block.getTransactions().forEach(transaction -> transactions.add(transaction.getStringId()));
-		}
+		else block.getTransactions().forEach(transaction -> transactions.add(transaction.getStringId()));
 		json.put("transactions", transactions);
 
 		return json;
@@ -170,9 +163,7 @@ public final class JSONData {
 		final AccountLedger.LedgerHolding ledgerHolding = entry.getHolding();
 		if (ledgerHolding != null) {
 			json.put("holdingType", ledgerHolding.name());
-			if (entry.getHoldingId() != null) {
-				json.put("holding", Long.toUnsignedString(entry.getHoldingId()));
-			}
+			if (entry.getHoldingId() != null) json.put("holding", Long.toUnsignedString(entry.getHoldingId()));
 		}
 		if (includeTransactions && entry.getEvent().isTransaction()) {
 			final Transaction transaction = Nxt.getBlockchain().getTransaction(entry.getEventId());
@@ -187,9 +178,8 @@ public final class JSONData {
 			JSONData.putAccount(json, "currentLessee", accountLease.getCurrentLesseeId());
 			json.put("currentHeightFrom", String.valueOf(accountLease.getCurrentLeasingHeightFrom()));
 			json.put("currentHeightTo", String.valueOf(accountLease.getCurrentLeasingHeightTo()));
-			if (includeEffectiveBalance) {
+			if (includeEffectiveBalance)
 				json.put("effectiveBalanceNXT", String.valueOf(account.getGuaranteedBalanceNQT() / Constants.ONE_NXT));
-			}
 		}
 		if (accountLease.getNextLesseeId() != 0) {
 			JSONData.putAccount(json, "nextLessee", accountLease.getNextLesseeId());
@@ -207,36 +197,23 @@ public final class JSONData {
 		json.put("state", peer.getState().ordinal());
 		json.put("announcedAddress", peer.getAnnouncedAddress());
 		json.put("shareAddress", peer.shareAddress());
-		if (peer.getHallmark() != null) {
-			json.put("hallmark", peer.getHallmark().getHallmarkString());
-		}
+		if (peer.getHallmark() != null) json.put("hallmark", peer.getHallmark().getHallmarkString());
 		json.put("weight", peer.getWeight());
 		json.put("downloadedVolume", peer.getDownloadedVolume());
 		json.put("uploadedVolume", peer.getUploadedVolume());
 		json.put("application", peer.getApplication());
 		json.put("version", peer.getVersion());
 		json.put("platform", peer.getPlatform());
-		if (peer.getApiPort() != 0) {
-			json.put("apiPort", peer.getApiPort());
-		}
-		if (peer.getApiSSLPort() != 0) {
-			json.put("apiSSLPort", peer.getApiSSLPort());
-		}
+		if (peer.getApiPort() != 0) json.put("apiPort", peer.getApiPort());
+		if (peer.getApiSSLPort() != 0) json.put("apiSSLPort", peer.getApiSSLPort());
 		json.put("blacklisted", peer.isBlacklisted());
 		json.put("lastUpdated", peer.getLastUpdated());
 		json.put("lastConnectAttempt", peer.getLastConnectAttempt());
 		json.put("inbound", peer.isInbound());
 		json.put("inboundWebSocket", peer.isInboundWebSocket());
 		json.put("outboundWebSocket", peer.isOutboundWebSocket());
-		if (peer.isBlacklisted()) {
-			json.put("blacklistingCause", peer.getBlacklistingCause());
-		}
-		final JSONArray servicesArray = new JSONArray();
-		for (final Peer.Service service : Peer.Service.values()) {
-			if (peer.providesService(service)) {
-				servicesArray.add(service.name());
-			}
-		}
+		if (peer.isBlacklisted()) json.put("blacklistingCause", peer.getBlacklistingCause());
+		final JSONArray servicesArray = Arrays.stream(Peer.Service.values()).filter(peer::providesService).map(Enum::name).collect(Collectors.toCollection(JSONArray::new));
 		json.put("services", servicesArray);
 		return json;
 	}
@@ -252,18 +229,14 @@ public final class JSONData {
 
 	public static void putException(final JSONObject json, final Exception e, String error) {
 		json.put("errorCode", 4);
-		if (error.length() > 0) {
-			error += ": ";
-		}
+		if (error.length() > 0) error += ": ";
 		json.put("error", e.toString());
 		json.put("errorDescription", error + e.getMessage());
 	}
 
 	static void putPrunableAttachment(final JSONObject json, final Transaction transaction) {
 		final JSONObject prunableAttachment = transaction.getPrunableAttachmentJSON();
-		if (prunableAttachment != null) {
-			json.put("prunableAttachmentJSON", prunableAttachment);
-		}
+		if (prunableAttachment != null) json.put("prunableAttachmentJSON", prunableAttachment);
 	}
 
 	static JSONObject token(final Token token) {
@@ -275,12 +248,10 @@ public final class JSONData {
 	}
 
 	public static JSONObject transaction(final Transaction transaction) {
-		final JSONObject json = JSONData.transaction(transaction, null);
-
-		return json;
+		return JSONData.transaction(transaction, null);
 	}
 
-	static JSONObject transaction(final Transaction transaction, final Filter<Appendix> filter) {
+	private static JSONObject transaction(final Transaction transaction, final Filter<Appendix> filter) {
 		final JSONObject json = JSONData.unconfirmedTransaction(transaction, filter);
 		json.put("block", Long.toUnsignedString(transaction.getBlockId()));
 		json.put("confirmations", Nxt.getBlockchain().getHeight() - transaction.getHeight());
@@ -293,22 +264,19 @@ public final class JSONData {
 		return JSONData.unconfirmedTransaction(transaction, null);
 	}
 
-	static JSONObject unconfirmedTransaction(final Transaction transaction, final Filter<Appendix> filter) {
+	private static JSONObject unconfirmedTransaction(final Transaction transaction, final Filter<Appendix> filter) {
 		final JSONObject json = new JSONObject();
 		json.put("type", transaction.getType().getType());
 		json.put("subtype", transaction.getType().getSubtype());
 		json.put("timestamp", transaction.getTimestamp());
 		json.put("deadline", transaction.getDeadline());
 		json.put("senderPublicKey", Convert.toHexString(transaction.getSenderPublicKey()));
-		if (transaction.getRecipientId() != 0) {
-			JSONData.putAccount(json, "recipient", transaction.getRecipientId());
-		}
+		if (transaction.getRecipientId() != 0) JSONData.putAccount(json, "recipient", transaction.getRecipientId());
 		json.put("amountNQT", String.valueOf(transaction.getAmountNQT()));
 		json.put("feeNQT", String.valueOf(transaction.getFeeNQT()));
 		final String referencedTransactionFullHash = transaction.getReferencedTransactionFullHash();
-		if (referencedTransactionFullHash != null) {
+		if (referencedTransactionFullHash != null)
 			json.put("referencedTransactionFullHash", referencedTransactionFullHash);
-		}
 		final byte[] signature = Convert.emptyToNull(transaction.getSignature());
 		if (signature != null) {
 			json.put("signature", Convert.toHexString(signature));
@@ -317,21 +285,13 @@ public final class JSONData {
 			json.put("transaction", transaction.getStringId());
 		}
 		final JSONObject attachmentJSON = new JSONObject();
-		if (filter == null) {
-			for (final Appendix appendage : transaction.getAppendages(true)) {
-				attachmentJSON.putAll(appendage.getJSONObject());
-			}
-		} else {
-			for (final Appendix appendage : transaction.getAppendages(filter, true)) {
-				attachmentJSON.putAll(appendage.getJSONObject());
-			}
-		}
+		if (filter == null) for (final Appendix appendage : transaction.getAppendages(true))
+			attachmentJSON.putAll(appendage.getJSONObject());
+		else for (final Appendix appendage : transaction.getAppendages(filter, true))
+			attachmentJSON.putAll(appendage.getJSONObject());
 		if (!attachmentJSON.isEmpty()) {
-			for (final Map.Entry entry : (Iterable<Map.Entry>) attachmentJSON.entrySet()) {
-				if (entry.getValue() instanceof Long) {
-					entry.setValue(String.valueOf(entry.getValue()));
-				}
-			}
+			for (final Map.Entry entry : (Iterable<Map.Entry>) attachmentJSON.entrySet())
+				if (entry.getValue() instanceof Long) entry.setValue(String.valueOf(entry.getValue()));
 			json.put("attachment", attachmentJSON);
 		}
 		JSONData.putAccount(json, "sender", transaction.getSenderId());

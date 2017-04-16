@@ -23,54 +23,41 @@ public enum HoldingType {
 		@Override
 		void addToBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId,
 				final long holdingId, final long amount) {
-			if (holdingId != 0) {
-				throw new IllegalArgumentException("holdingId must be 0");
-			}
+			if (holdingId != 0) throw new IllegalArgumentException("holdingId must be 0");
 			account.addToBalanceNQT(event, eventId, amount);
 		}
 
 		@Override
 		void addToBalanceAndUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event,
 				final long eventId, final long holdingId, final long amount) {
-			if (holdingId != 0) {
-				throw new IllegalArgumentException("holdingId must be 0");
-			}
+			if (holdingId != 0) throw new IllegalArgumentException("holdingId must be 0");
 			account.addToBalanceAndUnconfirmedBalanceNQT(event, eventId, amount);
 		}
 
 		@Override
 		void addToUnconfirmedBalance(final Account account, final AccountLedger.LedgerEvent event, final long eventId,
 				final long holdingId, final long amount) {
-			if (holdingId != 0) {
-				throw new IllegalArgumentException("holdingId must be 0");
-			}
+			if (holdingId != 0) throw new IllegalArgumentException("holdingId must be 0");
 			account.addToUnconfirmedBalanceNQT(event, eventId, amount);
 		}
 
 		@Override
 		public long getBalance(final Account account, final long holdingId) {
-			if (holdingId != 0) {
-				throw new IllegalArgumentException("holdingId must be 0");
-			}
+			if (holdingId != 0) throw new IllegalArgumentException("holdingId must be 0");
 			return account.getBalanceNQT();
 		}
 
 		@Override
 		public long getUnconfirmedBalance(final Account account, final long holdingId) {
-			if (holdingId != 0) {
-				throw new IllegalArgumentException("holdingId must be 0");
-			}
+			if (holdingId != 0) throw new IllegalArgumentException("holdingId must be 0");
 			return account.getUnconfirmedBalanceNQT();
 		}
 
 	};
 
 	public static HoldingType get(final byte code) {
-		for (final HoldingType holdingType : HoldingType.values()) {
-			if (holdingType.getCode() == code) {
-				return holdingType;
-			}
-		}
+		for (final HoldingType holdingType : HoldingType.values())
+			if (holdingType.getCode() == code) return holdingType;
 		throw new IllegalArgumentException("Invalid holdingType code: " + code);
 	}
 
@@ -91,7 +78,7 @@ public enum HoldingType {
 
 	public abstract long getBalance(Account account, long holdingId);
 
-	public byte getCode() {
+	private byte getCode() {
 		return this.code;
 	}
 

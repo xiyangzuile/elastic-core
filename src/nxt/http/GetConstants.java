@@ -58,13 +58,8 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
 					for (int subtype = 0;; subtype++) {
 						final TransactionType transactionType = TransactionType.findTransactionType((byte) type,
 								(byte) subtype);
-						if (transactionType == null) {
-							if (subtype == 0) {
-								break outer;
-							} else {
-								break;
-							}
-						}
+						if (transactionType == null) if (subtype == 0) break outer;
+                        else break;
 						final JSONObject subtypeJSON = new JSONObject();
 						subtypeJSON.put("name", transactionType.getName());
 						subtypeJSON.put("canHaveRecipient", transactionType.canHaveRecipient());
@@ -81,15 +76,13 @@ public final class GetConstants extends APIServlet.APIRequestHandler {
 				response.put("transactionSubTypes", transactionSubTypesJSON);
 
 				final JSONObject hashFunctions = new JSONObject();
-				for (final HashFunction hashFunction : HashFunction.values()) {
-					hashFunctions.put(hashFunction.toString(), hashFunction.getId());
-				}
+				for (final HashFunction hashFunction : HashFunction.values())
+                    hashFunctions.put(hashFunction.toString(), hashFunction.getId());
 				response.put("hashAlgorithms", hashFunctions);
 
 				final JSONObject peerStates = new JSONObject();
-				for (final Peer.State peerState : Peer.State.values()) {
-					peerStates.put(peerState.toString(), peerState.ordinal());
-				}
+				for (final Peer.State peerState : Peer.State.values())
+                    peerStates.put(peerState.toString(), peerState.ordinal());
 				response.put("peerStates", peerStates);
 				response.put("maxTaggedDataDataLength", Constants.MAX_TAGGED_DATA_DATA_LENGTH);
 

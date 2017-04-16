@@ -25,12 +25,12 @@ import java.util.Properties;
 
 public abstract class AbstractBlockchainTest {
 
-    protected static BlockchainProcessorImpl blockchainProcessor;
-    protected static BlockchainImpl blockchain;
+    static BlockchainProcessorImpl blockchainProcessor;
+    static BlockchainImpl blockchain;
     private static final Object doneLock = new Object();
     private static boolean done = false;
 
-    protected static Properties newTestProperties() {
+    static Properties newTestProperties() {
         Properties testProperties = new Properties();
         testProperties.setProperty("nxt.shareMyAddress", "false");
         testProperties.setProperty("nxt.savePeers", "false");
@@ -50,37 +50,31 @@ public abstract class AbstractBlockchainTest {
         return testProperties;
     }
 
-    protected static void init(Properties testProperties) {
+    static void init(Properties testProperties) {
         Nxt.init(testProperties);
         blockchain = BlockchainImpl.getInstance();
         blockchainProcessor = BlockchainProcessorImpl.getInstance();
         blockchainProcessor.setGetMoreBlocks(false);
         TransactionProcessorImpl.getInstance().clearUnconfirmedTransactions();
         Listener<Block> countingListener = block -> {
-            if (block.getHeight() % 1000 == 0) {
-                Logger.logMessage("downloaded block " + block.getHeight());
-            }
+            if (block.getHeight() % 1000 == 0) Logger.logMessage("downloaded block " + block.getHeight());
         };
         blockchainProcessor.addListener(countingListener, BlockchainProcessor.Event.BLOCK_PUSHED);
     }
 
-    protected static void shutdown() {
+    static void shutdown() {
         TransactionProcessorImpl.getInstance().clearUnconfirmedTransactions();
     }
 
     protected static void downloadTo(final int endHeight) {
-        if (blockchain.getHeight() == endHeight) {
-            return;
-        }
+        if (blockchain.getHeight() == endHeight) return;
         Assert.assertTrue(blockchain.getHeight() < endHeight);
         Listener<Block> stopListener = block -> {
-            if (blockchain.getHeight() == endHeight) {
-                synchronized (doneLock) {
-                    done = true;
-                    blockchainProcessor.setGetMoreBlocks(false);
-                    doneLock.notifyAll();
-                    throw new NxtException.StopException("Reached height " + endHeight);
-                }
+            if (blockchain.getHeight() == endHeight) synchronized (doneLock) {
+                done = true;
+                blockchainProcessor.setGetMoreBlocks(false);
+                doneLock.notifyAll();
+                throw new NxtException.StopException("Reached height " + endHeight);
             }
         };
         blockchainProcessor.addListener(stopListener, BlockchainProcessor.Event.BLOCK_PUSHED);
@@ -88,31 +82,25 @@ public abstract class AbstractBlockchainTest {
             done = false;
             Logger.logMessage("Starting download from height " + blockchain.getHeight());
             blockchainProcessor.setGetMoreBlocks(true);
-            while (! done) {
-                try {
-                    doneLock.wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            while (! done) try {
+                doneLock.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         Assert.assertEquals(endHeight, blockchain.getHeight());
         blockchainProcessor.removeListener(stopListener, BlockchainProcessor.Event.BLOCK_PUSHED);
     }
 
-    protected static void forgeTo(final int endHeight, final String secretPhrase) {
-        if (blockchain.getHeight() == endHeight) {
-            return;
-        }
+    static void forgeTo(final int endHeight, final String secretPhrase) {
+        if (blockchain.getHeight() == endHeight) return;
         Assert.assertTrue(blockchain.getHeight() < endHeight);
         Listener<Block> stopListener = block -> {
             Logger.logMessage("Forged block " + blockchain.getHeight() + ", #tx: " + block.getTransactions().size() +  ", unconf. still waiting: " + TransactionProcessorImpl.getInstance().getAllWaitingTransactions().length);
-            if (blockchain.getHeight() == endHeight) {
-                synchronized (doneLock) {
-                    done = true;
-                    Generator.stopForging(secretPhrase);
-                    doneLock.notifyAll();
-                }
+            if (blockchain.getHeight() == endHeight) synchronized (doneLock) {
+                done = true;
+                Generator.stopForging(secretPhrase);
+                doneLock.notifyAll();
             }
         };
         blockchainProcessor.addListener(stopListener, BlockchainProcessor.Event.BLOCK_PUSHED);
@@ -120,12 +108,10 @@ public abstract class AbstractBlockchainTest {
             done = false;
             Logger.logMessage("Starting forging from height " + blockchain.getHeight());
             Generator.startForging(secretPhrase);
-            while (! done) {
-                try {
-                    doneLock.wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            while (! done) try {
+                doneLock.wait();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
         Assert.assertTrue(blockchain.getHeight() >= endHeight);

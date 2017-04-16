@@ -18,15 +18,7 @@ package nxt.http;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -61,13 +53,12 @@ public final class APIServlet extends HttpServlet {
 			this(null, apiTags, parameters);
 		}
 
-		protected APIRequestHandler(final String fileParameter, final APITag[] apiTags,
-				final String... origParameters) {
+		APIRequestHandler(final String fileParameter, final APITag[] apiTags,
+						  final String... origParameters) {
 			final List<String> parameters = new ArrayList<>();
 			Collections.addAll(parameters, origParameters);
-			if ((this.requirePassword() || parameters.contains("lastIndex")) && !API.disableAdminPassword) {
+			if ((this.requirePassword() || parameters.contains("lastIndex")) && !API.disableAdminPassword)
 				parameters.add("adminPassword");
-			}
 			if (this.allowRequiredBlockParameters()) {
 				parameters.add("requireBlock");
 				parameters.add("requireLastBlock");
@@ -95,28 +86,28 @@ public final class APIServlet extends HttpServlet {
 
 		protected abstract JSONStreamAware processRequest(HttpServletRequest request) throws NxtException;
 
-		protected JSONStreamAware processRequest(final HttpServletRequest request, final HttpServletResponse response)
+		JSONStreamAware processRequest(final HttpServletRequest request, final HttpServletResponse response)
 				throws NxtException {
 			return this.processRequest(request);
 		}
 
-		protected boolean requireBlockchain() {
+		boolean requireBlockchain() {
 			return true;
 		}
 
-		protected boolean requireFullClient() {
+		boolean requireFullClient() {
 			return false;
 		}
 
-		protected boolean requirePassword() {
+		boolean requirePassword() {
 			return false;
 		}
 
-		protected boolean requirePost() {
+		boolean requirePost() {
 			return false;
 		}
 
-		protected boolean startDbTransaction() {
+		boolean startDbTransaction() {
 			return false;
 		}
 
@@ -131,19 +122,14 @@ public final class APIServlet extends HttpServlet {
 		final Map<String, APIRequestHandler> map = new HashMap<>();
 		final Map<String, APIRequestHandler> disabledMap = new HashMap<>();
 
-		for (final APIEnum api : APIEnum.values()) {
-			if (!api.getName().isEmpty() && (api.getHandler() != null)) {
-				map.put(api.getName(), api.getHandler());
-			}
-		}
+		for (final APIEnum api : APIEnum.values())
+			if (!api.getName().isEmpty() && (api.getHandler() != null)) map.put(api.getName(), api.getHandler());
 
 		AddOns.registerAPIRequestHandlers(map);
 
 		API.disabledAPIs.forEach(api -> {
 			final APIRequestHandler handler = map.remove(api);
-			if (handler == null) {
-				throw new RuntimeException("Invalid API in nxt.disabledAPIs: " + api);
-			}
+			if (handler == null) throw new RuntimeException("Invalid API in nxt.disabledAPIs: " + api);
 			disabledMap.put(api, handler);
 		});
 		API.disabledAPITags.forEach(apiTag -> {
@@ -156,12 +142,8 @@ public final class APIServlet extends HttpServlet {
 				}
 			}
 		});
-		if (!API.disabledAPIs.isEmpty()) {
-			Logger.logInfoMessage("Disabled APIs: " + API.disabledAPIs);
-		}
-		if (!API.disabledAPITags.isEmpty()) {
-			Logger.logInfoMessage("Disabled APITags: " + API.disabledAPITags);
-		}
+		if (!API.disabledAPIs.isEmpty()) Logger.logInfoMessage("Disabled APIs: " + API.disabledAPIs);
+		if (!API.disabledAPITags.isEmpty()) Logger.logInfoMessage("Disabled APITags: " + API.disabledAPITags);
 
 		apiRequestHandlers = Collections.unmodifiableMap(map);
 		disabledRequestHandlers = disabledMap.isEmpty() ? Collections.emptyMap()
@@ -213,11 +195,9 @@ public final class APIServlet extends HttpServlet {
 
 			final APIRequestHandler apiRequestHandler = APIServlet.apiRequestHandlers.get(requestType);
 			if (apiRequestHandler == null) {
-				if (APIServlet.disabledRequestHandlers.containsKey(requestType)) {
+				if (APIServlet.disabledRequestHandlers.containsKey(requestType))
 					response = JSONResponses.ERROR_DISABLED;
-				} else {
-					response = JSONResponses.ERROR_INCORRECT_REQUEST;
-				}
+				else response = JSONResponses.ERROR_INCORRECT_REQUEST;
 				return;
 			}
 
@@ -226,27 +206,21 @@ public final class APIServlet extends HttpServlet {
 				return;
 			}
 
-			if (APIServlet.enforcePost && apiRequestHandler.requirePost() && !"POST".equals(req.getMethod())) {
+			if (APIServlet.enforcePost && apiRequestHandler.requirePost() && !Objects.equals("POST", req.getMethod())) {
 				response = JSONResponses.POST_REQUIRED;
 				return;
 			}
 
 			try {
-				if (apiRequestHandler.requirePassword()) {
-					API.verifyPassword(req);
-				}
+				if (apiRequestHandler.requirePassword()) API.verifyPassword(req);
 				final long requireBlockId = apiRequestHandler.allowRequiredBlockParameters()
 						? ParameterParser.getUnsignedLong(req, "requireBlock", false) : 0;
 				final long requireLastBlockId = apiRequestHandler.allowRequiredBlockParameters()
 						? ParameterParser.getUnsignedLong(req, "requireLastBlock", false) : 0;
-				if ((requireBlockId != 0) || (requireLastBlockId != 0)) {
-					Nxt.getBlockchain().readLock();
-				}
+				if ((requireBlockId != 0) || (requireLastBlockId != 0)) Nxt.getBlockchain().readLock();
 				try {
 					try {
-						if (apiRequestHandler.startDbTransaction()) {
-							Db.db.beginTransaction();
-						}
+						if (apiRequestHandler.startDbTransaction()) Db.db.beginTransaction();
 						if ((requireBlockId != 0) && !Nxt.getBlockchain().hasBlock(requireBlockId)) {
 							response = JSONResponses.REQUIRED_BLOCK_NOT_FOUND;
 							return;
@@ -257,18 +231,13 @@ public final class APIServlet extends HttpServlet {
 							return;
 						}
 						response = apiRequestHandler.processRequest(req, resp);
-						if ((requireLastBlockId == 0) && (requireBlockId != 0) && (response instanceof JSONObject)) {
+						if ((requireLastBlockId == 0) && (requireBlockId != 0) && (response instanceof JSONObject))
 							((JSONObject) response).put("lastBlock", Nxt.getBlockchain().getLastBlock().getStringId());
-						}
 					} finally {
-						if (apiRequestHandler.startDbTransaction()) {
-							Db.db.endTransaction();
-						}
+						if (apiRequestHandler.startDbTransaction()) Db.db.endTransaction();
 					}
 				} finally {
-					if ((requireBlockId != 0) || (requireLastBlockId != 0)) {
-						Nxt.getBlockchain().readUnlock();
-					}
+					if ((requireBlockId != 0) || (requireLastBlockId != 0)) Nxt.getBlockchain().readUnlock();
 				}
 			} catch (final ParameterException e) {
 				response = e.getErrorResponse();
@@ -281,18 +250,15 @@ public final class APIServlet extends HttpServlet {
 				Logger.logErrorMessage("Initialization Error", err.getCause());
 				response = JSONResponses.ERROR_INCORRECT_REQUEST;
 			}
-			if ((response != null) && (response instanceof JSONObject)) {
+			if ((response != null) && (response instanceof JSONObject))
 				((JSONObject) response).put("requestProcessingTime", System.currentTimeMillis() - startTime);
-			}
 		} catch (final Exception e) {
 			Logger.logErrorMessage("Error processing request", e);
 			response = JSONResponses.ERROR_INCORRECT_REQUEST;
 		} finally {
 			// The response will be null if we created an asynchronous context
-			if (response != null) {
-				try (Writer writer = resp.getWriter()) {
-					JSON.writeJSONString(response, writer);
-				}
+			if (response != null) try (Writer writer = resp.getWriter()) {
+				JSON.writeJSONString(response, writer);
 			}
 		}
 

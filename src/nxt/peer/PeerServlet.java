@@ -24,6 +24,7 @@ import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -192,30 +193,22 @@ public final class PeerServlet extends WebSocketServlet {
 		// Process the peer request
 		//
 		final PeerImpl peer = Peers.findOrCreatePeer(req.getRemoteAddr());
-		if (peer == null) {
-			jsonResponse = PeerServlet.UNKNOWN_PEER;
-		} else {
-			jsonResponse = this.process(peer, req.getReader());
-		}
+		if (peer == null) jsonResponse = PeerServlet.UNKNOWN_PEER;
+        else jsonResponse = this.process(peer, req.getReader());
 		//
 		// Return the response
 		//
 		resp.setContentType("text/plain; charset=UTF-8");
 		try (CountingOutputWriter writer = new CountingOutputWriter(resp.getWriter())) {
 			JSON.writeJSONString(jsonResponse, writer);
-			if (peer != null) {
-				peer.updateUploadedVolume(writer.getCount());
-			}
+			if (peer != null) peer.updateUploadedVolume(writer.getCount());
 		} catch (RuntimeException | IOException e) {
 			if (peer != null) {
-				if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_EXCEPTIONS) != 0) {
-					if (e instanceof RuntimeException) {
-						Logger.logDebugMessage("Error sending response to peer " + peer.getHost(), e);
-					} else {
-						Logger.logDebugMessage(String.format("Error sending response to peer %s: %s", peer.getHost(),
-								e.getMessage() != null ? e.getMessage() : e.toString()));
-					}
-				}
+				if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_EXCEPTIONS) != 0)
+                    if (e instanceof RuntimeException)
+                        Logger.logDebugMessage("Error sending response to peer " + peer.getHost(), e);
+                    else Logger.logDebugMessage(String.format("Error sending response to peer %s: %s", peer.getHost(),
+                            e.getMessage() != null ? e.getMessage() : e.toString()));
 				peer.blacklist(e);
 			}
 			throw e;
@@ -238,14 +231,11 @@ public final class PeerServlet extends WebSocketServlet {
 		// Process the peer request
 		//
 		final InetSocketAddress socketAddress = webSocket.getRemoteAddress();
-		if (socketAddress == null) {
-			return;
-		}
+		if (socketAddress == null) return;
 		final String remoteAddress = socketAddress.getHostString();
 		final PeerImpl peer = Peers.findOrCreatePeer(remoteAddress);
-		if (peer == null) {
-			jsonResponse = PeerServlet.UNKNOWN_PEER;
-		} else {
+		if (peer == null) jsonResponse = PeerServlet.UNKNOWN_PEER;
+        else {
 			peer.setInboundWebSocket(webSocket);
 			jsonResponse = this.process(peer, new StringReader(request));
 		}
@@ -257,19 +247,14 @@ public final class PeerServlet extends WebSocketServlet {
 			JSON.writeJSONString(jsonResponse, writer);
 			final String response = writer.toString();
 			webSocket.sendResponse(requestId, response);
-			if (peer != null) {
-				peer.updateUploadedVolume(response.length());
-			}
+			if (peer != null) peer.updateUploadedVolume(response.length());
 		} catch (RuntimeException | IOException e) {
 			if (peer != null) {
-				if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_EXCEPTIONS) != 0) {
-					if (e instanceof RuntimeException) {
-						Logger.logDebugMessage("Error sending response to peer " + peer.getHost(), e);
-					} else {
-						Logger.logDebugMessage(String.format("Error sending response to peer %s: %s", peer.getHost(),
-								e.getMessage() != null ? e.getMessage() : e.toString()));
-					}
-				}
+				if ((Peers.communicationLoggingMask & Peers.LOGGING_MASK_EXCEPTIONS) != 0)
+                    if (e instanceof RuntimeException)
+                        Logger.logDebugMessage("Error sending response to peer " + peer.getHost(), e);
+                    else Logger.logDebugMessage(String.format("Error sending response to peer %s: %s", peer.getHost(),
+                            e.getMessage() != null ? e.getMessage() : e.toString()));
 				peer.blacklist(e);
 			}
 		}
@@ -307,29 +292,18 @@ public final class PeerServlet extends WebSocketServlet {
 			}
 			final PeerRequestHandler peerRequestHandler = PeerServlet.peerRequestHandlers
 					.get(request.get("requestType"));
-			if (peerRequestHandler == null) {
-				return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
-			}
-			if (peer.getState() == Peer.State.DISCONNECTED) {
-				peer.setState(Peer.State.CONNECTED);
-			}
-			if ((peer.getVersion() == null) && !"getInfo".equals(request.get("requestType"))) {
-				return PeerServlet.SEQUENCE_ERROR;
-			}
+			if (peerRequestHandler == null) return PeerServlet.UNSUPPORTED_REQUEST_TYPE;
+			if (peer.getState() == Peer.State.DISCONNECTED) peer.setState(Peer.State.CONNECTED);
+			if ((peer.getVersion() == null) && !Objects.equals("getInfo", request.get("requestType")))
+                return PeerServlet.SEQUENCE_ERROR;
 			if (!peer.isInbound()) {
-				if (Peers.hasTooManyInboundPeers()) {
-					return PeerServlet.MAX_INBOUND_CONNECTIONS;
-				}
+				if (Peers.hasTooManyInboundPeers()) return PeerServlet.MAX_INBOUND_CONNECTIONS;
 				Peers.notifyListeners(peer, Peers.Event.ADD_INBOUND);
 			}
 			peer.setLastInboundRequest(Nxt.getEpochTime());
 			if (peerRequestHandler.rejectWhileDownloading()) {
-				if (PeerServlet.blockchainProcessor.isDownloading()) {
-					return PeerServlet.DOWNLOADING;
-				}
-				if (Constants.isLightClient) {
-					return PeerServlet.LIGHT_CLIENT;
-				}
+				if (PeerServlet.blockchainProcessor.isDownloading()) return PeerServlet.DOWNLOADING;
+				if (Constants.isLightClient) return PeerServlet.LIGHT_CLIENT;
 			}
 			return peerRequestHandler.processRequest(request, peer);
 		} catch (RuntimeException | ParseException | IOException e) {

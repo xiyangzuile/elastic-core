@@ -54,11 +54,8 @@ public final class JSON {
 		boolean firstElement = true;
 		sb.append('[');
 		for (final Object obj : list) {
-			if (firstElement) {
-				firstElement = false;
-			} else {
-				sb.append(',');
-			}
+			if (firstElement) firstElement = false;
+			else sb.append(',');
 			JSON.encodeValue(obj, sb);
 		}
 		sb.append(']');
@@ -72,7 +69,7 @@ public final class JSON {
 	 * @param sb
 	 *            String builder
 	 */
-	public static void encodeObject(final Map<?, ?> map, final StringBuilder sb) {
+	private static void encodeObject(final Map<?, ?> map, final StringBuilder sb) {
 		if (map == null) {
 			sb.append("null");
 			return;
@@ -85,14 +82,9 @@ public final class JSON {
 			final Map.Entry<Object, Object> entry = it.next();
 			final Object key = entry.getKey();
 			final Object value = entry.getValue();
-			if (key == null) {
-				continue;
-			}
-			if (firstElement) {
-				firstElement = false;
-			} else {
-				sb.append(',');
-			}
+			if (key == null) continue;
+			if (firstElement) firstElement = false;
+			else sb.append(',');
 			sb.append('\"').append(key.toString()).append("\":");
 			JSON.encodeValue(value, sb);
 		}
@@ -107,30 +99,19 @@ public final class JSON {
 	 * @param sb
 	 *            String builder
 	 */
-	public static void encodeValue(final Object value, final StringBuilder sb) {
-		if (value == null) {
-			sb.append("null");
-		} else if (value instanceof Double) {
-			if (((Double) value).isInfinite() || ((Double) value).isNaN()) {
-				sb.append("null");
-			} else {
-				sb.append(value.toString());
-			}
-		} else if (value instanceof Float) {
-			if (((Float) value).isInfinite() || ((Float) value).isNaN()) {
-				sb.append("null");
-			} else {
-				sb.append(value.toString());
-			}
-		} else if (value instanceof Number) {
-			sb.append(value.toString());
-		} else if (value instanceof Boolean) {
-			sb.append(value.toString());
-		} else if (value instanceof Map) {
-			JSON.encodeObject((Map<Object, Object>) value, sb);
-		} else if (value instanceof List) {
-			JSON.encodeArray((List<Object>) value, sb);
-		} else {
+	private static void encodeValue(final Object value, final StringBuilder sb) {
+		if (value == null) sb.append("null");
+		else if (value instanceof Double)
+			if (((Double) value).isInfinite() || ((Double) value).isNaN()) sb.append("null");
+			else sb.append(value.toString());
+		else if (value instanceof Float)
+			if (((Float) value).isInfinite() || ((Float) value).isNaN()) sb.append("null");
+			else sb.append(value.toString());
+		else if (value instanceof Number) sb.append(value.toString());
+		else if (value instanceof Boolean) sb.append(value.toString());
+		else if (value instanceof Map) JSON.encodeObject((Map<Object, Object>) value, sb);
+		else if (value instanceof List) JSON.encodeArray((List<Object>) value, sb);
+		else {
 			sb.append('\"');
 			JSON.escapeString(value.toString(), sb);
 			sb.append('\"');
@@ -147,9 +128,7 @@ public final class JSON {
 	 *            String builder
 	 */
 	private static void escapeString(final String string, final StringBuilder sb) {
-		if (string.length() == 0) {
-			return;
-		}
+		if (string.length() == 0) return;
 		//
 		// Find the next special character in the string
 		//
@@ -157,9 +136,7 @@ public final class JSON {
 		final Matcher matcher = JSON.pattern.matcher(string);
 		while (matcher.find(start)) {
 			final int pos = matcher.start();
-			if (pos > start) {
-				sb.append(string.substring(start, pos));
-			}
+			if (pos > start) sb.append(string.substring(start, pos));
 			start = pos + 1;
 			//
 			// Escape control characters
@@ -191,22 +168,18 @@ public final class JSON {
 				sb.append("\\/");
 				break;
 			default:
+				//noinspection ConstantConditions,ConstantConditions
 				if (((c >= '\u0000') && (c <= '\u001F')) || ((c >= '\u007F') && (c <= '\u009F'))
-						|| ((c >= '\u2000') && (c <= '\u20FF'))) {
+						|| ((c >= '\u2000') && (c <= '\u20FF')))
 					sb.append("\\u").append(String.format("%04X", (int) c));
-				} else {
-					sb.append(c);
-				}
+				else sb.append(c);
 			}
 		}
 		//
 		// Append the remainder of the string
 		//
-		if (start == 0) {
-			sb.append(string);
-		} else if (start < string.length()) {
-			sb.append(string.substring(start));
-		}
+		if (start == 0) sb.append(string);
+		else if (start < string.length()) sb.append(string.substring(start));
 	}
 
 	public static JSONStreamAware prepare(final JSONObject json) {
@@ -232,10 +205,8 @@ public final class JSON {
 	 *            JSON list or map
 	 * @return Formatted string
 	 */
-	public static String toJSONString(final JSONAware json) {
-		if (json == null) {
-			return "null";
-		}
+	private static String toJSONString(final JSONAware json) {
+		if (json == null) return "null";
 		if (json instanceof Map) {
 			final StringBuilder sb = new StringBuilder(1024);
 			JSON.encodeObject((Map) json, sb);

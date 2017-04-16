@@ -45,11 +45,10 @@ public final class AnonymouslyEncryptedData {
 		}
 	}
 
-	public static AnonymouslyEncryptedData readEncryptedData(final ByteBuffer buffer, final int length,
-			final int maxLength) throws NxtException.NotValidException {
-		if (length > maxLength) {
+	private static AnonymouslyEncryptedData readEncryptedData(final ByteBuffer buffer, final int length,
+															  final int maxLength) throws NxtException.NotValidException {
+		if (length > maxLength)
 			throw new NxtException.NotValidException("Max encrypted data length exceeded: " + length);
-		}
 		final byte[] data = new byte[length];
 		buffer.get(data);
 		final byte[] publicKey = new byte[32];
@@ -60,15 +59,14 @@ public final class AnonymouslyEncryptedData {
 	private final byte[] data;
 	private final byte[] publicKey;
 
-	public AnonymouslyEncryptedData(final byte[] data, final byte[] publicKey) {
+	private AnonymouslyEncryptedData(final byte[] data, final byte[] publicKey) {
 		this.data = data;
 		this.publicKey = publicKey;
 	}
 
 	public byte[] decrypt(final byte[] keySeed, final byte[] theirPublicKey) {
-		if (!Arrays.equals(Crypto.getPublicKey(keySeed), this.publicKey)) {
+		if (!Arrays.equals(Crypto.getPublicKey(keySeed), this.publicKey))
 			throw new RuntimeException("Data was not encrypted using this keySeed");
-		}
 		final byte[] sharedKey = Crypto.getSharedKey(Crypto.getPrivateKey(keySeed), theirPublicKey);
 		return Crypto.aesGCMDecrypt(this.data, sharedKey);
 	}

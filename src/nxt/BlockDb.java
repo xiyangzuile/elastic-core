@@ -94,12 +94,10 @@ final class BlockDb {
 				stmt.executeUpdate("TRUNCATE TABLE transaction");
 				stmt.executeUpdate("TRUNCATE TABLE block");
 				BlockchainProcessorImpl.getInstance().getDerivedTables().forEach(table -> {
-					if (table.isPersistent()) {
-						try {
-							stmt.executeUpdate("TRUNCATE TABLE " + table.toString());
-						} catch (final SQLException ignore) {
-						}
-					}
+					if (table.isPersistent()) try {
+                        stmt.executeUpdate("TRUNCATE TABLE " + table.toString());
+                    } catch (final SQLException ignore) {
+                    }
 				});
 				stmt.executeUpdate("SET REFERENTIAL_INTEGRITY TRUE");
 				Db.db.commitTransaction();
@@ -170,11 +168,10 @@ final class BlockDb {
 		long blockId;
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT id FROM block WHERE height = ?")) {
-			pstmt.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmt.setInt(1, height);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (!rs.next()) {
-					return;
-				}
+				if (!rs.next()) return;
 				blockId = rs.getLong("id");
 			}
 		} catch (final SQLException e) {
@@ -188,9 +185,7 @@ final class BlockDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);
-			if (block != null) {
-				return block;
-			}
+			if (block != null) return block;
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -198,9 +193,7 @@ final class BlockDb {
 			pstmt.setLong(1, blockId);
 			try (ResultSet rs = pstmt.executeQuery()) {
 				BlockImpl block = null;
-				if (rs.next()) {
-					block = BlockDb.loadBlock(con, rs);
-				}
+				if (rs.next()) block = BlockDb.loadBlock(con, rs);
 				return block;
 			}
 		} catch (final SQLException e) {
@@ -211,53 +204,43 @@ final class BlockDb {
 	static BlockImpl findBlockAtHeight(final int height) {
 		// Check the cache
 
-		BlockImpl block = null;
+		BlockImpl block;
 
 		synchronized (BlockDb.blockCache) {
 			block = BlockDb.heightMap.get(height);
-			if (block != null) {
-				return block;
-			}
+			if (block != null) return block;
 		}
 
 		// Search the database
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block WHERE height = ?")) {
-			pstmt.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmt.setInt(1, height);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next()) {
-					block = BlockDb.loadBlock(con, rs);
-				} else {
-					block = null;
-				}
+				if (rs.next()) block = BlockDb.loadBlock(con, rs);
+                else block = null;
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
 
-		if (block != null) {
-			return block;
-		} else {
-			throw new RuntimeException("Block at height " + height + " not found in database!");
-		}
+		if (block != null) return block;
+        else throw new RuntimeException("Block at height " + height + " not found in database!");
 	}
 
 	static long findBlockIdAtHeight(final int height) {
 		// Check the cache
 		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.heightMap.get(height);
-			if (block != null) {
-				return block.getId();
-			}
+			if (block != null) return block.getId();
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement("SELECT id FROM block WHERE height = ?")) {
-			pstmt.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmt.setInt(1, height);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (!rs.next()) {
-					throw new RuntimeException("Block at height " + height + " not found in database!");
-				}
+				if (!rs.next()) throw new RuntimeException("Block at height " + height + " not found in database!");
 				return rs.getLong("id");
 			}
 		} catch (final SQLException e) {
@@ -270,9 +253,7 @@ final class BlockDb {
 				PreparedStatement pstmt = con.prepareStatement("SELECT * FROM block ORDER BY timestamp DESC LIMIT 1")) {
 			BlockImpl block = null;
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next()) {
-					block = BlockDb.loadBlock(con, rs);
-				}
+				if (rs.next()) block = BlockDb.loadBlock(con, rs);
 			}
 			return block;
 		} catch (final SQLException e) {
@@ -287,9 +268,7 @@ final class BlockDb {
 			pstmt.setInt(1, timestamp);
 			BlockImpl block = null;
 			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next()) {
-					block = BlockDb.loadBlock(con, rs);
-				}
+				if (rs.next()) block = BlockDb.loadBlock(con, rs);
 			}
 			return block;
 		} catch (final SQLException e) {
@@ -302,13 +281,10 @@ final class BlockDb {
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement pstmt = con.prepareStatement(
 						"SELECT generator_id, COUNT(generator_id) AS count FROM block WHERE height >= ? GROUP BY generator_id")) {
-			pstmt.setInt(1, startHeight);
+            //noinspection SuspiciousNameCombination
+            pstmt.setInt(1, startHeight);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				while (rs.next()) {
-					if (rs.getInt("count") > 1) {
-						generators.add(rs.getLong("generator_id"));
-					}
-				}
+				while (rs.next()) if (rs.getInt("count") > 1) generators.add(rs.getLong("generator_id"));
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -325,9 +301,7 @@ final class BlockDb {
 		// Check the block cache
 		synchronized (BlockDb.blockCache) {
 			final BlockImpl block = BlockDb.blockCache.get(blockId);
-			if (block != null) {
-				return block.getHeight() <= height;
-			}
+			if (block != null) return block.getHeight() <= height;
 		}
 		// Search the database
 		try (Connection con = Db.db.getConnection();
@@ -411,9 +385,7 @@ final class BlockDb {
 				synchronized (BlockDb.blockCache) {
 					previousBlock = BlockDb.blockCache.get(block.getPreviousBlockId());
 				}
-				if (previousBlock != null) {
-					previousBlock.setNextBlockId(block.getId());
-				}
+				if (previousBlock != null) previousBlock.setNextBlockId(block.getId());
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);

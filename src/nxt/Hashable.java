@@ -1,6 +1,6 @@
 package nxt;
 
-public interface Hashable {
+interface Hashable {
 	byte[] getHash();
 
 	public long getWorkId();

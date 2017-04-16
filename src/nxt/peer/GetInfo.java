@@ -24,6 +24,8 @@ import nxt.util.Convert;
 import nxt.util.JSON;
 import nxt.util.Logger;
 
+import java.util.Objects;
+
 final class GetInfo extends PeerServlet.PeerRequestHandler {
 
 	static final GetInfo instance = new GetInfo();
@@ -61,40 +63,30 @@ final class GetInfo extends PeerServlet.PeerRequestHandler {
 						peerImpl.setState(Peer.State.NON_CONNECTED);
 						return GetInfo.INVALID_ANNOUNCED_ADDRESS;
 					}
-					if (!announcedAddress.equals(peerImpl.getAnnouncedAddress())) {
+					if (!Objects.equals(announcedAddress, peerImpl.getAnnouncedAddress())) {
 						Logger.logDebugMessage("GetInfo: peer " + peer.getHost() + " changed announced address from "
 								+ peer.getAnnouncedAddress() + " to " + announcedAddress);
 						final int oldPort = peerImpl.getPort();
 						Peers.setAnnouncedAddress(peerImpl, announcedAddress);
-						if (peerImpl.getPort() != oldPort) {
-							// force checking connectivity to new announced port
-							peerImpl.setState(Peer.State.NON_CONNECTED);
-						}
+                        // force checking connectivity to new announced port
+                        if (peerImpl.getPort() != oldPort) peerImpl.setState(Peer.State.NON_CONNECTED);
 					}
-				} else {
-					Peers.setAnnouncedAddress(peerImpl, null);
-				}
+				} else Peers.setAnnouncedAddress(peerImpl, null);
 			}
 		}
 		String application = (String) request.get("application");
-		if (application == null) {
-			application = "?";
-		}
+		if (application == null) application = "?";
 		peerImpl.setApplication(application.trim());
 
 		String version = (String) request.get("version");
-		if (version == null) {
-			version = "?";
-		}
+		if (version == null) version = "?";
 		peerImpl.setVersion(version.trim());
 
 		String platform = (String) request.get("platform");
-		if (platform == null) {
-			platform = "?";
-		}
+		if (platform == null) platform = "?";
 		peerImpl.setPlatform(platform.trim());
 
-		peerImpl.setShareAddress(Boolean.TRUE.equals(request.get("shareAddress")));
+		peerImpl.setShareAddress(Objects.equals(Boolean.TRUE, request.get("shareAddress")));
 
 		peerImpl.setApiPort(request.get("apiPort"));
 		peerImpl.setApiSSLPort(request.get("apiSSLPort"));
@@ -102,9 +94,7 @@ final class GetInfo extends PeerServlet.PeerRequestHandler {
 		peerImpl.setApiServerIdleTimeout(request.get("apiServerIdleTimeout"));
 		peerImpl.setBlockchainState(request.get("blockchainState"));
 
-		if (peerImpl.getServices() != origServices) {
-			Peers.notifyListeners(peerImpl, Peers.Event.CHANGED_SERVICES);
-		}
+		if (peerImpl.getServices() != origServices) Peers.notifyListeners(peerImpl, Peers.Event.CHANGED_SERVICES);
 
 		return Peers.getMyPeerInfoResponse();
 

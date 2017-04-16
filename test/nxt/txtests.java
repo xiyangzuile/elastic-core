@@ -1,14 +1,7 @@
 package nxt;
 
-import nxt.http.JSONData;
-import nxt.http.ParameterParser;
 import nxt.util.Convert;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 /**
  * Created by anonymous on 19.03.17.

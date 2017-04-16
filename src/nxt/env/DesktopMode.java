@@ -59,9 +59,7 @@ public class DesktopMode implements RuntimeMode {
 	@Override
 	public void shutdown() {
 		this.desktopSystemTray.shutdown();
-		if (this.desktopApplication == null) {
-			return;
-		}
+		if (this.desktopApplication == null) return;
 		try {
 			this.desktopApplication.getMethod("shutdown").invoke(null);
 		} catch (final ReflectiveOperationException e) {

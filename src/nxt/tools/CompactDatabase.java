@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Objects;
 
 import nxt.Constants;
 import nxt.Nxt;
@@ -39,7 +40,7 @@ import nxt.util.Logger;
  * java -cp "classes;lib/*;conf" -Dnxt.runtime.mode=desktop
  * nxt.tools.CompactDatabase
  */
-public class CompactDatabase {
+class CompactDatabase {
 
 	/**
 	 * Compact the database
@@ -51,7 +52,7 @@ public class CompactDatabase {
 		//
 		final String dbPrefix = Constants.isTestnet ? "nxt.testDb" : "nxt.db";
 		final String dbType = Nxt.getStringProperty(dbPrefix + "Type");
-		if (!"h2".equals(dbType)) {
+		if (!Objects.equals("h2", dbType)) {
 			Logger.logErrorMessage("Database type must be 'h2'");
 			return 1;
 		}
@@ -62,9 +63,7 @@ public class CompactDatabase {
 		}
 		final String dbParams = Nxt.getStringProperty(dbPrefix + "Params");
 		dbUrl += ";" + dbParams;
-		if (!dbUrl.contains("MV_STORE=")) {
-			dbUrl += ";MV_STORE=FALSE";
-		}
+		if (!dbUrl.contains("MV_STORE=")) dbUrl += ";MV_STORE=FALSE";
 		final String dbUsername = Nxt.getStringProperty(dbPrefix + "Username", "sa");
 		final String dbPassword = Nxt.getStringProperty(dbPrefix + "Password", "sa", true);
 		//
@@ -73,9 +72,7 @@ public class CompactDatabase {
 		// terminated by a semi-colon or by the end of the string.
 		//
 		int pos = dbUrl.indexOf(':');
-		if (pos >= 0) {
-			pos = dbUrl.indexOf(':', pos + 1);
-		}
+		if (pos >= 0) pos = dbUrl.indexOf(':', pos + 1);
 		if (pos < 0) {
 			Logger.logErrorMessage("Malformed database URL: " + dbUrl);
 			return 1;
@@ -83,17 +80,12 @@ public class CompactDatabase {
 		String dbDir;
 		final int startPos = pos + 1;
 		int endPos = dbUrl.indexOf(';', startPos);
-		if (endPos < 0) {
-			dbDir = dbUrl.substring(startPos);
-		} else {
-			dbDir = dbUrl.substring(startPos, endPos);
-		}
+		if (endPos < 0) dbDir = dbUrl.substring(startPos);
+        else dbDir = dbUrl.substring(startPos, endPos);
 		//
 		// Remove the optional 'file' operand
 		//
-		if (dbDir.startsWith("file:")) {
-			dbDir = dbDir.substring(5);
-		}
+		if (dbDir.startsWith("file:")) dbDir = dbDir.substring(5);
 		//
 		// Remove the database prefix from the end of the database path. The
 		// path
@@ -103,13 +95,8 @@ public class CompactDatabase {
 		//
 		endPos = dbDir.lastIndexOf('\\');
 		pos = dbDir.lastIndexOf('/');
-		if (endPos >= 0) {
-			if (pos >= 0) {
-				endPos = Math.max(endPos, pos);
-			}
-		} else {
-			endPos = pos;
-		}
+		if (endPos >= 0) if (pos >= 0) endPos = Math.max(endPos, pos);
+        else endPos = pos;
 		if (endPos < 0) {
 			Logger.logErrorMessage("Malformed database URL: " + dbUrl);
 			return 1;
@@ -135,11 +122,8 @@ public class CompactDatabase {
 			// Create the SQL script
 			//
 			Logger.logInfoMessage("Creating the SQL script");
-			if (sqlFile.exists()) {
-				if (!sqlFile.delete()) {
-					throw new IOException(String.format("Unable to delete '%s'", sqlFile.getPath()));
-				}
-			}
+			if (sqlFile.exists())
+                if (!sqlFile.delete()) throw new IOException(String.format("Unable to delete '%s'", sqlFile.getPath()));
 			try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
 					Statement s = conn.createStatement()) {
 				s.execute("SCRIPT TO '" + sqlFile.getPath() + "' COMPRESSION GZIP CHARSET 'UTF-8'");
@@ -148,10 +132,8 @@ public class CompactDatabase {
 			// Create the new database
 			//
 			Logger.logInfoMessage("Creating the new database");
-			if (!dbFile.renameTo(oldFile)) {
-				throw new IOException(
-						String.format("Unable to rename '%s' to '%s'", dbFile.getPath(), oldFile.getPath()));
-			}
+			if (!dbFile.renameTo(oldFile)) throw new IOException(
+                    String.format("Unable to rename '%s' to '%s'", dbFile.getPath(), oldFile.getPath()));
 			phase = 1;
 			try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
 					Statement s = conn.createStatement()) {
@@ -172,44 +154,32 @@ public class CompactDatabase {
 				//
 				// We failed while creating the SQL file
 				//
-				if (sqlFile.exists()) {
-					if (!sqlFile.delete()) {
-						Logger.logErrorMessage(String.format("Unable to delete '%s'", sqlFile.getPath()));
-					}
-				}
+				if (sqlFile.exists()) if (!sqlFile.delete())
+                    Logger.logErrorMessage(String.format("Unable to delete '%s'", sqlFile.getPath()));
 				break;
 			case 1:
 				//
 				// We failed while creating the new database
 				//
 				File newFile = new File(dbDir, "nxt.h2.db");
-				if (newFile.exists()) {
-					if (!newFile.delete()) {
-						Logger.logErrorMessage(String.format("Unable to delete '%s'", newFile.getPath()));
-					}
-				} else {
+				if (newFile.exists()) if (!newFile.delete())
+                    Logger.logErrorMessage(String.format("Unable to delete '%s'", newFile.getPath()));
+                else {
 					newFile = new File(dbDir, "nxt.mv.db");
-					if (newFile.exists()) {
-						if (!newFile.delete()) {
-							Logger.logErrorMessage(String.format("Unable to delete '%s'", newFile.getPath()));
-						}
-					}
+					if (newFile.exists()) if (!newFile.delete())
+                        Logger.logErrorMessage(String.format("Unable to delete '%s'", newFile.getPath()));
 				}
-				if (!oldFile.renameTo(dbFile)) {
-					Logger.logErrorMessage(
-							String.format("Unable to rename '%s' to '%s'", oldFile.getPath(), dbFile.getPath()));
-				}
+				if (!oldFile.renameTo(dbFile)) Logger.logErrorMessage(
+                        String.format("Unable to rename '%s' to '%s'", oldFile.getPath(), dbFile.getPath()));
 				break;
 			case 2:
 				//
 				// New database created
 				//
-				if (!sqlFile.delete()) {
-					Logger.logErrorMessage(String.format("Unable to delete '%s'", sqlFile.getPath()));
-				}
-				if (!oldFile.delete()) {
-					Logger.logErrorMessage(String.format("Unable to delete '%s'", oldFile.getPath()));
-				}
+				if (!sqlFile.delete())
+                    Logger.logErrorMessage(String.format("Unable to delete '%s'", sqlFile.getPath()));
+				if (!oldFile.delete())
+                    Logger.logErrorMessage(String.format("Unable to delete '%s'", oldFile.getPath()));
 				break;
 			}
 		}

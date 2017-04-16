@@ -68,19 +68,10 @@ public enum HashFunction {
 		}
 	};
 
-	private static final ThreadLocal<Scrypt> threadLocalScrypt = new ThreadLocal<Scrypt>() {
-		@Override
-		protected Scrypt initialValue() {
-			return new Scrypt();
-		}
-	};
+	private static final ThreadLocal<Scrypt> threadLocalScrypt = ThreadLocal.withInitial(Scrypt::new);
 
 	public static HashFunction getHashFunction(final byte id) {
-		for (final HashFunction function : HashFunction.values()) {
-			if (function.id == id) {
-				return function;
-			}
-		}
+		for (final HashFunction function : HashFunction.values()) if (function.id == id) return function;
 		throw new IllegalArgumentException(String.format("illegal algorithm %d", id));
 	}
 

@@ -140,12 +140,10 @@ public class ReadWriteUpdateLock {
 		@Override
 		public void lock() {
 			final LockCount counts = ReadWriteUpdateLock.this.lockCount.get();
-			if (counts.readCount != 0) {
-				throw new IllegalStateException("Update lock cannot be obtained while holding the read lock");
-			}
-			if (counts.writeCount != 0) {
-				throw new IllegalStateException("Update lock cannot be obtained while holding the write lock");
-			}
+			if (counts.readCount != 0)
+                throw new IllegalStateException("Update lock cannot be obtained while holding the read lock");
+			if (counts.writeCount != 0)
+                throw new IllegalStateException("Update lock cannot be obtained while holding the write lock");
 			ReadWriteUpdateLock.this.mutexLock.lock();
 			counts.updateCount++;
 		}
@@ -183,9 +181,8 @@ public class ReadWriteUpdateLock {
 		@Override
 		public void lock() {
 			final LockCount counts = ReadWriteUpdateLock.this.lockCount.get();
-			if (counts.readCount != 0) {
-				throw new IllegalStateException("Write lock cannot be obtained while holding the read lock");
-			}
+			if (counts.readCount != 0)
+                throw new IllegalStateException("Write lock cannot be obtained while holding the read lock");
 			boolean lockObtained = false;
 			try {
 				ReadWriteUpdateLock.this.mutexLock.lock();

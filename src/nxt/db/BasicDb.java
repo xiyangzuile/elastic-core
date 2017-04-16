@@ -109,23 +109,18 @@ public class BasicDb {
 	private final int maxMemoryRows;
 	private volatile boolean initialized = false;
 
-	public BasicDb(final DbProperties dbProperties) {
+	BasicDb(final DbProperties dbProperties) {
 		long maxCacheSize = dbProperties.maxCacheSize;
-		if (maxCacheSize == 0) {
-			maxCacheSize = Math.min(256, Math.max(16, ((Runtime.getRuntime().maxMemory() / (1024 * 1024)) - 128) / 2))
-					* 1024;
-		}
+		if (maxCacheSize == 0)
+            maxCacheSize = Math.min(256, Math.max(16, ((Runtime.getRuntime().maxMemory() / (1024 * 1024)) - 128) / 2))
+                    * 1024;
 		String dbUrl = dbProperties.dbUrl;
 		if (dbUrl == null) {
 			final String dbDir = Nxt.getDbDir(dbProperties.dbDir);
 			dbUrl = String.format("jdbc:%s:%s;%s", dbProperties.dbType, dbDir, dbProperties.dbParams);
 		}
-		if (!dbUrl.contains("MV_STORE=")) {
-			dbUrl += ";MV_STORE=FALSE";
-		}
-		if (!dbUrl.contains("CACHE_SIZE=")) {
-			dbUrl += ";CACHE_SIZE=" + maxCacheSize;
-		}
+		if (!dbUrl.contains("MV_STORE=")) dbUrl += ";MV_STORE=FALSE";
+		if (!dbUrl.contains("CACHE_SIZE=")) dbUrl += ";CACHE_SIZE=" + maxCacheSize;
 		this.dbUrl = dbUrl;
 		this.dbUsername = dbProperties.dbUsername;
 		this.dbPassword = dbProperties.dbPassword;
@@ -149,7 +144,7 @@ public class BasicDb {
 		return con;
 	}
 
-	protected Connection getPooledConnection() throws SQLException {
+	Connection getPooledConnection() throws SQLException {
 		final Connection con = this.cp.getConnection();
 		final int activeConnections = this.cp.getActiveConnections();
 		if (activeConnections > this.maxActiveConnections) {
@@ -179,9 +174,7 @@ public class BasicDb {
 	}
 
 	public void shutdown() {
-		if (!this.initialized) {
-			return;
-		}
+		if (!this.initialized) return;
 		try (
 			final Connection con = this.cp.getConnection();
 			final Statement stmt = con.createStatement();){

@@ -19,7 +19,6 @@
  */
 package nxt;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -98,9 +97,8 @@ public final class PowAndBounty {
 		final Map<Long, Integer> map = new HashMap<>();
 		while (it.hasNext()) {
 			final PowAndBounty p = it.next();
-			if (map.containsKey(p.getAccountId()) == false) {
-				map.put(p.getAccountId(), 1);
-			} else {
+			if (!map.containsKey(p.getAccountId())) map.put(p.getAccountId(), 1);
+			else {
 				final int ik = map.get(p.getAccountId());
 				map.put(p.getAccountId(), ik + 1);
 			}
@@ -204,18 +202,15 @@ public final class PowAndBounty {
 
 	public void applyBounty(final Block bl, long supernodeId) throws NxtException.NotValidException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
-		if (w == null) {
-			throw new NxtException.NotValidException("No such work found");
-		}
-		if (w.isClosed() == false) {
+		if (w == null) throw new NxtException.NotValidException("No such work found");
+		if (!w.isClosed()) {
 			// Immediate payout incl. the bounty deposit
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
 			final Account participantAccount = Account.getAccount(this.accountId);
 			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
 			final Account snAccount = Account.getAccount(supernodeId);
-			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION) {
+			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)
 				throw new NxtException.NotValidException("Something went wrong with the deposit account, shouldn't happen");
-			}
 
 			long payUser = w.getXel_per_bounty();
 			long paySn = (payUser * Constants.SUPERNODE_PERCENTAGE_EARNINGS) / 100;
@@ -235,11 +230,9 @@ public final class PowAndBounty {
 	public void applyPowPayment(final Block bl, long supernodeId) throws NxtException.NotValidException {
 		final Work w = Work.getWorkByWorkId(this.work_id);
 
-		if (w == null) {
-			throw new NxtException.NotValidException("Work not found");
-		}
+		if (w == null) throw new NxtException.NotValidException("Work not found");
 
-		if ((w.isClosed() == false) && (w.isClose_pending() == false)) {
+		if ((!w.isClosed()) && (!w.isClose_pending())) {
 			// Now create ledger event for "bounty submission"
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_POW;
 			final Account participantAccount = Account.getAccount(this.accountId);
@@ -259,7 +252,7 @@ public final class PowAndBounty {
 
 	}
 
-	public long getAccountId() {
+	private long getAccountId() {
 		return this.accountId;
 	}
 
@@ -284,16 +277,14 @@ public final class PowAndBounty {
 		}
 	}
 
-	public JSONObject toJsonObject() {
+	private JSONObject toJsonObject() {
 		final JSONObject response = new JSONObject();
 		response.put("id", Convert.toUnsignedLong(this.id));
 		final Transaction t = TransactionDb.findTransaction(this.id);
 		if (t != null) {
 			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
 			response.put("multiplicator", Arrays.toString(this.multiplicator));
-		} else {
-			response.put("error", "Transaction not found");
-		}
+		} else response.put("error", "Transaction not found");
 		return response;
 	}
 
@@ -301,11 +292,10 @@ public final class PowAndBounty {
 		final JSONObject response = toJsonObject();
 		Attachment.PiggybackedProofOfWork dummy = new Attachment.PiggybackedProofOfWork(this.work_id, this.multiplicator);
 		final Account participantAccount = Account.getAccount(this.accountId);
-		if(participantAccount==null){
-			response.put("inputs", "sender account not yet available");
-		}else if(Account.getPublicKey(participantAccount.getId()) == null){
+		if(participantAccount==null) response.put("inputs", "sender account not yet available");
+		else if(Account.getPublicKey(participantAccount.getId()) == null)
 			response.put("inputs", "sender account has no public key yet");
-		}else{
+		else{
 			int[] ints = dummy.personalizedIntStream(Account.getPublicKey(participantAccount.getId()), Work.getWork(this.work_id).getBlock_id());
 			StringBuilder builder = new StringBuilder();
 			for (int i : ints) {
@@ -314,8 +304,7 @@ public final class PowAndBounty {
 			}
 
 			String text = builder.toString();
-			if(ints.length>0)
-				text = text.substring(0,text.length()-2);
+			if(ints.length>0) text = text.substring(0, text.length() - 2);
 			response.put("inputs", text);
 		}
 		return response;

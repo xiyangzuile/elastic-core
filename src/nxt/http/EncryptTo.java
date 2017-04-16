@@ -44,15 +44,11 @@ public final class EncryptTo extends APIServlet.APIRequestHandler {
 
 		final long recipientId = ParameterParser.getAccountId(req, "recipient", true);
 		final byte[] recipientPublicKey = Account.getPublicKey(recipientId);
-		if (recipientPublicKey == null) {
-			return JSONResponses.INCORRECT_RECIPIENT;
-		}
+		if (recipientPublicKey == null) return JSONResponses.INCORRECT_RECIPIENT;
 		final boolean isText = !"false".equalsIgnoreCase(req.getParameter("messageToEncryptIsText"));
 		final boolean compress = !"false".equalsIgnoreCase(req.getParameter("compressMessageToEncrypt"));
 		final String plainMessage = Convert.emptyToNull(req.getParameter("messageToEncrypt"));
-		if (plainMessage == null) {
-			return JSONResponses.MISSING_MESSAGE_TO_ENCRYPT;
-		}
+		if (plainMessage == null) return JSONResponses.MISSING_MESSAGE_TO_ENCRYPT;
 		byte[] plainMessageBytes;
 		try {
 			plainMessageBytes = isText ? Convert.toBytes(plainMessage) : Convert.parseHexString(plainMessage);

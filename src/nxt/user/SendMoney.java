@@ -17,6 +17,7 @@
 package nxt.user;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +32,7 @@ import nxt.NxtException;
 import nxt.Transaction;
 import nxt.util.Convert;
 
-public final class SendMoney extends UserServlet.UserRequestHandler {
+final class SendMoney extends UserServlet.UserRequestHandler {
 
 	static final SendMoney instance = new SendMoney();
 
@@ -41,9 +42,7 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 	@Override
 	JSONStreamAware processRequest(final HttpServletRequest req, final User user)
 			throws NxtException.ValidationException, IOException {
-		if (user.getSecretPhrase() == null) {
-			return null;
-		}
+		if (user.getSecretPhrase() == null) return null;
 
 		final String recipientValue = req.getParameter("recipient");
 		final String amountValue = req.getParameter("amountNXT");
@@ -52,16 +51,14 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 		final String secretPhrase = req.getParameter("secretPhrase");
 
 		long recipient;
-		long amountNQT = 0;
-		long feeNQT = 0;
-		short deadline = 0;
+		long amountNQT;
+		long feeNQT;
+		short deadline;
 
 		try {
 
 			recipient = Convert.parseUnsignedLong(recipientValue);
-			if (recipient == 0) {
-				throw new IllegalArgumentException("invalid recipient");
-			}
+			if (recipient == 0) throw new IllegalArgumentException("invalid recipient");
 			amountNQT = Convert.parseNXT(amountValue.trim());
 			feeNQT = Convert.parseNXT(feeValue.trim());
 			deadline = (short) (Double.parseDouble(deadlineValue) * 60);
@@ -79,7 +76,7 @@ public final class SendMoney extends UserServlet.UserRequestHandler {
 			return response;
 		}
 
-		if (!user.getSecretPhrase().equals(secretPhrase)) {
+		if (!Objects.equals(user.getSecretPhrase(), secretPhrase)) {
 
 			final JSONObject response = new JSONObject();
 			response.put("response", "notifyOfIncorrectTransaction");

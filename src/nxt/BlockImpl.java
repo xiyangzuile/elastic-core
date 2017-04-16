@@ -34,8 +34,8 @@ import nxt.util.Logger;
 
 public final class BlockImpl implements Block {
 
-	private static LRUCache powDifficultyLRUCache = new LRUCache(50);
-	private static DoubleLongLRUCache powPerBlockAndWorkLRUCache = new DoubleLongLRUCache(100);
+	private static final LRUCache powDifficultyLRUCache = new LRUCache(50);
+	private static final DoubleLongLRUCache powPerBlockAndWorkLRUCache = new DoubleLongLRUCache(100);
 	private static final long[] badBlocks = new long[] {};
 	static {
 		Arrays.sort(BlockImpl.badBlocks);
@@ -44,29 +44,21 @@ public final class BlockImpl implements Block {
 	public static BigInteger calculateNextMinPowTarget(final long lastBlockId) {
 
 		final BigInteger cached = BlockImpl.powDifficultyLRUCache.get(lastBlockId);
-		if (cached != null) {
-			return cached;
-		}
+		if (cached != null) return cached;
 
 		BigInteger converted_new_pow = BigInteger.valueOf(0);
 
 		try (DbIterator<Work> it = Work.getLastTenClosed()) {
 
-			if (it.hasNext() == false) {
-				converted_new_pow = Constants.least_possible_target;
-			} else {
-				while (it.hasNext()) {
-					final Work w = it.next();
-					final BigInteger candidate = w.getWork_min_pow_target();
-					if (candidate.compareTo(converted_new_pow) == 1) {
-						converted_new_pow = candidate;
-					}
-				}
+			if (!it.hasNext()) converted_new_pow = Constants.least_possible_target;
+			else while (it.hasNext()) {
+				final Work w = it.next();
+				final BigInteger candidate = w.getWork_min_pow_target();
+				if (candidate.compareTo(converted_new_pow) == 1) converted_new_pow = candidate;
 			}
 
 			BlockImpl.powDifficultyLRUCache.set(lastBlockId, converted_new_pow);
 			return converted_new_pow;
-		} finally {
 		}
 	}
 
@@ -84,15 +76,12 @@ public final class BlockImpl implements Block {
 			final byte[] blockSignature = Convert.parseHexString((String) blockData.get("blockSignature"));
 			final byte[] previousBlockHash = Convert.parseHexString((String) blockData.get("previousBlockHash"));
 			final List<TransactionImpl> blockTransactions = new ArrayList<>();
-			for (final Object transactionData : (JSONArray) blockData.get("transactions")) {
+			for (final Object transactionData : (JSONArray) blockData.get("transactions"))
 				blockTransactions.add(TransactionImpl.parseTransaction((JSONObject) transactionData));
-			}
 			final BlockImpl block = new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT,
 					payloadLength, payloadHash, generatorPublicKey, generationSignature, blockSignature,
 					previousBlockHash, blockTransactions, null);
-			if (!block.checkSignature()) {
-				throw new NxtException.NotValidException("Invalid block signature");
-			}
+			if (!block.checkSignature()) throw new NxtException.NotValidException("Invalid block signature");
 			return block;
 		} catch (NxtException.NotValidException | RuntimeException e) {
 			Logger.logDebugMessage("Failed to parse block: " + blockData.toJSONString());
@@ -146,9 +135,7 @@ public final class BlockImpl implements Block {
 		this.blockSignature = blockSignature;
 		this.previousBlockHash = previousBlockHash;
 		this.local_min_pow_target = min_pow_target;
-		if (transactions != null) {
-			this.blockTransactions = Collections.unmodifiableList(transactions);
-		}
+		if (transactions != null) this.blockTransactions = Collections.unmodifiableList(transactions);
 	}
 
 	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
@@ -158,9 +145,7 @@ public final class BlockImpl implements Block {
 		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
 
-		if (secretPhrase != null) {
-			this.blockSignature = Crypto.sign(this.bytes(), secretPhrase);
-		}
+		if (secretPhrase != null) this.blockSignature = Crypto.sign(this.bytes(), secretPhrase);
 		this.bytes = null;
 	}
 
@@ -188,14 +173,10 @@ public final class BlockImpl implements Block {
 		final long[] backFees = new long[3];
 		for (final TransactionImpl transaction : this.getTransactions()) {
 			final long[] fees = transaction.getBackFees();
-			for (int i = 0; i < fees.length; i++) {
-				backFees[i] += fees[i];
-			}
+			for (int i = 0; i < fees.length; i++) backFees[i] += fees[i];
 		}
 		for (int i = 0; i < backFees.length; i++) {
-			if (backFees[i] == 0) {
-				break;
-			}
+			if (backFees[i] == 0) break;
 			totalBackFees += backFees[i];
 			final Account previousGeneratorAccount = Account
 					.getAccount(BlockDb.findBlockAtHeight(this.height - i - 1).getGeneratorId());
@@ -206,10 +187,9 @@ public final class BlockImpl implements Block {
 			previousGeneratorAccount.addToForgedBalanceNQT(backFees[i]);
 		}
 
-		if (totalBackFees != 0) {
+		if (totalBackFees != 0)
 			Logger.logDebugMessage("Fee reduced by %f NXT at height %d", ((double) totalBackFees) / Constants.ONE_NXT,
 					this.height);
-		}
 		generatorAccount.addToBalanceAndUnconfirmedBalanceNQT(LedgerEvent.BLOCK_GENERATED, this.getId(),
 				this.totalFeeNQT - totalBackFees);
 		generatorAccount.addToForgedBalanceNQT(this.totalFeeNQT - totalBackFees);
@@ -232,9 +212,7 @@ public final class BlockImpl implements Block {
 			buffer.put(this.getGeneratorPublicKey());
 			buffer.put(this.generationSignature);
 			buffer.put(this.previousBlockHash);
-			if (this.blockSignature != null) {
-				buffer.put(this.blockSignature);
-			}
+			if (this.blockSignature != null) buffer.put(this.blockSignature);
 			this.bytes = buffer.array();
 		}
 		return this.bytes;
@@ -247,21 +225,14 @@ public final class BlockImpl implements Block {
 				&& (previousBlock.getHeight() > 2 /* fix for early forkers */)) {
 			final BlockImpl block = BlockDb.findBlockAtHeight(previousBlock.getHeight() - 2);
 			final int blocktimeAverage = (this.timestamp - block.timestamp) / 3;
-			if (blocktimeAverage > 60) {
+			if (blocktimeAverage > 60)
 				this.baseTarget = (prevBaseTarget * Math.min(blocktimeAverage, Constants.MAX_BLOCKTIME_LIMIT)) / 60;
-			} else {
-				this.baseTarget = prevBaseTarget - ((prevBaseTarget * Constants.BASE_TARGET_GAMMA
-						* (60 - Math.max(blocktimeAverage, Constants.MIN_BLOCKTIME_LIMIT))) / 6000);
-			}
-			if ((this.baseTarget < 0) || (this.baseTarget > Constants.MAX_BASE_TARGET_2)) {
+			else this.baseTarget = prevBaseTarget - ((prevBaseTarget * Constants.BASE_TARGET_GAMMA
+					* (60 - Math.max(blocktimeAverage, Constants.MIN_BLOCKTIME_LIMIT))) / 6000);
+			if ((this.baseTarget < 0) || (this.baseTarget > Constants.MAX_BASE_TARGET_2))
 				this.baseTarget = Constants.MAX_BASE_TARGET_2;
-			}
-			if (this.baseTarget < Constants.MIN_BASE_TARGET) {
-				this.baseTarget = Constants.MIN_BASE_TARGET;
-			}
-		} else {
-			this.baseTarget = prevBaseTarget;
-		}
+			if (this.baseTarget < Constants.MIN_BASE_TARGET) this.baseTarget = Constants.MIN_BASE_TARGET;
+		} else this.baseTarget = prevBaseTarget;
 		this.cumulativeDifficulty = previousBlock.cumulativeDifficulty
 				.add(Convert.two64.divide(BigInteger.valueOf(this.baseTarget)));
 	}
@@ -280,39 +251,21 @@ public final class BlockImpl implements Block {
 	}
 
 	public byte[] sign(String secretPhrase) throws Exception {
-		if (this.blockSignature != null) {
-			throw new Exception("Don't sign what is already signed!");
-		}
+		if (this.blockSignature != null) throw new Exception("Don't sign what is already signed!");
 		final byte[] data = this.bytes();
 		return Crypto.sign(data, secretPhrase);
 	}
 
 	@Override
 	public int countNumberPOW() {
-		int cntr = 0;
-		for (final TransactionImpl t : this.getTransactions()) {
-			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK) {
-				cntr++;
-			}
-		}
-		return cntr;
+		return (int) this.getTransactions().stream().filter(t -> t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK).count();
 	}
 
 	@Override
 	public long countNumberPOWPerWorkId(final long work_id) {
 		long cached = BlockImpl.powPerBlockAndWorkLRUCache.get(this.getId(), work_id);
-		if (cached != -1) {
-			return cached;
-		}
-		cached = 0;
-		for (final TransactionImpl t : this.getTransactions()) {
-			if (t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK) {
-				final Attachment.PiggybackedProofOfWork patt = (Attachment.PiggybackedProofOfWork) t.getAttachment();
-				if (patt.getWorkId() == work_id) {
-					cached++;
-				}
-			}
-		}
+		if (cached != -1) return cached;
+		cached = this.getTransactions().stream().filter(t -> t.getAttachment().getTransactionType() == TransactionType.WorkControl.PROOF_OF_WORK).map(t -> (Attachment.PiggybackedProofOfWork) t.getAttachment()).filter(patt -> patt.getWorkId() == work_id).count();
 		BlockImpl.powPerBlockAndWorkLRUCache.set(this.getId(), work_id, cached);
 		return cached;
 	}
@@ -349,42 +302,29 @@ public final class BlockImpl implements Block {
 
 	@Override
 	public long getGeneratorId() {
-		if (this.generatorId == 0) {
-			this.generatorId = Account.getId(this.getGeneratorPublicKey());
-		}
+		if (this.generatorId == 0) this.generatorId = Account.getId(this.getGeneratorPublicKey());
 		return this.generatorId;
 	}
 
 	@Override
 	public byte[] getGeneratorPublicKey() {
-		if (this.generatorPublicKey == null) {
-			this.generatorPublicKey = Account.getPublicKey(this.generatorId);
-		}
+		if (this.generatorPublicKey == null) this.generatorPublicKey = Account.getPublicKey(this.generatorId);
 		return this.generatorPublicKey;
 	}
 
 	@Override
 	public int getHeight() {
-		if (this.height == -1) {
-			throw new IllegalStateException("Block height not yet set");
-		}
+		if (this.height == -1) throw new IllegalStateException("Block height not yet set");
 		return this.height;
 	}
 
 	@Override
 	public long getId() {
 		if (this.id == 0) {
-			boolean is_special_case = false;
-			for (final Transaction t : this.blockTransactions) {
-				if (t.getType() == Payment.REDEEM) {
-					is_special_case = true;
-					break;
-				}
-			}
+			boolean is_special_case = this.blockTransactions.stream().anyMatch(t -> t.getType() == Payment.REDEEM);
 
-			if ((is_special_case == false) && (this.blockSignature == null)) {
+			if ((!is_special_case) && (this.blockSignature == null))
 				throw new IllegalStateException("Block is not signed yet");
-			}
 			final byte[] hash = Crypto.sha256().digest(this.bytes());
 			final BigInteger bigInteger = new BigInteger(1,
 					new byte[] { hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0] });
@@ -416,9 +356,8 @@ public final class BlockImpl implements Block {
 
 	@Override
 	public BigInteger getMinPowTarget() {
-		if (this.local_min_pow_target != null) {
-			return this.local_min_pow_target;
-		} else {
+		if (this.local_min_pow_target != null) return this.local_min_pow_target;
+		else {
 			this.local_min_pow_target = BlockImpl.calculateNextMinPowTarget(this.previousBlockId);
 			return this.local_min_pow_target;
 		}
@@ -458,9 +397,7 @@ public final class BlockImpl implements Block {
 	public String getStringId() {
 		if (this.stringId == null) {
 			this.getId();
-			if (this.stringId == null) {
-				this.stringId = Long.toUnsignedString(this.id);
-			}
+			if (this.stringId == null) this.stringId = Long.toUnsignedString(this.id);
 		}
 		return this.stringId;
 	}
@@ -485,9 +422,7 @@ public final class BlockImpl implements Block {
 		if (this.blockTransactions == null) {
 			final List<TransactionImpl> transactions = Collections
 					.unmodifiableList(TransactionDb.findBlockTransactions(this.getId()));
-			for (final TransactionImpl transaction : transactions) {
-				transaction.setBlock(this);
-			}
+			for (final TransactionImpl transaction : transactions) transaction.setBlock(this);
 			this.blockTransactions = transactions;
 		}
 		return this.blockTransactions;
@@ -516,16 +451,13 @@ public final class BlockImpl implements Block {
 
 	void setPrevious(final BlockImpl block) {
 		if (block != null) {
-			if (block.getId() != this.getPreviousBlockId()) {
-				// shouldn't happen as previous id is already verified, but just
-				// in case
+			// shouldn't happen as previous id is already verified, but just
+// in case
+			if (block.getId() != this.getPreviousBlockId())
 				throw new IllegalStateException("Previous block id doesn't match");
-			}
 			this.height = block.getHeight() + 1;
 			this.calculateBaseTarget(block);
-		} else {
-			this.height = 0;
-		}
+		} else this.height = 0;
 		short index = 0;
 		for (final TransactionImpl transaction : this.getTransactions()) {
 			transaction.setBlock(this);
@@ -534,13 +466,9 @@ public final class BlockImpl implements Block {
 	}
 
 	boolean verifyBlockSignature() {
-		// Fail is "REMEED_ACCOUNT" created block, he should be not allowed to
-		// do anything
-		if (this.getGeneratorId() == Genesis.REDEEM_ID) {
-			return false;
-		}
+		// REDEEM ACCOUNT IS ALLOWED TO DO NADA!
+		return this.getGeneratorId() != Genesis.REDEEM_ID && this.checkSignature() && Account.setOrVerify(this.getGeneratorId(), this.getGeneratorPublicKey());
 
-		return this.checkSignature() && Account.setOrVerify(this.getGeneratorId(), this.getGeneratorPublicKey());
 	}
 
 	boolean verifyGenerationSignature() throws BlockchainProcessor.BlockOutOfOrderException {
@@ -548,34 +476,23 @@ public final class BlockImpl implements Block {
 		try {
 
 			final BlockImpl previousBlock = BlockchainImpl.getInstance().getBlock(this.getPreviousBlockId());
-			if (previousBlock == null) {
-				throw new BlockchainProcessor.BlockOutOfOrderException(
-						"Can't verify signature because previous block is missing", this);
-			}
+			if (previousBlock == null) throw new BlockchainProcessor.BlockOutOfOrderException(
+					"Can't verify signature because previous block is missing", this);
 
 			// For first 5000 blocks a block can be mined with at least one redeem transaction in it by anyone!
-			if(previousBlock.getHeight()<5000) {
-				for (final Transaction t : this.blockTransactions) {
-					if (t.getType() == Payment.REDEEM) {
-						return true;
-					}
-				}
-			}
+			if(previousBlock.getHeight()<5000)
+				for (final Transaction t : this.blockTransactions) if (t.getType() == Payment.REDEEM) return true;
 
 			final Account account = Account.getAccount(this.getGeneratorId());
 			final long effectiveBalance = account == null ? 0 : account.getEffectiveBalanceNXT();
-			if (effectiveBalance <= 0) {
-				return false;
-			}
+			if (effectiveBalance <= 0) return false;
 
 			final MessageDigest digest = Crypto.sha256();
 			byte[] generationSignatureHash;
 
 			digest.update(previousBlock.generationSignature);
 			generationSignatureHash = digest.digest(this.getGeneratorPublicKey());
-			if (!Arrays.equals(this.generationSignature, generationSignatureHash)) {
-				return false;
-			}
+			if (!Arrays.equals(this.generationSignature, generationSignatureHash)) return false;
 
 			final BigInteger hit = new BigInteger(1,
 					new byte[] { generationSignatureHash[7], generationSignatureHash[6], generationSignatureHash[5],
@@ -596,10 +513,8 @@ public final class BlockImpl implements Block {
 	@Override
 	public int getTimestampPrevious() {
 		Block b = this.getPreviousBlock();
-		if (b==null)
-			return this.timestamp;
-		else
-			return b.getTimestamp();
+		if (b==null) return this.timestamp;
+		else return b.getTimestamp();
 	}
 
 	public boolean ensureNoRealOrSNCleanDuplicates() {
@@ -615,8 +530,7 @@ public final class BlockImpl implements Block {
 				break;
 			}
 			s.add(t.getId());
-			if(t.getType().mustHaveSupernodeSignature())
-				s.add(t.getSNCleanedId());
+			if(t.getType().mustHaveSupernodeSignature()) s.add(t.getSNCleanedId());
 		}
 		s.clear();
 		return ret;

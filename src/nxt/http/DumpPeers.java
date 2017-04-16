@@ -71,14 +71,10 @@ public final class DumpPeers extends APIServlet.APIRequestHandler {
 		Peers.getAllPeers().forEach(peer -> {
 			if ((peer.getState() == Peer.State.CONNECTED) && peer.shareAddress() && !peer.isBlacklisted()
 					&& (peer.getVersion() != null) && peer.getVersion().startsWith(version)
-					&& ((weight == 0) || (peer.getWeight() > weight))) {
-				addresses.add(peer.getAnnouncedAddress());
-			}
+					&& ((weight == 0) || (peer.getWeight() > weight))) addresses.add(peer.getAnnouncedAddress());
 		});
 		final StringBuilder buf = new StringBuilder();
-		for (final String address : addresses) {
-			buf.append(address).append("; ");
-		}
+		for (final String address : addresses) buf.append(address).append("; ");
 		final JSONObject response = new JSONObject();
 		response.put("peers", buf.toString());
 		response.put("count", addresses.size());

@@ -87,9 +87,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 				throws IOException {
 			if (finished) {
 				ByteBuffer allInput;
-				if (this.os == null) {
-					allInput = input;
-				} else {
+				if (this.os == null) allInput = input;
+                else {
 					final byte[] b = new byte[input.remaining()];
 					input.get(b);
 					this.os.write(b);
@@ -103,9 +102,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 				}
 				output.add(allInput);
 			} else {
-				if (this.os == null) {
-					this.os = new ByteArrayOutputStream();
-				}
+				if (this.os == null) this.os = new ByteArrayOutputStream();
 				final byte[] b = new byte[input.remaining()];
 				input.get(b);
 				this.os.write(b);
@@ -119,9 +116,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			try {
 				final int[] pos = new int[secrets.length];
 				final byte[][] tokens = new byte[secrets.length][];
-				for (int i = 0; i < tokens.length; i++) {
-					tokens[i] = secrets[i].getBytes();
-				}
+				for (int i = 0; i < tokens.length; i++) tokens[i] = secrets[i].getBytes();
 				while (buffer.hasRemaining()) {
 					final byte current = buffer.get();
 					for (int i = 0; i < tokens.length; i++) {
@@ -130,9 +125,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 							continue;
 						}
 						pos[i]++;
-						if (pos[i] == tokens[i].length) {
-							return buffer.position() - tokens[i].length;
-						}
+						if (pos[i] == tokens[i].length) return buffer.position() - tokens[i].length;
 					}
 				}
 				return -1;
@@ -177,26 +170,19 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 	private MultiMap<String> getRequestParameters(final HttpServletRequest request) {
 		final MultiMap<String> parameters = new MultiMap<>();
 		final String queryString = request.getQueryString();
-		if (queryString != null) {
-			UrlEncoded.decodeUtf8To(queryString, parameters);
-		}
+		if (queryString != null) UrlEncoded.decodeUtf8To(queryString, parameters);
 		return parameters;
 	}
 
 	private String getRequestType(final MultiMap<String> parameters) throws ParameterException {
 		final String requestType = parameters.getString("requestType");
-		if (Convert.emptyToNull(requestType) == null) {
-			throw new ParameterException(JSONResponses.PROXY_MISSING_REQUEST_TYPE);
-		}
+		if (Convert.emptyToNull(requestType) == null)
+            throw new ParameterException(JSONResponses.PROXY_MISSING_REQUEST_TYPE);
 
 		final APIServlet.APIRequestHandler apiRequestHandler = APIServlet.apiRequestHandlers.get(requestType);
-		if (apiRequestHandler == null) {
-			if (APIServlet.disabledRequestHandlers.containsKey(requestType)) {
-				throw new ParameterException(JSONResponses.ERROR_DISABLED);
-			} else {
-				throw new ParameterException(JSONResponses.ERROR_INCORRECT_REQUEST);
-			}
-		}
+		if (apiRequestHandler == null) if (APIServlet.disabledRequestHandlers.containsKey(requestType))
+            throw new ParameterException(JSONResponses.ERROR_DISABLED);
+        else throw new ParameterException(JSONResponses.ERROR_INCORRECT_REQUEST);
 		return requestType;
 	}
 
@@ -213,37 +199,25 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			uri.append(APIProxy.forcedServerURL);
 		} else {
 			final Peer servingPeer = APIProxy.getInstance().getServingPeer(requestType);
-			if (servingPeer == null) {
-				return false;
-			}
+			if (servingPeer == null) return false;
 			uri = servingPeer.getPeerApiUri();
 			clientRequest.setAttribute(APIProxyServlet.REMOTE_SERVER_IDLE_TIMEOUT,
 					servingPeer.getApiServerIdleTimeout());
 		}
 		uri.append("/nxt");
 		final String query = clientRequest.getQueryString();
-		if (query != null) {
-			uri.append("?").append(query);
-		}
+		if (query != null) uri.append("?").append(query);
 		clientRequest.setAttribute(APIProxyServlet.REMOTE_URL, uri.toString());
 		return true;
 	}
 
 	private boolean isForwardable(final String requestType) {
 		final APIServlet.APIRequestHandler apiRequestHandler = APIServlet.apiRequestHandlers.get(requestType);
-		if (!apiRequestHandler.requireBlockchain()) {
-			return false;
-		}
-		if (apiRequestHandler.requireFullClient()) {
-			return false;
-		}
-		if (APIProxyServlet.NOT_FORWARDED_REQUESTS.contains(requestType)) {
-			return false;
-		}
+		if (!apiRequestHandler.requireBlockchain()) return false;
+		if (apiRequestHandler.requireFullClient()) return false;
+		if (APIProxyServlet.NOT_FORWARDED_REQUESTS.contains(requestType)) return false;
 		// noinspection RedundantIfStatement
-		if (!Collections.disjoint(apiRequestHandler.getAPITags(), APIProxyServlet.NOT_FORWARDED_TAGS)) {
-			return false;
-		}
+		if (!Collections.disjoint(apiRequestHandler.getAPITags(), APIProxyServlet.NOT_FORWARDED_TAGS)) return false;
 		return true;
 	}
 
@@ -251,15 +225,11 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 	protected ContentTransformer newClientRequestContentTransformer(final HttpServletRequest clientRequest,
 			final Request proxyRequest) {
 		final String contentType = clientRequest.getContentType();
-		if ((contentType != null) && contentType.contains("multipart")) {
-			return super.newClientRequestContentTransformer(clientRequest, proxyRequest);
-		} else {
-			if (APIProxy.isActivated() && this.isForwardable(clientRequest.getParameter("requestType"))) {
-				return new PasswordFilteringContentTransformer();
-			} else {
-				return super.newClientRequestContentTransformer(clientRequest, proxyRequest);
-			}
-		}
+		if ((contentType != null) && contentType.contains("multipart"))
+            return super.newClientRequestContentTransformer(clientRequest, proxyRequest);
+        else if (APIProxy.isActivated() && this.isForwardable(clientRequest.getParameter("requestType")))
+            return new PasswordFilteringContentTransformer();
+        else return super.newClientRequestContentTransformer(clientRequest, proxyRequest);
 	}
 
 	@Override
@@ -293,9 +263,7 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 				e.addSuppressed(failure);
 				super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, e);
 			}
-		} else {
-			super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, failure);
-		}
+		} else super.onClientRequestFailure(clientRequest, proxyRequest, proxyResponse, failure);
 	}
 
 	@Override
@@ -303,9 +271,8 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 
 		final Integer timeout = (Integer) clientRequest.getAttribute(APIProxyServlet.REMOTE_SERVER_IDLE_TIMEOUT);
 		final HttpClient httpClient = this.getHttpClient();
-		if ((timeout != null) && (httpClient != null)) {
-			httpClient.setIdleTimeout(Math.max(timeout - APIProxyServlet.PROXY_IDLE_TIMEOUT_DELTA, 0));
-		}
+		if ((timeout != null) && (httpClient != null))
+            httpClient.setIdleTimeout(Math.max(timeout - APIProxyServlet.PROXY_IDLE_TIMEOUT_DELTA, 0));
 
 		final String remoteUrl = (String) clientRequest.getAttribute(APIProxyServlet.REMOTE_URL);
 		final URI rewrittenURI = URI.create(remoteUrl).normalize();
@@ -325,14 +292,11 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 			final String requestType = this.getRequestType(parameters);
 			if (APIProxy.isActivated() && this.isForwardable(requestType)) {
 				if (parameters.containsKey("secretPhrase") || parameters.containsKey("adminPassword")
-						|| parameters.containsKey("sharedKey")) {
-					throw new ParameterException(JSONResponses.PROXY_SECRET_DATA_DETECTED);
-				}
-				if (!this.initRemoteRequest(request, requestType)) {
-					responseJson = JSONResponses.API_PROXY_NO_OPEN_API_PEERS;
-				} else {
-					super.service(request, response);
-				}
+						|| parameters.containsKey("sharedKey"))
+                    throw new ParameterException(JSONResponses.PROXY_SECRET_DATA_DETECTED);
+				if (!this.initRemoteRequest(request, requestType))
+                    responseJson = JSONResponses.API_PROXY_NO_OPEN_API_PEERS;
+                else super.service(request, response);
 			} else {
 				final APIServlet apiServlet = (APIServlet) request.getServletContext().getAttribute("apiServlet");
 				apiServlet.service(request, response);
@@ -340,15 +304,13 @@ public final class APIProxyServlet extends AsyncMiddleManServlet {
 		} catch (final ParameterException e) {
 			responseJson = e.getErrorResponse();
 		} finally {
-			if (responseJson != null) {
-				try {
-					try (Writer writer = response.getWriter()) {
-						JSON.writeJSONString(responseJson, writer);
-					}
-				} catch (final IOException e) {
-					Logger.logInfoMessage("Failed to write response to client", e);
-				}
-			}
+			if (responseJson != null) try {
+                try (Writer writer = response.getWriter()) {
+                    JSON.writeJSONString(responseJson, writer);
+                }
+            } catch (final IOException e) {
+                Logger.logInfoMessage("Failed to write response to client", e);
+            }
 		}
 	}
 }

@@ -28,7 +28,7 @@ import nxt.Nxt;
 import nxt.Transaction;
 import nxt.util.Convert;
 
-public final class SignTransactions {
+final class SignTransactions {
 
 	public static void main(final String[] args) {
 		try {
@@ -49,16 +49,13 @@ public final class SignTransactions {
 			}
 			String secretPhrase = null;
 			final Console console = System.console();
-			if (console == null) {
-				try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
-					secretPhrase = reader.readLine();
-				}
-			} else {
-				char[] chararr = null;
+			if (console == null) try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                secretPhrase = reader.readLine();
+            }
+            else {
+				char[] chararr;
 				chararr = console.readPassword("Secret phrase: ");
-				if (chararr != null) {
-					secretPhrase = new String(chararr);
-				}
+				if (chararr != null) secretPhrase = new String(chararr);
 			}
 			if (secretPhrase == null) {
 				System.err.println("No secret phrase given!");

@@ -45,9 +45,7 @@ public final class DecryptFrom extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final byte[] publicKey = Account.getPublicKey(ParameterParser.getAccountId(req, true));
-		if (publicKey == null) {
-			return JSONResponses.INCORRECT_ACCOUNT;
-		}
+		if (publicKey == null) return JSONResponses.INCORRECT_ACCOUNT;
 		final String secretPhrase = ParameterParser.getSecretPhrase(req, true);
 		final byte[] data = Convert.parseHexString(Convert.nullToEmpty(req.getParameter("data")));
 		final byte[] nonce = Convert.parseHexString(Convert.nullToEmpty(req.getParameter("nonce")));

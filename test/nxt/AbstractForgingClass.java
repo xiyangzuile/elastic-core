@@ -22,23 +22,23 @@ import java.util.Properties;
 
 abstract class AbstractForgingTest extends AbstractBlockchainTest {
 
-    protected static final int minStartHeight = 0;
-    protected static int startHeight;
+    private static final int minStartHeight = 0;
+    static int startHeight;
 
-    protected static Properties newTestProperties() {
+    static Properties newTestProperties() {
         Properties properties = AbstractBlockchainTest.newTestProperties();
         properties.setProperty("nxt.isTestnet", "true");
         properties.setProperty("nxt.isOffline", "true");
         return properties;
     }
 
-    protected static void init(Properties properties) {
+    static void init(Properties properties) {
         AbstractBlockchainTest.init(properties);
         startHeight = blockchain.getHeight();
         Assert.assertTrue(startHeight >= minStartHeight);
     }
 
-    protected static void shutdown() {
+    static void shutdown() {
         blockchainProcessor.popOffTo(startHeight);
         AbstractBlockchainTest.shutdown();
     }

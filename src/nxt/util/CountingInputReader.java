@@ -66,9 +66,7 @@ public class CountingInputReader extends FilterReader {
 	 */
 	private void incCount(final long c) throws NxtIOException {
 		this.count += c;
-		if (this.count > this.limit) {
-			throw new NxtIOException("Maximum size exceeded: " + this.count);
-		}
+		if (this.count > this.limit) throw new NxtIOException("Maximum size exceeded: " + this.count);
 	}
 
 	/**
@@ -81,9 +79,7 @@ public class CountingInputReader extends FilterReader {
 	@Override
 	public int read() throws IOException {
 		final int c = super.read();
-		if (c != -1) {
-			this.incCount(1);
-		}
+		if (c != -1) this.incCount(1);
 		return c;
 	}
 
@@ -99,9 +95,7 @@ public class CountingInputReader extends FilterReader {
 	@Override
 	public int read(final char[] cbuf) throws IOException {
 		final int c = super.read(cbuf);
-		if (c != -1) {
-			this.incCount(c);
-		}
+		if (c != -1) this.incCount(c);
 		return c;
 	}
 
@@ -121,9 +115,7 @@ public class CountingInputReader extends FilterReader {
 	@Override
 	public int read(final char[] cbuf, final int off, final int len) throws IOException {
 		final int c = super.read(cbuf, off, len);
-		if (c != -1) {
-			this.incCount(c);
-		}
+		if (c != -1) this.incCount(c);
 		return c;
 	}
 
@@ -139,9 +131,7 @@ public class CountingInputReader extends FilterReader {
 	@Override
 	public long skip(final long n) throws IOException {
 		final long c = super.skip(n);
-		if (c != -1) {
-			this.incCount(c);
-		}
+		if (c != -1) this.incCount(c);
 		return c;
 	}
 }

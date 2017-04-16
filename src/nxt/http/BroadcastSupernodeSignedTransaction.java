@@ -79,27 +79,25 @@ public final class BroadcastSupernodeSignedTransaction extends APIServlet.APIReq
 
 		Account snAccount = Account.getAccount(Crypto.getPrivateKey(secretPhrase));
 		final JSONObject response = new JSONObject();
-		if(snAccount == null || snAccount.isSuperNode() == false){
+		if(snAccount == null || !snAccount.isSuperNode()){
 			Exception e = new Exception("You are not a super node");
 			JSONData.putException(response, e, e.getMessage());
-		}else {
-			try {
-				final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes,
-						prunableAttachmentJSON);
-				final Transaction transaction = builder.build();
+		}else try {
+            final Transaction.Builder builder = ParameterParser.parseTransaction(transactionJSON, transactionBytes,
+                    prunableAttachmentJSON);
+            final Transaction transaction = builder.build();
 
-				// super node sign
-				transaction.signSuperNode(secretPhrase);
+            // super node sign
+            transaction.signSuperNode(secretPhrase);
 
 
-				Nxt.getTransactionProcessor().broadcast(transaction);
+            Nxt.getTransactionProcessor().broadcast(transaction);
 
-				response.put("transaction", transaction.getStringId());
-				response.put("fullHash", transaction.getFullHash());
-			} catch (NxtException.ValidationException | RuntimeException e) {
-				JSONData.putException(response, e, "Failed to broadcast transaction");
-			}
-		}
+            response.put("transaction", transaction.getStringId());
+            response.put("fullHash", transaction.getFullHash());
+        } catch (NxtException.ValidationException | RuntimeException e) {
+            JSONData.putException(response, e, "Failed to broadcast transaction");
+        }
 		return response;
 
 	}

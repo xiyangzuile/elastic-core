@@ -21,13 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import nxt.db.DbUtils;
 import nxt.db.DerivedDbTable;
@@ -75,12 +69,11 @@ public class AccountLedger {
 		 */
 		@Override
 		public void trim(final int height) {
-			if (AccountLedger.trimKeep <= 0) {
-				return;
-			}
+			if (AccountLedger.trimKeep <= 0) return;
 			try (Connection con = DerivedDbTable.db.getConnection();
 					PreparedStatement pstmt = con.prepareStatement("DELETE FROM account_ledger WHERE height <= ?")) {
 				final int trimHeight = Math.max(AccountLedger.blockchain.getHeight() - AccountLedger.trimKeep, 0);
+				//noinspection SuspiciousNameCombination
 				pstmt.setInt(1, trimHeight);
 				pstmt.executeUpdate();
 			} catch (final SQLException e) {
@@ -200,17 +193,11 @@ public class AccountLedger {
 			this.eventId = rs.getLong("event_id");
 			this.accountId = rs.getLong("account_id");
 			final int holdingType = rs.getByte("holding_type");
-			if (holdingType >= 0) {
-				this.holding = LedgerHolding.fromCode(holdingType);
-			} else {
-				this.holding = null;
-			}
+			if (holdingType >= 0) this.holding = LedgerHolding.fromCode(holdingType);
+			else this.holding = null;
 			final long id = rs.getLong("holding_id");
-			if (rs.wasNull()) {
-				this.holdingId = null;
-			} else {
-				this.holdingId = id;
-			}
+			if (rs.wasNull()) this.holdingId = null;
+			else this.holdingId = id;
 			this.change = rs.getLong("change");
 			this.balance = rs.getLong("balance");
 			this.blockId = rs.getLong("block_id");
@@ -227,11 +214,11 @@ public class AccountLedger {
 		 */
 		@Override
 		public boolean equals(final Object obj) {
-			return ((obj != null) && (obj instanceof LedgerEntry) && (this.accountId == ((LedgerEntry) obj).accountId)
-					&& (this.event == ((LedgerEntry) obj).event) && (this.eventId == ((LedgerEntry) obj).eventId)
-					&& (this.holding == ((LedgerEntry) obj).holding)
-					&& (this.holdingId != null ? this.holdingId.equals(((LedgerEntry) obj).holdingId)
-							: ((LedgerEntry) obj).holdingId == null));
+			return obj != null && obj instanceof LedgerEntry && this.accountId == ((LedgerEntry) obj).accountId
+					&& this.event == ((LedgerEntry) obj).event && this.eventId == ((LedgerEntry) obj).eventId
+					&& this.holding == ((LedgerEntry) obj).holding
+					&& (this.holdingId != null ? Objects.equals(this.holdingId, ((LedgerEntry) obj).holdingId)
+							: ((LedgerEntry) obj).holdingId == null);
 		}
 
 		/**
@@ -363,22 +350,18 @@ public class AccountLedger {
 				stmt.setLong(++i, this.accountId);
 				stmt.setByte(++i, (byte) this.event.getCode());
 				stmt.setLong(++i, this.eventId);
-				if (this.holding != null) {
-					stmt.setByte(++i, (byte) this.holding.getCode());
-				} else {
-					stmt.setByte(++i, (byte) -1);
-				}
+				if (this.holding != null) stmt.setByte(++i, (byte) this.holding.getCode());
+				else stmt.setByte(++i, (byte) -1);
 				DbUtils.setLong(stmt, ++i, this.holdingId);
 				stmt.setLong(++i, this.change);
 				stmt.setLong(++i, this.balance);
 				stmt.setLong(++i, this.blockId);
+				//noinspection SuspiciousNameCombination
 				stmt.setInt(++i, this.height);
 				stmt.setInt(++i, this.timestamp);
 				stmt.executeUpdate();
 				try (ResultSet rs = stmt.getGeneratedKeys()) {
-					if (rs.next()) {
-						this.ledgerId = rs.getLong(1);
-					}
+					if (rs.next()) this.ledgerId = rs.getLong(1);
 				}
 			}
 		}
@@ -453,11 +436,9 @@ public class AccountLedger {
 		/** Event code mapping */
 		private static final Map<Integer, LedgerEvent> eventMap = new HashMap<>();
 		static {
-			for (final LedgerEvent event : LedgerEvent.values()) {
-				if (LedgerEvent.eventMap.put(event.code, event) != null) {
+			for (final LedgerEvent event : LedgerEvent.values())
+				if (LedgerEvent.eventMap.put(event.code, event) != null)
 					throw new RuntimeException("LedgerEvent code " + event.code + " reused");
-				}
-			}
 		}
 
 		/**
@@ -469,9 +450,7 @@ public class AccountLedger {
 		 */
 		public static LedgerEvent fromCode(final int code) {
 			final LedgerEvent event = LedgerEvent.eventMap.get(code);
-			if (event == null) {
-				throw new IllegalArgumentException("LedgerEvent code " + code + " is unknown");
-			}
+			if (event == null) throw new IllegalArgumentException("LedgerEvent code " + code + " is unknown");
 			return event;
 		}
 
@@ -527,11 +506,9 @@ public class AccountLedger {
 		/** Holding code mapping */
 		private static final Map<Integer, LedgerHolding> holdingMap = new HashMap<>();
 		static {
-			for (final LedgerHolding holding : LedgerHolding.values()) {
-				if (LedgerHolding.holdingMap.put(holding.code, holding) != null) {
+			for (final LedgerHolding holding : LedgerHolding.values())
+				if (LedgerHolding.holdingMap.put(holding.code, holding) != null)
 					throw new RuntimeException("LedgerHolding code " + holding.code + " reused");
-				}
-			}
 		}
 
 		/**
@@ -543,9 +520,7 @@ public class AccountLedger {
 		 */
 		public static LedgerHolding fromCode(final int code) {
 			final LedgerHolding holding = LedgerHolding.holdingMap.get(code);
-			if (holding == null) {
-				throw new IllegalArgumentException("LedgerHolding code " + code + " is unknown");
-			}
+			if (holding == null) throw new IllegalArgumentException("LedgerHolding code " + code + " is unknown");
 			return holding;
 		}
 
@@ -617,22 +592,16 @@ public class AccountLedger {
 		final List<String> ledgerAccounts = Nxt.getStringListProperty("nxt.ledgerAccounts");
 		ledgerEnabled = !ledgerAccounts.isEmpty();
 		trackAllAccounts = ledgerAccounts.contains("*");
-		if (AccountLedger.ledgerEnabled) {
-			if (AccountLedger.trackAllAccounts) {
-				Logger.logInfoMessage("Account ledger is tracking all accounts");
-			} else {
-				for (final String account : ledgerAccounts) {
-					try {
-						AccountLedger.trackAccounts.add(Convert.parseAccountId(account));
-						Logger.logInfoMessage("Account ledger is tracking account " + account);
-					} catch (final RuntimeException e) {
-						Logger.logErrorMessage("Account " + account + " is not valid; ignored");
-					}
+		if (AccountLedger.ledgerEnabled)
+			if (AccountLedger.trackAllAccounts) Logger.logInfoMessage("Account ledger is tracking all accounts");
+			else for (final String account : ledgerAccounts)
+				try {
+					AccountLedger.trackAccounts.add(Convert.parseAccountId(account));
+					Logger.logInfoMessage("Account ledger is tracking account " + account);
+				} catch (final RuntimeException e) {
+					Logger.logErrorMessage("Account " + account + " is not valid; ignored");
 				}
-			}
-		} else {
-			Logger.logInfoMessage("Account ledger is not enabled");
-		}
+		else Logger.logInfoMessage("Account ledger is not enabled");
 		final int temp = Nxt.getIntProperty("nxt.ledgerLogUnconfirmed", 1);
 		logUnconfirmed = ((temp >= 0) && (temp <= 2) ? temp : 1);
 	}
@@ -697,37 +666,23 @@ public class AccountLedger {
 	 */
 	public static List<LedgerEntry> getEntries(final long accountId, final LedgerEvent event, final long eventId,
 			final LedgerHolding holding, final long holdingId, final int firstIndex, final int lastIndex) {
-		if (!AccountLedger.ledgerEnabled) {
-			return Collections.emptyList();
-		}
+		if (!AccountLedger.ledgerEnabled) return Collections.emptyList();
 		final List<LedgerEntry> entryList = new ArrayList<>();
 		//
 		// Build the SELECT statement to search the entries
 		final StringBuilder sb = new StringBuilder(128);
 		sb.append("SELECT * FROM account_ledger ");
-		if ((accountId != 0) || (event != null) || (holding != null)) {
-			sb.append("WHERE ");
-		}
-		if (accountId != 0) {
-			sb.append("account_id = ? ");
-		}
+		if ((accountId != 0) || (event != null) || (holding != null)) sb.append("WHERE ");
+		if (accountId != 0) sb.append("account_id = ? ");
 		if (event != null) {
-			if (accountId != 0) {
-				sb.append("AND ");
-			}
+			if (accountId != 0) sb.append("AND ");
 			sb.append("event_type = ? ");
-			if (eventId != 0) {
-				sb.append("AND event_id = ? ");
-			}
+			if (eventId != 0) sb.append("AND event_id = ? ");
 		}
 		if (holding != null) {
-			if ((accountId != 0) || (event != null)) {
-				sb.append("AND ");
-			}
+			if ((accountId != 0) || (event != null)) sb.append("AND ");
 			sb.append("holding_type = ? ");
-			if (holdingId != 0) {
-				sb.append("AND holding_id = ? ");
-			}
+			if (holdingId != 0) sb.append("AND holding_id = ? ");
 		}
 		sb.append("ORDER BY db_id DESC ");
 		sb.append(DbUtils.limitsClause(firstIndex, lastIndex));
@@ -737,26 +692,18 @@ public class AccountLedger {
 		AccountLedger.blockchain.readLock();
 		try (Connection con = Db.db.getConnection(); PreparedStatement pstmt = con.prepareStatement(sb.toString())) {
 			int i = 0;
-			if (accountId != 0) {
-				pstmt.setLong(++i, accountId);
-			}
+			if (accountId != 0) pstmt.setLong(++i, accountId);
 			if (event != null) {
 				pstmt.setByte(++i, (byte) event.getCode());
-				if (eventId != 0) {
-					pstmt.setLong(++i, eventId);
-				}
+				if (eventId != 0) pstmt.setLong(++i, eventId);
 			}
 			if (holding != null) {
 				pstmt.setByte(++i, (byte) holding.getCode());
-				if (holdingId != 0) {
-					pstmt.setLong(++i, holdingId);
-				}
+				if (holdingId != 0) pstmt.setLong(++i, holdingId);
 			}
 			DbUtils.setLimits(++i, pstmt, firstIndex, lastIndex);
 			try (ResultSet rs = pstmt.executeQuery()) {
-				while (rs.next()) {
-					entryList.add(new LedgerEntry(rs));
-				}
+				while (rs.next()) entryList.add(new LedgerEntry(rs));
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -774,19 +721,14 @@ public class AccountLedger {
 	 * @return Ledger entry or null if entry not found
 	 */
 	public static LedgerEntry getEntry(final long ledgerId) {
-		if (!AccountLedger.ledgerEnabled) {
-			return null;
-		}
+		if (!AccountLedger.ledgerEnabled) return null;
 		LedgerEntry entry;
 		try (Connection con = Db.db.getConnection();
 				PreparedStatement stmt = con.prepareStatement("SELECT * FROM account_ledger WHERE db_id = ?")) {
 			stmt.setLong(1, ledgerId);
 			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					entry = new LedgerEntry(rs);
-				} else {
-					entry = null;
-				}
+				if (rs.next()) entry = new LedgerEntry(rs);
+				else entry = null;
 			}
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -813,9 +755,7 @@ public class AccountLedger {
 		//
 		// Must be in a database transaction
 		//
-		if (!Db.db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!Db.db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		//
 		// Combine multiple ledger entries
 		//
@@ -829,8 +769,8 @@ public class AccountLedger {
 				if ((existingEntry.getAccountId() == ledgerEntry.getAccountId())
 						&& (existingEntry.getHolding() == ledgerEntry.getHolding())
 						&& (((existingEntry.getHoldingId() == null) && (ledgerEntry.getHoldingId() == null))
-								|| ((existingEntry.getHoldingId() != null)
-										&& existingEntry.getHoldingId().equals(ledgerEntry.getHoldingId())))) {
+								|| existingEntry.getHoldingId() != null
+										&& Objects.equals(existingEntry.getHoldingId(), ledgerEntry.getHoldingId()))) {
 					adjustedBalance += existingEntry.getChange();
 					existingEntry.setBalance(adjustedBalance);
 				}
@@ -844,40 +784,28 @@ public class AccountLedger {
 		// Must be tracking this account
 		//
 		if (!AccountLedger.ledgerEnabled
-				|| (!AccountLedger.trackAllAccounts && !AccountLedger.trackAccounts.contains(accountId))) {
-			return false;
-		}
+				|| (!AccountLedger.trackAllAccounts && !AccountLedger.trackAccounts.contains(accountId))) return false;
 		// confirmed changes only occur while processing block, and unconfirmed
 		// changes are
 		// only logged while processing block
-		if (!AccountLedger.blockchainProcessor.isProcessingBlock()) {
-			return false;
-		}
+		if (!AccountLedger.blockchainProcessor.isProcessingBlock()) return false;
 		//
 		// Log unconfirmed changes only when processing a block and
 		// logUnconfirmed does not equal 0
 		// Log confirmed changes unless logUnconfirmed equals 2
 		//
-		if (isUnconfirmed && (AccountLedger.logUnconfirmed == 0)) {
-			return false;
-		}
-		if (!isUnconfirmed && (AccountLedger.logUnconfirmed == 2)) {
-			return false;
-		}
+		if (isUnconfirmed && (AccountLedger.logUnconfirmed == 0)) return false;
+		if (!isUnconfirmed && (AccountLedger.logUnconfirmed == 2)) return false;
 		if ((AccountLedger.trimKeep > 0)
-				&& (AccountLedger.blockchain.getHeight() <= (Constants.LAST_KNOWN_BLOCK - AccountLedger.trimKeep))) {
+				&& (AccountLedger.blockchain.getHeight() <= (Constants.LAST_KNOWN_BLOCK - AccountLedger.trimKeep)))
 			return false;
-		}
 		//
 		// Don't log account changes if we are scanning the blockchain and the
 		// current height
 		// is less than the minimum account_ledger trim height
 		//
-		if (AccountLedger.blockchainProcessor.isScanning() && (AccountLedger.trimKeep > 0) && (AccountLedger.blockchain
-				.getHeight() <= (AccountLedger.blockchainProcessor.getInitialScanHeight() - AccountLedger.trimKeep))) {
-			return false;
-		}
-		return true;
+		return !(AccountLedger.blockchainProcessor.isScanning() && (AccountLedger.trimKeep > 0) && (AccountLedger.blockchain
+				.getHeight() <= (AccountLedger.blockchainProcessor.getInitialScanHeight() - AccountLedger.trimKeep)));
 	}
 
 	/**

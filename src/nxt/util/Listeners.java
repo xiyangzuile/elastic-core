@@ -26,30 +26,20 @@ public final class Listeners<T, E extends Enum<E>> {
 
 	public boolean addListener(final Listener<T> listener, final Enum<E> eventType) {
 		synchronized (eventType) {
-			List<Listener<T>> listeners = this.listenersMap.get(eventType);
-			if (listeners == null) {
-				listeners = new CopyOnWriteArrayList<>();
-				this.listenersMap.put(eventType, listeners);
-			}
-			return listeners.add(listener);
+            List<Listener<T>> listeners = this.listenersMap.computeIfAbsent(eventType, k -> new CopyOnWriteArrayList<>());
+            return listeners.add(listener);
 		}
 	}
 
 	public void notify(final T t, final Enum<E> eventType) {
 		final List<Listener<T>> listeners = this.listenersMap.get(eventType);
-		if (listeners != null) {
-			for (final Listener<T> listener : listeners) {
-				listener.notify(t);
-			}
-		}
+		if (listeners != null) for (final Listener<T> listener : listeners) listener.notify(t);
 	}
 
 	public boolean removeListener(final Listener<T> listener, final Enum<E> eventType) {
 		synchronized (eventType) {
 			final List<Listener<T>> listeners = this.listenersMap.get(eventType);
-			if (listeners != null) {
-				return listeners.remove(listener);
-			}
+			if (listeners != null) return listeners.remove(listener);
 		}
 		return false;
 	}

@@ -1,30 +1,21 @@
 package nxt;
 
-import nxt.crypto.Crypto;
 import nxt.http.JSONData;
 import nxt.util.Convert;
-import nxt.util.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Properties;
-
-import static nxt.TransactionBuilder.make;
-import static nxt.TransactionBuilder.makeSupernodeSigned;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import java.util.function.Consumer;
 
 public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
 
 
-    public static Long failing_id = Long.parseUnsignedLong("9053406275210142716");
+    private static final Long failing_id = Long.parseUnsignedLong("9053406275210142716");
 
     @Before
     public void init() {
@@ -32,7 +23,7 @@ public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
         AbstractForgingTest.init(properties);
     }
 
-    public JSONArray getTransactionPeerImpl(long txid){
+    private JSONArray getTransactionPeerImpl(long txid){
         final JSONObject response = new JSONObject();
         final JSONArray transactionArray = new JSONArray();
         final JSONArray transactionIds = new JSONArray();
@@ -41,8 +32,9 @@ public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
         //
         // Return the transactions to the caller
         //
-        if (transactionIds != null) {
-            transactionIds.forEach(transactionId -> {
+        transactionIds.forEach(new Consumer() {
+            @Override
+            public void accept(Object transactionId) {
                 final long id = Long.parseUnsignedLong((String) transactionId);
                 final Transaction transaction = blockchain.getTransaction(id);
                 if (transaction != null) {
@@ -50,8 +42,8 @@ public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
                     final JSONObject transactionJSON = transaction.getJSONObject();
                     transactionArray.add(transactionJSON);
                 }
-            });
-        }
+            }
+        });
         return transactionArray;
     }
 
@@ -118,7 +110,7 @@ public class FailingTrasactionFromDBTest extends AbstractBlockchainTest {
             String s1 = obj.get(key).toString();
             String s2 = obj2.get(key).toString();
             System.out.println(key+"\t"+s1 + "\t==\t" + s2);
-            if(s1.equalsIgnoreCase(s2)==false){
+            if(!s1.equalsIgnoreCase(s2)){
                 System.err.println("We found a mismatch in the two transaction decoders. EXITING!");
                 return;
             }

@@ -19,6 +19,7 @@ package nxt.db;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 
 public interface DbKey {
 
@@ -28,7 +29,7 @@ public interface DbKey {
 		private final String pkColumns;
 		private final String selfJoinClause;
 
-		protected Factory(final String pkClause, final String pkColumns, final String selfJoinClause) {
+		Factory(final String pkClause, final String pkColumns, final String selfJoinClause) {
 			this.pkClause = pkClause;
 			this.pkColumns = pkColumns;
 			this.selfJoinClause = selfJoinClause;
@@ -184,7 +185,7 @@ public interface DbKey {
 		@Override
 		public boolean equals(final Object o) {
 			return (o instanceof StringKey)
-					&& (this.id != null ? this.id.equals(((StringKey) o).id) : ((StringKey) o).id == null);
+					&& (this.id != null ? Objects.equals(this.id, ((StringKey) o).id) : ((StringKey) o).id == null);
 		}
 
 		public String getId() {

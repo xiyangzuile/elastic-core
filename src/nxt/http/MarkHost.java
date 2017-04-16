@@ -45,24 +45,16 @@ public final class MarkHost extends APIServlet.APIRequestHandler {
 		final String host = Convert.emptyToNull(req.getParameter("host"));
 		final String weightValue = Convert.emptyToNull(req.getParameter("weight"));
 		final String dateValue = Convert.emptyToNull(req.getParameter("date"));
-		if (host == null) {
-			return JSONResponses.MISSING_HOST;
-		} else if (weightValue == null) {
-			return JSONResponses.MISSING_WEIGHT;
-		} else if (dateValue == null) {
-			return JSONResponses.MISSING_DATE;
-		}
+		if (host == null) return JSONResponses.MISSING_HOST;
+        else if (weightValue == null) return JSONResponses.MISSING_WEIGHT;
+        else if (dateValue == null) return JSONResponses.MISSING_DATE;
 
-		if (host.length() > 100) {
-			return JSONResponses.INCORRECT_HOST;
-		}
+		if (host.length() > 100) return JSONResponses.INCORRECT_HOST;
 
 		int weight;
 		try {
 			weight = Integer.parseInt(weightValue);
-			if ((weight <= 0) || (weight > Constants.MAX_BALANCE_NXT)) {
-				return JSONResponses.INCORRECT_WEIGHT;
-			}
+			if ((weight <= 0) || (weight > Constants.MAX_BALANCE_NXT)) return JSONResponses.INCORRECT_WEIGHT;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_WEIGHT;
 		}

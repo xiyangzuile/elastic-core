@@ -54,13 +54,10 @@ public final class Scan extends APIServlet.APIRequestHandler {
 			final long start = System.currentTimeMillis();
 			try {
 				Nxt.getBlockchainProcessor().setGetMoreBlocks(false);
-				if (numBlocks > 0) {
-					Nxt.getBlockchainProcessor().scan((Nxt.getBlockchain().getHeight() - numBlocks) + 1, validate);
-				} else if (height >= 0) {
-					Nxt.getBlockchainProcessor().scan(height, validate);
-				} else {
-					return JSONResponses.missing("numBlocks", "height");
-				}
+				if (numBlocks > 0)
+                    Nxt.getBlockchainProcessor().scan((Nxt.getBlockchain().getHeight() - numBlocks) + 1, validate);
+                else if (height >= 0) Nxt.getBlockchainProcessor().scan(height, validate);
+                else return JSONResponses.missing("numBlocks", "height");
 			} finally {
 				Nxt.getBlockchainProcessor().setGetMoreBlocks(true);
 			}

@@ -1,12 +1,9 @@
 package nxt;
 
 import nxt.db.DbIterator;
-import nxt.util.Convert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Properties;
 
 /**

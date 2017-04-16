@@ -40,8 +40,7 @@ public final class BlockByGuardNode extends CreateTransaction {
 			long acc = Long.parseLong(accstr);
 			final Account account = ParameterParser.getSenderAccount(req);
 			final Account shenanigan = Account.getAccount(acc);
-			if (account == null)
-				return JSONResponses.INCORRECT_ACCOUNT;
+			if (account == null) return JSONResponses.INCORRECT_ACCOUNT;
 			final Attachment attachment = new Attachment.MessagingSupernodeAnnouncement(new String[] {}, shenanigan.getId());
 			return this.createTransaction(req, account, attachment);
 		}

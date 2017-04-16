@@ -37,9 +37,7 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
 
 		final String transactionIdString = Convert.emptyToNull(req.getParameter("transaction"));
 		final String transactionFullHash = Convert.emptyToNull(req.getParameter("fullHash"));
-		if ((transactionIdString == null) && (transactionFullHash == null)) {
-			return JSONResponses.MISSING_TRANSACTION;
-		}
+		if ((transactionIdString == null) && (transactionFullHash == null)) return JSONResponses.MISSING_TRANSACTION;
 
 		long transactionId = 0;
 		Transaction transaction;
@@ -49,9 +47,7 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
 				transaction = Nxt.getBlockchain().getTransaction(transactionId);
 			} else {
 				transaction = Nxt.getBlockchain().getTransactionByFullHash(transactionFullHash);
-				if (transaction == null) {
-					return JSONResponses.UNKNOWN_TRANSACTION;
-				}
+				if (transaction == null) return JSONResponses.UNKNOWN_TRANSACTION;
 			}
 		} catch (final RuntimeException e) {
 			return JSONResponses.INCORRECT_TRANSACTION;
@@ -59,13 +55,9 @@ public final class GetTransaction extends APIServlet.APIRequestHandler {
 
 		if (transaction == null) {
 			transaction = Nxt.getTransactionProcessor().getUnconfirmedTransaction(transactionId);
-			if (transaction == null) {
-				return JSONResponses.UNKNOWN_TRANSACTION;
-			}
+			if (transaction == null) return JSONResponses.UNKNOWN_TRANSACTION;
 			return JSONData.unconfirmedTransaction(transaction);
-		} else {
-			return JSONData.transaction(transaction);
-		}
+		} else return JSONData.transaction(transaction);
 
 	}
 

@@ -40,12 +40,9 @@ final class AddPeers extends PeerServlet.PeerRequestHandler {
 					final String announcedAddress = (String) peers.get(i);
 					final PeerImpl newPeer = Peers.findOrCreatePeer(announcedAddress, true);
 					if (newPeer != null) {
-						if (Peers.addPeer(newPeer) && setServices) {
-							newPeer.setServices(Long.parseUnsignedLong((String) services.get(i)));
-						}
-						if (Peers.hasTooManyKnownPeers()) {
-							break;
-						}
+						if (Peers.addPeer(newPeer) && setServices)
+                            newPeer.setServices(Long.parseUnsignedLong((String) services.get(i)));
+						if (Peers.hasTooManyKnownPeers()) break;
 					}
 				}
 			});

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -89,9 +90,7 @@ public final class UserServlet extends HttpServlet {
 		try {
 
 			final String userPasscode = req.getParameter("user");
-			if (userPasscode == null) {
-				return;
-			}
+			if (userPasscode == null) return;
 			user = Users.getUser(userPasscode);
 
 			if ((Users.allowedUserHosts != null) && !Users.allowedUserHosts.contains(req.getRemoteHost())) {
@@ -111,15 +110,13 @@ public final class UserServlet extends HttpServlet {
 				return;
 			}
 
-			if (UserServlet.enforcePost && userRequestHandler.requirePost() && !"POST".equals(req.getMethod())) {
+			if (UserServlet.enforcePost && userRequestHandler.requirePost() && !Objects.equals("POST", req.getMethod())) {
 				user.enqueue(JSONResponses.POST_REQUIRED);
 				return;
 			}
 
 			final JSONStreamAware response = userRequestHandler.processRequest(req, user);
-			if (response != null) {
-				user.enqueue(response);
-			}
+			if (response != null) user.enqueue(response);
 
 		} catch (RuntimeException | NxtException e) {
 
@@ -133,9 +130,7 @@ public final class UserServlet extends HttpServlet {
 
 		} finally {
 
-			if (user != null) {
-				user.processPendingResponses(req, resp);
-			}
+			if (user != null) user.processPendingResponses(req, resp);
 
 		}
 

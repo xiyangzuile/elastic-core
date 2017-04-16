@@ -29,15 +29,10 @@ import java.util.logging.Logger;
 /**
  * A Java logging formatter that writes more compact output than the default
  */
-public class BriefLogFormatter extends Formatter {
+class BriefLogFormatter extends Formatter {
 
 	/** Format used for log messages */
-	private static final ThreadLocal<MessageFormat> messageFormat = new ThreadLocal<MessageFormat>() {
-		@Override
-		protected MessageFormat initialValue() {
-			return new MessageFormat("{0,date,yyyy-MM-dd HH:mm:ss} {1}: {2}\n{3}");
-		}
-	};
+	private static final ThreadLocal<MessageFormat> messageFormat = ThreadLocal.withInitial(() -> new MessageFormat("{0,date,yyyy-MM-dd HH:mm:ss} {1}: {2}\n{3}"));
 
 	/** Logger instance at the top of the name tree */
 	private static final Logger logger = Logger.getLogger("");
@@ -50,9 +45,7 @@ public class BriefLogFormatter extends Formatter {
 	 */
 	static void init() {
 		final Handler[] handlers = BriefLogFormatter.logger.getHandlers();
-		for (final Handler handler : handlers) {
-			handler.setFormatter(BriefLogFormatter.briefLogFormatter);
-		}
+		for (final Handler handler : handlers) handler.setFormatter(BriefLogFormatter.briefLogFormatter);
 	}
 
 	private BriefLogFormatter() {
@@ -78,9 +71,7 @@ public class BriefLogFormatter extends Formatter {
 			final Writer result = new StringWriter();
 			exc.printStackTrace(new PrintWriter(result));
 			arguments[3] = result.toString();
-		} else {
-			arguments[3] = "";
-		}
+		} else arguments[3] = "";
 		return BriefLogFormatter.messageFormat.get().format(arguments);
 	}
 

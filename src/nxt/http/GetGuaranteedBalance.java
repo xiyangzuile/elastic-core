@@ -40,12 +40,9 @@ public final class GetGuaranteedBalance extends APIServlet.APIRequestHandler {
 		final int numberOfConfirmations = ParameterParser.getNumberOfConfirmations(req);
 
 		final JSONObject response = new JSONObject();
-		if (account == null) {
-			response.put("guaranteedBalanceNQT", "0");
-		} else {
-			response.put("guaranteedBalanceNQT", String
-					.valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
-		}
+		if (account == null) response.put("guaranteedBalanceNQT", "0");
+        else response.put("guaranteedBalanceNQT", String
+                .valueOf(account.getGuaranteedBalanceNQT(numberOfConfirmations, Nxt.getBlockchain().getHeight())));
 
 		return response;
 	}

@@ -29,11 +29,11 @@ public final class Constants {
 	public static final boolean isTestnet = Nxt.getBooleanProperty("nxt.isTestnet");
 	public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
 	public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
-	public static BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff", 16);
+	public static final BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff", 16);
 	public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
 	public static final int MAX_TITLE_LENGTH = 255;
 	public static final int MAX_WORK_CODE_LENGTH = 1024 * 1024;
-	public static final int MIN_TRANSACTION_SIZE = 176;
+	private static final int MIN_TRANSACTION_SIZE = 176;
 	public static final int MAX_DEADLINE_FOR_WORK = 1440;
 	public static final int MIN_DEADLINE_FOR_WORK = 3;
 	public static final int WORK_MULTIPLICATOR_BYTES = 32;
@@ -43,7 +43,7 @@ public final class Constants {
 	public static final long ONE_NXT = 100000000;
 	public static final int EVAL_WORK_EXEC_TIME_AGE_SECONDS = 120;
 	public static final long MIN_XEL_PER_POW = (long) (0.001 * Constants.ONE_NXT);
-	public static final long MIN_XEL_PER_BOUNTY = 1 * Constants.ONE_NXT;
+	public static final long MIN_XEL_PER_BOUNTY = Constants.ONE_NXT;
 	public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION = 10 * Constants.ONE_NXT;
 	public static final int MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 32;
 	public static final int DEPOSIT_GRACE_PERIOD = 15 * 60; // 15 minutes
@@ -81,9 +81,9 @@ public final class Constants {
 	public static final int MIN_PRUNABLE_LIFETIME = Constants.isTestnet ? 1440 * 60 : 14 * 1440 * 60;
 	public static final int MAX_PRUNABLE_LIFETIME;
 	public static final boolean ENABLE_PRUNING;
-	public static int Supernode_Push_Limit = 2;
-    public static boolean logSigningEvents = Nxt.getBooleanProperty("nxt.logSigningEvents");
-	public static boolean logKimotoEvents = Nxt.getBooleanProperty("nxt.logKimotoEvents");
+	public static final int Supernode_Push_Limit = 2;
+    public static final boolean logSigningEvents = Nxt.getBooleanProperty("nxt.logSigningEvents");
+	public static final boolean logKimotoEvents = Nxt.getBooleanProperty("nxt.logKimotoEvents");
 
 	static {
 		final int maxPrunableLifetime = Nxt.getIntProperty("nxt.maxPrunableLifetime");

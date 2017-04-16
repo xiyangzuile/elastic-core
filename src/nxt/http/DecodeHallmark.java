@@ -39,9 +39,7 @@ public final class DecodeHallmark extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 
 		final String hallmarkValue = req.getParameter("hallmark");
-		if (hallmarkValue == null) {
-			return JSONResponses.MISSING_HALLMARK;
-		}
+		if (hallmarkValue == null) return JSONResponses.MISSING_HALLMARK;
 
 		try {
 

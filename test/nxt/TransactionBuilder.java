@@ -6,7 +6,7 @@ import nxt.util.Convert;
 import java.util.Objects;
 
 
-public class TransactionBuilder  {
+class TransactionBuilder  {
 
 
     public static Transaction make(Attachment attachment, Appendix appdx, String secretPhrase, long recipientId, long amountNQT, boolean simPrune) throws Exception{
@@ -18,60 +18,42 @@ public class TransactionBuilder  {
         final int ecBlockHeight = 1;
         long ecBlockId = 0;
 
-        if ((ecBlockId != 0) && (ecBlockId != Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight))) {
-            throw new Exception("Failed setting ecBlock");
-        }
-        if ((ecBlockId == 0) && (ecBlockHeight > 0)) {
-            ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
-        }
+        if (ecBlockHeight > 0) ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
 
         long feeNQT = 0;
-        if(attachment.getTransactionType().zeroFeeTransaction() == false){
+        if(!attachment.getTransactionType().zeroFeeTransaction()){
             // todo: set fees here
         }
         short deadline = 1440;
 
-        byte[] publicKey = null;
-        if (attachment instanceof Attachment.RedeemAttachment) {
+        byte[] publicKey;
+        if (attachment instanceof Attachment.RedeemAttachment)
             publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
-        } else {
-            publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
-                    : Crypto.getPublicKey(secretPhrase);
-        }
+        else publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
+                : null; // todo check
 
         final Transaction.Builder builder = Nxt
                 .newTransactionBuilder(publicKey, amountNQT, feeNQT, deadline, attachment)
                 .referencedTransactionFullHash(null);
-        if (attachment.getTransactionType().canHaveRecipient()) {
-            builder.recipientId(recipientId);
-        }
+        if (attachment.getTransactionType().canHaveRecipient()) builder.recipientId(recipientId);
         if (ecBlockId != 0) {
             builder.ecBlockId(ecBlockId);
             builder.ecBlockHeight(ecBlockHeight);
         }
 
-        if (appdx != null){
-            if (appdx instanceof Appendix.PrunableSourceCode)
-                builder.appendix((Appendix.PrunableSourceCode)appdx);
-        }
+        if (appdx != null) if (appdx instanceof Appendix.PrunableSourceCode)
+            builder.appendix((Appendix.PrunableSourceCode) appdx);
 
-        Transaction transaction = null;
-        if(attachment!=null && Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM)){
-            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
-        }else{
-            transaction = builder.build(secretPhrase);
-        }
+        Transaction transaction;
+        //noinspection ConstantConditions
+        if(Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM))
+            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment) attachment).getRequiredTimestamp());
+        else transaction = builder.build(secretPhrase);
 
-        if (simPrune){
-            for(Appendix a : transaction.getAppendages()){
-                if (a instanceof Appendix.PrunableSourceCode){
-                    ((Appendix.PrunableSourceCode)a).simulatePruning();
-                }
-            }
-        }
+        if (simPrune) for (Appendix a : transaction.getAppendages())
+            if (a instanceof Appendix.PrunableSourceCode) ((Appendix.PrunableSourceCode) a).simulatePruning();
 
-        if(broadcast)
-            Nxt.getTransactionProcessor().broadcast(transaction);
+        if(broadcast) Nxt.getTransactionProcessor().broadcast(transaction);
 
         return transaction;
     }
@@ -85,61 +67,43 @@ public class TransactionBuilder  {
         final int ecBlockHeight = 1;
         long ecBlockId = 0;
 
-        if ((ecBlockId != 0) && (ecBlockId != Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight))) {
-            throw new Exception("Failed setting ecBlock");
-        }
-        if ((ecBlockId == 0) && (ecBlockHeight > 0)) {
-            ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
-        }
+        ecBlockId = Nxt.getBlockchain().getBlockIdAtHeight(ecBlockHeight);
 
         long feeNQT = 0;
-        if(attachment.getTransactionType().zeroFeeTransaction() == false){
+        if(!attachment.getTransactionType().zeroFeeTransaction()){
             // todo: set fees here
         }
         short deadline = 1440;
 
-        byte[] publicKey = null;
-        if (attachment instanceof Attachment.RedeemAttachment) {
+        byte[] publicKey;
+        if (attachment instanceof Attachment.RedeemAttachment)
             publicKey = Convert.parseHexString(Genesis.REDEEM_ID_PUBKEY);
-        } else {
-            publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
-                    : Crypto.getPublicKey(secretPhrase);
-        }
+        else publicKey = secretPhrase != null ? Crypto.getPublicKey(secretPhrase)
+                : null; // todo check
 
         final Transaction.Builder builder = Nxt
                 .newTransactionBuilder(publicKey, amountNQT, feeNQT, deadline, attachment)
                 .referencedTransactionFullHash(null);
-        if (attachment.getTransactionType().canHaveRecipient()) {
-            builder.recipientId(recipientId);
-        }
+        if (attachment.getTransactionType().canHaveRecipient()) builder.recipientId(recipientId);
         if (ecBlockId != 0) {
             builder.ecBlockId(ecBlockId);
             builder.ecBlockHeight(ecBlockHeight);
         }
 
-        if (appdx != null){
-            if (appdx instanceof Appendix.PrunableSourceCode)
-                builder.appendix((Appendix.PrunableSourceCode)appdx);
-        }
+        if (appdx != null) if (appdx instanceof Appendix.PrunableSourceCode)
+            builder.appendix((Appendix.PrunableSourceCode) appdx);
 
-        Transaction transaction = null;
-        if(attachment!=null && Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM)){
-            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment)attachment).getRequiredTimestamp());
-        }else{
-            transaction = builder.build(secretPhrase);
-        }
+        Transaction transaction;
+        //noinspection ConstantConditions
+        if(Objects.equals(attachment.getTransactionType(), TransactionType.Payment.REDEEM))
+            transaction = builder.buildUnixTimeStamped(secretPhrase, ((Attachment.RedeemAttachment) attachment).getRequiredTimestamp());
+        else transaction = builder.build(secretPhrase);
         transaction.signSuperNode(secretPhrase);
 
-        if (simPrune){
-            for(Appendix a : transaction.getAppendages()){
-                if (a instanceof Appendix.PrunableSourceCode){
-                    ((Appendix.PrunableSourceCode)a).simulatePruning();
-                }
-            }
-        }
+        if (simPrune) for (Appendix a : transaction.getAppendages())
+            if (a instanceof Appendix.PrunableSourceCode) ((Appendix.PrunableSourceCode) a).simulatePruning();
 
-        if(broadcast)
-            Nxt.getTransactionProcessor().broadcast(transaction);
+        if(broadcast) Nxt.getTransactionProcessor().broadcast(transaction);
 
         return transaction;
     }

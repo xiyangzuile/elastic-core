@@ -40,11 +40,8 @@ public final class DecodeToken extends APIServlet.APIRequestHandler {
 
 		final String website = req.getParameter("website");
 		final String tokenString = req.getParameter("token");
-		if (website == null) {
-			return JSONResponses.MISSING_WEBSITE;
-		} else if (tokenString == null) {
-			return JSONResponses.MISSING_TOKEN;
-		}
+		if (website == null) return JSONResponses.MISSING_WEBSITE;
+        else if (tokenString == null) return JSONResponses.MISSING_TOKEN;
 
 		try {
 

@@ -33,7 +33,7 @@ import nxt.crypto.Crypto;
 import nxt.util.Convert;
 import nxt.util.Logger;
 
-public final class SignTransactionJSON {
+final class SignTransactionJSON {
 
 	public static void main(final String[] args) {
 		try {
@@ -49,13 +49,10 @@ public final class SignTransactionJSON {
 				System.exit(1);
 			}
 			File signed;
-			if (args.length == 2) {
-				signed = new File(args[1]);
-			} else if (unsigned.getName().startsWith("unsigned.")) {
-				signed = new File(unsigned.getParentFile(), unsigned.getName().substring(2));
-			} else {
-				signed = new File(unsigned.getParentFile(), "signed." + unsigned.getName());
-			}
+			if (args.length == 2) signed = new File(args[1]);
+            else if (unsigned.getName().startsWith("unsigned."))
+                signed = new File(unsigned.getParentFile(), unsigned.getName().substring(2));
+            else signed = new File(unsigned.getParentFile(), "signed." + unsigned.getName());
 			if (signed.exists()) {
 				System.out.println("File already exists: " + signed.getAbsolutePath());
 				System.exit(1);
@@ -68,20 +65,16 @@ public final class SignTransactionJSON {
 				final String senderRS = Convert.rsAccount(Convert.fullHashToId(publicKeyHash));
 				String secretPhrase = null;
 				final Console console = System.console();
-				if (console == null) {
-					try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in))) {
-						secretPhrase = inputReader.readLine();
-					}
-				} else {
-					char[] r = null;
+				if (console == null)
+                    try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in))) {
+                        secretPhrase = inputReader.readLine();
+                    }
+                else {
+					char[] r;
 					r = console.readPassword("Secret phrase for account " + senderRS + ": ");
-					if (r != null) {
-						secretPhrase = new String();
-					}
+					if (r != null) secretPhrase = "";
 				}
-				if (secretPhrase == null) {
-					return;
-				}
+				if (secretPhrase == null) return;
 
 				final Transaction.Builder builder = Nxt.newTransactionBuilder(json);
 				final Transaction transaction = builder.build(secretPhrase);

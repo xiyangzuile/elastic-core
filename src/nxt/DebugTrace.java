@@ -21,12 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import nxt.db.DbIterator;
 import nxt.util.Convert;
@@ -34,13 +29,13 @@ import nxt.util.Logger;
 
 public final class DebugTrace {
 
-	static final String QUOTE = Nxt.getStringProperty("nxt.debugTraceQuote", "\"");
-	static final String SEPARATOR = Nxt.getStringProperty("nxt.debugTraceSeparator", "\t");
-	static final boolean LOG_UNCONFIRMED = Nxt.getBooleanProperty("nxt.debugLogUnconfirmed");
+	private static final String QUOTE = Nxt.getStringProperty("nxt.debugTraceQuote", "\"");
+	private static final String SEPARATOR = Nxt.getStringProperty("nxt.debugTraceSeparator", "\t");
+	private static final boolean LOG_UNCONFIRMED = Nxt.getBooleanProperty("nxt.debugLogUnconfirmed");
 
 	// NOTE: first and last columns should not have a blank entry in any row,
 	// otherwise VerifyTrace fails to parse the line
-	private static final String[] columns = { "height", "event", "account", "asset", "currency", "balance",
+	private static final String[] columns = new String[]{"height", "event", "account", "asset", "currency", "balance",
 			"unconfirmed balance", "asset balance", "unconfirmed asset balance", "currency balance",
 			"unconfirmed currency balance", "transaction amount", "transaction fee", "generation fee",
 			"effective balance", "dividend", "order", "order price", "order quantity", "order cost", "offer",
@@ -48,23 +43,20 @@ public final class DebugTrace {
 			"trade quantity", "trade cost", "exchange rate", "exchange quantity", "exchange cost", "currency cost",
 			"crowdfunding", "claim", "mint", "asset quantity", "currency units", "transaction", "lessee",
 			"lessor guaranteed balance", "purchase", "purchase price", "purchase quantity", "purchase cost", "discount",
-			"refund", "shuffling", "sender", "recipient", "block", "timestamp" };
+			"refund", "shuffling", "sender", "recipient", "block", "timestamp"};
 
 	private static final Map<String, String> headers = new HashMap<>();
 
 	static {
-		for (final String entry : DebugTrace.columns) {
-			DebugTrace.headers.put(entry, entry);
-		}
+		for (final String entry : DebugTrace.columns) DebugTrace.headers.put(entry, entry);
 	}
 
-	public static DebugTrace addDebugTrace(final Set<Long> accountIds, final String logName) {
+	private static DebugTrace addDebugTrace(final Set<Long> accountIds, final String logName) {
 		final DebugTrace debugTrace = new DebugTrace(accountIds, logName);
 
 		Account.addListener(account -> debugTrace.trace(account, false), Account.Event.BALANCE);
-		if (DebugTrace.LOG_UNCONFIRMED) {
-			Account.addListener(account -> debugTrace.trace(account, true), Account.Event.UNCONFIRMED_BALANCE);
-		}
+		if (DebugTrace.LOG_UNCONFIRMED)
+            Account.addListener(account -> debugTrace.trace(account, true), Account.Event.UNCONFIRMED_BALANCE);
 
 		Account.addLeaseListener(accountLease -> debugTrace.trace(accountLease, true), Account.Event.LEASE_STARTED);
 		Account.addLeaseListener(accountLease -> debugTrace.trace(accountLease, false), Account.Event.LEASE_ENDED);
@@ -78,12 +70,10 @@ public final class DebugTrace {
 	static void init() {
 		final List<String> accountIdStrings = Nxt.getStringListProperty("nxt.debugTraceAccounts");
 		final String logName = Nxt.getStringProperty("nxt.debugTraceLog");
-		if (accountIdStrings.isEmpty() || (logName == null)) {
-			return;
-		}
+		if (accountIdStrings.isEmpty() || (logName == null)) return;
 		final Set<Long> accountIds = new HashSet<>();
 		for (final String accountId : accountIdStrings) {
-			if ("*".equals(accountId)) {
+			if (Objects.equals("*", accountId)) {
 				accountIds.clear();
 				break;
 			}
@@ -119,21 +109,15 @@ public final class DebugTrace {
 
 	private Map<String, String> getValues(final long accountId, final Block block) {
 		final long fee = block.getTotalFeeNQT();
-		if (fee == 0) {
-			return Collections.emptyMap();
-		}
+		if (fee == 0) return Collections.emptyMap();
 		long totalBackFees = 0;
 		final long[] backFees = new long[3];
 		for (final Transaction transaction : block.getTransactions()) {
 			final long[] fees = ((TransactionImpl) transaction).getBackFees();
-			for (int i = 0; i < fees.length; i++) {
-				backFees[i] += fees[i];
-			}
+			for (int i = 0; i < fees.length; i++) backFees[i] += fees[i];
 		}
 		for (int i = 0; i < backFees.length; i++) {
-			if (backFees[i] == 0) {
-				break;
-			}
+			if (backFees[i] == 0) break;
 			totalBackFees += backFees[i];
 			final long previousGeneratorId = BlockDb.findBlockAtHeight(block.getHeight() - i - 1).getGeneratorId();
 			if (this.include(previousGeneratorId)) {
@@ -180,29 +164,19 @@ public final class DebugTrace {
 			final boolean isRecipient, final boolean logFee, final boolean logAmount) {
 		long amount = transaction.getAmountNQT();
 		long fee = transaction.getFeeNQT();
-		if (isRecipient) {
-			fee = 0; // fee doesn't affect recipient account
-		} else {
+		if (isRecipient) fee = 0; // fee doesn't affect recipient account
+        else {
 			// for sender the amounts are subtracted
 			amount = -amount;
 			fee = -fee;
 		}
-		if ((fee == 0) && (amount == 0)) {
-			return Collections.emptyMap();
-		}
+		if ((fee == 0) && (amount == 0)) return Collections.emptyMap();
 		final Map<String, String> map = this.getValues(accountId, false);
-		if (logAmount) {
-			map.put("transaction amount", String.valueOf(amount));
-		}
-		if (logFee) {
-			map.put("transaction fee", String.valueOf(fee));
-		}
+		if (logAmount) map.put("transaction amount", String.valueOf(amount));
+		if (logFee) map.put("transaction fee", String.valueOf(fee));
 		map.put("transaction", transaction.getStringId());
-		if (isRecipient) {
-			map.put("sender", Long.toUnsignedString(transaction.getSenderId()));
-		} else {
-			map.put("recipient", Long.toUnsignedString(transaction.getRecipientId()));
-		}
+		if (isRecipient) map.put("sender", Long.toUnsignedString(transaction.getSenderId()));
+        else map.put("recipient", Long.toUnsignedString(transaction.getRecipientId()));
 		map.put("event", "transaction");
 		return map;
 	}
@@ -223,27 +197,19 @@ public final class DebugTrace {
 	}
 
 	private void log(final Map<String, String> map) {
-		if (map.isEmpty()) {
-			return;
-		}
+		if (map.isEmpty()) return;
 		final StringBuilder buf = new StringBuilder();
 		for (final String column : DebugTrace.columns) {
-			if (!DebugTrace.LOG_UNCONFIRMED && column.startsWith("unconfirmed")) {
-				continue;
-			}
+			if (!DebugTrace.LOG_UNCONFIRMED && column.startsWith("unconfirmed")) continue;
 			final String value = map.get(column);
-			if (value != null) {
-				buf.append(DebugTrace.QUOTE).append(value).append(DebugTrace.QUOTE);
-			}
+			if (value != null) buf.append(DebugTrace.QUOTE).append(value).append(DebugTrace.QUOTE);
 			buf.append(DebugTrace.SEPARATOR);
 		}
 		this.log.println(buf.toString());
 	}
 
-	void resetLog() {
-		if (this.log != null) {
-			this.log.close();
-		}
+	private void resetLog() {
+		if (this.log != null) this.log.close();
 		try {
 			this.log = new PrintWriter((new BufferedWriter(new OutputStreamWriter(new FileOutputStream(this.logName)))),
 					true);
@@ -255,15 +221,11 @@ public final class DebugTrace {
 	}
 
 	private void trace(final Account account, final boolean unconfirmed) {
-		if (this.include(account.getId())) {
-			this.log(this.getValues(account.getId(), unconfirmed));
-		}
+		if (this.include(account.getId())) this.log(this.getValues(account.getId(), unconfirmed));
 	}
 
 	private void trace(final Account.AccountLease accountLease, final boolean start) {
-		if (!this.include(accountLease.getCurrentLesseeId()) && !this.include(accountLease.getLessorId())) {
-			return;
-		}
+		if (!this.include(accountLease.getCurrentLesseeId()) && !this.include(accountLease.getLessorId())) return;
 		this.log(this.getValues(accountLease.getLessorId(), accountLease, start));
 	}
 
@@ -276,9 +238,7 @@ public final class DebugTrace {
 				this.log(this.getValues(senderId, transaction, transaction.getAttachment(), false));
 			}
 			long recipientId = transaction.getRecipientId();
-			if ((transaction.getAmountNQT() > 0) && (recipientId == 0)) {
-				recipientId = Genesis.CREATOR_ID;
-			}
+			if ((transaction.getAmountNQT() > 0) && (recipientId == 0)) recipientId = Genesis.CREATOR_ID;
 			if (this.include(recipientId)) {
 				this.log(this.getValues(recipientId, transaction, true, true, true));
 				this.log(this.getValues(recipientId, transaction, transaction.getAttachment(), true));
@@ -288,18 +248,12 @@ public final class DebugTrace {
 
 	private void traceBeforeAccept(final Block block) {
 		final long generatorId = block.getGeneratorId();
-		if (this.include(generatorId)) {
-			this.log(this.getValues(generatorId, block));
-		}
+		if (this.include(generatorId)) this.log(this.getValues(generatorId, block));
 		for (final long accountId : this.accountIds) {
 			final Account account = Account.getAccount(accountId);
-			if (account != null) {
-				try (DbIterator<Account> lessors = account.getLessors()) {
-					while (lessors.hasNext()) {
-						this.log(this.lessorGuaranteedBalance(lessors.next(), accountId));
-					}
-				}
-			}
+			if (account != null) try (DbIterator<Account> lessors = account.getLessors()) {
+                while (lessors.hasNext()) this.log(this.lessorGuaranteedBalance(lessors.next(), accountId));
+            }
 		}
 	}
 

@@ -67,15 +67,15 @@ public class Helper {
         }
     }
     
-    public static class EasyMap {
+    private static class EasyMap {
         public static <K, V> Map<K, V> of(K k1, V v1) {
-            HashMap<K, V> result = new HashMap<K, V>();
+            HashMap<K, V> result = new HashMap<>();
             result.put(k1, v1);
             return result;
         }
         
         public static <K, V> Map<K, V> of(K k1, V v1, K k2, V v2) {
-            HashMap<K, V> result = new HashMap<K, V>();
+            HashMap<K, V> result = new HashMap<>();
             result.put(k1, v1);
             result.put(k2, v2);
             return result;

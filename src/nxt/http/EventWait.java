@@ -139,11 +139,8 @@ public class EventWait extends APIServlet.APIRequestHandler {
 		final JSONArray eventsJSON = new JSONArray();
 		events.forEach(event -> {
 			final JSONArray idsJSON = new JSONArray();
-			if (event.isList()) {
-				idsJSON.addAll(event.getIdList());
-			} else {
-				idsJSON.add(event.getId());
-			}
+			if (event.isList()) idsJSON.addAll(event.getIdList());
+            else idsJSON.add(event.getId());
 			final JSONObject eventJSON = new JSONObject();
 			eventJSON.put("name", event.getName());
 			eventJSON.put("ids", idsJSON);
@@ -192,32 +189,25 @@ public class EventWait extends APIServlet.APIRequestHandler {
 		//
 		long timeout = EventListener.eventTimeout;
 		final String value = req.getParameter("timeout");
-		if (value != null) {
-			try {
-				timeout = Math.min(Long.valueOf(value), timeout);
-			} catch (final NumberFormatException exc) {
-				response = EventWait.incorrectTimeout;
-			}
-		}
+		if (value != null) try {
+            timeout = Math.min(Long.valueOf(value), timeout);
+        } catch (final NumberFormatException exc) {
+            response = EventWait.incorrectTimeout;
+        }
 		//
 		// Wait for an event
 		//
 		if (response == null) {
 			final EventListener listener = EventListener.eventListeners.get(req.getRemoteAddr());
-			if (listener == null) {
-				response = EventWait.noEventsRegistered;
-			} else {
-				try {
-					final List<PendingEvent> events = listener.eventWait(req, timeout);
-					if (events != null) {
-						response = EventWait.formatResponse(events);
-					}
-				} catch (final EventListenerException exc) {
-					response = new JSONObject();
-					response.put("errorCode", 7);
-					response.put("errorDescription", "Unable to wait for an event: " + exc.getMessage());
-				}
-			}
+			if (listener == null) response = EventWait.noEventsRegistered;
+            else try {
+                final List<PendingEvent> events = listener.eventWait(req, timeout);
+                if (events != null) response = EventWait.formatResponse(events);
+            } catch (final EventListenerException exc) {
+                response = new JSONObject();
+                response.put("errorCode", 7);
+                response.put("errorDescription", "Unable to wait for an event: " + exc.getMessage());
+            }
 		}
 		return response;
 	}

@@ -40,13 +40,8 @@ public final class Shutdown extends APIServlet.APIRequestHandler {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) {
 		final JSONObject response = new JSONObject();
 		final boolean scan = "true".equalsIgnoreCase(req.getParameter("scan"));
-		if (scan) {
-			Nxt.getBlockchainProcessor().fullScanWithShutdown();
-		} else {
-			new Thread(() -> {
-				System.exit(0);
-			}).start();
-		}
+		if (scan) Nxt.getBlockchainProcessor().fullScanWithShutdown();
+        else new Thread(() -> System.exit(0)).start();
 		response.put("shutdown", true);
 		return response;
 	}

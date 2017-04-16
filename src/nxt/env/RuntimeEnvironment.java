@@ -52,37 +52,25 @@ public class RuntimeEnvironment {
 
 	public static DirProvider getDirProvider() {
 		final String dirProvider = System.getProperty(RuntimeEnvironment.DIRPROVIDER_ARG);
-		if (dirProvider != null) {
-			try {
-				return (DirProvider) Class.forName(dirProvider).newInstance();
-			} catch (final ReflectiveOperationException e) {
-				System.out.println("Failed to instantiate dirProvider " + dirProvider);
-				throw new RuntimeException(e.getMessage(), e);
-			}
-		}
+		if (dirProvider != null) try {
+            return (DirProvider) Class.forName(dirProvider).newInstance();
+        } catch (final ReflectiveOperationException e) {
+            System.out.println("Failed to instantiate dirProvider " + dirProvider);
+            throw new RuntimeException(e.getMessage(), e);
+        }
 		if (RuntimeEnvironment.isDesktopEnabled()) {
-			if (RuntimeEnvironment.isWindowsRuntime()) {
-				return new WindowsUserDirProvider();
-			}
-			if (RuntimeEnvironment.isUnixRuntime()) {
-				return new UnixUserDirProvider();
-			}
-			if (RuntimeEnvironment.isMacRuntime()) {
-				return new MacUserDirProvider();
-			}
+			if (RuntimeEnvironment.isWindowsRuntime()) return new WindowsUserDirProvider();
+			if (RuntimeEnvironment.isUnixRuntime()) return new UnixUserDirProvider();
+			if (RuntimeEnvironment.isMacRuntime()) return new MacUserDirProvider();
 		}
 		return new DefaultDirProvider();
 	}
 
 	public static RuntimeMode getRuntimeMode() {
 		System.out.println("isHeadless=" + RuntimeEnvironment.isHeadless());
-		if (RuntimeEnvironment.isDesktopEnabled()) {
-			return new DesktopMode();
-		} else if (RuntimeEnvironment.isWindowsService()) {
-			return new WindowsServiceMode();
-		} else {
-			return new CommandLineMode();
-		}
+		if (RuntimeEnvironment.isDesktopEnabled()) return new DesktopMode();
+        else if (RuntimeEnvironment.isWindowsService()) return new WindowsServiceMode();
+        else return new CommandLineMode();
 	}
 
 	public static boolean isDesktopApplicationEnabled() {

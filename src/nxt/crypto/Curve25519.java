@@ -1,5 +1,7 @@
 package nxt.crypto;
 
+import java.util.stream.IntStream;
+
 /* Ported from C to Java by Dmitry Skiba [sahn0], 23/02/08.
  * Original: http://cds.xs4all.nl:8081/ecdh/
  */
@@ -39,20 +41,20 @@ final class Curve25519 {
 	public static final int KEY_SIZE = 32;
 
 	/* 0 */
-	public static final byte[] ZERO = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0 };
+	public static final byte[] ZERO = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0};
 
 	/* the prime 2^255-19 */
-	public static final byte[] PRIME = { (byte) 237, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
+	public static final byte[] PRIME = new byte[]{(byte) 237, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
 			(byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
 			(byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
-			(byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 127 };
+			(byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 127};
 
 	/* group order (a prime near 2^252+2^124) */
-	public static final byte[] ORDER = { (byte) 237, (byte) 211, (byte) 245, (byte) 92, (byte) 26, (byte) 99, (byte) 18,
+	private static final byte[] ORDER = new byte[]{(byte) 237, (byte) 211, (byte) 245, (byte) 92, (byte) 26, (byte) 99, (byte) 18,
 			(byte) 88, (byte) 214, (byte) 156, (byte) 247, (byte) 162, (byte) 222, (byte) 249, (byte) 222, (byte) 20,
 			(byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0,
-			(byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 16 };
+			(byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 16};
 
 	/********************* radix 2^25.5 GF(2^255-19) math *********************/
 
@@ -61,10 +63,10 @@ final class Curve25519 {
 	private static final int P26 = 67108863; /* (1 << 26) - 1 */
 
 	/* smallest multiple of the order that's >= 2^255 */
-	private static final byte[] ORDER_TIMES_8 = { (byte) 104, (byte) 159, (byte) 174, (byte) 231, (byte) 210, (byte) 24,
+	private static final byte[] ORDER_TIMES_8 = new byte[]{(byte) 104, (byte) 159, (byte) 174, (byte) 231, (byte) 210, (byte) 24,
 			(byte) 147, (byte) 192, (byte) 178, (byte) 230, (byte) 188, (byte) 23, (byte) 245, (byte) 206, (byte) 247,
 			(byte) 166, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0,
-			(byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 128 };
+			(byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 0, (byte) 128};
 
 	/* constants 2Gy and 1/(2Gy) */
 	private static final long10 BASE_2Y = new long10(39999547, 18689728, 59995525, 1648697, 57546132, 24010086,
@@ -112,11 +114,8 @@ final class Curve25519 {
 		int i, j;
 
 		/* unpack the base */
-		if (Gx != null) {
-			Curve25519.unpack(dx, Gx);
-		} else {
-			Curve25519.set(dx, 9);
-		}
+		if (Gx != null) Curve25519.unpack(dx, Gx);
+		else Curve25519.set(dx, 9);
 
 		/* 0G = point-at-infinity */
 		Curve25519.set(x[0], 1);
@@ -127,9 +126,7 @@ final class Curve25519 {
 		Curve25519.set(z[1], 1);
 
 		for (i = 32; i-- != 0;) {
-			if (i == 0) {
-				i = 0;
-			}
+			if (i == 0) i = 0;
 			for (j = 8; j-- != 0;) {
 				/* swap arguments depending on bit */
 				final int bit1 = ((k[i] & 0xFF) >> j) & 1;
@@ -165,11 +162,8 @@ final class Curve25519 {
 			Curve25519.sub(dx, dx, t1); /* dx = t2 (Px - Gx)^2 - Py^2 */
 			dx._0 -= 39420360; /* dx = t2 (Px - Gx)^2 - Py^2 - Gy^2 */
 			Curve25519.mul(t1, dx, Curve25519.BASE_R2Y); /* t1 = -Py */
-			if (Curve25519.is_negative(t1) != 0) {
-				Curve25519.cpy32(s, k);
-			} else {
-				Curve25519.mula_small(s, Curve25519.ORDER_TIMES_8, 0, k, 32, -1);
-			}
+			if (Curve25519.is_negative(t1) != 0) Curve25519.cpy32(s, k);
+			else Curve25519.mula_small(s, Curve25519.ORDER_TIMES_8, 0, k, 32, -1);
 
 			/*
 			 * reduce s mod q (is this needed? do it just in case, it's fast
@@ -183,9 +177,7 @@ final class Curve25519 {
 			final byte[] temp3 = new byte[64];
 			Curve25519.cpy32(temp1, Curve25519.ORDER);
 			Curve25519.cpy32(s, Curve25519.egcd32(temp2, temp3, s, temp1));
-			if ((s[31] & 0x80) != 0) {
-				Curve25519.mula_small(s, s, 0, Curve25519.ORDER, 32, 1);
-			}
+			if ((s[31] & 0x80) != 0) Curve25519.mula_small(s, s, 0, Curve25519.ORDER, 32, 1);
 		}
 	}
 
@@ -207,9 +199,7 @@ final class Curve25519 {
 
 	private static void cpy32(final byte[] d, final byte[] s) {
 		int i;
-		for (i = 0; i < 32; i++) {
-			d[i] = s[i];
-		}
+		for (i = 0; i < 32; i++) d[i] = s[i];
 	}
 
 	/*
@@ -229,14 +219,10 @@ final class Curve25519 {
 	private static void divmod(final byte[] q, final byte[] r, int n, final byte[] d, final int t) {
 		int rn = 0;
 		int dt = ((d[t - 1] & 0xFF) << 8);
-		if (t > 1) {
-			dt |= (d[t - 2] & 0xFF);
-		}
+		if (t > 1) dt |= (d[t - 2] & 0xFF);
 		while (n-- >= t) {
 			int z = (rn << 16) | ((r[n] & 0xFF) << 8);
-			if (n > 0) {
-				z |= (r[n - 1] & 0xFF);
-			}
+			if (n > 0) z |= (r[n - 1] & 0xFF);
 			z /= dt;
 			rn += Curve25519.mula_small(r, r, (n - t) + 1, d, t, -z);
 			q[(n - t) + 1] = (byte) ((z + rn)
@@ -256,31 +242,24 @@ final class Curve25519 {
 	 */
 	private static byte[] egcd32(final byte[] x, final byte[] y, final byte[] a, final byte[] b) {
 		int an, bn = 32, qn, i;
-		for (i = 0; i < 32; i++) {
-			x[i] = y[i] = 0;
-		}
+		for (i = 0; i < 32; i++) x[i] = y[i] = 0;
 		x[0] = 1;
 		an = Curve25519.numsize(a, 32);
-		if (an == 0) {
-			return y; /* division by zero */
-		}
+		if (an == 0) return y; /* division by zero */
 		final byte[] temp = new byte[32];
 		while (true) {
 			qn = (bn - an) + 1;
 			Curve25519.divmod(temp, b, bn, a, an);
 			bn = Curve25519.numsize(b, bn);
-			if (bn == 0) {
-				return x;
-			}
+			if (bn == 0) return x;
 			Curve25519.mula32(y, x, temp, qn, -1);
 
 			qn = (an - bn) + 1;
 			Curve25519.divmod(temp, a, an, b, bn);
 			an = Curve25519.numsize(a, an);
-			if (an == 0) {
-				return y;
-			}
-			Curve25519.mula32(x, y, temp, qn, -1);
+			if (an == 0) return y;
+            //noinspection SuspiciousNameCombination
+            Curve25519.mula32(x, y, temp, qn, -1);
 		}
 	}
 
@@ -296,31 +275,19 @@ final class Curve25519 {
 	}
 
 	public static boolean isCanonicalPublicKey(final byte[] publicKey) {
-		if (publicKey.length != 32) {
-			return false;
-		}
+		if (publicKey.length != 32) return false;
 		final long10 publicKeyUnpacked = new long10();
 		Curve25519.unpack(publicKeyUnpacked, publicKey);
 		final byte[] publicKeyCopy = new byte[32];
 		Curve25519.pack(publicKeyUnpacked, publicKeyCopy);
-		for (int i = 0; i < 32; i++) {
-			if (publicKeyCopy[i] != publicKey[i]) {
-				return false;
-			}
-		}
-		return true;
+        return IntStream.range(0, 32).noneMatch(i -> publicKeyCopy[i] != publicKey[i]);
 	}
 
 	public static boolean isCanonicalSignature(final byte[] v) {
 		final byte[] vCopy = java.util.Arrays.copyOfRange(v, 0, 32);
 		final byte[] tmp = new byte[32];
 		Curve25519.divmod(tmp, vCopy, 32, Curve25519.ORDER, 32);
-		for (int i = 0; i < 32; i++) {
-			if (v[i] != vCopy[i]) {
-				return false;
-			}
-		}
-		return true;
+        return IntStream.range(0, 32).noneMatch(i -> v[i] != vCopy[i]);
 	}
 
 	/*
@@ -494,9 +461,7 @@ final class Curve25519 {
 	}
 
 	private static int numsize(final byte[] x, int n) {
-		while ((n-- != 0) && (x[n] == 0)) {
-			;
-		}
+		while ((n-- != 0) && (x[n] == 0)) ;
 		return n + 1;
 	}
 
@@ -507,7 +472,7 @@ final class Curve25519 {
 	 * is reduced, first multiply it by 1.
 	 */
 	private static void pack(final long10 x, final byte[] m) {
-		int ld = 0, ud = 0;
+		int ld, ud;
 		long t;
 		ld = (Curve25519.is_overflow(x) ? 1 : 0) - ((x._9 < 0) ? 1 : 0);
 		ud = ld * -(Curve25519.P25 + 1);
@@ -566,7 +531,8 @@ final class Curve25519 {
 		Curve25519.sqr(t1, x); /* 2 == 2 * 1 */
 		Curve25519.sqr(t2, t1); /* 4 == 2 * 2 */
 		Curve25519.sqr(t0, t2); /* 8 == 2 * 4 */
-		Curve25519.mul(t2, t0, x); /* 9 == 8 + 1 */
+        //noinspection SuspiciousNameCombination
+        Curve25519.mul(t2, t0, x); /* 9 == 8 + 1 */
 		Curve25519.mul(t0, t2, t1); /* 11 == 9 + 2 */
 		Curve25519.sqr(t1, t0); /* 22 == 2 * 11 */
 		Curve25519.mul(t3, t1, t2); /*
@@ -618,9 +584,8 @@ final class Curve25519 {
 		Curve25519.mul(t2, t3, t1); /* 2^250 - 2^0 */
 		Curve25519.sqr(t1, t2); /* 2^251 - 2^1 */
 		Curve25519.sqr(t2, t1); /* 2^252 - 2^2 */
-		if (sqrtassist != 0) {
-			Curve25519.mul(y, x, t2); /* 2^252 - 3 */
-		} else {
+		if (sqrtassist != 0) Curve25519.mul(y, x, t2); /* 2^252 - 3 */
+		else {
 			Curve25519.sqr(t1, t2); /* 2^253 - 2^3 */
 			Curve25519.sqr(t2, t1); /* 2^254 - 2^4 */
 			Curve25519.sqr(t1, t2); /* 2^255 - 2^5 */
@@ -706,9 +671,7 @@ final class Curve25519 {
 		Curve25519.mula32(tmp1, v, s, 32, 1);
 		Curve25519.divmod(tmp2, tmp1, 64, Curve25519.ORDER, 32);
 
-		for (w = 0, i = 0; i < 32; i++) {
-			w |= v[i] = tmp1[i];
-		}
+		for (w = 0, i = 0; i < 32; i++) w |= v[i] = tmp1[i];
 		return w != 0;
 	}
 
@@ -753,7 +716,8 @@ final class Curve25519 {
 		Curve25519.add(t1, u, u); /* t1 = 2u */
 		Curve25519.recip(v, t1, 1); /* v = (2u)^((p-5)/8) */
 		Curve25519.sqr(x, v); /* x = v^2 */
-		Curve25519.mul(t2, t1, x); /* t2 = 2uv^2 */
+        //noinspection SuspiciousNameCombination
+        Curve25519.mul(t2, t1, x); /* t2 = 2uv^2 */
 		t2._0--; /* t2 = 2uv^2-1 */
 		Curve25519.mul(t1, v, t2); /* t1 = v(2uv^2-1) */
 		Curve25519.mul(x, u, t1); /* x = uv(2uv^2-1) */
@@ -821,7 +785,8 @@ final class Curve25519 {
 		Curve25519.sqrt(t1[0], t2[0]); /* t1[0] = Py or -Py */
 		j = Curve25519.is_negative(t1[0]); /* ... check which */
 		t2[0]._0 += 39420360; /* t2[0] = Py^2 + Gy^2 */
-		Curve25519.mul(t2[1], Curve25519.BASE_2Y,
+        //noinspection SuspiciousNameCombination
+        Curve25519.mul(t2[1], Curve25519.BASE_2Y,
 				t1[0]);/* t2[1] = 2 Py Gy or -2 Py Gy */
 		Curve25519.sub(t1[j], t2[0], t2[1]); /* t1[0] = Py^2 + Gy^2 - 2 Py Gy */
 		Curve25519.add(t1[1 - j], t2[0],
@@ -910,6 +875,7 @@ final class Curve25519 {
 		Curve25519.mul_small(y2, x, 486662);
 		Curve25519.add(t, t, y2);
 		t._0++;
-		Curve25519.mul(y2, t, x);
+        //noinspection SuspiciousNameCombination
+        Curve25519.mul(y2, t, x);
 	}
 }

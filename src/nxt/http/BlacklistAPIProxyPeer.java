@@ -42,14 +42,11 @@ public class BlacklistAPIProxyPeer extends APIServlet.APIRequestHandler {
 	@Override
 	protected JSONStreamAware processRequest(final HttpServletRequest request) throws NxtException {
 		final String peerAddress = Convert.emptyToNull(request.getParameter("peer"));
-		if (peerAddress == null) {
-			return JSONResponses.MISSING_PEER;
-		}
+		if (peerAddress == null) return JSONResponses.MISSING_PEER;
 		final Peer peer = Peers.findOrCreatePeer(peerAddress, true);
 		final JSONObject response = new JSONObject();
-		if (peer == null) {
-			return JSONResponses.UNKNOWN_PEER;
-		} else {
+		if (peer == null) return JSONResponses.UNKNOWN_PEER;
+        else {
 			APIProxy.getInstance().blacklistHost(peer.getHost());
 			response.put("done", true);
 		}

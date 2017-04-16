@@ -21,6 +21,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -112,11 +113,8 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 		//
 		int depth;
 		value = req.getParameter("depth");
-		if (value != null) {
-			depth = Math.max(Integer.valueOf(value), 1);
-		} else {
-			depth = Integer.MAX_VALUE;
-		}
+		if (value != null) depth = Math.max(Integer.valueOf(value), 1);
+        else depth = Integer.MAX_VALUE;
 		//
 		// Get the thread information
 		//
@@ -162,15 +160,12 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 						lockJSON.put("thread", tInfo.getLockOwnerId());
 						threadJSON.put("blocked", lockJSON);
 						boolean addLock = true;
-						for (final Object lock : locksJSON) {
-							if (((JSONObject) lock).get("name").equals(lInfo.getClassName())) {
-								addLock = false;
-								break;
-							}
-						}
-						if (addLock) {
-							locksJSON.add(lockJSON);
-						}
+						for (final Object lock : locksJSON)
+                            if (Objects.equals(((JSONObject) lock).get("name"), lInfo.getClassName())) {
+                                addLock = false;
+                                break;
+                            }
+						if (addLock) locksJSON.add(lockJSON);
 					}
 				}
 			}
@@ -182,9 +177,7 @@ public class GetStackTraces extends APIServlet.APIRequestHandler {
 			int ix = 0;
 			for (final StackTraceElement element : elements) {
 				traceJSON.add(element.toString());
-				if (++ix == depth) {
-					break;
-				}
+				if (++ix == depth) break;
 			}
 			threadJSON.put("trace", traceJSON);
 			//

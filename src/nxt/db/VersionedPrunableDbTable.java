@@ -22,12 +22,12 @@ import java.sql.SQLException;
 
 public abstract class VersionedPrunableDbTable<T> extends PrunableDbTable<T> {
 
-	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
+	VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory) {
 		super(table, dbKeyFactory, true, null);
 	}
 
-	protected VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
-			final String fullTextSearchColumns) {
+	VersionedPrunableDbTable(final String table, final DbKey.Factory<T> dbKeyFactory,
+                             final String fullTextSearchColumns) {
 		super(table, dbKeyFactory, true, fullTextSearchColumns);
 	}
 
@@ -37,9 +37,7 @@ public abstract class VersionedPrunableDbTable<T> extends PrunableDbTable<T> {
 
 	@Override
 	public final void rollback(final int height) {
-		if (!DerivedDbTable.db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!DerivedDbTable.db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		try (Connection con = DerivedDbTable.db.getConnection();
 				PreparedStatement pstmtSetLatest = con.prepareStatement(
 						"UPDATE " + this.table + " AS a SET a.latest = TRUE WHERE a.latest = FALSE AND a.height = "

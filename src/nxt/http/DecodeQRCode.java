@@ -94,9 +94,7 @@ public final class DecodeQRCode extends APIServlet.APIRequestHandler {
 		try {
 			final BufferedImage bImage = ImageIO
 					.read(new ByteArrayInputStream(Base64.getDecoder().decode(qrCodeBase64)));
-			if (bImage == null) {
-				throw new IOException("Cannot get binary buffered image!");
-			}
+			if (bImage == null) throw new IOException("Cannot get binary buffered image!");
 			final BinaryBitmap binaryBitmap = new BinaryBitmap(
 					new HybridBinarizer(new BufferedImageLuminanceSource(bImage)));
 

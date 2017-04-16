@@ -28,7 +28,7 @@ public abstract class DerivedDbTable {
 
 	protected static final TransactionalDb db = Db.db;
 
-	protected final String table;
+	final String table;
 
 	protected DerivedDbTable(final String table) {
 		this.table = table;
@@ -44,13 +44,12 @@ public abstract class DerivedDbTable {
 	}
 
 	public void rollback(final int height) {
-		if (!DerivedDbTable.db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!DerivedDbTable.db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		try (Connection con = DerivedDbTable.db.getConnection();
 				PreparedStatement pstmtDelete = con
 						.prepareStatement("DELETE FROM " + this.table + " WHERE height > ?")) {
-			pstmtDelete.setInt(1, height);
+            //noinspection SuspiciousNameCombination
+            pstmtDelete.setInt(1, height);
 			pstmtDelete.executeUpdate();
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -67,9 +66,7 @@ public abstract class DerivedDbTable {
 	}
 
 	public void truncate() {
-		if (!DerivedDbTable.db.isInTransaction()) {
-			throw new IllegalStateException("Not in transaction");
-		}
+		if (!DerivedDbTable.db.isInTransaction()) throw new IllegalStateException("Not in transaction");
 		try (Connection con = DerivedDbTable.db.getConnection(); Statement stmt = con.createStatement()) {
 			stmt.executeUpdate("TRUNCATE TABLE " + this.table);
 		} catch (final SQLException e) {

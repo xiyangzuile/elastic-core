@@ -53,7 +53,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 		return computation_power;
 	}
 
-	public ArrayList<Quartett<Integer, Long, String, Long>> getDataForPlot(final long id, final int limit_minutes) {
+	private ArrayList<Quartett<Integer, Long, String, Long>> getDataForPlot(final long id, final int limit_minutes) {
 
 		final ArrayList<Quartett<Integer, Long, String, Long>> ret = new ArrayList<>();
 
@@ -85,7 +85,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 		final JSONObject response = new JSONObject();
 
-		long workId = 0;
+		long workId;
 		try {
 			final String readParam = ParameterParser.getParameterMultipart(req, "workId");
 			final BigInteger b = new BigInteger(readParam);
@@ -100,7 +100,7 @@ public final class GetAccountWorkEfficiencyPlot extends APIServlet.APIRequestHan
 			final String readParam = ParameterParser.getParameterMultipart(req, "last_num");
 			final BigInteger b = new BigInteger(readParam);
 			last_num = b.intValue();
-		} catch (final Exception e) {
+		} catch (final Exception ignored) {
 
 		}
 
