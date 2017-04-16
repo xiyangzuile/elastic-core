@@ -100,7 +100,7 @@ public class SupernodeMagicManager {
                     return;
                 }
 
-                if((Nxt.getSnAccount() == null || (!Nxt.getSnAccount().isSuperNode()) && Nxt.snrenew == false){
+                if((Nxt.getSnAccount() == null || (!Nxt.getSnAccount().isSuperNode()) && Nxt.snrenew == false)){
                     Logger.logInfoMessage("SuperNode Logic Delayed: Please become supernode first.");
                     return;
                 }
