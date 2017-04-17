@@ -1077,19 +1077,6 @@ public abstract class TransactionType {
 				if (w == null) throw new NxtException.NotCurrentlyValidException(
 						"Work " + attachment.getWorkId() + " does not exist");
 
-				// If the tx is already pruned AND the transaction timestamp
-// is old enough, we assume submission is valid!
-// no need to execute after all! We assume that the pruning
-// is happened long enough ago
-// This is valid, because MIN_PRUNABLE_LIFETIME is longer
-// than the maximum work timeout length! We are just
-// catching up the blockchain here, not actually "submitting
-// live work"
-				if (PrunableSourceCode.isPrunedByWorkId(w.getId()))
-					if (!(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)))
-						throw new NxtException.NotCurrentlyValidException(
-								"Bounty announcement is invalid: references a work package with pruned source code when it should not be pruned");
-
 				final byte[] hash = attachment.getHashAnnounced();
 				if (PowAndBountyAnnouncements.hasHash(attachment.getWorkId(), hash))
 					throw new NxtException.NotCurrentlyValidException(
