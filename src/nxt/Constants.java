@@ -30,6 +30,9 @@ public final class Constants {
 	public static final boolean isOffline = Nxt.getBooleanProperty("nxt.isOffline");
 	public static final boolean isLightClient = Nxt.getBooleanProperty("nxt.isLightClient");
 	public static final BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff", 16);
+
+	public static final int BLOCKS_TO_LOCKIN_SOFT_FORK = (isTestnet)?15:1440;
+
 	public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
 	public static final int MAX_TITLE_LENGTH = 255;
 	public static final int MAX_WORK_CODE_LENGTH = 1024 * 1024;
@@ -124,8 +127,8 @@ public final class Constants {
 	public static final int LAST_CHECKSUM_BLOCK = 0;
 	public static final int LAST_KNOWN_BLOCK = Constants.isTestnet ? 0 : 0;
 
-	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 1, 0, 6 } : new int[] { 1, 0, 6};
-	public static final int[] MIN_PROXY_VERSION = new int[] { 1, 0, 6 };
+	public static final int[] MIN_VERSION = Constants.isTestnet ? new int[] { 1, 0, 7 } : new int[] { 1, 0, 7};
+	public static final int[] MIN_PROXY_VERSION = new int[] { 1, 0, 7 };
 
 	static final long UNCONFIRMED_POOL_DEPOSIT_NQT = (Constants.isTestnet ? 50 : 100) * Constants.ONE_NXT;
 

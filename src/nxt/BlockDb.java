@@ -326,6 +326,7 @@ final class BlockDb {
 			final long previousBlockId = rs.getLong("previous_block_id");
 			final long totalAmountNQT = rs.getLong("total_amount");
 			final long totalFeeNQT = rs.getLong("total_fee");
+			final long softforkVotes = rs.getLong("softforkVotes");
 			final int payloadLength = rs.getInt("payload_length");
 			final long generatorId = rs.getLong("generator_id");
 			final byte[] previousBlockHash = rs.getBytes("previous_block_hash");
@@ -338,7 +339,7 @@ final class BlockDb {
 			final byte[] payloadHash = rs.getBytes("payload_hash");
 			final BigInteger min_pow_target = new BigInteger(rs.getBytes("min_pow_target"));
 			final long id = rs.getLong("id");
-			return new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength,
+			return new BlockImpl(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, softforkVotes, payloadLength,
 					payloadHash, generatorId, generationSignature, blockSignature, previousBlockHash,
 					cumulativeDifficulty, baseTarget, nextBlockId, height, id,
 					loadTransactions ? TransactionDb.findBlockTransactions(con, id) : null, min_pow_target);
@@ -351,9 +352,9 @@ final class BlockDb {
 		try {
 			try (PreparedStatement pstmt = con
 					.prepareStatement("INSERT INTO block (id, version, timestamp, previous_block_id, "
-							+ "total_amount, total_fee, payload_length, previous_block_hash, cumulative_difficulty, "
+							+ "total_amount, total_fee, softforkVotes, payload_length, previous_block_hash, cumulative_difficulty, "
 							+ "base_target, height, generation_signature, block_signature, payload_hash, generator_id, min_pow_target) "
-							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+							+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 				int i = 0;
 				pstmt.setLong(++i, block.getId());
 				pstmt.setInt(++i, block.getVersion());
@@ -361,6 +362,7 @@ final class BlockDb {
 				DbUtils.setLongZeroToNull(pstmt, ++i, block.getPreviousBlockId());
 				pstmt.setLong(++i, block.getTotalAmountNQT());
 				pstmt.setLong(++i, block.getTotalFeeNQT());
+				pstmt.setLong(++i, block.getSoftforkVotes());
 				pstmt.setInt(++i, block.getPayloadLength());
 				pstmt.setBytes(++i, block.getPreviousBlockHash());
 				pstmt.setBytes(++i, block.getCumulativeDifficulty().toByteArray());

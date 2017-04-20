@@ -33,6 +33,10 @@ import nxt.util.Convert;
 import nxt.util.Logger;
 
 public final class BlockImpl implements Block {
+	@Override
+	public long getSoftforkVotes() {
+		return softforkVotes;
+	}
 
 	private static final LRUCache powDifficultyLRUCache = new LRUCache(50);
 	private static final DoubleLongLRUCache powPerBlockAndWorkLRUCache = new DoubleLongLRUCache(100);
@@ -69,6 +73,7 @@ public final class BlockImpl implements Block {
 			final long previousBlock = Convert.parseUnsignedLong((String) blockData.get("previousBlock"));
 			final long totalAmountNQT = Convert.parseLong(blockData.get("totalAmountNQT"));
 			final long totalFeeNQT = Convert.parseLong(blockData.get("totalFeeNQT"));
+			final long softforkVotes = Convert.parseLong(blockData.get("softforkVotes"));
 			final int payloadLength = ((Long) blockData.get("payloadLength")).intValue();
 			final byte[] payloadHash = Convert.parseHexString((String) blockData.get("payloadHash"));
 			final byte[] generatorPublicKey = Convert.parseHexString((String) blockData.get("generatorPublicKey"));
@@ -78,7 +83,7 @@ public final class BlockImpl implements Block {
 			final List<TransactionImpl> blockTransactions = new ArrayList<>();
 			for (final Object transactionData : (JSONArray) blockData.get("transactions"))
 				blockTransactions.add(TransactionImpl.parseTransaction((JSONObject) transactionData));
-			final BlockImpl block = new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT,
+			final BlockImpl block = new BlockImpl(version, timestamp, previousBlock, totalAmountNQT, totalFeeNQT, softforkVotes,
 					payloadLength, payloadHash, generatorPublicKey, generationSignature, blockSignature,
 					previousBlockHash, blockTransactions, null);
 			if (!block.checkSignature()) throw new NxtException.NotValidException("Invalid block signature");
@@ -97,6 +102,7 @@ public final class BlockImpl implements Block {
 	private final byte[] previousBlockHash;
 	private final long totalAmountNQT;
 	private final long totalFeeNQT;
+	private final long softforkVotes;
 
 	private final int payloadLength;
 	private final byte[] generationSignature;
@@ -120,7 +126,7 @@ public final class BlockImpl implements Block {
 	private volatile boolean hasValidSignature = false;
 
 	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
-			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
+			final long totalFeeNQT, final long softforkVotes, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
 			final byte[] generationSignature, final byte[] blockSignature, final byte[] previousBlockHash,
 			final List<TransactionImpl> transactions, final BigInteger min_pow_target) {
 		this.version = version;
@@ -128,6 +134,7 @@ public final class BlockImpl implements Block {
 		this.previousBlockId = previousBlockId;
 		this.totalAmountNQT = totalAmountNQT;
 		this.totalFeeNQT = totalFeeNQT;
+		this.softforkVotes = softforkVotes;
 		this.payloadLength = payloadLength;
 		this.payloadHash = payloadHash;
 		this.generatorPublicKey = generatorPublicKey;
@@ -139,10 +146,10 @@ public final class BlockImpl implements Block {
 	}
 
 	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
-			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
+			final long totalFeeNQT, final long softforkVotes, final int payloadLength, final byte[] payloadHash, final byte[] generatorPublicKey,
 			final byte[] generationSignature, final byte[] previousBlockHash, final List<TransactionImpl> transactions,
 			final String secretPhrase, final BigInteger min_pow_target) {
-		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash,
+		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, softforkVotes, payloadLength, payloadHash,
 				generatorPublicKey, generationSignature, null, previousBlockHash, transactions, min_pow_target);
 
 		if (secretPhrase != null) this.blockSignature = Crypto.sign(this.bytes(), secretPhrase);
@@ -150,11 +157,11 @@ public final class BlockImpl implements Block {
 	}
 
 	BlockImpl(final int version, final int timestamp, final long previousBlockId, final long totalAmountNQT,
-			final long totalFeeNQT, final int payloadLength, final byte[] payloadHash, final long generatorId,
+			final long totalFeeNQT, final long softforkVotes,  final int payloadLength, final byte[] payloadHash, final long generatorId,
 			final byte[] generationSignature, final byte[] blockSignature, final byte[] previousBlockHash,
 			final BigInteger cumulativeDifficulty, final long baseTarget, final long nextBlockId, final int height,
 			final long id, final List<TransactionImpl> blockTransactions, final BigInteger min_pow_target) {
-		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, payloadLength, payloadHash, null,
+		this(version, timestamp, previousBlockId, totalAmountNQT, totalFeeNQT, softforkVotes, payloadLength, payloadHash, null,
 				generationSignature, blockSignature, previousBlockHash, null, min_pow_target);
 		this.cumulativeDifficulty = cumulativeDifficulty;
 		this.baseTarget = baseTarget;
@@ -199,7 +206,7 @@ public final class BlockImpl implements Block {
 
 		if (this.bytes == null) {
 			final ByteBuffer buffer = ByteBuffer
-					.allocate(4 + 4 + 8 + 4 + 8 + 8 + 4 + 32 + 32 + 32 + 32 + (this.blockSignature != null ? 64 : 0));
+					.allocate(4 + 4 + 8 + 4 + 8 + 8 + 8 + 4 + 32 + 32 + 32 + 32 + (this.blockSignature != null ? 64 : 0));
 			buffer.order(ByteOrder.LITTLE_ENDIAN);
 			buffer.putInt(this.version);
 			buffer.putInt(this.timestamp);
@@ -207,6 +214,7 @@ public final class BlockImpl implements Block {
 			buffer.putInt(this.getTransactions().size());
 			buffer.putLong(this.totalAmountNQT);
 			buffer.putLong(this.totalFeeNQT);
+			buffer.putLong(this.softforkVotes);
 			buffer.putInt(this.payloadLength);
 			buffer.put(this.payloadHash);
 			buffer.put(this.getGeneratorPublicKey());
@@ -342,6 +350,7 @@ public final class BlockImpl implements Block {
 		json.put("previousBlock", Long.toUnsignedString(this.previousBlockId));
 		json.put("totalAmountNQT", this.totalAmountNQT);
 		json.put("totalFeeNQT", this.totalFeeNQT);
+		json.put("softforkVotes", this.softforkVotes);
 		json.put("payloadLength", this.payloadLength);
 		json.put("payloadHash", Convert.toHexString(this.payloadHash));
 		json.put("generatorPublicKey", Convert.toHexString(this.getGeneratorPublicKey()));

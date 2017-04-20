@@ -35,7 +35,7 @@ class NxtDbVersion extends DbVersion {
 		case 1:
 			this.apply("CREATE TABLE IF NOT EXISTS block (db_id IDENTITY, id BIGINT NOT NULL, version INT NOT NULL, "
 					+ "timestamp INT NOT NULL, previous_block_id BIGINT, " + "total_amount BIGINT NOT NULL, "
-					+ "total_fee BIGINT NOT NULL, payload_length INT NOT NULL, "
+					+ "total_fee BIGINT NOT NULL, softforkVotes BIGINT NOT NULL, payload_length INT NOT NULL, "
 					+ "previous_block_hash BINARY(32), cumulative_difficulty VARBINARY NOT NULL, base_target BIGINT NOT NULL, "
 					+ "next_block_id BIGINT, " + "height INT NOT NULL, generation_signature BINARY(64) NOT NULL, "
 					+ "block_signature BINARY(64), payload_hash BINARY(32) NOT NULL, generator_id BIGINT NOT NULL, min_pow_target VARBINARY)");
@@ -76,11 +76,12 @@ class NxtDbVersion extends DbVersion {
 			this.apply(
 					"CREATE TABLE IF NOT EXISTS pow_and_bounty_announcements (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
 		case 13:
-			this.apply(null);
+			this.apply(
+					"CREATE TABLE IF NOT EXISTS fork (db_id IDENTITY, id BIGINT NOT NULL, sliding_count INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
 		case 14:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS fork_feature_idx ON fork (id)");
 		case 15:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS fork_h_idx ON fork (height)");
 		case 16:
 			this.apply(null);
 		case 17:

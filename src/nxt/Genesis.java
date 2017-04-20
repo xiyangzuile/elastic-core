@@ -99,7 +99,7 @@ public final class Genesis {
 
 
         return new BlockImpl(0, 0, 0,
-                Constants.MAX_BALANCE_NQT, 0, transactions.size() * 128,
+                Constants.MAX_BALANCE_NQT, 0, 0, transactions.size() * 128,
                 digest.digest(), genesisAccount, new byte[32],
                 new byte[32], transactions, genesisSecretKey, Constants.least_possible_target);
 

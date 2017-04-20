@@ -80,6 +80,7 @@ public final class Nxt {
 				PrunableSourceCode.init();
 				Redeem.init();
 				Work.init();
+				nxt.Fork.init();
 				PowAndBounty.init();
 				PowAndBountyAnnouncements.init();
 				Peers.init();
@@ -199,7 +200,7 @@ public final class Nxt {
 
 	}
 
-	public static final String VERSION = "1.0.6";
+	public static final String VERSION = "1.0.7";
 
 	public static final String APPLICATION = "Elastic";
 

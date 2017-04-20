@@ -37,6 +37,8 @@ public interface Block {
 
 	byte[] getGenerationSignature();
 
+	long getSoftforkVotes();
+
 	long getGeneratorId();
 
 	byte[] getGeneratorPublicKey();
