@@ -649,12 +649,6 @@ public abstract class TransactionType {
 				if (transaction.getPrunableSourceCode() == null) throw new NotValidException(
 						"Work creation transaction MUST come with a source code appendix");
 
-				// Now, source must not be pruned if the transaction is "young"
-				if (!transaction.getPrunableSourceCode().hasPrunableData()
-						&& !(transaction.getTimestamp() < (Nxt.getEpochTime() - Constants.MIN_PRUNABLE_LIFETIME)))
-					throw new NotValidException(
-							"Script kiddie, stay home! Please refrain from pruning unpruneable data");
-
 				// Check for correct title length
 				if ((attachment.getWorkTitle().length() > Constants.MAX_TITLE_LENGTH)
 						|| (attachment.getWorkTitle().length() < 1))
