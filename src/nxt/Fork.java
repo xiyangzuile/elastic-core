@@ -20,6 +20,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import nxt.db.DbClause;
 import nxt.db.DbIterator;
 import nxt.db.DbKey;
 import nxt.db.VersionedEntityDbTable;
@@ -56,6 +58,11 @@ public final class Fork {
     }
 
 
+    public  static DbIterator<Fork> getLockedInForks(final int from, final int to) {
+        return Fork.forkTable.getManyBy(
+                new DbClause.IntClause("sliding_count", Constants.BLOCKS_TO_LOCKIN_SOFT_FORK).and(new DbClause.BooleanClause("latest", true)), from, to,
+                " ORDER BY height DESC ");
+    }
     public static int getCount() {
         return Fork.forkTable.getCount();
     }
@@ -125,5 +132,9 @@ public final class Fork {
             pstmt.setInt(++i, blockchainHeight);
             pstmt.executeUpdate();
         }
+    }
+
+    public void store() {
+        Fork.forkTable.insert(this);
     }
 }

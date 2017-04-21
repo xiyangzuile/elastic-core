@@ -90,8 +90,8 @@ public final class Nxt {
 				API.init();
 				Users.init();
 
-
-				Logger.logInfoMessage("Genesis ID: " + Convert.toUnsignedLong(Genesis.GENESIS_BLOCK_ID));
+				// Now initialize the fork manager. This will throw an Exception if features that are not implemented are being enabled
+				SoftForkManager.init();
 
 				// Do a supernode check
 				String snpass=Nxt.getStringProperty("nxt.superNodePassphrase","");
@@ -184,6 +184,7 @@ public final class Nxt {
 				if (Constants.isTestnet) Logger.logMessage("RUNNING ON TESTNET - DO NOT USE REAL ACCOUNTS!");
 			} catch (final Exception e) {
 				Logger.logErrorMessage(e.getMessage(), e);
+				System.err.println("[!!] " + e.getMessage());
 				Nxt.runtimeMode.alert(e.getMessage() + "\n" + "See additional information in "
 						+ Nxt.dirProvider.getLogFileDir() + System.getProperty("file.separator") + "nxt.log");
 				System.exit(1);
@@ -253,6 +254,16 @@ public final class Nxt {
 			return false;
 		}
 		Logger.logMessage(name + " not defined, assuming false");
+		return false;
+	}
+
+	public static Boolean getBooleanPropertySilent(final String name) {
+		final String value = Nxt.properties.getProperty(name);
+		if (Objects.equals(Boolean.TRUE.toString(), value)) {
+			return true;
+		} else if (Objects.equals(Boolean.FALSE.toString(), value)) {
+			return false;
+		}
 		return false;
 	}
 

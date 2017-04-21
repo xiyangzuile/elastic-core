@@ -1,10 +1,16 @@
 package nxt;
 
 
+import nxt.db.DbIterator;
+
 import java.util.ArrayList;
 import java.util.List;
 
 class VotedFeature{
+
+
+    // TODO: Warnings and Shutdowns when sth happens regarding forks
+
     private int feature_index;
 
     public VotedFeature(int feature_index, String description, boolean armed) {
@@ -43,6 +49,7 @@ class VotedFeature{
 }
 
 public class SoftForkManager {
+    private long implemented_map = 0; // implemented features map
 
     private long featureBitmask = 0;
 
@@ -54,7 +61,8 @@ public class SoftForkManager {
 
     private List<VotedFeature> features = new ArrayList<>();
 
-    private static final SoftForkManager instance = new SoftForkManager();
+    private static SoftForkManager instance = null;
+
     public static SoftForkManager getInstance() {
         return SoftForkManager.instance;
     }
@@ -69,26 +77,58 @@ public class SoftForkManager {
         return features.get(index);
     }
 
-    public boolean isArmed(int index){
-        VotedFeature feature = getFeature(index);
-        if(feature==null) return false;
-        return feature.isArmed();
+
+    public boolean incompatibleToLiveMap(long readMask){
+        // if live bitmask has bits where our map doesnt, this means that we immediately need a software update
+        for(int i=0;i<64;++i){
+            if((featureBitmaskLive & 1L<<i) > 0 && (readMask & 1L<<i) == 0){
+                return true;
+            }
+        }
+        return false;
     }
 
+    public static void init() throws NxtException.NotValidException {
+        if(instance==null) instance = new SoftForkManager();
+    }
     public boolean isLive(int index){
         return (featureBitmaskLive & 1L<<index) > 0;
     }
 
     private void addFeature(VotedFeature v){
         features.add(v);
-        featureBitmask |= 1L<<v.getFeature_index();
+        if(v.isArmed())
+            featureBitmask |= 1L<<v.getFeature_index();
+    }
+
+    private void updateLiveMap(){
+        long map = 0;
+        try(DbIterator<Fork> dbIt = Fork.getLockedInForks(0,-1)){
+            while(dbIt.hasNext())
+                map |= 1L<<dbIt.next().getId();
+        }
+        this.featureBitmaskLive = map;
     }
 
     public boolean isArmedByConfig(int idx){
-        return Nxt.getBooleanProperty("nxt.soft_fork_voting_feature_" + String.valueOf(idx));
+        // Override if feature is live
+        if(isLive(idx))
+            return true;
+
+        return Nxt.getBooleanPropertySilent("nxt.soft_fork_voting_feature_" + String.valueOf(idx));
     }
 
-    private SoftForkManager() {
+
+
+    private SoftForkManager() throws NxtException.NotValidException {
+
+        updateLiveMap();
+
+        // Check if this vote is possible: You can only vote if you have implemented those features
+        if(needsUrgentUpdate() == true){
+            throw new NxtException.NotValidException("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+        }
+
         // Fill ALL 64 features here, regardless whether they are active or not
         // Set relevant ones to true and add description. Then, they are automatically up or voting!
         addFeature(new VotedFeature(0, "", isArmedByConfig(0)));
@@ -156,26 +196,68 @@ public class SoftForkManager {
         addFeature(new VotedFeature(62, "", isArmedByConfig(62)));
         addFeature(new VotedFeature(63, "", isArmedByConfig(63)));
 
+        // Check if this vote is possible: You can only vote if you have implemented those features
+        if(needsUrgentUpdate(false) == true){
+            throw new NxtException.NotValidException("You cannot vote for features that your version has not implemented. Please update your software first.");
+        }
     }
 
-    // TODO: We must make the next two height dependant (prevblock)
-    public boolean needsSoftwareUpdate(int height){
-        // if live bitmask has bits where our map doesnt, this means that we immediately need a software update
-        for(int i=0;i<64;++i){
-            if((featureBitmaskLive & 1L<<i) > 0 && (featureBitmask & 1L<<i) == 0){
-                return true;
-            }
-        }
-        return false;
+
+    public boolean needsUrgentUpdate(){
+        return needsUrgentUpdate(true);
     }
 
-    public boolean needsSoftwareUpdate(long readMask){
-        // if live bitmask has bits where our map doesnt, this means that we immediately need a software update
+    public boolean needsUrgentUpdate(boolean checkLive){
+        if(checkLive) {
+            for (int i = 0; i < 64; ++i) {
+                if ((featureBitmaskLive & 1L << i) > 0 && (implemented_map & 1L << i) == 0) {
+                    return true;
+                }
+            }
+            return false;
+        }else{
+            for (int i = 0; i < 64; ++i) {
+                if ((featureBitmask & 1L << i) > 0 && (implemented_map & 1L << i) == 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+
+    // this method must be called AFTER the new block has been recorded!!!! (Not before)
+    public void recordNewVote(BlockImpl block) {
+
+        // First get block at height curentH - SOFTFORK_CONFIRMATIONS, this is the block that falls out of the sliding window! Account for it in the next loops
+        int getHeight = block.getHeight() - Constants.BLOCKS_TO_LOCKIN_SOFT_FORK;
+        long ignoringmask = 0;
+        if(getHeight<1){
+            // pass, chain not long enough
+        }
+        else{
+            ignoringmask = BlockchainImpl.getInstance().getBlockAtHeight(getHeight).getSoftforkVotes();
+        }
+
+        long currmask = block.getSoftforkVotes();
         for(int i=0;i<64;++i){
-            if((featureBitmaskLive & 1L<<i) > 0 && (readMask & 1L<<i) == 0){
-                return true;
+            // Only count votes that are not live, and that do not currently fall out at the rear end of the sliding window
+            if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) > 0 && (ignoringmask & 1L<<i) == 0){
+                // new vote found
+                Fork f = Fork.getFork(i);
+                f.sliding_count++;
+                if(f.sliding_count > Constants.BLOCKS_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_TO_LOCKIN_SOFT_FORK; // safe guard
+                f.store();
+            }
+            // And reduce those who are not currently voted but fall out at rear end
+            else  if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) == 0 && (ignoringmask & 1L<<i) > 0){
+                // new vote found
+                Fork f = Fork.getFork(i);
+                f.sliding_count--;
+                if(f.sliding_count<0) f.sliding_count = 0; // safe guard
+                f.store();
             }
         }
-        return false;
+        updateLiveMap();
     }
 }
