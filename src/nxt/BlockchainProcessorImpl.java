@@ -1053,14 +1053,14 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		}
 		Logger.logMessage("Genesis block (" + Genesis.GENESIS_BLOCK_ID + ") not in database, starting from scratch");
 
-/*
-		try {
+
+		/*try {
 			Genesis.mineGenesis();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.exit(0);*/
-
+		System.exit(0);
+	*/
 
 		try {
 			final List<TransactionImpl> transactions = new ArrayList<>();
@@ -1349,6 +1349,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 					block = this.popLastBlock();
 				}
 				for (final DerivedDbTable table : this.derivedTables) table.rollback(commonBlock.getHeight());
+				Db.db.clearCache();
 				Db.db.clearCache();
 				Db.db.commitTransaction();
 			} catch (final RuntimeException e) {
