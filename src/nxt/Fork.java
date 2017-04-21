@@ -137,4 +137,10 @@ public final class Fork {
     public void store() {
         Fork.forkTable.insert(this);
     }
+
+    public static DbIterator<Fork> getPotentialForks(int from, int to) {
+        return Fork.forkTable.getManyBy(
+                new DbClause.IntClause("sliding_count", DbClause.Op.GT, Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK / 2).and(new DbClause.BooleanClause("latest", true)), from, to,
+                " ORDER BY height DESC ");
+    }
 }

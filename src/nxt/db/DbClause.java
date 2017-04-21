@@ -117,6 +117,8 @@ public abstract class DbClause {
 
 	}
 
+
+
 	public static final class LikeClause extends DbClause {
 
 		private final String prefix;

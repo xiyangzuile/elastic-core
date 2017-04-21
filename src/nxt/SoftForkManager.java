@@ -52,6 +52,7 @@ public class SoftForkManager {
     private long implemented_map = 0; // implemented features map
 
     private long featureBitmask = 0;
+    private long featureBitmaskPossible = 0;
 
     public long getFeatureBitmaskLive() {
         return featureBitmaskLive;
@@ -110,6 +111,15 @@ public class SoftForkManager {
         this.featureBitmaskLive = map;
     }
 
+    private void updatePotentialMap(){
+        long map = 0;
+        try(DbIterator<Fork> dbIt = Fork.getPotentialForks(0,-1)){
+            while(dbIt.hasNext())
+                map |= 1L<<dbIt.next().getId();
+        }
+        this.featureBitmaskPossible = map;
+    }
+
     public boolean isArmedByConfig(int idx){
         // Override if feature is live
         if(isLive(idx))
@@ -124,9 +134,15 @@ public class SoftForkManager {
 
         updateLiveMap();
 
+
         // Check if this vote is possible: You can only vote if you have implemented those features
         if(needsUrgentUpdate() == true){
             throw new NxtException.NotValidException("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+        }
+
+        updatePotentialMap();
+        if(needsPotentialUpdate() == true){
+            System.err.println("[!!!!] At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
         }
 
         // Fill ALL 64 features here, regardless whether they are active or not
@@ -225,6 +241,15 @@ public class SoftForkManager {
         }
     }
 
+    public boolean needsPotentialUpdate(){
+            for (int i = 0; i < 64; ++i) {
+                if ((featureBitmaskPossible & 1L << i) > 0 && (implemented_map & 1L << i) == 0) {
+                    return true;
+                }
+            }
+            return false;
+    }
+
 
     // this method must be called AFTER the new block has been recorded!!!! (Not before)
     public void recordNewVote(BlockImpl block) {
@@ -246,7 +271,7 @@ public class SoftForkManager {
                 // new vote found
                 Fork f = Fork.getFork(i);
                 f.sliding_count++;
-                if(f.sliding_count > Constants.BLOCKS_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_TO_LOCKIN_SOFT_FORK; // safe guard
+                if(f.sliding_count > Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK; // safe guard
                 f.store();
             }
             // And reduce those who are not currently voted but fall out at rear end
@@ -259,5 +284,10 @@ public class SoftForkManager {
             }
         }
         updateLiveMap();
+
+        updatePotentialMap();
+        if(needsPotentialUpdate() == true){
+            System.err.println("[!!!!] At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
+        }
     }
 }

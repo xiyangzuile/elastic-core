@@ -32,6 +32,7 @@ public final class Constants {
 	public static final BigInteger least_possible_target = new BigInteger("000000ffffffffffffffffffffffffff", 16);
 
 	public static final int BLOCKS_TO_LOCKIN_SOFT_FORK = (isTestnet)?15:1440;
+	public static final int BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK = (isTestnet)?12:1300;
 
 	public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
 	public static final int MAX_TITLE_LENGTH = 255;
