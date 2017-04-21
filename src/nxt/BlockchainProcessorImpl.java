@@ -1801,7 +1801,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 	private void validate(final BlockImpl block, final BlockImpl previousLastBlock, final int curTime)
 			throws BlockNotAcceptedException {
 		if (previousLastBlock.getId() != block.getPreviousBlockId())
-            throw new BlockOutOfOrderException("Previous block id doesn't match", block);
+            throw new BlockOutOfOrderException("Previous block id doesn't match, is " + block.getPreviousBlockId() + ", should be " + previousLastBlock.getId(), block);
 		if (block.getVersion() != this.getBlockVersion(previousLastBlock.getHeight()))
             throw new BlockNotAcceptedException("Invalid version " + block.getVersion(), block);
 		if (block.getTimestamp() > (curTime + Constants.MAX_TIMEDRIFT)) {
