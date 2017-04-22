@@ -1,11 +1,16 @@
 package nxt;
 
 
+import nxt.NxtException.NotValidException;
 import nxt.db.DbIterator;
 import nxt.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
+import static thredds.featurecollection.FeatureCollectionConfig.ProtoChoice.Random;
 
 class VotedFeature{
 
@@ -50,10 +55,11 @@ class VotedFeature{
 }
 
 public class SoftForkManager {
-    private long implemented_map = 0; // implemented features map
+    private long implemented_map = 1L<<60; // implemented features map
 
     private long featureBitmask = 0;
     private long featureBitmaskPossible = 0;
+    public Boolean hardExit = false;
 
     public long getFeatureBitmaskLive() {
         return featureBitmaskLive;
@@ -90,7 +96,7 @@ public class SoftForkManager {
         return false;
     }
 
-    public static void init() throws NxtException.NotValidException {
+    public static void init() throws NotValidException {
 
         if(instance==null) instance = new SoftForkManager();
     }
@@ -132,7 +138,7 @@ public class SoftForkManager {
 
 
 
-    private SoftForkManager() throws NxtException.NotValidException {
+    private SoftForkManager() throws NotValidException {
 
         
         updateLiveMap();
@@ -140,12 +146,12 @@ public class SoftForkManager {
 
         // Check if this vote is possible: You can only vote if you have implemented those features
         if(needsUrgentUpdate() == true){
-            throw new NxtException.NotValidException("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+            throw new NotValidException("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
         }
 
         updatePotentialMap();
         if(needsPotentialUpdate() == true){
-            System.err.println("[!!!!] At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
+           Logger.logErrorMessage("At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
         }
 
         // Fill ALL 64 features here, regardless whether they are active or not
@@ -217,7 +223,7 @@ public class SoftForkManager {
 
         // Check if this vote is possible: You can only vote if you have implemented those features
         if(needsUrgentUpdate(false) == true){
-            throw new NxtException.NotValidException("You cannot vote for features that your version has not implemented. Please update your software first.");
+            throw new NotValidException("You cannot vote for features that your version has not implemented. Please update your software first.");
         }
     }
 
@@ -279,7 +285,7 @@ public class SoftForkManager {
                 // new vote found
                 Fork f = Fork.getFork(i);
                 if(f==null) f=new Fork(i, 0);
-                Logger.logDebugMessage("  -> Increasing feature " + i + " count to " + f.sliding_count+1);
+                Logger.logDebugMessage("  -> Increasing feature " + i + " count to " + (f.sliding_count+1));
                 f.sliding_count++;
                 if(f.sliding_count > Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK; // safe guard
                 f.store();
@@ -289,7 +295,7 @@ public class SoftForkManager {
                 // new vote found
                 Fork f = Fork.getFork(i);
                 if(f==null) f=new Fork(i, 0);
-                Logger.logDebugMessage("  -> Decreasing feature " + i + " count to " + f.sliding_count+1);
+                Logger.logDebugMessage("  -> Decreasing feature " + i + " count to " + (f.sliding_count+1));
                 f.sliding_count--;
                 if(f.sliding_count<0) f.sliding_count = 0; // safe guard
                 f.store();
@@ -300,10 +306,25 @@ public class SoftForkManager {
         updatePotentialMap();
 
         if(needsUrgentUpdate() == true){
-            System.err.println("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+            synchronized (hardExit) {
+                hardExit = true;
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                public void run() {
+                    Logger.logErrorMessage("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+                }
+            });
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.exit(0);
+                }
+            }).start();
+
         }
         else if(needsPotentialUpdate() == true){
-            System.err.println("[!!!!] At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
+            Logger.logErrorMessage("At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
         }
     }
 }

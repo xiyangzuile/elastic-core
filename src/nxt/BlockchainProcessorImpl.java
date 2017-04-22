@@ -642,6 +642,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                                     Logger.logDebugMessage("About to push peer " + feederPeer.getAnnouncedAddress()
                                             + "'s block " + block.getId() + " with prevId = " + block.getPreviousBlockId());
                                     BlockchainProcessorImpl.this.pushBlock(block);
+                                    if(SoftForkManager.getInstance().hardExit)
+                                    	break; // break parsing blocks, but finish the rest
 
                                 } catch (final BlockNotAcceptedException e) {
                                     //e.printStackTrace();
@@ -652,15 +654,17 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
                             else forkBlocks.add(block);
 						}
 						//
-						// Process a fork
+						// Process a fork (only if not shutting down due to Soft Fork)
 						//
-						final int myForkSize = BlockchainProcessorImpl.this.blockchain.getHeight() - startHeight;
-						if (!forkBlocks.isEmpty() && (myForkSize < 720)) {
-							Logger.logDebugMessage(
-									"Will process a fork of " + forkBlocks.size() + " blocks, mine is " + myForkSize);
-							this.processFork(feederPeer, forkBlocks, commonBlock);
-						} else Logger.logDebugMessage("Skipping fork, since forksize is " + myForkSize
-                                + " and forkBlocks is empty? = " + forkBlocks.isEmpty());
+						if(!SoftForkManager.getInstance().hardExit) {
+							final int myForkSize = BlockchainProcessorImpl.this.blockchain.getHeight() - startHeight;
+							if (!forkBlocks.isEmpty() && (myForkSize < 720)) {
+								Logger.logDebugMessage(
+										"Will process a fork of " + forkBlocks.size() + " blocks, mine is " + myForkSize);
+								this.processFork(feederPeer, forkBlocks, commonBlock);
+							} else Logger.logDebugMessage("Skipping fork, since forksize is " + myForkSize
+									+ " and forkBlocks is empty? = " + forkBlocks.isEmpty());
+						}
 					} finally {
 						BlockchainProcessorImpl.this.blockchain.writeUnlock();
 					}
@@ -1393,6 +1397,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
 	@Override
 	public void processPeerBlock(final JSONObject request) throws NxtException {
+		if(SoftForkManager.getInstance().hardExit)
+			return;
+
 		final BlockImpl block = BlockImpl.parseBlock(request);
 		BlockImpl lastBlock = this.blockchain.getLastBlock();
 		if (block.getPreviousBlockId() == lastBlock.getId()) this.pushBlock(block);
