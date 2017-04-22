@@ -277,7 +277,7 @@ public class SoftForkManager {
             if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) > 0 && (ignoringmask & 1L<<i) == 0){
                 // new vote found
                 Fork f = Fork.getFork(i);
-                Logger.logDebugMessage("  -> Increasing feature " + i + " count to " + f.sliding_count);
+                Logger.logDebugMessage("  -> Increasing feature " + i + " count to " + f.sliding_count+1);
                 f.sliding_count++;
                 if(f.sliding_count > Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK; // safe guard
                 f.store();
@@ -286,7 +286,7 @@ public class SoftForkManager {
             else  if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) == 0 && (ignoringmask & 1L<<i) > 0){
                 // new vote found
                 Fork f = Fork.getFork(i);
-                Logger.logDebugMessage("  -> Decreasing feature " + i + " count to " + f.sliding_count);
+                Logger.logDebugMessage("  -> Decreasing feature " + i + " count to " + f.sliding_count+1);
                 f.sliding_count--;
                 if(f.sliding_count<0) f.sliding_count = 0; // safe guard
                 f.store();

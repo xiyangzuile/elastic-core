@@ -62,7 +62,7 @@ public final class Fork {
 
     public  static DbIterator<Fork> getLockedInForks(final int from, final int to) {
         return Fork.forkTable.getManyBy(
-                new DbClause.IntClause("sliding_count", Constants.BLOCKS_TO_LOCKIN_SOFT_FORK).and(new DbClause.BooleanClause("latest", true)), from, to,
+                new DbClause.IntClause("sliding_count", Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK).and(new DbClause.BooleanClause("latest", true)), from, to,
                 " ORDER BY height DESC ");
     }
     public static int getCount() {
