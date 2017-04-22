@@ -1032,7 +1032,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			BlockDb.saveBlock(con, block);
 			this.blockchain.setLastBlock(block);
 
-			SoftForkManager.getInstance().recordNewVote(block);
+
 			
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
@@ -1454,7 +1454,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				TransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
 				this.addBlock(block);
 				this.accept(block, validPhasedTransactions, invalidPhasedTransactions, duplicates);
-
+				SoftForkManager.getInstance().recordNewVote(block);
 				Db.db.commitTransaction();
 			} catch (final Exception e) {
 				Db.db.rollbackTransaction();
