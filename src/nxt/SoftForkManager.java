@@ -286,7 +286,11 @@ public class SoftForkManager {
         updateLiveMap();
 
         updatePotentialMap();
-        if(needsPotentialUpdate() == true){
+
+        if(needsUrgentUpdate() == true){
+            System.err.println("There has been a soft-fork, but your version does not implement the new feature. Update immediately!");
+        }
+        else if(needsPotentialUpdate() == true){
             System.err.println("[!!!!] At least one soft-fork which is not implemented in your version has reached a critical vote level! You should update your software immediately!!!");
         }
     }
