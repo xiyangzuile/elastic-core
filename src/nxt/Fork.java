@@ -75,7 +75,7 @@ public final class Fork {
         this.sliding_count = sliding_count;
     }
 
-    public static Fork getFork(final int id) {
+    public static Fork getFork(final long id) {
         return Fork.forkTable.get(Fork.forkDbKeyFactory.newKey(id));
     }
 
