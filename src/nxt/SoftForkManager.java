@@ -91,6 +91,10 @@ public class SoftForkManager {
     }
 
     public static void init() throws NxtException.NotValidException {
+        if(Fork.getCount()==0){
+            Logger.logErrorMessage("Generating basic forks did not work! Get your software fixed first!");
+            System.exit(1);
+        }
         if(instance==null) instance = new SoftForkManager();
     }
     public boolean isLive(int index){
