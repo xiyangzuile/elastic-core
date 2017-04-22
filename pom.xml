@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>elastic-core</groupId>
   <artifactId>elastic-core</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.8</version>
   <packaging>jar</packaging>
   
   <build>
@@ -12,6 +12,7 @@
       <filtering>true</filtering>
         <includes>
             <include>nxt-default.properties</include>
+            <include>logging-default.properties</include>
         </includes>
     </resource></resources>
     <plugins>
