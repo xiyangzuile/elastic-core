@@ -1031,6 +1031,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		try (Connection con = Db.db.getConnection()) {
 			BlockDb.saveBlock(con, block);
 			this.blockchain.setLastBlock(block);
+
+			SoftForkManager.getInstance().recordNewVote(block);
 			
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
