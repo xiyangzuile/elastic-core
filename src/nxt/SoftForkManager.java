@@ -134,11 +134,7 @@ public class SoftForkManager {
 
     private SoftForkManager() throws NxtException.NotValidException {
 
-        if(Fork.getCount()<64){
-            Logger.logErrorMessage("Generating basic forks did not work! Get your software fixed first!");
-            System.exit(1);
-        }
-
+        
         updateLiveMap();
 
 
