@@ -2,6 +2,7 @@ package nxt;
 
 
 import nxt.db.DbIterator;
+import nxt.util.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,6 +133,7 @@ public class SoftForkManager {
 
     private SoftForkManager() throws NxtException.NotValidException {
 
+
         updateLiveMap();
 
 
@@ -254,6 +256,8 @@ public class SoftForkManager {
     // this method must be called AFTER the new block has been recorded!!!! (Not before)
     public void recordNewVote(BlockImpl block) {
 
+
+
         // First get block at height curentH - SOFTFORK_CONFIRMATIONS, this is the block that falls out of the sliding window! Account for it in the next loops
         int getHeight = block.getHeight() - Constants.BLOCKS_TO_LOCKIN_SOFT_FORK;
         long ignoringmask = 0;
@@ -265,11 +269,15 @@ public class SoftForkManager {
         }
 
         long currmask = block.getSoftforkVotes();
+
+        Logger.logDebugMessage("Fork-Counter: falling out: " + getHeight + ", currHeight: " + block.getHeight() + ", curr voted: " + currmask + ", live mask: " + featureBitmaskLive + ", critical: " + featureBitmaskPossible + ", ignoring: " + ignoringmask);
+
         for(int i=0;i<64;++i){
             // Only count votes that are not live, and that do not currently fall out at the rear end of the sliding window
             if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) > 0 && (ignoringmask & 1L<<i) == 0){
                 // new vote found
                 Fork f = Fork.getFork(i);
+                Logger.logDebugMessage("  -> Increasing feature " + i + " count to " + f.sliding_count);
                 f.sliding_count++;
                 if(f.sliding_count > Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK) f.sliding_count = Constants.BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK; // safe guard
                 f.store();
@@ -278,6 +286,7 @@ public class SoftForkManager {
             else  if((featureBitmaskLive & 1L<<i) == 0 && (currmask & 1L<<i) == 0 && (ignoringmask & 1L<<i) > 0){
                 // new vote found
                 Fork f = Fork.getFork(i);
+                Logger.logDebugMessage("  -> Decreasing feature " + i + " count to " + f.sliding_count);
                 f.sliding_count--;
                 if(f.sliding_count<0) f.sliding_count = 0; // safe guard
                 f.store();

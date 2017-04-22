@@ -77,7 +77,7 @@ class NxtDbVersion extends DbVersion {
 					"CREATE TABLE IF NOT EXISTS pow_and_bounty_announcements (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
 		case 13:
 			this.apply(
-					"CREATE TABLE IF NOT EXISTS fork (db_id IDENTITY, id BIGINT NOT NULL, sliding_count INT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
+					"CREATE TABLE IF NOT EXISTS fork (db_id IDENTITY, id BIGINT, sliding_count INT, height INT, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
 		case 14:
 			this.apply("CREATE INDEX IF NOT EXISTS fork_feature_idx ON fork (id)");
 		case 15:

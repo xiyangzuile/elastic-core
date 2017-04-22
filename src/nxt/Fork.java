@@ -27,6 +27,8 @@ import nxt.db.DbKey;
 import nxt.db.VersionedEntityDbTable;
 import nxt.util.Logger;
 
+import static nxt.Db.db;
+
 public final class Fork {
 
     private static final DbKey.LongKeyFactory<Fork> forkDbKeyFactory = new DbKey.LongKeyFactory<Fork>("id") {
@@ -82,22 +84,23 @@ public final class Fork {
 
         if (getCount() == 0 && blockchainHeight == 0) {
             Logger.logInfoMessage("Recreating Fork Tracker DB");
-            try {
+            try (Connection con = db.getConnection()){
                 Db.db.beginTransaction();
-
                 // either 0 or 64
                 // make sure 64 features are in DB
                 for (long i = 0; i < 64; ++i) {
                     final Fork shuffling = new Fork(i, 0);
                     Fork.forkTable.insert(shuffling);
                 }
-
                 Db.db.commitTransaction();
+                Db.db.endTransaction();
+
+
             } catch (Exception e) {
                 e.printStackTrace();
                 System.exit(1);
             } finally {
-                Db.db.endTransaction();
+
             }
         }
     }
@@ -130,7 +133,8 @@ public final class Fork {
             pstmt.setLong(++i, this.id);
             pstmt.setInt(++i, this.sliding_count);
             pstmt.setInt(++i, blockchainHeight);
-            pstmt.executeUpdate();
+            int res = pstmt.executeUpdate();
+
         }
     }
 

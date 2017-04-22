@@ -70,6 +70,8 @@ public final class Nxt {
 				final Thread secureRandomInitThread = Nxt.initSecureRandom();
 				Nxt.setServerStatus(ServerStatus.BEFORE_DATABASE, null);
 				Db.init();
+
+
 				Nxt.setServerStatus(ServerStatus.AFTER_DATABASE, null);
 				//noinspection ResultOfMethodCallIgnored
 				TransactionProcessorImpl.getInstance();
@@ -80,7 +82,6 @@ public final class Nxt {
 				PrunableSourceCode.init();
 				Redeem.init();
 				Work.init();
-				nxt.Fork.init();
 				PowAndBounty.init();
 				PowAndBountyAnnouncements.init();
 				Peers.init();
@@ -91,6 +92,7 @@ public final class Nxt {
 				Users.init();
 
 				// Now initialize the fork manager. This will throw an Exception if features that are not implemented are being enabled
+				nxt.Fork.init();
 				SoftForkManager.init();
 
 				// Do a supernode check
