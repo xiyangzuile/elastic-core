@@ -272,7 +272,7 @@ public class SoftForkManager {
             // pass, chain not long enough
         }
         else{
-            ignoringmask = BlockchainImpl.getInstance().getBlockAtHeight(getHeight).getSoftforkVotes();
+            ignoringmask = Nxt.getBlockchain().getBlockAtHeight(getHeight).getSoftforkVotes();
         }
 
         long currmask = block.getSoftforkVotes();
