@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.bitcoinj.core.BlockChain;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
@@ -1401,6 +1402,12 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
 		final BlockImpl block = BlockImpl.parseBlock(request);
 		BlockImpl lastBlock = this.blockchain.getLastBlock();
+
+		// Do not process anything if we already have this particular block in our chain!
+		// This is a nasty bug which allows net splits (and which is unfortunately live in the actual NXT client)
+		if(Nxt.getBlockchain().hasBlock(block.getId()))
+			return;
+
 		if (block.getPreviousBlockId() == lastBlock.getId()) this.pushBlock(block);
         else if ((block.getPreviousBlockId() == lastBlock.getPreviousBlockId())
 				&& (block.getTimestamp() < lastBlock.getTimestamp())) {
@@ -1425,14 +1432,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			}
 		} // else ignore the block
 	}
-	static String getStackTrace(Throwable t) {
-		StringWriter sw = new StringWriter();
-		PrintWriter pw = new PrintWriter(sw, true);
-		t.printStackTrace(pw);
-		pw.flush();
-		sw.flush();
-		return sw.toString();
-	}
+
 
 	private void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
 
@@ -1444,9 +1444,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			try {
 				Db.db.beginTransaction();
 				previousLastBlock = this.blockchain.getLastBlock();
-				Logger.logDebugMessage("About to push unverified block " + block.getId() + " -> " + getStackTrace(new Exception()));
 				this.validate(block, previousLastBlock, curTime);
-				Logger.logDebugMessage("About to push verified block " + block.getId() + " -> " + getStackTrace(new Exception()));
 
 				final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
 				if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
