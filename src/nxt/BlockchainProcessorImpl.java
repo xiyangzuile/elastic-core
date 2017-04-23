@@ -1439,7 +1439,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 	private void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
 
 		final int curTime = Nxt.getEpochTime();
-
+		boolean soft_skip = false;
 		this.blockchain.writeLock();
 
 		try {
@@ -1452,6 +1452,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				if(previousLastBlock.getId() == block.getId() || Nxt.getBlockchain().hasBlock(block.getId())){
 					// Fall through, duplicate block bug!
 					Logger.logDebugMessage("Ignoring block: " + block.getId());
+					soft_skip = true;
 				}else {
 
 					Logger.logDebugMessage("Validating block: " + block.getId());
@@ -1495,14 +1496,16 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			} finally {
 				Db.db.endTransaction();
 			}
-			this.blockListeners.notify(block, Event.AFTER_BLOCK_ACCEPT);
+			if(!soft_skip)
+				this.blockListeners.notify(block, Event.AFTER_BLOCK_ACCEPT);
 		} finally {
 			this.blockchain.writeUnlock();
 		}
 
 		if (block.getTimestamp() >= (curTime - 600)) Peers.sendToSomePeers(block);
 
-		this.blockListeners.notify(block, Event.BLOCK_PUSHED);
+		if(!soft_skip)
+			this.blockListeners.notify(block, Event.BLOCK_PUSHED);
 
 	}
 
