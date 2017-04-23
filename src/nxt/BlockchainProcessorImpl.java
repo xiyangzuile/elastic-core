@@ -16,6 +16,8 @@
 
 package nxt;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.sql.Connection;
@@ -1423,6 +1425,14 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			}
 		} // else ignore the block
 	}
+	static String getStackTrace(Throwable t) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw, true);
+		t.printStackTrace(pw);
+		pw.flush();
+		sw.flush();
+		return sw.toString();
+	}
 
 	private void pushBlock(final BlockImpl block) throws BlockNotAcceptedException {
 
@@ -1434,9 +1444,9 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			try {
 				Db.db.beginTransaction();
 				previousLastBlock = this.blockchain.getLastBlock();
-
+				Logger.logDebugMessage("About to push unverified block " + block.getId() + " -> " + getStackTrace(new Exception()));
 				this.validate(block, previousLastBlock, curTime);
-				Logger.logDebugMessage("About to push verified block " + block.getId());
+				Logger.logDebugMessage("About to push verified block " + block.getId() + " -> " + getStackTrace(new Exception()));
 
 				final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
 				if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
