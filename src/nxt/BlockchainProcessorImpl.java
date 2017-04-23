@@ -1810,7 +1810,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 	private void validate(final BlockImpl block, final BlockImpl previousLastBlock, final int curTime)
 			throws BlockNotAcceptedException {
 		if (previousLastBlock.getId() != block.getPreviousBlockId())
-            throw new BlockOutOfOrderException("Previous block id doesn't match, is " + block.getPreviousBlockId() + ", should be " + previousLastBlock.getId() + " -----> prevBlock is " + previousLastBlock.getJSONObject().toJSONString(), block);
+            throw new BlockOutOfOrderException("[Curr height = " + Nxt.getBlockchain().getHeight() + ", LastBlockInChain = " + Nxt.getBlockchain().getLastBlockId() + ", ThisBlockId = " + block.getId() + "] Reason: Previous block id doesn't match, is " + block.getPreviousBlockId() + ", should be " + previousLastBlock.getId() + " -----> prevBlock is " + previousLastBlock.getJSONObject().toJSONString(), block);
 		if (block.getVersion() != this.getBlockVersion(previousLastBlock.getHeight()))
             throw new BlockNotAcceptedException("Invalid version " + block.getVersion(), block);
 		if (block.getTimestamp() > (curTime + Constants.MAX_TIMEDRIFT)) {
