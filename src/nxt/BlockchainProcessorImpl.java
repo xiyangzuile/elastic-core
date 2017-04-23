@@ -1441,6 +1441,18 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		final int curTime = Nxt.getEpochTime();
 
 		this.blockchain.writeLock();
+
+		// Here is may happen that two peers have pending Block Push requests containing the same block, (Forging from same account on two different nodes)
+		// which both wait at this lock.
+		// When the secon passes this lock here, no other checks are performed if the block is already in the chain (added from the first pending) causing a blacklist.
+		// Warning: If not fixed -> potential net split
+
+		if(Nxt.getBlockchain().hasBlock(block.getId())){
+			// Quietly exit
+			this.blockchain.writeUnlock();
+			return;
+		}
+
 		try {
 			BlockImpl previousLastBlock = null;
 			try {
