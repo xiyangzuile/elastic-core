@@ -1474,6 +1474,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				TransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
 				this.addBlock(block);
 				this.accept(block, validPhasedTransactions, invalidPhasedTransactions, duplicates);
+				Logger.logDebugMessage("Added and accepted block: " + block.getId());
 				SoftForkManager.getInstance().recordNewVote(block);
 				Db.db.commitTransaction();
 			} catch (final Exception e) {
