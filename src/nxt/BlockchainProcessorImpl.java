@@ -695,8 +695,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 						final BigInteger betterCumulativeDifficulty = new BigInteger(peerCumulativeDifficulty);
 						if (betterCumulativeDifficulty.compareTo(curCumulativeDifficulty) < 0) return;
 						if (response.get("blockchainHeight") != null) {
-							Logger.logDebugMessage(
-									"Peer reported blockchain height: " + ((Long) response.get("blockchainHeight")).intValue());
+							//Logger.logDebugMessage(
+							//		"Peer reported blockchain height: " + ((Long) response.get("blockchainHeight")).intValue());
 							BlockchainProcessorImpl.this.lastBlockchainFeeder = peer;
 							BlockchainProcessorImpl.this.lastBlockchainFeederHeight = ((Long) response.get("blockchainHeight"))
 									.intValue();
