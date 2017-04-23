@@ -1408,6 +1408,8 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		if(Nxt.getBlockchain().hasBlock(block.getId()))
 			return;
 
+		Logger.logDebugMessage("Process peer's block: " + block.getId());
+
 		if (block.getPreviousBlockId() == lastBlock.getId()) this.pushBlock(block);
         else if ((block.getPreviousBlockId() == lastBlock.getPreviousBlockId())
 				&& (block.getTimestamp() < lastBlock.getTimestamp())) {
@@ -1444,7 +1446,12 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			try {
 				Db.db.beginTransaction();
 				previousLastBlock = this.blockchain.getLastBlock();
+				Logger.logDebugMessage("Validating block: " + block.getId());
+
 				this.validate(block, previousLastBlock, curTime);
+
+				Logger.logDebugMessage("About to push block: " + block.getId());
+
 
 				final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
 				if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
