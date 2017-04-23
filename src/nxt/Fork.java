@@ -80,29 +80,7 @@ public final class Fork {
     }
 
     static void init() {
-        final int blockchainHeight = Nxt.getBlockchain().getHeight();
 
-        if (getCount() == 0 && blockchainHeight == 0) {
-            Logger.logInfoMessage("Recreating Fork Tracker DB");
-            try (Connection con = db.getConnection()){
-                Db.db.beginTransaction();
-                // either 0 or 64
-                // make sure 64 features are in DB
-                for (long i = 0; i < 64; ++i) {
-                    final Fork shuffling = new Fork(i, 0);
-                    Fork.forkTable.insert(shuffling);
-                }
-                Db.db.commitTransaction();
-                Db.db.endTransaction();
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.exit(1);
-            } finally {
-
-            }
-        }
     }
 
     private final long id;

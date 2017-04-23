@@ -333,6 +333,7 @@ public final class BlockImpl implements Block {
 
 			if ((!is_special_case) && (this.blockSignature == null))
 				throw new IllegalStateException("Block is not signed yet");
+
 			final byte[] hash = Crypto.sha256().digest(this.bytes());
 			final BigInteger bigInteger = new BigInteger(1,
 					new byte[] { hash[7], hash[6], hash[5], hash[4], hash[3], hash[2], hash[1], hash[0] });

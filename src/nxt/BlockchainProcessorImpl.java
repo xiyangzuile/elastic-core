@@ -1035,9 +1035,6 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		try (Connection con = Db.db.getConnection()) {
 			BlockDb.saveBlock(con, block);
 			this.blockchain.setLastBlock(block);
-
-
-			
 		} catch (final SQLException e) {
 			throw new RuntimeException(e.toString(), e);
 		}
@@ -1167,7 +1164,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		final byte[] previousBlockHash = Crypto.sha256().digest(previousBlock.bytes());
 
 		final BlockImpl block = new BlockImpl(this.getBlockVersion(previousBlock.getHeight()), blockTimestamp,
-				previousBlock.getId(), totalAmountNQT, totalFeeNQT, SoftForkManager.getInstance().getFeatureBitmask(), payloadLength, payloadHash, publicKey,
+				previousBlock.getId(), totalAmountNQT, totalFeeNQT, 0, payloadLength, payloadHash, publicKey,
 				generationSignature, previousBlockHash, blockTransactions, secretPhrase,
 				BlockImpl.calculateNextMinPowTarget(previousBlock.getId()));
 
@@ -1439,6 +1436,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				previousLastBlock = this.blockchain.getLastBlock();
 
 				this.validate(block, previousLastBlock, curTime);
+				Logger.logDebugMessage("About to push verified block " + block.getId());
 
 				final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
 				if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
