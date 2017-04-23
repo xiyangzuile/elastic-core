@@ -1167,7 +1167,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 		final byte[] previousBlockHash = Crypto.sha256().digest(previousBlock.bytes());
 
 		final BlockImpl block = new BlockImpl(this.getBlockVersion(previousBlock.getHeight()), blockTimestamp,
-				previousBlock.getId(), totalAmountNQT, totalFeeNQT, 0, payloadLength, payloadHash, publicKey,
+				previousBlock.getId(), totalAmountNQT, totalFeeNQT, SoftForkManager.getInstance().getFeatureBitmask(), payloadLength, payloadHash, publicKey,
 				generationSignature, previousBlockHash, blockTransactions, secretPhrase,
 				BlockImpl.calculateNextMinPowTarget(previousBlock.getId()));
 
@@ -1442,10 +1442,13 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
 		this.blockchain.writeLock();
 
-		// Here is may happen that two peers have pending Block Push requests containing the same block, (Forging from same account on two different nodes)
+		// Here is may happen that two peers have pending Block Push requests containing the same block,
+		// (Forging from same account on two different nodes and sending the blocks paralelly so they both pass all pre-checks and end up waiting at this lock for synchronization)
 		// which both wait at this lock.
-		// When the secon passes this lock here, no other checks are performed if the block is already in the chain (added from the first pending) causing a blacklist.
+		// When the second passes this lock here, no other checks are performed whether the block is already in the chain (added from the first pending) or not. This is causing an illegitimate blacklist.
 		// Warning: If not fixed -> potential net split
+		// Vectors: This can be also used to attack and isolate certain nodes ->
+		//   if you get some block before a "slow node" does, you have to get the timing right - if you relay this block at the same time but slightly earlier than another (important) node does so, the slow peer blacklists this important node.
 
 		if(Nxt.getBlockchain().hasBlock(block.getId())){
 			// Quietly exit
