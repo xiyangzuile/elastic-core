@@ -1442,56 +1442,49 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 
 		this.blockchain.writeLock();
 
-		// Here is may happen that two peers have pending Block Push requests containing the same block,
-		// (Forging from same account on two different nodes and sending the blocks paralelly so they both pass all pre-checks and end up waiting at this lock for synchronization)
-		// which both wait at this lock.
-		// When the second passes this lock here, no other checks are performed whether the block is already in the chain (added from the first pending) or not. This is causing an illegitimate blacklist.
-		// Warning: If not fixed -> potential net split
-		// Vectors: This can be also used to attack and isolate certain nodes ->
-		//   if you get some block before a "slow node" does, you have to get the timing right - if you relay this block at the same time but slightly earlier than another (important) node does so, the slow peer blacklists this important node.
-
-		if(Nxt.getBlockchain().hasBlock(block.getId())){
-			// Quietly exit
-			this.blockchain.writeUnlock();
-			return;
-		}
-
 		try {
 			BlockImpl previousLastBlock = null;
 			try {
 				Db.db.beginTransaction();
 				previousLastBlock = this.blockchain.getLastBlock();
-				Logger.logDebugMessage("Validating block: " + block.getId());
 
-				this.validate(block, previousLastBlock, curTime);
+				// Another safeguard to avoid duplicate block errors
+				if(previousLastBlock.getId() == block.getId() || Nxt.getBlockchain().hasBlock(block.getId())){
+					// Fall through, duplicate block bug!
+					Logger.logDebugMessage("Ignoring block: " + block.getId());
+				}else {
 
-				Logger.logDebugMessage("About to push block: " + block.getId());
+					Logger.logDebugMessage("Validating block: " + block.getId());
+
+					this.validate(block, previousLastBlock, curTime);
+
+					Logger.logDebugMessage("About to push block: " + block.getId());
 
 
-				final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
-				if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
-					final String msg = "Rejecting block " + block.getStringId() + " at height "
-							+ previousLastBlock.getHeight() + " block timestamp " + block.getTimestamp()
-							+ " next hit time " + nextHitTime + " current time " + curTime;
-					Logger.logDebugMessage(msg);
-					Generator.setDelay(-Constants.FORGING_SPEEDUP);
-					throw new BlockOutOfOrderException(msg, block);
+					final long nextHitTime = Generator.getNextHitTime(previousLastBlock.getId(), curTime);
+					if ((nextHitTime > 0) && (block.getTimestamp() > (nextHitTime + 1))) {
+						final String msg = "Rejecting block " + block.getStringId() + " at height "
+								+ previousLastBlock.getHeight() + " block timestamp " + block.getTimestamp()
+								+ " next hit time " + nextHitTime + " current time " + curTime;
+						Logger.logDebugMessage(msg);
+						Generator.setDelay(-Constants.FORGING_SPEEDUP);
+						throw new BlockOutOfOrderException(msg, block);
+					}
+
+					final Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
+					final List<TransactionImpl> validPhasedTransactions = new ArrayList<>();
+					final List<TransactionImpl> invalidPhasedTransactions = new ArrayList<>();
+					this.validateTransactions(block, previousLastBlock, curTime, duplicates,
+							previousLastBlock.getHeight() >= Constants.LAST_CHECKSUM_BLOCK);
+
+					block.setPrevious(previousLastBlock);
+					this.blockListeners.notify(block, Event.BEFORE_BLOCK_ACCEPT);
+					TransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
+					this.addBlock(block);
+					this.accept(block, validPhasedTransactions, invalidPhasedTransactions, duplicates);
+					Logger.logDebugMessage("Added and accepted block: " + block.getId());
+					SoftForkManager.getInstance().recordNewVote(block);
 				}
-
-				final Map<TransactionType, Map<String, Integer>> duplicates = new HashMap<>();
-				final List<TransactionImpl> validPhasedTransactions = new ArrayList<>();
-				final List<TransactionImpl> invalidPhasedTransactions = new ArrayList<>();
-				this.validateTransactions(block, previousLastBlock, curTime, duplicates,
-						previousLastBlock.getHeight() >= Constants.LAST_CHECKSUM_BLOCK);
-
-				block.setPrevious(previousLastBlock);
-				this.blockListeners.notify(block, Event.BEFORE_BLOCK_ACCEPT);
-				TransactionProcessorImpl.getInstance().requeueAllUnconfirmedTransactions();
-				this.addBlock(block);
-				this.accept(block, validPhasedTransactions, invalidPhasedTransactions, duplicates);
-				Logger.logDebugMessage("Added and accepted block: " + block.getId());
-				SoftForkManager.getInstance().recordNewVote(block);
-				Db.db.commitTransaction();
 			} catch (final Exception e) {
 				Db.db.rollbackTransaction();
 				this.blockchain.setLastBlock(previousLastBlock);
