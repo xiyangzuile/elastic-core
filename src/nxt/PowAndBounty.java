@@ -167,6 +167,8 @@ public final class PowAndBounty {
 	private final byte[] multiplicator;
 	private final byte[] hash;
 
+	private final int[] storage;
+
 	private PowAndBounty(final ResultSet rs, final DbKey dbKey) throws SQLException {
 		this.id = rs.getLong("id");
 		this.work_id = rs.getLong("work_id");
@@ -176,6 +178,7 @@ public final class PowAndBounty {
 		this.multiplicator = rs.getBytes("multiplicator");
 		this.too_late = rs.getBoolean("too_late");
 		this.hash = rs.getBytes("hash");
+		this.storage = Convert.byte2int(rs.getBytes("storage"));
 	}
 
 	private PowAndBounty(final Transaction transaction, final Attachment.PiggybackedProofOfBounty attachment) {
@@ -186,6 +189,7 @@ public final class PowAndBounty {
 		this.multiplicator = attachment.getMultiplicator();
 		this.is_pow = false;
 		this.hash = attachment.getHash(); // FIXME TODO
+		this.storage = attachment.getStorage();
 		this.too_late = false;
 	}
 
@@ -197,6 +201,7 @@ public final class PowAndBounty {
 		this.multiplicator = attachment.getMultiplicator();
 		this.is_pow = true;
 		this.hash = attachment.getHash(); // FIXME TODO
+		this.storage = new int[]{};
 		this.too_late = false;
 	}
 
@@ -262,8 +267,8 @@ public final class PowAndBounty {
 
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con.prepareStatement(
-				"MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow,"
-						+ " height) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+				"MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow, storage, "
+						+ " height) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setBoolean(++i, this.too_late);
@@ -272,6 +277,7 @@ public final class PowAndBounty {
 			pstmt.setLong(++i, this.accountId);
 			pstmt.setBytes(++i, this.multiplicator);
 			pstmt.setBoolean(++i, this.is_pow);
+			pstmt.setBytes(++i, Convert.int2byte(this.storage));
 			pstmt.setInt(++i, Nxt.getBlockchain().getHeight());
 			pstmt.executeUpdate();
 		}
@@ -284,6 +290,7 @@ public final class PowAndBounty {
 		if (t != null) {
 			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
 			response.put("multiplicator", Arrays.toString(this.multiplicator));
+			response.put("storage", Arrays.toString(this.storage));
 		} else response.put("error", "Transaction not found");
 		return response;
 	}

@@ -317,6 +317,8 @@ public interface Attachment extends Appendix {
 
 		private final byte[] multiplicator;
 
+		private final int[] storage;
+
 		public final MessageDigest dig = Crypto.md5();
 
 		PiggybackedProofOfBounty(final ByteBuffer buffer, final byte transactionVersion)
@@ -326,6 +328,11 @@ public interface Attachment extends Appendix {
 
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 			buffer.get(this.multiplicator);
+
+			byte[] tempStorage = new byte[Constants.BOUNTY_STORAGE_INTS*4];
+			buffer.get(tempStorage);
+			this.storage = Convert.byte2int(tempStorage);
+
 		}
 
 		PiggybackedProofOfBounty(final JSONObject attachmentData) {
@@ -333,17 +340,23 @@ public interface Attachment extends Appendix {
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
 
 			final String inputRaw = (String) attachmentData.get("multiplicator");
-
-
 			if (inputRaw != null) {
 				final byte[] multiplicator_byte_representation = Convert.parseHexString(inputRaw);
 				this.multiplicator = Convert.toFixedBytesCutter(multiplicator_byte_representation, Constants.WORK_MULTIPLICATOR_BYTES);
 			}else this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
+
+			final String storageRaw = (String) attachmentData.get("storage");
+			if (storageRaw != null) {
+				byte[] storage_byte_representation = Convert.parseHexString(inputRaw);
+				storage_byte_representation = Convert.toFixedBytesCutter(storage_byte_representation, Constants.BOUNTY_STORAGE_INTS*4);
+				this.storage = Convert.byte2int(storage_byte_representation);
+			}else this.storage = new int[Constants.BOUNTY_STORAGE_INTS];
 		}
 
-		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator) {
+		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator, final int[] storage) {
 			this.workId = workId;
 			this.multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
+			this.storage = storage;
 		}
 
 		@Override
@@ -355,6 +368,7 @@ public interface Attachment extends Appendix {
 			try {
 				dos.writeLong(this.workId);
 				dos.write(this.multiplicator);
+				dos.write(Convert.int2byte(this.storage));
 				dos.writeBoolean(true); // distinguish between pow and bounty
 				dos.close();
 			} catch (final IOException ignored) {
@@ -372,7 +386,7 @@ public interface Attachment extends Appendix {
 
 		@Override
 		int getMySize() {
-			return 8 + Constants.WORK_MULTIPLICATOR_BYTES;
+			return 8 + Constants.WORK_MULTIPLICATOR_BYTES + Constants.BOUNTY_STORAGE_INTS*4;
 		}
 
 		@Override
@@ -423,14 +437,20 @@ public interface Attachment extends Appendix {
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
 			buffer.put(this.multiplicator);
+			buffer.put(Convert.int2byte(this.storage));
 		}
 
 		@Override
 		void putMyJSON(final JSONObject attachment) {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
 			attachment.put("multiplicator", Convert.toHexString(this.multiplicator));
+			attachment.put("storage", Convert.toHexString(Convert.int2byte(this.storage)));
 		}
-	}
+
+        public int[] getStorage() {
+            return storage;
+        }
+    }
 
 	public final static class PiggybackedProofOfBountyAnnouncement extends AbstractAttachment {
 

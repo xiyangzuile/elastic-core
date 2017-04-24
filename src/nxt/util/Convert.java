@@ -202,6 +202,37 @@ public final class Convert {
 		return bytes;
 	}
 
+
+
+
+	public static byte[] int2byte(int[]src) {
+			int srcLength = src.length;
+			byte[]dst = new byte[srcLength << 2];
+
+			for (int i=0; i<srcLength; i++) {
+				int x = src[i];
+				int j = i << 2;
+				dst[j++] = (byte) ((x >>> 0) & 0xff);
+				dst[j++] = (byte) ((x >>> 8) & 0xff);
+				dst[j++] = (byte) ((x >>> 16) & 0xff);
+				dst[j++] = (byte) ((x >>> 24) & 0xff);
+			}
+			return dst;
+	}
+
+	public static int[] byte2int(byte buf[]) {
+		int intArr[] = new int[buf.length / 4];
+		int offset = 0;
+		for(int i = 0; i < intArr.length; i++) {
+			intArr[i] = (buf[3 + offset] & 0xFF) | ((buf[2 + offset] & 0xFF) << 8) |
+					((buf[1 + offset] & 0xFF) << 16) | ((buf[0 + offset] & 0xFF) << 24);
+			offset += 4;
+		}
+		return intArr;
+	}
+
+
+
 	public static byte[] toBytes(final String s) {
 		try {
 			return s.getBytes("UTF-8");
