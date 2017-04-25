@@ -1200,6 +1200,10 @@ public abstract class TransactionType {
 				final Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
 
+				if(attachment.getStorage().length!=Constants.BOUNTY_STORAGE_INTS)
+					throw new NxtException.NotCurrentlyValidException(
+							"Where exactly did you put the required 32ints storage in?");
+
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
 				if (w == null) throw new NxtException.NotCurrentlyValidException(

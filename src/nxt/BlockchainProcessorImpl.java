@@ -1798,8 +1798,11 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 				if (unconfirmedTransaction.getVersion() != this.getTransactionVersion(previousBlock.getHeight()))
                     continue;
 				if ((blockTimestamp > 0)
-						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||(!Objects.equals(unconfirmedTransaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (unconfirmedTransaction.getExpiration() < blockTimestamp)))))
-                    continue;
+						&& ( (!Generator.allowsFakeForgingInPrincipal() && ((unconfirmedTransaction.getTimestamp() > (blockTimestamp + Constants.MAX_TIMEDRIFT)))||(!Objects.equals(unconfirmedTransaction.getAttachment().getTransactionType(), TransactionType.Payment.REDEEM) && (unconfirmedTransaction.getExpiration() < blockTimestamp))))) {
+					Logger.logInfoMessage("Skipping unconf. " + Convert.toUnsignedLong(unconfirmedTransaction.getId()) + " because timeout is past blockTimeStamp!");
+
+					continue;
+				}
 				try {
 					unconfirmedTransaction.getTransaction().validate();
 				} catch (final NxtException.ValidationException e) {
