@@ -35,6 +35,7 @@ final class JSONResponses {
 	public static final JSONStreamAware MISSING_BOUNTYLIMIT = JSONResponses.missing("bounty limit");
 	public static final JSONStreamAware INCORRECT_WORK_NAME_LENGTH = JSONResponses.incorrect("work title");
 	public static final JSONStreamAware INCORRECT_MULTIPLICATOR = JSONResponses.incorrect("multiplicator");
+	public static final JSONStreamAware INCORRECT_STORAGE = JSONResponses.incorrect("storage");
 
 	public static final JSONStreamAware INCORRECT_VARIABLES_NUM = JSONResponses
 			.incorrect("number of input or output variables");

@@ -47,6 +47,27 @@ public final class ProofOfX extends CreateTransaction {
 
 		final boolean is_pow = ParameterParser.getBoolean(req, "is_pow", true);
 
+		String storage="";
+		int[] intArray = new int[]{};
+
+		if(!is_pow){
+			storage = Convert.emptyToNull(req.getParameter("storage"));
+			if(storage==null){
+				return JSONResponses.INCORRECT_STORAGE;
+			}
+			try{
+				String[] strArray = storage.split(",");
+				intArray = new int[strArray.length];
+				for(int i = 0; i < strArray.length; i++) {
+					intArray[i] = Integer.parseInt(strArray[i].trim());
+				}
+			}catch(Exception e){
+				return JSONResponses.INCORRECT_STORAGE;
+			}
+			if(intArray.length != Constants.BOUNTY_STORAGE_INTS)
+				return JSONResponses.INCORRECT_STORAGE;
+		}
+
 		final String multiplicator_multipart = ParameterParser.getMultiplicator(req, true);
 		if ((multiplicator_multipart == null) || (multiplicator_multipart.length() > 65))
             return JSONResponses.INCORRECT_MULTIPLICATOR;
@@ -65,7 +86,7 @@ public final class ProofOfX extends CreateTransaction {
 			return this.createTransaction(req, account, attachment);
 		} else {
 			final Attachment.PiggybackedProofOfBounty attachment = new Attachment.PiggybackedProofOfBounty(workId,
-					multiplicator);
+					multiplicator, intArray);
 			return this.createTransaction(req, account, attachment);
 		}
 
