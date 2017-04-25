@@ -245,6 +245,7 @@ public final class Work {
 	private BigInteger work_min_pow_target;
 	private final long xel_per_pow;
 	private final int repetitions;
+	private int repetitions_left;
 	private final long xel_per_bounty;
 	private final int bounty_limit;
 	private long balance_pow_fund;
@@ -275,6 +276,7 @@ public final class Work {
 		this.timedout = rs.getBoolean("timedout");
 		this.xel_per_bounty = rs.getLong("xel_per_bounty");
 		this.repetitions = rs.getInt("repetitions");
+		this.repetitions_left = rs.getInt("repetitions_left");
 		this.balance_pow_fund = rs.getLong("balance_pow_fund");
 		this.balance_bounty_fund = rs.getLong("balance_bounty_fund");
 		this.balance_pow_fund_orig = rs.getLong("balance_pow_fund_orig");
@@ -297,9 +299,13 @@ public final class Work {
 		this.xel_per_pow = attachment.getXelPerPow();
 		this.title = attachment.getWorkTitle();
 		this.repetitions = attachment.getRepetitions();
+		this.repetitions_left = repetitions; // TODO: is this correct this way?
 		this.blocksRemaining = (short) attachment.getDeadline();
 		this.closed = false;
 		this.close_pending = false;
+
+
+
 		this.xel_per_bounty = attachment.getXelPerBounty();
 		this.balance_pow_fund = transaction.getAmountNQT()
 				- attachment.getBountyLimit() * attachment.getXelPerBounty();
@@ -548,9 +554,9 @@ public final class Work {
 
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con.prepareStatement(
-				"MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, repetitions, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, latest) "
+				"MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, repetitions, repetitions_left, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, latest) "
 						+ "KEY (id, height) "
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setInt(++i, this.closing_timestamp);
@@ -559,6 +565,7 @@ public final class Work {
 			pstmt.setLong(++i, this.sender_account_id);
 			pstmt.setLong(++i, this.xel_per_pow);
 			pstmt.setInt(++i, this.repetitions);
+			pstmt.setInt(++i, this.repetitions_left);
 			pstmt.setString(++i, this.title);
 			pstmt.setShort(++i, this.blocksRemaining);
 			pstmt.setBoolean(++i, this.closed);
@@ -598,6 +605,7 @@ public final class Work {
 		response.put("block_id", Convert.toUnsignedLong(this.block_id));
 		response.put("xel_per_pow", this.xel_per_pow);
 		response.put("repetitions", this.repetitions);
+		response.put("repetitions_left", this.repetitions_left);
 		response.put("title", this.title);
 		response.put("originating_height", this.originating_height);
 		response.put("blocksRemaining", this.blocksRemaining);
