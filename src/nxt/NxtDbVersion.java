@@ -71,7 +71,7 @@ class NxtDbVersion extends DbVersion {
 					"CREATE TABLE IF NOT EXISTS work (db_id IDENTITY, closing_timestamp INT NOT NULL, id BIGINT NOT NULL, work_id BIGINT NOT NULL, block_id BIGINT NOT NULL, sender_account_id BIGINT NOT NULL, xel_per_pow BIGINT NOT NULL, title VARCHAR NOT NULL, blocks_remaining SMALLINT NOT NULL, closed BOOLEAN NOT NULL DEFAULT FALSE, close_pending BOOLEAN NOT NULL DEFAULT FALSE, cancelled BOOLEAN NOT NULL DEFAULT FALSE, timedout BOOLEAN NOT NULL DEFAULT FALSE, xel_per_bounty BIGINT NOT NULL, balance_pow_fund BIGINT NOT NULL, balance_bounty_fund BIGINT NOT NULL, balance_pow_fund_orig BIGINT NOT NULL, balance_bounty_fund_orig BIGINT NOT NULL,received_bounties INT NOT NULL, received_bounty_announcements INT NOT NULL, received_pows INT NOT NULL, bounty_limit INT NOT NULL, originating_height INT NOT NULL, height INT NOT NULL, work_min_pow_target VARBINARY, latest BOOLEAN NOT NULL DEFAULT TRUE) ");
 		case 11:
 			this.apply(
-					"CREATE TABLE IF NOT EXISTS pow_and_bounty (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, multiplicator VARBINARY NOT NULL, is_pow BOOLEAN NOT NULL DEFAULT TRUE, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
+					"CREATE TABLE IF NOT EXISTS pow_and_bounty (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, multiplicator VARBINARY NOT NULL, is_pow BOOLEAN NOT NULL DEFAULT TRUE, storage VARBINARY NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
 		case 12:
 			this.apply(
 					"CREATE TABLE IF NOT EXISTS pow_and_bounty_announcements (db_id IDENTITY, id BIGINT NOT NULL, too_late BOOLEAN NOT NULL DEFAULT FALSE, work_id BIGINT NOT NULL, hash BINARY(32), account_id BIGINT NOT NULL, height INT NOT NULL, latest BOOLEAN NOT NULL DEFAULT TRUE)");
@@ -83,31 +83,29 @@ class NxtDbVersion extends DbVersion {
 		case 15:
 			this.apply("CREATE INDEX IF NOT EXISTS fork_h_idx ON fork (height)");
 		case 16:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bountyA ON pow_and_bounty (id)");
 		case 17:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bountyB ON pow_and_bounty (work_id)");
 		case 18:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bountyC ON pow_and_bounty (is_pow)");
 		case 19:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bountyD ON pow_and_bounty (height)");
 		case 20:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bounty_announcementsA ON pow_and_bounty_announcements (id)");
 		case 21:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bounty_announcementsB ON pow_and_bounty_announcements (work_id)");
 		case 22:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS workA ON work (id)");
 		case 23:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS workB ON work (work_id)");
 		case 24:
-			this.apply(null);
-		case 25:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS workC ON work (sender_account_id)");
 		case 26:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS workD ON work (closed)");
 		case 27:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS pow_and_bounty_announcementsC ON pow_and_bounty_announcements (hash)");
 		case 28:
-			this.apply(null);
+			this.apply("CREATE INDEX IF NOT EXISTS workE ON work (close_pending)");
 		case 29:
 			this.apply(null);
 		case 30:
