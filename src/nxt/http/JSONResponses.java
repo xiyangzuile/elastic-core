@@ -55,6 +55,7 @@ final class JSONResponses {
 	public static final JSONStreamAware INCORRECT_XEL_PER_BOUNTY = JSONResponses.incorrect("bounty price in XEL");
 	public static final JSONStreamAware MISSING_XEL_PER_POW = JSONResponses.missing("pow price in XEL");
 	public static final JSONStreamAware MISSING_FIELDS_REDEEM = JSONResponses.missing("address or secp_signatures");
+	public static final JSONStreamAware MISSING_REPETITIONS = JSONResponses.missing("a valid repetitions count");
 
 	public static final JSONStreamAware MISSING_XEL_PER_BOUNTY = JSONResponses.missing("bounty price in XEL");
 	public static final JSONStreamAware INCORRECT_EXECUTION_TIME = JSONResponses.incorrect("worst case execution time");

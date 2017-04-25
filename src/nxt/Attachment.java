@@ -723,6 +723,7 @@ public interface Attachment extends Appendix {
 		private final long xelPerPow;
 		private final int bountyLimit;
 		private final long xelPerBounty;
+		private final int repetitions;
 
 		WorkCreation(final ByteBuffer buffer, final byte transactionVersion) throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
@@ -730,6 +731,7 @@ public interface Attachment extends Appendix {
 			this.deadline = buffer.getInt();
 			this.bountyLimit = buffer.getInt();
 			this.xelPerPow = buffer.getLong();
+			this.repetitions = buffer.getInt();
 			this.xelPerBounty = buffer.getLong();
 		}
 
@@ -739,6 +741,7 @@ public interface Attachment extends Appendix {
 			this.workTitle = ((String) attachmentData.get("title")).trim();
 			this.deadline = ((Long) attachmentData.get("deadline")).intValue();
 			this.bountyLimit = ((Long) attachmentData.get("bountyLimit")).intValue();
+			this.repetitions = ((Long) attachmentData.get("repetitions")).intValue();
 
 			// Sometimes it comes with quotes, sometimes not! Why?
 			if(attachmentData.get("xel_per_pow") instanceof String) {
@@ -752,12 +755,13 @@ public interface Attachment extends Appendix {
 		}
 
 		public WorkCreation(final String workTitle, final byte workLanguage,
-				final int deadline, final int bountyLimit, final long xel_per_pow, final long xel_per_bounty) {
+				final int deadline, final int bountyLimit, final long xel_per_pow, int repetitions, final long xel_per_bounty) {
 			this.workTitle = workTitle;
 			this.deadline = deadline;
 			this.bountyLimit = bountyLimit;
 			this.xelPerPow = xel_per_pow;
 			this.xelPerBounty = xel_per_bounty;
+			this.repetitions = repetitions;
 		}
 
 		public int getBountyLimit() {
@@ -768,9 +772,13 @@ public interface Attachment extends Appendix {
 			return this.deadline;
 		}
 
+		public int getRepetitions() {
+			return repetitions;
+		}
+
 		@Override
 		int getMySize() {
-			return 2 + Convert.toBytes(this.workTitle).length + 4 + 4 + 8 + 8;
+			return 2 + Convert.toBytes(this.workTitle).length + 4 + 4 + 8 + 4 + 8;
 		}
 
 		@Override
@@ -798,6 +806,7 @@ public interface Attachment extends Appendix {
 			buffer.putInt(this.deadline);
 			buffer.putInt(this.bountyLimit);
 			buffer.putLong(this.xelPerPow);
+			buffer.putInt(this.repetitions);
 			buffer.putLong(this.xelPerBounty);
 		}
 
@@ -808,6 +817,7 @@ public interface Attachment extends Appendix {
 			attachment.put("bountyLimit", this.bountyLimit);
 			attachment.put("xel_per_pow", this.xelPerPow);
 			attachment.put("xel_per_bounty", this.xelPerBounty);
+			attachment.put("repetitions", this.repetitions);
 		}
 
 	}

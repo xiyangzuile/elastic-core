@@ -31,7 +31,7 @@ public final class CreateWork extends CreateTransaction {
 		final String xelPerBounty = ParameterParser.getParameterMultipart(req, "xel_per_bounty");
 		final String xelPerPow = ParameterParser.getParameterMultipart(req, "xel_per_pow");
 		final String bountyLimit = ParameterParser.getParameterMultipart(req, "bounty_limit");
-
+		final String repetitionsStr = ParameterParser.getParameterMultipart(req, "repetitions");
 		final Account account = ParameterParser.getSenderAccount(req);
 
 		if (workTitle == null) return JSONResponses.MISSING_NAME;
@@ -64,6 +64,15 @@ public final class CreateWork extends CreateTransaction {
 			return JSONResponses.MISSING_BOUNTYLIMIT;
 		}
 
+		int repetitions;
+		try {
+			repetitions = Integer.parseInt(repetitionsStr);
+			if ((repetitions > Constants.MAX_WORK_REPETITIONS)
+					|| (bountyLimitInt < 2)) return JSONResponses.MISSING_REPETITIONS;
+		} catch (final NumberFormatException e) {
+			return JSONResponses.MISSING_REPETITIONS;
+		}
+
 		long xelPerPowInt;
 		try {
 			xelPerPowInt = Long.parseLong(xelPerPow);
@@ -87,7 +96,7 @@ public final class CreateWork extends CreateTransaction {
             return JSONResponses.INCORRECT_WORK_NAME_LENGTH;
 
 		final Attachment attachment = new Attachment.WorkCreation(workTitle, workLanguageByte,
-				deadlineInt, bountyLimitInt, xelPerPowInt, xelPerBountyInt);
+				deadlineInt, bountyLimitInt, xelPerPowInt, repetitions, xelPerBountyInt);
 		return this.createTransaction(req, account, 0, amountlong, attachment);
 	}
 

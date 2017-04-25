@@ -244,6 +244,7 @@ public final class Work {
 	private final String title;
 	private BigInteger work_min_pow_target;
 	private final long xel_per_pow;
+	private final int repetitions;
 	private final long xel_per_bounty;
 	private final int bounty_limit;
 	private long balance_pow_fund;
@@ -273,6 +274,7 @@ public final class Work {
 		this.cancelled = rs.getBoolean("cancelled");
 		this.timedout = rs.getBoolean("timedout");
 		this.xel_per_bounty = rs.getLong("xel_per_bounty");
+		this.repetitions = rs.getInt("repetitions");
 		this.balance_pow_fund = rs.getLong("balance_pow_fund");
 		this.balance_bounty_fund = rs.getLong("balance_bounty_fund");
 		this.balance_pow_fund_orig = rs.getLong("balance_pow_fund_orig");
@@ -294,6 +296,7 @@ public final class Work {
 		this.dbKey = Work.workDbKeyFactory.newKey(this.id);
 		this.xel_per_pow = attachment.getXelPerPow();
 		this.title = attachment.getWorkTitle();
+		this.repetitions = attachment.getRepetitions();
 		this.blocksRemaining = (short) attachment.getDeadline();
 		this.closed = false;
 		this.close_pending = false;
@@ -314,6 +317,10 @@ public final class Work {
 		this.closing_timestamp = 0;
 		this.work_min_pow_target = BigInteger.ZERO;
 		this.updatePowTarget(transaction.getBlock());
+	}
+
+	public int getRepetitions() {
+		return repetitions;
 	}
 
 	public long getBalance_bounty_fund() {
@@ -541,9 +548,9 @@ public final class Work {
 
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con.prepareStatement(
-				"MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, latest) "
+				"MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, repetitions, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, latest) "
 						+ "KEY (id, height) "
-						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+						+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setInt(++i, this.closing_timestamp);
@@ -551,6 +558,7 @@ public final class Work {
 			pstmt.setLong(++i, this.block_id);
 			pstmt.setLong(++i, this.sender_account_id);
 			pstmt.setLong(++i, this.xel_per_pow);
+			pstmt.setInt(++i, this.repetitions);
 			pstmt.setString(++i, this.title);
 			pstmt.setShort(++i, this.blocksRemaining);
 			pstmt.setBoolean(++i, this.closed);
@@ -589,6 +597,7 @@ public final class Work {
 		response.put("work_id", Convert.toUnsignedLong(this.work_id));
 		response.put("block_id", Convert.toUnsignedLong(this.block_id));
 		response.put("xel_per_pow", this.xel_per_pow);
+		response.put("repetitions", this.repetitions);
 		response.put("title", this.title);
 		response.put("originating_height", this.originating_height);
 		response.put("blocksRemaining", this.blocksRemaining);
@@ -619,6 +628,7 @@ public final class Work {
 		final PrunableSourceCode p = PrunableSourceCode.getPrunableSourceCodeByWorkId(this.work_id);
 		if (p == null) obj.put("source", "");
 		else obj.put("source", Ascii85.encode(Convert.uncompress(p.getSource())));
+		// Todo, add current storage here somehow
 
 		return obj;
 	}

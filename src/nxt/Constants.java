@@ -89,8 +89,9 @@ public final class Constants {
 	public static final int Supernode_Push_Limit = 2;
     public static final boolean logSigningEvents = Nxt.getBooleanProperty("nxt.logSigningEvents");
 	public static final boolean logKimotoEvents = Nxt.getBooleanProperty("nxt.logKimotoEvents");
+    public static final int MAX_WORK_REPETITIONS = 100;
 
-	static {
+    static {
 		final int maxPrunableLifetime = Nxt.getIntProperty("nxt.maxPrunableLifetime");
 		ENABLE_PRUNING = maxPrunableLifetime >= 0;
 		MAX_PRUNABLE_LIFETIME = Constants.ENABLE_PRUNING

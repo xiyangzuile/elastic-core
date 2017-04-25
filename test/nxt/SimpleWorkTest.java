@@ -111,7 +111,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
-                    1440, 10, Constants.ONE_NXT, 10*Constants.ONE_NXT);
+                    1440, 10, Constants.ONE_NXT, 1, 10*Constants.ONE_NXT);
             final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {
@@ -131,7 +131,7 @@ public class SimpleWorkTest extends AbstractForgingTest {
         {
             String programCode = "verify m[1]==123;";
             final Attachment attachment = new Attachment.WorkCreation("Simple Work", (byte)0x01,
-                    1440, 10, Constants.ONE_NXT, 10*Constants.ONE_NXT);
+                    1440, 10, Constants.ONE_NXT, 1,  10*Constants.ONE_NXT);
             final Appendix.PrunableSourceCode appdx = new Appendix.PrunableSourceCode(programCode, (byte)0x01);
             boolean success = false;
             try {
