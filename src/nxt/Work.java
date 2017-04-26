@@ -422,6 +422,9 @@ public final class Work {
 
     public void kill_bounty_fund(final Block bl) {
 
+
+        // TODO ITERATIONS
+
         if (!this.isClosed()) {
             if (this.balance_bounty_fund >= this.xel_per_bounty) {
                 this.balance_bounty_fund -= this.xel_per_bounty;
@@ -437,6 +440,7 @@ public final class Work {
 
     public void natural_timeout(final Block bl) {
 
+        // TODO ITERATIONS
 
         if (this.closed) return;
 
