@@ -67,8 +67,7 @@ public final class CreateWork extends CreateTransaction {
 		int repetitions;
 		try {
 			repetitions = Integer.parseInt(repetitionsStr);
-			if ((repetitions > Constants.MAX_WORK_REPETITIONS)
-					|| (bountyLimitInt < 2)) return JSONResponses.MISSING_REPETITIONS;
+			if ((repetitions < 1)) return JSONResponses.MISSING_REPETITIONS;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.MISSING_REPETITIONS;
 		}

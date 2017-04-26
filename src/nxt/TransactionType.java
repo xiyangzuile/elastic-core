@@ -668,16 +668,20 @@ public abstract class TransactionType {
 				if (attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW) throw new NotValidException(
 						"User provided POW Algorithm does not have a correct xel/pow price");
 
+				// Verify XEL per Pow
+				if (attachment.getRepetitions() < 1) throw new NotValidException(
+						"Need at least 1 repetition");
+
 				// Verify XEL per Bounty
 				if (attachment.getXelPerBounty() < Constants.MIN_XEL_PER_BOUNTY) throw new NotValidException(
 						"User provided POW Algorithm does not have a correct xel/bounty price");
 
 				// minimal payout check
 				if (transaction.getAmountNQT() < ((Constants.PAY_FOR_AT_LEAST_X_POW * attachment.getXelPerPow())
-						+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))) throw new NotValidException(
-						"You must attach XEL for at least 20 POW submissions and all bounties, i.e., "
+						+ (attachment.getXelPerBounty() * attachment.getBountyLimit() * attachment.getRepetitions()))) throw new NotValidException(
+						"You must attach XEL for at least " + Constants.PAY_FOR_AT_LEAST_X_POW + " POW submissions and all bounties * #repetitions, i.e., "
 								+ ((Constants.PAY_FOR_AT_LEAST_X_POW * attachment.getXelPerPow())
-								+ (attachment.getXelPerBounty() * attachment.getBountyLimit()))
+								+ (attachment.getXelPerBounty() * attachment.getBountyLimit() * attachment.getRepetitions()))
 								+ " XEL");
 			}
 
