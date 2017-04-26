@@ -220,18 +220,18 @@ public final class PowAndBounty {
 			// Immediate payout incl. the bounty deposit
 			final AccountLedger.LedgerEvent event = AccountLedger.LedgerEvent.WORK_BOUNTY_PAYOUT;
 			final Account participantAccount = Account.getAccount(this.accountId);
-			final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);
+			/* LEAVE IT OUT FOR NOW  final Account depositAccount = Account.addOrGetAccount(Constants.DEPOSITS_ACCOUNT);*/
 			final Account snAccount = Account.getAccount(supernodeId);
-			if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)
-				throw new NxtException.NotValidException("Something went wrong with the deposit account, shouldn't happen");
+			/* LEAVE IT OUT FOR NOW  if (depositAccount.getUnconfirmedBalanceNQT() < Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION)
+				throw new NxtException.NotValidException("Something went wrong with the deposit account, shouldn't happen"); */
 
 			long payUser = w.getXel_per_bounty();
 			long paySn = (payUser * Constants.SUPERNODE_PERCENTAGE_EARNINGS) / 100;
 			payUser = payUser - paySn;
 			participantAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-					payUser + Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
-			depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
-					-1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION);
+					payUser /* LEAVE IT OUT FOR NOW +  Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION*/);
+			/* LEAVE IT OUT FOR NOW  depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
+					-1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION); */
 			snAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, paySn);
 			w.kill_bounty_fund(bl);
 		} else {

@@ -70,8 +70,6 @@ public final class Nxt {
 				final Thread secureRandomInitThread = Nxt.initSecureRandom();
 				Nxt.setServerStatus(ServerStatus.BEFORE_DATABASE, null);
 				Db.init();
-
-
 				Nxt.setServerStatus(ServerStatus.AFTER_DATABASE, null);
 				//noinspection ResultOfMethodCallIgnored
 				TransactionProcessorImpl.getInstance();
