@@ -172,6 +172,10 @@ public final class PowAndBounty {
 	private final long accountId;
 	private final DbKey dbKey;
 
+	public int[] getStorage() {
+		return storage;
+	}
+
 	private final byte[] multiplicator;
 	private final byte[] hash;
 

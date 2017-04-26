@@ -260,6 +260,7 @@ public final class Work {
     private short blocksRemaining;
     private final int originating_height;
     private int closing_timestamp;
+    private int[] combined_storage;
 
     private Work(final ResultSet rs, final DbKey dbKey) throws SQLException {
 
@@ -289,6 +290,7 @@ public final class Work {
         this.received_bounty_announcements = rs.getInt("received_bounty_announcements");
         this.closing_timestamp = rs.getInt("closing_timestamp");
         this.work_min_pow_target = new BigInteger(rs.getBytes("work_min_pow_target"));
+        this.combined_storage = Convert.byte2int(rs.getBytes("combined_storage"));
     }
 
     private Work(final Transaction transaction, final Attachment.WorkCreation attachment) {
@@ -305,6 +307,7 @@ public final class Work {
         this.close_pending = false;
 
 
+
         this.xel_per_bounty = attachment.getXelPerBounty();
         this.balance_pow_fund = transaction.getAmountNQT()
                 - attachment.getBountyLimit() * attachment.getXelPerBounty();
@@ -315,6 +318,7 @@ public final class Work {
         this.received_bounty_announcements = 0;
         this.received_pows = 0;
         this.bounty_limit = attachment.getBountyLimit();
+        this.combined_storage = new int[Constants.BOUNTY_STORAGE_INTS*this.bounty_limit];
         this.sender_account_id = transaction.getSenderId();
         this.cancelled = false;
         this.timedout = false;
@@ -322,6 +326,10 @@ public final class Work {
         this.closing_timestamp = 0;
         this.work_min_pow_target = BigInteger.ZERO;
         this.updatePowTarget(transaction.getBlock());
+    }
+
+    public int[] getCombined_storage() {
+        return combined_storage;
     }
 
     public int getRepetitions() {
@@ -429,6 +437,23 @@ public final class Work {
             if (this.balance_bounty_fund >= this.xel_per_bounty) {
                 this.balance_bounty_fund -= this.xel_per_bounty;
                 this.received_bounties++;
+            }
+
+            // Check if we need to update the internal work storage
+            if(this.received_bounties % this.bounty_limit == 0){
+                // This must be the end of a "repetition run"
+                this.repetitions_left --;
+                // We never check that for zero because trivially if this is zero <=> bounty fund is empty
+                int[] new_storage = new int[Constants.BOUNTY_STORAGE_INTS*this.bounty_limit];
+                int index = 0;
+                try(DbIterator<PowAndBounty> it = PowAndBounty.getLastBountiesRelevantForStorageGeneration(this.work_id)){
+                    while(it.hasNext()){
+                        int[] arr = it.next().getStorage();
+                        for(int i=0;i<Constants.BOUNTY_STORAGE_INTS;++i)
+                            new_storage[index*Constants.BOUNTY_STORAGE_INTS+i]=arr[i];
+                    }
+                }
+                this.combined_storage = new_storage;
             }
 
             // all was paid out, close it!
@@ -622,9 +647,9 @@ public final class Work {
 
     private void save(final Connection con) throws SQLException {
         try (PreparedStatement pstmt = con.prepareStatement(
-                "MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, repetitions, repetitions_left, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, latest) "
+                "MERGE INTO work (id, closing_timestamp, work_id, block_id, sender_account_id, xel_per_pow, repetitions, repetitions_left, title, blocks_remaining, closed, close_pending, cancelled, timedout, xel_per_bounty, balance_pow_fund, balance_bounty_fund, balance_pow_fund_orig, balance_bounty_fund_orig, received_bounties, received_bounty_announcements, received_pows, bounty_limit, originating_height, height, work_min_pow_target, combined_storage, latest) "
                         + "KEY (id, height) "
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
             int i = 0;
             pstmt.setLong(++i, this.id);
             pstmt.setInt(++i, this.closing_timestamp);
@@ -653,6 +678,7 @@ public final class Work {
             pstmt.setInt(++i, this.originating_height);
             pstmt.setInt(++i, Nxt.getBlockchain().getBlock(this.block_id).getHeight());
             pstmt.setBytes(++i, this.work_min_pow_target.toByteArray());
+            pstmt.setBytes(++i, Convert.int2byte(this.combined_storage));
 
             pstmt.executeUpdate();
         }
@@ -689,7 +715,7 @@ public final class Work {
         response.put("balance_bounty_fund_orig", this.balance_bounty_fund_orig);
         response.put("received_bounties", this.received_bounties);
         response.put("received_bounty_announcements", this.received_bounty_announcements);
-
+        response.put("combined_storage", Arrays.toString(this.combined_storage));
         response.put("received_pows", this.received_pows);
         response.put("bounty_limit", this.bounty_limit);
         response.put("sender_account_id", Convert.toUnsignedLong(this.sender_account_id));
