@@ -944,6 +944,8 @@ public abstract class TransactionType {
 
 		};
 
+		// LEAVE THIS OUT FOR NOW
+		/*
 		public final static TransactionType BOUNTY_ANNOUNCEMENT = new WorkControl() {
 
 			@Override
@@ -1085,6 +1087,8 @@ public abstract class TransactionType {
 			}
 		};
 
+		*/
+
 		public final static TransactionType BOUNTY = new WorkControl() {
 
 
@@ -1095,9 +1099,10 @@ public abstract class TransactionType {
 
 				if(w!=null) {
 					// Check if we had an announcement for this workid earlier, if not delay the transaction indefinitely
-					final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
-							attachment.getHash());
-					return hadAnnouncement;
+					// LEAVE THIS OUT FOR NOW final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
+					// LEAVE THIS OUT FOR NOW 		attachment.getHash());
+					// LEAVE THIS OUT FOR NOW  return hadAnnouncement;
+					return true;
 				}else return false;
 			}
 
@@ -1210,13 +1215,15 @@ public abstract class TransactionType {
 						"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
 
 				// check if we had an announcement for this bounty earlier
-				final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
+				// LEAVE THIS OUT FOR NOW
+				/* final boolean hadAnnouncement = PowAndBountyAnnouncements.hasValidHash(attachment.getWorkId(),
 						attachment.getHash());
 				if (!hadAnnouncement) throw new NxtException.NotCurrentlyValidException("Work "
 						+ Convert.toUnsignedLong(attachment.getWorkId())
 						+ " has not yet seen a \"counted\" bounty announcement for this submission with work_id "
 						+ attachment.getWorkId() + ", hash " + Convert.toHexString(attachment.getHash())
 						+ " and multi " + Convert.toHexString(attachment.getMultiplicator()));
+						*/
 
 				final byte[] hash = attachment.getHash();
 				if (PowAndBounty.hasHash(attachment.getWorkId(), hash))
@@ -1267,7 +1274,7 @@ public abstract class TransactionType {
 
 	private static final byte SUBTYPE_WORK_CONTROL_BOUNTY = 3;
 
-	private static final byte SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT = 4;
+	// LEAVE THIS OUT FOR NOW private static final byte SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT = 4;
 
 	private static final byte SUBTYPE_WORK_CONTROL_CANCEL_TASK_REQUEST = 5;
 
@@ -1308,8 +1315,8 @@ public abstract class TransactionType {
 				return TransactionType.WorkControl.PROOF_OF_WORK;
 			case SUBTYPE_WORK_CONTROL_BOUNTY:
 				return TransactionType.WorkControl.BOUNTY;
-			case SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT:
-				return TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT;
+				// LEAVE THIS OUT FOR NOW case SUBTYPE_WORK_CONTROL_BOUNTY_ANNOUNCEMENT:
+				// LEAVE THIS OUT FOR NOW return TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT;
 			case SUBTYPE_WORK_CONTROL_CANCEL_TASK_REQUEST:
 				return TransactionType.WorkControl.CANCEL_TASK_REQUEST;
 			default:

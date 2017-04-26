@@ -83,7 +83,7 @@ public final class Nxt {
 				Redeem.init();
 				Work.init();
 				PowAndBounty.init();
-				PowAndBountyAnnouncements.init();
+				// LEAVE THIS OUT FOR NOW PowAndBountyAnnouncements.init();
 				Peers.init();
 				APIProxy.init();
 				Generator.init();

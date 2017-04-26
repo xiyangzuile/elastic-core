@@ -1,4 +1,6 @@
+/* // LEAVE THIS OUT FOR NOW
 package nxt.http;
+
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -8,7 +10,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
 import nxt.NxtException;
-import nxt.PowAndBountyAnnouncements;
+// LEAVE THIS OUT FOR NOW  import nxt.PowAndBountyAnnouncements;
 import nxt.Work;
 
 public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
@@ -56,3 +58,4 @@ public final class GetApprovedBounties extends APIServlet.APIRequestHandler {
 	}
 
 }
+*/

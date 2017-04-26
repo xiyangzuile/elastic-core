@@ -17,6 +17,9 @@
 /**
  * Represents a single shuffling participant
  */
+
+// LEAVE THIS OUT FOR NOW
+/*
 package nxt;
 
 import java.sql.Connection;
@@ -185,4 +188,4 @@ public final class PowAndBountyAnnouncements {
 		return response;
 	}
 
-}
+}*/

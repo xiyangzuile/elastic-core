@@ -396,7 +396,7 @@ public interface Appendix {
 				throw new NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions with no recipient or to redeem transactions");
 
-			if (transaction.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST || transaction.getType() == TransactionType.WorkControl.BOUNTY || transaction.getType() == TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT || transaction.getType() == TransactionType.WorkControl.PROOF_OF_WORK || transaction.getType() == TransactionType.WorkControl.NEW_TASK)
+			if (transaction.getType() == TransactionType.WorkControl.CANCEL_TASK_REQUEST || transaction.getType() == TransactionType.WorkControl.BOUNTY /* LEAVE THIS OUT FOR NOW || transaction.getType() == TransactionType.WorkControl.BOUNTY_ANNOUNCEMENT */ || transaction.getType() == TransactionType.WorkControl.PROOF_OF_WORK || transaction.getType() == TransactionType.WorkControl.NEW_TASK)
 				throw new NotValidException(
 						"PublicKeyAnnouncement cannot be attached to transactions related to work creation or management");
 

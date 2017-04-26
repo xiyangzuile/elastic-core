@@ -1,4 +1,7 @@
+// LEAVE THIS OUT FOR NOW
+/*
 package nxt.http;
+
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -57,3 +60,4 @@ public final class BountyAnnouncement extends CreateTransaction {
 	}
 
 }
+*/

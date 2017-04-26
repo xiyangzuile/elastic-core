@@ -452,6 +452,8 @@ public interface Attachment extends Appendix {
         }
     }
 
+	// LEAVE THIS OUT FOR NOW
+	/*
 	public final static class PiggybackedProofOfBountyAnnouncement extends AbstractAttachment {
 
 		private final long workId;
@@ -512,7 +514,7 @@ public interface Attachment extends Appendix {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
 			attachment.put("hash_announced", Convert.toHexString(this.hashAnnounced));
 		}
-	}
+	}*/
 
 	public final static class PiggybackedProofOfWork extends AbstractAttachment implements Hashable {
 
