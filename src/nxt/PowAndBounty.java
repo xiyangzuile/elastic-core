@@ -119,6 +119,14 @@ public final class PowAndBounty {
 				.and(new DbClause.BooleanClause("latest", true)), 0, -1, "");
 	}
 
+	public static DbIterator<PowAndBounty> getLastBountiesRelevantForStorageGeneration(final long wid){
+		// "Should" return the last X bounties (from the last repetition only)
+		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
+						.and(new DbClause.BooleanClause("is_pow", false)).and(new DbClause.BooleanClause("latest", true)), 0,
+				Work.getWork(wid).getBounty_limit(), " ORDER BY height DESC");
+	}
+
+
 	static int getBountyCount(final long wid) {
 		return PowAndBounty.powAndBountyTable
 				.getCount(new DbClause.LongClause("work_id", wid).and(new DbClause.BooleanClause("is_pow", false)));
