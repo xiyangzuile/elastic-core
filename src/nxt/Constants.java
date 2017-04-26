@@ -47,8 +47,8 @@ public final class Constants {
 	public static final int PAY_FOR_AT_LEAST_X_POW = 20;
 	public static final long ONE_NXT = 100000000;
 	public static final int EVAL_WORK_EXEC_TIME_AGE_SECONDS = 120;
-	public static final long MIN_XEL_PER_POW = (long) (0.001 * Constants.ONE_NXT);
-	public static final long MIN_XEL_PER_BOUNTY = Constants.ONE_NXT;
+	public static final long MIN_XEL_PER_POW = 0;
+	public static final long MIN_XEL_PER_BOUNTY = 0;
 	/* LEAVE IT OUT FOR NOW public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION = 10 * Constants.ONE_NXT; */
 	public static final int MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 32;
 	public static final int DEPOSIT_GRACE_PERIOD = 15 * 60; // 15 minutes
