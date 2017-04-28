@@ -56,7 +56,7 @@
                     <div class="row">
                         <div class="col-xs-6 col-sm-6 col-md-6" data-normal="12" data-advanced="6">
                             <div class="form-group">
-                                <label for="send_money_amount" data-i18n="amount">AMOUNT</label>
+                                <label for="work_deadline" data-i18n="amount">AMOUNT</label>
                                 <div class="input-group">
                                     <input name="amountNXT" id="send_money_amount_creation" step="any" min="0" class="form-control" placeholder="Amount" data-i18n="[placeholder]amount" tabindex="3" type="text">
                                     <span class="input-group-addon">XEL</span>
@@ -71,26 +71,34 @@
                         </div>
                         <div class="col-xs-6 col-sm-6 col-md-6" data-normal="12" data-advanced="6">
                             <div class="form-group">
-                                <label for="send_money_amount" data-i18n="">BOUNTIES WANTED</label>
+                                <label for="bounty_limit" data-i18n="">BOUNTIES WANTED</label>
                                 <div class="input-group">
                                     <input name="bounty_limit" id="bounty_limit" step="any" min="1" max="10" class="form-control" placeholder="" value="10" data-i18n="" tabindex="4" type="text">
                                 </div>
                             </div>
                         </div>
+                        <div class="col-xs-6 col-sm-6 col-md-6" data-normal="12" data-advanced="6">
+                            <div class="form-group">
+                                <label for="repetitions" data-i18n="">REPETITIONS</label>
+                                <div class="input-group">
+                                    <input name="repetitions" id="repetitions" step="any" value="1" min="1" max="10000" class="form-control" placeholder="" data-i18n="" tabindex="4" type="text">
+                                </div>
+                            </div>
+                        </div>
                         <div style="display: block;" class="col-xs-6 col-sm-6 col-md-6">
                             <div class="form-group">
-                                <label for="send_money_amount" data-i18n="">XEL PER BOUNTY</label>
+                                <label for="xel_per_bounty" data-i18n="">XEL PER BOUNTY</label>
                                 <div class="input-group">
-                                    <input name="xel_per_bounty" id="xel_per_bounty" step="any" class="form-control" placeholder="XEL per bounty" data-i18n="" tabindex="5" type="text">
+                                    <input name="xel_per_bounty" id="xel_per_bounty" step="any" class="form-control" placeholder="Amount in XEL" data-i18n="" tabindex="5" type="text">
                                     <span class="input-group-addon">XEL</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-xs-6 col-sm-6 col-md-6" data-normal="12" data-advanced="6">
                             <div class="form-group">
-                                <label for="send_money_amount" data-i18n="">XEL PER POW</label>
+                                <label for="xel_per_pow" data-i18n="">XEL PER POW</label>
                                 <div class="input-group">
-                                    <input name="xel_per_pow" id="xel_per_pow" step="any" class="form-control" placeholder="XEL per POW" value="10" data-i18n="" tabindex="4" type="text">
+                                    <input name="xel_per_pow" id="xel_per_pow" step="any" class="form-control" placeholder="Amount in XEL" data-i18n="" tabindex="4" type="text">
                                     <span class="input-group-addon">XEL</span>
                                 </div>
                             </div>
