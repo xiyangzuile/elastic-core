@@ -16,6 +16,7 @@
 
 package nxt.peer;
 
+import nxt.util.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 
@@ -36,16 +37,20 @@ final class ProcessBlock extends PeerServlet.PeerRequestHandler {
 	JSONStreamAware processRequest(final JSONObject request, final Peer peer) {
 		final String previousBlockId = (String) request.get("previousBlock");
 		final Block lastBlock = Nxt.getBlockchain().getLastBlock();
+		Logger.logDebugMessage("Received block from " + peer.getHost() + ", prev = " + previousBlockId + ", our_prev = " + lastBlock.getId());
 		if (lastBlock.getStringId().equals(previousBlockId)
 				|| ((Convert.parseUnsignedLong(previousBlockId) == lastBlock.getPreviousBlockId())
-						&& (lastBlock.getTimestamp() > Convert.parseLong(request.get("timestamp")))))
-            Peers.peersService.submit(() -> {
-                try {
-                    Nxt.getBlockchainProcessor().processPeerBlock(request);
-                } catch (NxtException | RuntimeException e) {
-                    if (peer != null) peer.blacklist(e);
-                }
-            });
+						&& (lastBlock.getTimestamp() > Convert.parseLong(request.get("timestamp"))))) {
+			Logger.logDebugMessage("   -> enqueued to BC-Processor.");
+
+			Peers.peersService.submit(() -> {
+				try {
+					Nxt.getBlockchainProcessor().processPeerBlock(request);
+				} catch (NxtException | RuntimeException e) {
+					if (peer != null) peer.blacklist(e);
+				}
+			});
+		}
 		return JSON.emptyJSON;
 	}
 
