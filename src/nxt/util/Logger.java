@@ -209,7 +209,7 @@ public final class Logger {
 	 *            Message
 	 */
 	public static void logDebugMessage(final String message) {
-		Logger.doLog(Level.DEBUG, message, null);
+		Logger.doLog(Level.INFO, message, null);
 	}
 
 	/**
@@ -221,7 +221,7 @@ public final class Logger {
 	 *            Message args
 	 */
 	public static void logDebugMessage(final String format, final Object... args) {
-		Logger.doLog(Level.DEBUG, String.format(format, args), null);
+		Logger.doLog(Level.INFO, String.format(format, args), null);
 	}
 
 	/**
@@ -233,7 +233,7 @@ public final class Logger {
 	 *            Exception
 	 */
 	public static void logDebugMessage(final String message, final Throwable exc) {
-		Logger.doLog(Level.DEBUG, message, exc);
+		Logger.doLog(Level.INFO, message, exc);
 	}
 
 	/**
