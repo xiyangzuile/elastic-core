@@ -38,16 +38,12 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
+import nxt.*;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONStreamAware;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 
-import nxt.Account;
-import nxt.BlockchainProcessor;
-import nxt.Constants;
-import nxt.Nxt;
-import nxt.NxtException;
 import nxt.http.API;
 import nxt.http.APIEnum;
 import nxt.util.Convert;
@@ -824,6 +820,11 @@ final class PeerImpl implements Peer {
 
 	boolean verifyAnnouncedAddress(final String newAnnouncedAddress) {
 		if (newAnnouncedAddress == null) return true;
+
+		// For now, ignore for supernodes
+		if(Peers.getPotentialSNPeers().contains(newAnnouncedAddress))
+			return true;
+
 		try {
 			final URI uri = new URI("http://" + newAnnouncedAddress);
 			final int announcedPort = uri.getPort() == -1 ? Peers.getDefaultPeerPort() : uri.getPort();
