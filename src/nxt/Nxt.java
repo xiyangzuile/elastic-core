@@ -371,7 +371,6 @@ public final class Nxt {
 			// Load properties from location specified as command line parameter
 			final String configFile = System.getProperty(propertiesFile);
 			if (configFile != null) {
-				Logger.logInfoMessage("Loading %s from %s\n", propertiesFile, configFile);
 				try (InputStream fis = new FileInputStream(configFile)) {
 					properties.load(fis);
 					return properties;
@@ -387,8 +386,6 @@ public final class Nxt {
                 // Therefore we first load it from the classpath and then
                 // look for the real nxt.properties in the user folder.
                 if (is != null) {
-					Logger.logInfoMessage("Loading default properties from resources file (" + propertiesFile + ".");
-
                     properties.load(is);
                     if (isDefault) return properties;
                 }else{
@@ -396,8 +393,6 @@ public final class Nxt {
 				}
                 // load non-default properties files from the user folder
                 if (!Nxt.dirProvider.isLoadPropertyFileFromUserDir()) {
-					Logger.logInfoMessage("Skipping to load properties from home folder.");
-
                     return properties;
                 }
                 final String homeDir = Nxt.dirProvider.getUserHomeDir();
@@ -416,13 +411,10 @@ public final class Nxt {
                 }
                 final Path confDir = Paths.get(homeDir, Nxt.CONFIG_DIR);
                 if (!Files.isReadable(confDir)) {
-					Logger.logInfoMessage("Creating config directory: " + confDir);
-
                     Files.createDirectory(confDir);
                 }
                 final Path propPath = Paths.get(confDir.toString()).resolve(Paths.get(propertiesFile));
                 if (Files.isReadable(propPath)) {
-					Logger.logInfoMessage("Loading customized properties " + propertiesFile + " from " + confDir);
                     try (InputStream istream = Files.newInputStream(propPath)) {
                         properties.load(istream);
                     } catch (final Exception e) {
@@ -431,8 +423,6 @@ public final class Nxt {
                     }
 
                 } else {
-					Logger.logInfoMessage("Creating property file in:" + propPath);
-
                     Files.createFile(propPath);
                     Files.write(propPath,
                             Convert.toBytes("# use this file for workstation specific " + propertiesFile));
