@@ -1082,7 +1082,7 @@ public final class BlockchainProcessorImpl implements BlockchainProcessor {
 			final MessageDigest digest = Crypto.sha256();
 			for (final TransactionImpl transaction : transactions) digest.update(transaction.getBytes());
 
-			final BlockImpl genesisBlock = new BlockImpl(0, 0, 0, Constants.MAX_BALANCE_NQT, 0, SoftForkManager.getInstance().getFeatureBitmask(),
+			final BlockImpl genesisBlock = new BlockImpl(0, 0, 0, Constants.MAX_BALANCE_NQT, 0, 0,
 					transactions.size() * 128, digest.digest(), Genesis.CREATOR_PUBLIC_KEY,
 					Genesis.GENESIS_GENERATION_SIGNATURE, Genesis.GENESIS_BLOCK_SIGNATURE, new byte[32], transactions,
 					Constants.least_possible_target);
