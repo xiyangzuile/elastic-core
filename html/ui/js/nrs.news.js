@@ -34,7 +34,7 @@ var NRS = (function(NRS, $, undefined) {
          ssl = "s";
       }
       var settings = {
-         "limit": 5,
+         "limit": 10,
          "layoutTemplate": "<div class='list-group'>{entries}</div>",
          "entryTemplate": "<a href='{url}' target='_blank' class='list-group-item'><h4 class='list-group-item-heading'>{title}</h4><p class='list-group-item-text'>{shortBodyPlain}</p><i>{date}</i></a>",
          "ssl": ssl
@@ -56,11 +56,9 @@ var NRS = (function(NRS, $, undefined) {
          "ssl": ssl
       };
 
-      $("#nxtforum_news").rss("https://nxtforum.org/index.php?type=rss;action=.xml", settings, NRS.newsLoaded);
-      $("#reddit_news").rss("http://www.reddit.com/r/NXT/.rss", settingsReddit, NRS.newsLoaded);
-      $("#nxtcoin_blogspot_news").rss("http://nxtcoin.blogspot.com/feeds/posts/default", settings, NRS.newsLoaded);
-      $("#nxter_news").rss("http://nxter.org/feed/", settings, NRS.newsLoaded);
-		NRS.pageLoaded();
+      $("#xelforum_news").rss("https://talk.elasticexplorer.org/latest.rss", settings, NRS.newsLoaded($("#xelforum_news")));
+      // $("#reddit_news").rss("http://www.reddit.com/r/NXT/.rss", settingsReddit, NRS.newsLoaded);
+        NRS.pageLoaded();
 	};
 
 	NRS.newsLoaded = function($el) {
