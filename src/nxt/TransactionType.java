@@ -1152,39 +1152,47 @@ public abstract class TransactionType {
 				return TransactionType.SUBTYPE_WORK_CONTROL_BOUNTY;
 			}
 
+
+
 			@Override
 			boolean isDuplicate(final Transaction transaction,
-					final Map<TransactionType, Map<String, Integer>> duplicates) {
+								final Map<TransactionType, Map<String, Integer>> duplicates) {
 				final Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
-				return TransactionType.isDuplicate(WorkControl.BOUNTY, Convert.toHexString(attachment.getHash()),
-						duplicates, true);
+				return TransactionType.isDuplicate(WorkControl.BOUNTY,
+						Convert.toHexString(attachment.getHash()), duplicates, true);
 			}
 
 			@Override
 			boolean isUnconfirmedDuplicate(final Transaction transaction,
-					final Map<TransactionType, Map<String, Integer>> duplicates) {
+										   final Map<TransactionType, Map<String, Integer>> duplicates) {
 				final Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
-				final boolean duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY,
+				boolean duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY,
 						Convert.toHexString(attachment.getHash()), duplicates, true);
 				if (!duplicate) {
-					// This is required to limit the amount of unconfirmed BNT
-					// Announcements to not exceed the requested bounty # by the
+					// This is required to limit the amount of BNT to not exceed the requested bounty # by the
 					// requester.
 					// But first, check out how many more we want from what has
 					// been already confirmed!
 					final Work w = Work.getWork(attachment.getWorkId());
 
-					if (w != null && w.isClosed()) {
-						transaction.setExtraInfo("work is already closed, you missed the reveal period");
-						return true;
-					}
+					if(w == null) return true;
 
+					if (w.isClose_pending()) return true;
+					if (w.isClosed()) return true;
+
+					final int count_wanted = w.getBounty_limit();
+					final int count_has_announcements = w.getReceived_bounties();
+					final int left_wanted = count_wanted - count_has_announcements;
+					if (left_wanted <= 0) {
+						transaction.setExtraInfo("no more bounty announcement slots available");
+						duplicate = true;
+					} else duplicate = TransactionType.isDuplicate(WorkControl.BOUNTY,
+							String.valueOf(attachment.getWorkId()), duplicates, left_wanted);
 				}
 				return duplicate;
 			}
-
 
 
 			@Override

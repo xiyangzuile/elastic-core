@@ -299,10 +299,10 @@ var NRS = (function(NRS, $, undefined) {
 			else if (message.cancelled == true)
 				return "<span id='activeLabel' class='label label-danger label12px'>Cancelled</span>";
 			else{
-				if(message.received_bounties == message.received_bounty_announcements)
+				// REMOVED FOR NOW if(message.received_bounties == message.received_bounty_announcements)
 					return "<span id='activeLabel' class='label label-info label12px'>Completed</span>";
-				else if(message.received_bounties < message.received_bounty_announcements)
-					return "<span id='activeLabel' class='label label-partially label12px'>Partially Completed</span>";
+				// REMOVED FOR NOW else if(message.received_bounties < message.received_bounty_announcements)
+				// REMOVED FOR NOW 	return "<span id='activeLabel' class='label label-partially label12px'>Partially Completed</span>";
 			}
 				
 		}
