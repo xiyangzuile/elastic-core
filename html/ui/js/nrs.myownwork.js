@@ -819,6 +819,12 @@ var NRS = (function(NRS, $, undefined) {
 			$("#bal_original").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig).toString())));
 			$("#bal_remained").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund+workItem.balance_pow_fund).toString())));
 			$("#bnt_connected").empty().append(calc_real_received(workItem));
+			$("#numbounties").empty().append(calc_real_asked(workItem));
+            var itaa = workItem.repetitions-workItem.repetitions_left+1;
+            if(itaa > workItem.repetitions)
+                itaa = workItem.repetitions;
+			$("#iterreal").empty().append(itaa);
+			$("#iterfull").empty().append(workItem.repetitions);
 
 			var orig = workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig;
 			var rem = workItem.balance_bounty_fund+workItem.balance_pow_fund;
