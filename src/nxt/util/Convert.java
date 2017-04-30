@@ -212,10 +212,10 @@ public final class Convert {
 			for (int i=0; i<srcLength; i++) {
 				int x = src[i];
 				int j = i << 2;
-				dst[j++] = (byte) ((x >>> 0) & 0xff);
-				dst[j++] = (byte) ((x >>> 8) & 0xff);
-				dst[j++] = (byte) ((x >>> 16) & 0xff);
 				dst[j++] = (byte) ((x >>> 24) & 0xff);
+				dst[j++] = (byte) ((x >>> 16) & 0xff);
+				dst[j++] = (byte) ((x >>> 8) & 0xff);
+				dst[j++] = (byte) ((x) & 0xff);
 			}
 			return dst;
 	}

@@ -312,10 +312,17 @@ public final class TransactionProcessorImpl implements TransactionProcessor {
 	}
 
 	private void broadcast_specialcase_supernode(final Transaction transaction) throws NxtException.ValidationException {
+
+		transaction.validateWithoutSn(); // Validate everything except SN signature (prevents bans on supernode due to "mistakes"
+
 		if(!Peers.hasConnectedSnPeers(1))
 			throw new NxtException.NotCurrentlyValidException("You are not connected to any supernode");
 		List<Transaction> lst = new ArrayList<>();
 		lst.add(transaction);
+
+
+		Logger.logSignMessage("Broadcasting SN-TX: "+Convert.toHexString(transaction.getBytes()));
+
 		Peers.sendToSomeSnPeers(lst);
 	}
 	@Override

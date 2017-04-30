@@ -52,15 +52,12 @@ public final class ProofOfX extends CreateTransaction {
 
 		if(!is_pow){
 			storage = Convert.emptyToNull(req.getParameter("storage"));
-			if(storage==null){
+			if(storage==null || storage.length()!=Constants.BOUNTY_STORAGE_INTS*8){
 				return JSONResponses.INCORRECT_STORAGE;
 			}
 			try{
-				String[] strArray = storage.split(",");
-				intArray = new int[strArray.length];
-				for(int i = 0; i < strArray.length; i++) {
-					intArray[i] = Integer.parseInt(strArray[i].trim());
-				}
+				intArray = Convert.byte2int(Convert.parseHexString(storage));
+
 			}catch(Exception e){
 				return JSONResponses.INCORRECT_STORAGE;
 			}

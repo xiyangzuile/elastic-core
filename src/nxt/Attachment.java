@@ -347,7 +347,7 @@ public interface Attachment extends Appendix {
 
 			final String storageRaw = (String) attachmentData.get("storage");
 			if (storageRaw != null) {
-				byte[] storage_byte_representation = Convert.parseHexString(inputRaw);
+				byte[] storage_byte_representation = Convert.parseHexString(storageRaw);
 				storage_byte_representation = Convert.toFixedBytesCutter(storage_byte_representation, Constants.BOUNTY_STORAGE_INTS*4);
 				this.storage = Convert.byte2int(storage_byte_representation);
 			}else this.storage = new int[Constants.BOUNTY_STORAGE_INTS];

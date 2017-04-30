@@ -1179,8 +1179,10 @@ public final class Peers {
 			final JSONObject request = new JSONObject();
 			final JSONArray transactionsData = new JSONArray();
 			for (int i = nextBatchStart; i < nextBatchStart + Peers.sendTransactionsBatchSize
-					&& i < transactions.size(); i++)
-                transactionsData.add(transactions.get(i).getJSONObject());
+					&& i < transactions.size(); i++) {
+				transactionsData.add(transactions.get(i).getJSONObject());
+				Logger.logInfoMessage(transactions.get(i).getJSONObject().toJSONString()); // To remove
+			}
 			request.put("requestType", "processSupernodeTransactions");
 			request.put("transactions", transactionsData);
 			Peers.sendToSomeSnPeers(request);
