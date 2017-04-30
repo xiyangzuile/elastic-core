@@ -460,7 +460,6 @@ public final class Work {
             // all was paid out, close it!
             if (this.balance_bounty_fund < this.xel_per_bounty) this.natural_timeout(bl);
             else{
-                System.out.println("Saving Work Storage (" + this.getId() + ") -> " + Convert.toHexString(Convert.int2byte(this.combined_storage)));
                 Work.workTable.insert(this);
             }
         }
