@@ -459,7 +459,10 @@ public final class Work {
 
             // all was paid out, close it!
             if (this.balance_bounty_fund < this.xel_per_bounty) this.natural_timeout(bl);
-            else Work.workTable.insert(this);
+            else{
+                System.out.println("Saving Work Storage (" + this.getId() + ") -> " + Convert.toHexString(Convert.int2byte(this.combined_storage)));
+                Work.workTable.insert(this);
+            }
         }
     }
 
@@ -677,7 +680,7 @@ public final class Work {
             pstmt.setInt(++i, this.bounty_limit);
             //noinspection SuspiciousNameCombination
             pstmt.setInt(++i, this.originating_height);
-            pstmt.setInt(++i, Nxt.getBlockchain().getBlock(this.block_id).getHeight());
+            pstmt.setInt(++i,Nxt.getBlockchain().getHeight());
             pstmt.setBytes(++i, this.work_min_pow_target.toByteArray());
             pstmt.setBytes(++i, Convert.int2byte(this.combined_storage));
 
