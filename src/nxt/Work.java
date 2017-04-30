@@ -311,7 +311,7 @@ public final class Work {
         this.xel_per_bounty = attachment.getXelPerBounty();
         this.balance_pow_fund = transaction.getAmountNQT()
                 - attachment.getBountyLimit() * attachment.getXelPerBounty();
-        this.balance_bounty_fund = attachment.getBountyLimit() * attachment.getXelPerBounty();
+        this.balance_bounty_fund = attachment.getBountyLimit() * attachment.getXelPerBounty() * attachment.getRepetitions();
         this.balance_pow_fund_orig = this.balance_pow_fund;
         this.balance_bounty_fund_orig = this.balance_bounty_fund;
         this.received_bounties = 0;
