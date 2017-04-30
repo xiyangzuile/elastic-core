@@ -35,8 +35,6 @@ public final class GetWorkBounties extends APIServlet.APIRequestHandler {
 
 		final JSONArray bounties = new JSONArray();
 
-		ParameterParser.getFirstIndex(req);
-		ParameterParser.getLastIndex(req);
 		try (DbIterator<? extends PowAndBounty> iterator = PowAndBounty.getBounties(wid)) {
 			while (iterator.hasNext()) {
 				final PowAndBounty b = iterator.next();

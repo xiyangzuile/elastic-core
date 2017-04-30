@@ -813,9 +813,8 @@ public abstract class TransactionType {
 
 				final Attachment.PiggybackedProofOfWork attachment = (Attachment.PiggybackedProofOfWork) transaction
 						.getAttachment();
-				PowAndBounty.addPow(transaction, attachment);
-				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
 
+				final PowAndBounty obj = PowAndBounty.addPow(transaction, attachment);
 				obj.applyPowPayment(transaction.getBlock(), transaction.getSupernodeId());
 			}
 
@@ -1122,8 +1121,8 @@ public abstract class TransactionType {
 
 				final Attachment.PiggybackedProofOfBounty attachment = (Attachment.PiggybackedProofOfBounty) transaction
 						.getAttachment();
-				PowAndBounty.addBounty(transaction, attachment);
-				final PowAndBounty obj = PowAndBounty.getPowOrBountyById(transaction.getId());
+
+				final PowAndBounty obj = PowAndBounty.addBounty(transaction, attachment);
 				obj.applyBounty(transaction.getBlock(), transaction.getSupernodeId());
 
 			}

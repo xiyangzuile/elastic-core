@@ -74,21 +74,21 @@ public final class PowAndBounty {
 	};
 
 
-	static void addBounty(final Transaction transaction, final Attachment.PiggybackedProofOfBounty attachment) {
+	static PowAndBounty addBounty(final Transaction transaction, final Attachment.PiggybackedProofOfBounty attachment) {
 		final PowAndBounty shuffling = new PowAndBounty(transaction, attachment);
-		PowAndBounty.powAndBountyTable.insert(shuffling);
-		PowAndBounty.listeners.notify(shuffling, Event.BOUNTY_SUBMITTED);
+		return shuffling;
+		//
 	}
 
 	public static boolean addListener(final Listener<PowAndBounty> listener, final Event eventType) {
 		return PowAndBounty.listeners.addListener(listener, eventType);
 	}
 
-	static void addPow(final Transaction transaction, final Attachment.PiggybackedProofOfWork attachment) {
+	static PowAndBounty addPow(final Transaction transaction, final Attachment.PiggybackedProofOfWork attachment) {
 		final PowAndBounty shuffling = new PowAndBounty(transaction, attachment);
-		PowAndBounty.powAndBountyTable.insert(shuffling);
+		return shuffling;
 
-		PowAndBounty.listeners.notify(shuffling, Event.POW_SUBMITTED);
+		//
 	}
 
 
@@ -240,8 +240,9 @@ public final class PowAndBounty {
 			w.kill_bounty_fund(bl);
 		} else {
 			this.too_late = true;
-			PowAndBounty.powAndBountyTable.insert(this);
 		}
+		PowAndBounty.powAndBountyTable.insert(this);
+		PowAndBounty.listeners.notify(this, Event.POW_SUBMITTED);
 	}
 
 	public void applyPowPayment(final Block bl, long supernodeId) throws NxtException.NotValidException {
@@ -264,9 +265,9 @@ public final class PowAndBounty {
 			w.reduce_one_pow_submission(bl);
 		} else {
 			this.too_late = true;
-			PowAndBounty.powAndBountyTable.insert(this);
 		}
-
+		PowAndBounty.powAndBountyTable.insert(this);
+		PowAndBounty.listeners.notify(this, Event.BOUNTY_SUBMITTED);
 	}
 
 	private long getAccountId() {
@@ -280,7 +281,7 @@ public final class PowAndBounty {
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con.prepareStatement(
 				"MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow, storage, "
-						+ " height) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+						+ " height, latest) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
 			pstmt.setBoolean(++i, this.too_late);
