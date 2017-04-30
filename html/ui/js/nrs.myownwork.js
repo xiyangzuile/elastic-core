@@ -255,6 +255,14 @@ var NRS = (function(NRS, $, undefined) {
 
 
 	}
+
+	function calc_real_received(message){
+	    return message.received_bounties + (message.repetitions - message.repetitions_left)*message.bounty_limit;
+	}
+	function calc_real_asked(message){
+    	    return message.repetitions*message.bounty_limit;
+    	}
+
 	function statusText(message){
 		return "<b>" + message.balance_remained + "+</b> XEL left, <b>7742</b> blocks left";
 	}
@@ -263,7 +271,7 @@ var NRS = (function(NRS, $, undefined) {
 		var bal_left_pow = message.balance_bounty_fund; // fix here
 		var bal_pow_perc_left = Math.round(bal_left_pow*100 / bal_original_pow);
 		var percent_done_pow = 100 - bal_pow_perc_left;
-		var percent_bounty_left = (message.received_bounties * 100 / message.bounty_limit);
+		var percent_bounty_left = (calc_real_received(message) * 100 / calc_real_asked(message));
 		var maxXC = (percent_done_pow>percent_bounty_left) ? percent_done_pow : percent_bounty_left;
 		return "<b>" + maxXC.toFixed(2) + "%</b> done";
 	}
@@ -286,7 +294,7 @@ var NRS = (function(NRS, $, undefined) {
 			return "";
 	}
 	function efficiency(message){
-		return "<b>" + message.received_bounties + "</b> bounties";
+		return "<b>" + calc_real_received(message) + "</b> bounties";
 	}
 	function statusspan(message){
 		if(message.closed == false && message.close_pending == false)
@@ -527,10 +535,10 @@ var NRS = (function(NRS, $, undefined) {
 			else if(message.cancelled)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-mail-reply-all fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			else
-				if(message.received_bounties == message.received_bounty_announcements)
+				//if(message.received_bounties == message.received_bounty_announcements)
 				return "<div class='row fourtwenty'><div class='col-md-3'><i class='fa fa-check-circle fa-fw'></i> " + moneyReturned(message) + "</div><div class='col-md-6'><i class='fa fa-mail-forward fa-fw'></i> " + moneyPaid(message) + "</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
-				else if(message.received_bounties < message.received_bounty_announcements)
-				return "<div class='row fourtwenty'><div class='col-md-9'><i class='fa fa-bank'></i> Made " + moneyBountyForfeit(message) + " with forfeited bounties</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
+				//else if(message.received_bounties < message.received_bounty_announcements)
+				//return "<div class='row fourtwenty'><div class='col-md-9'><i class='fa fa-bank'></i> Made " + moneyBountyForfeit(message) + " with forfeited bounties</div><div class='col-md-3'><i class='fa fa-star-half-empty fa-fw'></i> " + efficiency(message) + "</div></div>";
 			}
 			
 		}
@@ -779,16 +787,16 @@ var NRS = (function(NRS, $, undefined) {
 				{
 					
 
-					if(workItem.received_bounties == workItem.received_bounty_announcements)
-					{
+					//if(workItem.received_bounties == workItem.received_bounty_announcements)
+					//{
 					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-info");
 					$("#work_indicator_inner").empty().append("Completed");
-					}
-					else if(workItem.received_bounties < workItem.received_bounty_announcements)
-					{
-					$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-info").addClass("label-partially");
-					$("#work_indicator_inner").empty().append("Partially Completed");
-				    }
+					//}
+					//else if(workItem.received_bounties < workItem.received_bounty_announcements)
+					//{
+					//$("#work_indicator").removeClass("btn-warning").removeClass("btn-success").removeClass("btn-default").removeClass("btn-info").removeClass("label-partially").removeClass("btn-danger").addClass("btn-info").addClass("label-partially");
+					//$("#work_indicator_inner").empty().append("Partially Completed");
+				    //}
 				}
 			}
 			
@@ -810,7 +818,7 @@ var NRS = (function(NRS, $, undefined) {
 
 			$("#bal_original").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig).toString())));
 			$("#bal_remained").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund+workItem.balance_pow_fund).toString())));
-			$("#bnt_connected").empty().append(workItem.received_bounties);
+			$("#bnt_connected").empty().append(calc_real_received(workItem));
 
 			var orig = workItem.balance_bounty_fund_orig+workItem.balance_pow_fund_orig;
 			var rem = workItem.balance_bounty_fund+workItem.balance_pow_fund;
@@ -830,7 +838,7 @@ var NRS = (function(NRS, $, undefined) {
 			$("#refund_calculator").empty().append(NRS.formatAmount(new BigInteger((workItem.balance_bounty_fund+workItem.balance_pow_fund).toString())));
 
 			var bountiesLimit = parseInt(workItem.bounty_limit);
-			var bountiesMissing = bountiesLimit - parseInt(workItem.received_bounties);
+			var bountiesMissing = calc_real_asked(workItem) - parseInt(calc_real_received(workItem));
 
 			var gotNumberPow = parseInt(workItem.received_pows);
 			$("#number_pow").empty().append(gotNumberPow);
@@ -877,7 +885,7 @@ var NRS = (function(NRS, $, undefined) {
 			
 
 			var percent_done_pow = 100 - bal_pow_perc_left;
-			var percent_bounty_left = (workItem.received_bounties * 100 / workItem.bounty_limit);
+			var percent_bounty_left = (calc_real_received(workItem) * 100 / calc_real_asked(workItem));
 			$("#bal_remained_pow_percent").empty().append(percent_bounty_left.toFixed(2)); // finished
 
 			var maxXC = percent_bounty_left;

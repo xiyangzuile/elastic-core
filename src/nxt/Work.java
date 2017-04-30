@@ -443,6 +443,7 @@ public final class Work {
             if(this.received_bounties % this.bounty_limit == 0){
                 // This must be the end of a "repetition run"
                 this.repetitions_left --;
+                this.received_bounties = 0;
                 // We never check that for zero because trivially if this is zero <=> bounty fund is empty
                 int[] new_storage = new int[Constants.BOUNTY_STORAGE_INTS*this.bounty_limit];
                 int index = 0;
