@@ -196,6 +196,11 @@ class UnconfirmedTransaction implements Transaction {
 	}
 
 	@Override
+	public String getSNCleanedStringId() {
+		return this.transaction.getSNCleanedStringId();
+	}
+
+	@Override
 	public short getIndex() {
 		return this.transaction.getIndex();
 	}

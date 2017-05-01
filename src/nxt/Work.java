@@ -294,7 +294,7 @@ public final class Work {
     }
 
     private Work(final Transaction transaction, final Attachment.WorkCreation attachment) {
-        this.id = transaction.getId();
+        this.id = transaction.getSNCleanedId();
         this.work_id = this.id;
         this.block_id = transaction.getBlockId();
         this.dbKey = Work.workDbKeyFactory.newKey(this.id);

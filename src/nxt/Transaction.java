@@ -93,6 +93,8 @@ public interface Transaction {
 
 	long getSNCleanedId();
 
+	String getSNCleanedStringId();
+
 	short getIndex();
 
 	JSONObject getJSONObject();

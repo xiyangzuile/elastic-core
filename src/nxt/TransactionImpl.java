@@ -755,6 +755,11 @@ public final class TransactionImpl implements Transaction {
 	}
 
 	@Override
+	public String getSNCleanedStringId() {
+		return Long.toUnsignedString(getSNCleanedId());
+	}
+
+	@Override
 	public short getIndex() {
 		if (this.index == -1) throw new IllegalStateException("Transaction index has not been set");
 		return this.index;

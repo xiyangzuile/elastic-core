@@ -283,6 +283,7 @@ public final class JSONData {
 			json.put("signatureHash", Convert.toHexString(Crypto.sha256().digest(signature)));
 			json.put("fullHash", transaction.getFullHash());
 			json.put("transaction", transaction.getStringId());
+			json.put("sncleanid", transaction.getSNCleanedStringId());
 		}
 		final JSONObject attachmentJSON = new JSONObject();
 		if (filter == null) for (final Appendix appendage : transaction.getAppendages(true))
