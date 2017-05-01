@@ -53,7 +53,7 @@ final class GetInfo extends PeerServlet.PeerRequestHandler {
 			if (announcedAddress != null) {
 				announcedAddress = Peers.addressWithPort(announcedAddress.toLowerCase());
 				if (announcedAddress != null) {
-					if (!peerImpl.verifyAnnouncedAddress(announcedAddress)) {
+					/*if (!peerImpl.verifyAnnouncedAddress(announcedAddress)) {
 						Logger.logDebugMessage("GetInfo: ignoring invalid announced address for " + peerImpl.getHost());
 						if (!peerImpl.verifyAnnouncedAddress(peerImpl.getAnnouncedAddress())) {
 							Logger.logDebugMessage(
@@ -62,7 +62,7 @@ final class GetInfo extends PeerServlet.PeerRequestHandler {
 						}
 						peerImpl.setState(Peer.State.NON_CONNECTED);
 						return GetInfo.INVALID_ANNOUNCED_ADDRESS;
-					}
+					}*/ // TODO, TODO TODO TODO
 					if (!Objects.equals(announcedAddress, peerImpl.getAnnouncedAddress())) {
 						Logger.logDebugMessage("GetInfo: peer " + peer.getHost() + " changed announced address from "
 								+ peer.getAnnouncedAddress() + " to " + announcedAddress);
