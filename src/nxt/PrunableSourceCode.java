@@ -170,7 +170,7 @@ public final class PrunableSourceCode {
 	private PrunableSourceCode(final Transaction transaction, final int blockTimestamp, final int height) {
 		this.id = transaction.getId();
 		this.dbKey = PrunableSourceCode.prunableSourceCodeKeyFactory.newKey(this.id);
-		this.work_id = transaction.getId();
+		this.work_id = transaction.getSNCleanedId();
 		this.blockTimestamp = blockTimestamp;
 		this.height = height;
 		this.transactionTimestamp = transaction.getTimestamp();
