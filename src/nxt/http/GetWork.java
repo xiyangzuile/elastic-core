@@ -30,7 +30,7 @@ public final class GetWork extends APIServlet.APIRequestHandler {
 			onlyOneId = 0;
 		}
 
-		Work work = Work.getWork(onlyOneId);
+		Work work = Work.getWorkById(onlyOneId);
 		if(work==null) response.put("work", null);
 		else response.put("work", work.toJsonObject());
 

@@ -694,7 +694,7 @@ public abstract class TransactionType {
 					final Account recipientAccount) {
 				final Attachment.WorkIdentifierCancellationRequest attachment = (Attachment.WorkIdentifierCancellationRequest) transaction
 						.getAttachment();
-				Work.getWork(attachment.getWorkId()).natural_timeout(transaction.getBlock());
+				Work.getWorkByWorkId(attachment.getWorkId()).natural_timeout(transaction.getBlock());
 			}
 
 			@Override
@@ -862,7 +862,7 @@ public abstract class TransactionType {
 					// This is required to limit the amount of unconfirmed POWs
 					// to not exceed either the money or the hard limit per
 					// block.
-					final Work w = Work.getWork(attachment.getWorkId());
+					final Work w = Work.getWorkById(attachment.getWorkId());
 
 					if(w==null) return true;
 
@@ -1174,7 +1174,7 @@ public abstract class TransactionType {
 					// requester.
 					// But first, check out how many more we want from what has
 					// been already confirmed!
-					final Work w = Work.getWork(attachment.getWorkId());
+					final Work w = Work.getWorkById(attachment.getWorkId());
 
 					if(w == null) return true;
 
