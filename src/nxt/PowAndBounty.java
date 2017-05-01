@@ -218,6 +218,9 @@ public final class PowAndBounty {
 	}
 
 	public void applyBounty(final Block bl, long supernodeId) throws NxtException.NotValidException {
+
+		boolean kill_fund = false;
+
 		final Work w = Work.getWorkByWorkId(this.work_id);
 		if (w == null) throw new NxtException.NotValidException("No such work found");
 		if (!w.isClosed()) {
@@ -237,11 +240,15 @@ public final class PowAndBounty {
 			/* LEAVE IT OUT FOR NOW  depositAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id,
 					-1*Constants.DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION); */
 			snAccount.addToBalanceAndUnconfirmedBalanceNQT(event, this.id, paySn);
-			w.kill_bounty_fund(bl);
+			kill_fund = true;
 		} else {
 			this.too_late = true;
 		}
 		PowAndBounty.powAndBountyTable.insert(this);
+
+		if(kill_fund)
+			w.kill_bounty_fund(bl);
+
 		PowAndBounty.listeners.notify(this, Event.POW_SUBMITTED);
 	}
 
