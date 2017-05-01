@@ -294,8 +294,8 @@ public final class Work {
     }
 
     private Work(final Transaction transaction, final Attachment.WorkCreation attachment) {
-        this.id = transaction.getSNCleanedId();
-        this.work_id = this.id;
+        this.id = transaction.getId();
+        this.work_id = transaction.getSNCleanedId();
         this.block_id = transaction.getBlockId();
         this.dbKey = Work.workDbKeyFactory.newKey(this.id);
         this.xel_per_pow = attachment.getXelPerPow();
