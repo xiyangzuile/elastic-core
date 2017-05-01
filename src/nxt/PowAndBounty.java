@@ -123,7 +123,7 @@ public final class PowAndBounty {
 		// "Should" return the last X bounties (from the last repetition only)
 		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
 						.and(new DbClause.BooleanClause("is_pow", false)).and(new DbClause.BooleanClause("latest", true)), 0,
-				Work.getWorkById(wid).getBounty_limit(), " ORDER BY height DESC");
+				Work.getWorkByWorkId(wid).getBounty_limit(), " ORDER BY height DESC");
 	}
 
 
@@ -316,7 +316,7 @@ public final class PowAndBounty {
 		else if(Account.getPublicKey(participantAccount.getId()) == null)
 			response.put("inputs", "sender account has no public key yet");
 		else{
-			int[] ints = dummy.personalizedIntStream(Account.getPublicKey(participantAccount.getId()), Work.getWorkById(this.work_id).getBlock_id());
+			int[] ints = dummy.personalizedIntStream(Account.getPublicKey(participantAccount.getId()), Work.getWorkByWorkId(this.work_id).getBlock_id());
 			StringBuilder builder = new StringBuilder();
 			for (int i : ints) {
 				builder.append(i);
