@@ -719,7 +719,7 @@ public final class Work {
         response.put("received_pows", this.received_pows);
         response.put("bounty_limit", this.bounty_limit);
         response.put("sender_account_id", Convert.toUnsignedLong(this.sender_account_id));
-        response.put("referenced_storage_height", Nxt.getBlockchain().getLastBlock().getId());
+        response.put("referenced_storage_height", Convert.toUnsignedLong(Nxt.getBlockchain().getLastBlock().getId()));
         // response.put("height",this.height);
         response.put("target", Convert.toHexString(this.work_min_pow_target.toByteArray()));
         return response;
