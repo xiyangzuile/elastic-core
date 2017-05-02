@@ -1220,6 +1220,17 @@ public abstract class TransactionType {
 					throw new NxtException.NotCurrentlyValidException(
 							"Where exactly did you put the required 32ints storage in?");
 
+				if(transaction.getBlockId()==0 && Nxt.getBlockchain().getLastBlock().getId()!=attachment.getReferenced_storage_height()){
+					throw new NxtException.NotCurrentlyValidException(
+							"This transaction does not reference to the combined_storage of the current block.");
+				}
+
+				if(transaction.getBlockId()!=0 && transaction.getBlock().getPreviousBlockId()!=attachment.getReferenced_storage_height()){
+					throw new NxtException.NotCurrentlyValidException(
+							"This transaction cannot be included in a block, which preblock is not equal to the combined_storage referenced.");
+				}
+
+
 				final Work w = Work.getWorkByWorkId(attachment.getWorkId());
 
 				if (w == null) throw new NxtException.NotCurrentlyValidException(

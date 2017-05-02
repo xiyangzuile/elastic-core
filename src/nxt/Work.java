@@ -305,9 +305,6 @@ public final class Work {
         this.blocksRemaining = (short) attachment.getDeadline();
         this.closed = false;
         this.close_pending = false;
-
-
-
         this.xel_per_bounty = attachment.getXelPerBounty();
         this.balance_pow_fund = transaction.getAmountNQT()
                 - attachment.getBountyLimit() * attachment.getXelPerBounty();
@@ -722,6 +719,7 @@ public final class Work {
         response.put("received_pows", this.received_pows);
         response.put("bounty_limit", this.bounty_limit);
         response.put("sender_account_id", Convert.toUnsignedLong(this.sender_account_id));
+        response.put("referenced_storage_height", Nxt.getBlockchain().getHeight());
         // response.put("height",this.height);
         response.put("target", Convert.toHexString(this.work_min_pow_target.toByteArray()));
         return response;

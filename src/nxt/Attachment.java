@@ -314,10 +314,12 @@ public interface Attachment extends Appendix {
 		}
 
 		private final long workId;
+		private final long referenced_storage_height;
 
 		private final byte[] multiplicator;
 
 		private final int[] storage;
+
 
 		public final MessageDigest dig = Crypto.md5();
 
@@ -325,6 +327,7 @@ public interface Attachment extends Appendix {
 				throws NxtException.NotValidException {
 			super(buffer, transactionVersion);
 			this.workId = buffer.getLong();
+			this.referenced_storage_height = buffer.getLong();
 
 			this.multiplicator = new byte[Constants.WORK_MULTIPLICATOR_BYTES];
 			buffer.get(this.multiplicator);
@@ -338,6 +341,7 @@ public interface Attachment extends Appendix {
 		PiggybackedProofOfBounty(final JSONObject attachmentData) {
 			super(attachmentData);
 			this.workId = Convert.parseUnsignedLong((String) attachmentData.get("id"));
+			this.referenced_storage_height = Convert.parseUnsignedLong((String) attachmentData.get("referenced_storage_height"));
 
 			final String inputRaw = (String) attachmentData.get("multiplicator");
 			if (inputRaw != null) {
@@ -353,10 +357,11 @@ public interface Attachment extends Appendix {
 			}else this.storage = new int[Constants.BOUNTY_STORAGE_INTS];
 		}
 
-		public PiggybackedProofOfBounty(final long workId, final byte[] multiplicator, final int[] storage) {
+		public PiggybackedProofOfBounty(final long workId, final long referenced_storage_height, final byte[] multiplicator, final int[] storage) {
 			this.workId = workId;
 			this.multiplicator = Convert.toFixedBytesCutter(multiplicator, Constants.WORK_MULTIPLICATOR_BYTES);
 			this.storage = storage;
+			this.referenced_storage_height = referenced_storage_height;
 		}
 
 		@Override
@@ -367,6 +372,7 @@ public interface Attachment extends Appendix {
 			final DataOutputStream dos = new DataOutputStream(baos);
 			try {
 				dos.writeLong(this.workId);
+				dos.writeLong(this.referenced_storage_height);
 				dos.write(this.multiplicator);
 				dos.write(Convert.int2byte(this.storage));
 				dos.writeBoolean(true); // distinguish between pow and bounty
@@ -380,13 +386,17 @@ public interface Attachment extends Appendix {
 			return dig.digest();
 		}
 
+		public long getReferenced_storage_height() {
+			return referenced_storage_height;
+		}
+
 		public byte[] getMultiplicator() {
 			return this.multiplicator;
 		}
 
 		@Override
 		int getMySize() {
-			return 8 + Constants.WORK_MULTIPLICATOR_BYTES + Constants.BOUNTY_STORAGE_INTS*4;
+			return 8 + 8 + Constants.WORK_MULTIPLICATOR_BYTES + Constants.BOUNTY_STORAGE_INTS*4;
 		}
 
 		@Override
@@ -436,6 +446,7 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyBytes(final ByteBuffer buffer) {
 			buffer.putLong(this.workId);
+			buffer.putLong(this.referenced_storage_height);
 			buffer.put(this.multiplicator);
 			buffer.put(Convert.int2byte(this.storage));
 		}
@@ -443,6 +454,7 @@ public interface Attachment extends Appendix {
 		@Override
 		void putMyJSON(final JSONObject attachment) {
 			attachment.put("id", Convert.toUnsignedLong(this.workId));
+			attachment.put("referenced_storage_height", Convert.toUnsignedLong(this.referenced_storage_height));
 			attachment.put("multiplicator", Convert.toHexString(this.multiplicator));
 			attachment.put("storage", Convert.toHexString(Convert.int2byte(this.storage)));
 		}

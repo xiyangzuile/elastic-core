@@ -30,6 +30,8 @@ public final class ProofOfX extends CreateTransaction {
 	protected JSONStreamAware processRequest(final HttpServletRequest req) throws NxtException {
 
 		final long workId = ParameterParser.getUnsignedLong(req, "work_id", true);
+		final long referenced_storage_height = ParameterParser.getUnsignedLong(req, "referenced_storage_height", false);
+
 		Account account;
 		try {
 			Db.db.beginTransaction();
@@ -82,7 +84,7 @@ public final class ProofOfX extends CreateTransaction {
 					multiplicator);
 			return this.createTransaction(req, account, attachment);
 		} else {
-			final Attachment.PiggybackedProofOfBounty attachment = new Attachment.PiggybackedProofOfBounty(workId,
+			final Attachment.PiggybackedProofOfBounty attachment = new Attachment.PiggybackedProofOfBounty(workId, referenced_storage_height,
 					multiplicator, intArray);
 			return this.createTransaction(req, account, attachment);
 		}

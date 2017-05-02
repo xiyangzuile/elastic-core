@@ -166,6 +166,7 @@ public final class PowAndBounty {
 	}
 
 	private final long id;
+	private final long referenced_storage_height;
 	private final boolean is_pow;
 	private boolean too_late;
 	private final long work_id;
@@ -184,6 +185,7 @@ public final class PowAndBounty {
 	private PowAndBounty(final ResultSet rs, final DbKey dbKey) throws SQLException {
 		this.id = rs.getLong("id");
 		this.work_id = rs.getLong("work_id");
+		this.referenced_storage_height = rs.getLong("referenced_storage_height");
 		this.accountId = rs.getLong("account_id");
 		this.is_pow = rs.getBoolean("is_pow");
 		this.dbKey = dbKey;
@@ -196,6 +198,7 @@ public final class PowAndBounty {
 	private PowAndBounty(final Transaction transaction, final Attachment.PiggybackedProofOfBounty attachment) {
 		this.id = transaction.getId();
 		this.work_id = attachment.getWorkId();
+		this.referenced_storage_height = attachment.getReferenced_storage_height();
 		this.accountId = transaction.getSenderId();
 		this.dbKey = PowAndBounty.powAndBountyDbKeyFactory.newKey(this.id);
 		this.multiplicator = attachment.getMultiplicator();
@@ -208,6 +211,7 @@ public final class PowAndBounty {
 	private PowAndBounty(final Transaction transaction, final Attachment.PiggybackedProofOfWork attachment) {
 		this.id = transaction.getId();
 		this.work_id = attachment.getWorkId();
+		this.referenced_storage_height = 0;
 		this.accountId = transaction.getSenderId();
 		this.dbKey = PowAndBounty.powAndBountyDbKeyFactory.newKey(this.id);
 		this.multiplicator = attachment.getMultiplicator();
@@ -287,10 +291,11 @@ public final class PowAndBounty {
 
 	private void save(final Connection con) throws SQLException {
 		try (PreparedStatement pstmt = con.prepareStatement(
-				"MERGE INTO pow_and_bounty (id, too_late, work_id, hash, account_id, multiplicator, is_pow, storage, "
-						+ " height, latest) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
+				"MERGE INTO pow_and_bounty (id, referenced_storage_height, too_late, work_id, hash, account_id, multiplicator, is_pow, storage, "
+						+ " height, latest) " + "KEY (id, height) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE)")) {
 			int i = 0;
 			pstmt.setLong(++i, this.id);
+			pstmt.setLong(++i, this.referenced_storage_height);
 			pstmt.setBoolean(++i, this.too_late);
 			pstmt.setLong(++i, this.work_id);
 			DbUtils.setBytes(pstmt, ++i, this.hash);
@@ -311,6 +316,7 @@ public final class PowAndBounty {
 			response.put("date", Convert.toUnsignedLong(t.getTimestamp()));
 			response.put("multiplicator", Arrays.toString(this.multiplicator));
 			response.put("storage", Arrays.toString(this.storage));
+			response.put("referenced_storage_height", Convert.toUnsignedLong(this.referenced_storage_height));
 		} else response.put("error", "Transaction not found");
 		return response;
 	}
