@@ -123,7 +123,7 @@ public final class PowAndBounty {
 		// "Should" return the last X bounties (from the last repetition only)
 		return PowAndBounty.powAndBountyTable.getManyBy(new DbClause.LongClause("work_id", wid)
 						.and(new DbClause.BooleanClause("is_pow", false)).and(new DbClause.BooleanClause("latest", true)), 0,
-				Work.getWorkByWorkId(wid).getBounty_limit(), " ORDER BY height DESC");
+				Work.getWorkByWorkId(wid).getBounty_limit()-1, " ORDER BY height DESC");
 	}
 
 

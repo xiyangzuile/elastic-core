@@ -669,7 +669,7 @@ public abstract class TransactionType {
 						"User provided POW Algorithm does not have a correct xel/pow price");
 				if (Constants.POW_IS_DISABLED && attachment.getXelPerPow() != 0) throw new NotValidException(
 						"POW is disabled in software, make sure you specify 0 as the pow reward");
-				
+
 				// Verify XEL per Pow
 				if (attachment.getRepetitions() < 1) throw new NotValidException(
 						"Need at least 1 repetition");

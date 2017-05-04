@@ -444,14 +444,19 @@ public final class Work {
                 // We never check that for zero because trivially if this is zero <=> bounty fund is empty
                 int[] new_storage = new int[Constants.BOUNTY_STORAGE_INTS*this.bounty_limit];
                 int index = 0;
+                System.out.println("Updating storage for work " + this.getId());
                 try(DbIterator<PowAndBounty> it = PowAndBounty.getLastBountiesRelevantForStorageGeneration(this.work_id)){
                     while(it.hasNext()){
-                        int[] arr = it.next().getStorage();
+                        PowAndBounty iy = it.next();
+                        int[] arr = iy.getStorage();
+                        System.out.println("  -> assessing BTY " + Convert.toHexString(Convert.int2byte(iy.getStorage())));
                         for(int i=0;i<Constants.BOUNTY_STORAGE_INTS;++i)
                             new_storage[index*Constants.BOUNTY_STORAGE_INTS+i]=arr[i];
+                        index++;
                     }
                 }
                 this.combined_storage = new_storage;
+                System.out.println("NEW COMBINED STR: " + Convert.toHexString(Convert.int2byte(new_storage)));
             }
 
             // all was paid out, close it!
