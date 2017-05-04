@@ -34,6 +34,7 @@ public final class Constants {
 	public static final int BLOCKS_TO_LOCKIN_SOFT_FORK = (isTestnet)?15:1440;
 	public static final int BLOCKS_MUST_BE_FULFILLED_TO_LOCKIN_SOFT_FORK = (isTestnet)?12:1300;
 
+	public static final boolean POW_IS_DISABLED = true;
 	public static final int MAX_NUMBER_OF_TRANSACTIONS = 255;
 	public static final int MAX_TITLE_LENGTH = 255;
 	public static final int MAX_WORK_CODE_LENGTH = 1024 * 1024;
@@ -47,7 +48,6 @@ public final class Constants {
 	public static final int PAY_FOR_AT_LEAST_X_POW = 20;
 	public static final long ONE_NXT = 100000000;
 	public static final int EVAL_WORK_EXEC_TIME_AGE_SECONDS = 120;
-	public static final long MIN_XEL_PER_POW = 1; // smallest denomination, it's not 1 XEL
 	public static final long MIN_XEL_PER_BOUNTY = 1; // smallest denomination
 	/* LEAVE IT OUT FOR NOW public static final long DEPOSIT_BOUNTY_ACCOUNCEMENT_SUBMISSION = 10 * Constants.ONE_NXT; */
 	public static final int MAX_HASH_ANNOUNCEMENT_SIZE_BYTES = 32;

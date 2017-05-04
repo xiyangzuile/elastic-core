@@ -665,9 +665,11 @@ public abstract class TransactionType {
 						"User provided POW Algorithm does not have a correct bounty limit");
 
 				// Verify XEL per Pow
-				if (attachment.getXelPerPow() < Constants.MIN_XEL_PER_POW) throw new NotValidException(
+				if (!Constants.POW_IS_DISABLED && attachment.getXelPerPow() < 0) throw new NotValidException(
 						"User provided POW Algorithm does not have a correct xel/pow price");
-
+				if (Constants.POW_IS_DISABLED && attachment.getXelPerPow() != 0) throw new NotValidException(
+						"POW is disabled in software, make sure you specify 0 as the pow reward");
+				
 				// Verify XEL per Pow
 				if (attachment.getRepetitions() < 1) throw new NotValidException(
 						"Need at least 1 repetition");
@@ -932,6 +934,9 @@ public abstract class TransactionType {
 
 				if (w == null) throw new NxtException.NotCurrentlyValidException(
 						"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not exist");
+
+				if(w.getXel_per_pow()==0) throw new NxtException.NotCurrentlyValidException(
+						"Work " + Convert.toUnsignedLong(attachment.getWorkId()) + " does not support any PoW submissions");
 
 				final byte[] hash = attachment.getHash();
 				if (PowAndBounty.hasHash(attachment.getWorkId(), hash))

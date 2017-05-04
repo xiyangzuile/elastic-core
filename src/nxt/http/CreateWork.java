@@ -75,7 +75,7 @@ public final class CreateWork extends CreateTransaction {
 		long xelPerPowInt;
 		try {
 			xelPerPowInt = Long.parseLong(xelPerPow);
-			if (xelPerPowInt < Constants.MIN_XEL_PER_POW) return JSONResponses.INCORRECT_XEL_PER_POW;
+			if (xelPerPowInt < 0) return JSONResponses.INCORRECT_XEL_PER_POW;
 		} catch (final NumberFormatException e) {
 			return JSONResponses.INCORRECT_XEL_PER_POW;
 		}
